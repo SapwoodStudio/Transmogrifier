@@ -53,7 +53,7 @@ Set user-defined import and export presets.
 
 
 ### Name
-Set a custom prefix and/or suffix for every exported file. Syncrhonize object names and object data names according to the former.
+Set a custom prefix and/or suffix for every exported file. Synchronize object names and object data names according to the former.
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c7a71803-c481-4d8f-a638-1a142ff9c397" width="350">
 
