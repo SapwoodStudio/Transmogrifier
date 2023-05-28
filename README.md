@@ -42,11 +42,20 @@ Transmogrifier includes a robust set of tools for non-destructively converting 3
 - ABC
 - USD/USDA/USDC/USDZ
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5069fcab-6cb8-42bd-a155-59a27c99dcb3" width="350">
+
+
 ### Import/Export Presets
 Set user-defined import and export presets.
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/cc9a3528-5f6a-405f-b4cb-3c4e31f18d68" width="350">
+
+
 ### Name
 Set a custom prefix and/or suffix for every exported file. Syncrhonize object names and object data names according to the former.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c7a71803-c481-4d8f-a638-1a142ff9c397" width="350">
+
 
 ### Textures
 
@@ -59,6 +68,9 @@ Transmogrifier can detect the presence of multiple image texture sets and non-de
 - **Packed**: image textures packed into the imported file (e.g. GLB or USDZ)
 - **Custom**: image textures from a custom directory, which will be applied to all models converted.
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/eb0e08d0-cde2-4335-9875-2ee74827a619" width="350">
+
+
 #### Resolution:
 Resize textures and filter what to include by PBR type. Images will not be upscaled.
 
@@ -70,6 +82,9 @@ Resize textures and filter what to include by PBR type. Images will not be upsca
 - 256
 - 128
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/9fee57a2-89ab-4fff-9164-49595514338c" width="350">
+
+
 #### Format: 
 Reformat textures and filter what to include by PBR type.
 
@@ -80,17 +95,29 @@ Reformat textures and filter what to include by PBR type.
 - WEBP
 - BMP
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/d981fcc1-c396-46cf-9130-40438ceb0526" width="350">
+
+
 ### Transformations
-Perform custom transformations and/or apply transformations to every model before export.
+Perform custom transformations and/or apply transformations to every model before export. Filter what transformations to set/apply.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/9e62a98f-c273-4c27-bfbf-c2f0d12d534d" width="350">
+
 
 ### Animations
 Delete animations of every imported object before export. 
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/55840cd5-f9be-4be4-a1bf-36f98c2ff738" width="350">
+
+
 ### Scene
 Set a custom unit system and length unit for export.
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5511ba0d-97b2-4a8d-a0fe-0dc994993d6f" width="350">
+
+
 ### File
-Perform dynamic file-resizing methods to every model in order reduce the exported file size below a target maximum. If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on.
+Perform dynamic file-resizing methods to every model in order reduce the exported file size below a custom target maximum. Filter which methods are used. If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on.
 
 Auto-File-Resize Methods:
 - Draco compression (only works for GLB/glTF)
@@ -98,5 +125,10 @@ Auto-File-Resize Methods:
 - Reformat textures
 - Decimate mesh objects (edge collapse)
 
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/592a4e18-d37a-4a1d-b42d-c5bdc0a006f0" width="350">
+
+
 ### Archive
 Save a .blend and/or render an image preivew thumbnail with Material Preview viewport shading for every imported file. Save a log of the conversion process to troubleshoot errors or simply to get a list of the output files and their file sizes.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/45539c4d-401a-4c5e-b975-872d54b6cd2c" width="350">
