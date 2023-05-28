@@ -8,6 +8,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 
 ## INSTALLATION 📥
+0. Prerequisites: [Blender 3.5.0 or newer](https://www.blender.org/download/). (Transmogrifier may work on older versions, but this has not been tested).
 1. [Download the latest version](https://github.com/SapwoodStudio/Transmogrifier/releases/latest).
 2. Install the addon, [like this](https://www.youtube.com/watch?v=vYh1qh9y1MI).
 3. Choose where to display the addon menu in Blender.
@@ -135,6 +136,8 @@ Save a .blend and/or render an image preivew thumbnail with Material Preview vie
 
 
 ## CREDITS 🙏
+Many thanks to the [people](https://www.blender.org/about/people/) who develop Blender, without whom this addon would have no foundation to exist!
+
 Transmogrifier used code from the following repositories in the following ways. If you give a star to this repository, please also do the same for theirs!
 - Transmogrifier's GUI is based on [MrTriPie](https://github.com/mrtripie)'s excellent Blender addon, [Blender Super Batch Export](https://github.com/mrtripie/Blender-Super-Batch-Export) ([GPL-v3](https://www.blender.org/support/faq/#using-blender-8)). 
 - Some additional code snippets have been adapted into Transmogrifier from the following repositories (search for their names in Converter.py to view the specific adaptations):
