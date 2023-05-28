@@ -11,19 +11,18 @@ A Blender addon for batch converting 3D files and associated textures into other
 2. Install the addon, [like this](https://www.youtube.com/watch?v=vYh1qh9y1MI).
 3. Choose where to display the addon menu in Blender.
 
-![Install_Step_3_350px](https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/baec8b30-a4aa-4e86-8ed7-913b5ebacba8)
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/e3e1a772-8b1a-4b5e-9bfd-e87b724d9f86" height="350">
 
 
 4. (_Optional_) Copy example export presets and a studiolight, "[neutral.hdr](https://github.com/google/model-viewer/blob/master/packages/shared-assets/environments/neutral.hdr)", to local Blender preferences directory. The studiolight is used for rendering preview image thumbnails of converted models.
 
-![Install_Step_4_350px](https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/628274f6-fc0a-45c7-9809-3715b90c32e9)
-
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/0ae23d56-3d03-4109-a14f-b268d2eb1b2e" height="350">
 
 
 ## USAGE 🏭
 1. **Set the 3D file format** to be imported and converted.
 2. **Select a directory** containing 3D files of the chosen format or a parent directory containing an arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
-3. **Set up export settings** as described in the [Features](#features) section below. (_Optional: to save current settings for later use, save the current .blend file_)
+3. **Set up export settings** as described in the [Features](#features-) section below. (_Optional: to save current settings for later use, save the current .blend file_)
 4. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation.
 
 
