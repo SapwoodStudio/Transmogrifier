@@ -21,10 +21,10 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 
 ## USAGE
-1. Set the 3D file format to be imported and converted.
-2. Select a directory containing 3D files of the chosen format or a parent directory containing an arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
-3. Set up export settings as described in the [Features](#features) section below. (_Optional: to save current settings for later use, save the current .blend file_)
-4. Click "Batch Convert".
+1. **Set the 3D file format** to be imported and converted.
+2. **Select a directory** containing 3D files of the chosen format or a parent directory containing an arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
+3. **Set up export settings** as described in the [Features](#features) section below. (_Optional: to save current settings for later use, save the current .blend file_)
+4. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation.
 
 
 ## FEATURES
