@@ -1,7 +1,8 @@
 # Transmogrifier
 A Blender addon for batch converting 3D files and associated textures into other formats. 
 
-[Installation](#installation-) **·** [Usage](#usage-) **·** [Features](#features-)
+[Installation](#installation-) **·** [Usage](#usage-) **·** [Features](#features-) **·** [Credits](#credits-)
+
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/bddff411-a246-429d-8c39-cba946c59a71" height="800">
 
@@ -131,3 +132,11 @@ Auto-File-Resize Methods:
 Save a .blend and/or render an image preivew thumbnail with Material Preview viewport shading for every imported file. Save a log of the conversion process to troubleshoot errors or simply to get a list of the output files and their file sizes.
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/45539c4d-401a-4c5e-b975-872d54b6cd2c" width="350">
+
+
+## CREDITS 🙏
+Transmogrifier used code from the following repositories in the following ways. If you give a star to this repository, please also do the same for theirs!
+- Transmogrifier's GUI is based on [MrTriPie](https://github.com/mrtripie)'s excellent Blender addon, [Blender Super Batch Export](https://github.com/mrtripie/Blender-Super-Batch-Export) ([GPL-v3](https://www.blender.org/support/faq/#using-blender-8)). 
+- Some additional code snippets have been adapted into Transmogrifier from the following repositories (search for their names in Converter.py to view the specific adaptations):
+  - [Simple Renaming Panel](https://github.com/Weisl/simple_renaming_panel/)
+  - [Node Wrangler](https://docs.blender.org/manual/en/latest/addons/node/node_wrangler.html)
