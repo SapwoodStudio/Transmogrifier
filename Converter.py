@@ -2152,18 +2152,35 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
 
 # Decide whether to export files or not based on auto_file_size menu.
 def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2):
+    # Force global variables to reset to original settings, specifically export_file_1(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
+    # Assign variables from dictionary.
+    variables_dict = read_json()
+    export_file_1_options = variables_dict["export_file_1_options"]
+    export_file_2_options = variables_dict["export_file_2_options"]
+
     if auto_file_size == "All":
         # Determine how many 3D files to export, then export.
         export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-        # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-        auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
-
-    elif auto_file_size == "Only Above Max":
-            # Get current file size (in MB)
+        
+        # Get current file size (in MB)
         export_file_1_file_size = get_export_file_1_size(export_file_1)
-
+        
+        # If exported file is already above maximum, skip ahead.
         if export_file_1_file_size < file_size_maximum:
             return
+        
+        # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
+        elif export_file_1_file_size > file_size_maximum:
+            auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
+
+    elif auto_file_size == "Only Above Max":
+        # Get current file size (in MB)
+        export_file_1_file_size = get_export_file_1_size(export_file_1)
+
+        # If exported file is already above maximum, skip ahead.
+        if export_file_1_file_size < file_size_maximum:
+            return
+        
         elif export_file_1_file_size > file_size_maximum:
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
