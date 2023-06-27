@@ -2150,6 +2150,31 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
         logging.exception("COULD NOT APPLY TEXTURES TO OBJECTS")
 		
 
+# Decide whether to export files or not based on auto_file_size menu.
+def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2):
+    if auto_file_size == "All":
+        # Determine how many 3D files to export, then export.
+        export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+        # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
+        auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
+
+    elif auto_file_size == "Only Above Max":
+            # Get current file size (in MB)
+        export_file_1_file_size = get_export_file_1_size(export_file_1)
+
+        if export_file_1_file_size < file_size_maximum:
+            return
+        elif export_file_1_file_size > file_size_maximum:
+            # Determine how many 3D files to export, then export.
+            export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+            # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
+            auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
+
+    elif auto_file_size == "None":
+        # Determine how many 3D files to export, then export.
+        export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+
 # Convert the file for every file found inside the given directory.
 def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image):
     try:
@@ -2208,13 +2233,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Set transforms if requested by the User.
         if set_transforms:
             set_transformations(set_transforms_filter, set_location, set_rotation, set_scale)
-
-        # Determine how many 3D files to export, then export.
-        export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-
-        # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-        if auto_file_size:
-            auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
+        
+        # Decide whether to export files or not based on auto_file_size menu.
+        determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
         # If User elected not to save a .blend file, delete any existing .blend.
         if not save_blend:

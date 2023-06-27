@@ -393,11 +393,11 @@ def draw_settings(self, context):
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
     col.label(text="File:", icon='FILE')
-    col.prop(settings, 'auto_file_size', icon='SHADERFX', icon_only=False)
+    col.prop(settings, 'auto_file_size')
     # Align menu items to the left.
     self.layout.use_property_split = False
     col = self.layout.column(align=True)
-    if settings.auto_file_size:
+    if settings.auto_file_size != "None":
         col.prop(settings, 'file_size_maximum')
         grid = self.layout.grid_flow(columns=1, align=True)
         grid.prop(settings, 'file_size_methods')
@@ -1605,10 +1605,15 @@ class BatchConvertSettings(PropertyGroup):
         default="INCHES",
     )
     # Option to set file size maximum.
-    auto_file_size: BoolProperty(
-        name="Auto File Size", 
+    auto_file_size: EnumProperty(
+        name="Auto File Size",
         description="Set a maximum file size and Transmogrifier will automatically try to resize the file according to the requested size. Only takes the first file format into account",
-        default=False,
+        items=[
+            ("All", "All", "Convert all specified files in the given directory even if some previously exported files are already below the target maximum", 1),
+            ("Only Above Max", "Only Above Max", "Only convert such specified files in the given directory that are still above the target maximum. Ignore the rest already below the target maximum", 2),
+            ("None", "None", "Don't auto-resize any exported files", 3),
+        ],
+        default="All",
     )
     # File size maximum target.
     file_size_maximum: bpy.props.FloatProperty(
