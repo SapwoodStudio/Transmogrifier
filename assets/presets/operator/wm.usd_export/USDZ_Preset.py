@@ -15,3 +15,4 @@ op.generate_preview_surface = True
 op.export_textures = True
 op.overwrite_textures = False
 op.relative_paths = True
+op.root_prim_path = ''
