@@ -2187,6 +2187,8 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
                 return
             
             elif export_file_1_file_size > file_size_maximum:
+                print("File already exists and is above target maximum. Initiating automatic file resizing for " + str(item) + ".")
+                logging.info("File already exists is above target maximum. Initiating automatic file resizing for " + str(item) + ".")
                 # Determine how many 3D files to export, then export.
                 export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
@@ -2349,22 +2351,56 @@ def batch_converter():
                     blend = os.path.join(subdir, prefix + item + suffix + ".blend")
                     preview_image = os.path.join(subdir, prefix + item + suffix + '_Preview.png')
 
-                    # Run the converter on the item that was found.
-                    converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+                    # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
+                    if auto_file_size == "Only Above Max":
+                        # Get current file size (in MB) in order to determine whether to import the current item at all.
+                        export_file_1_file_size = get_export_file_1_size(export_file_1)
 
-                    # Increment conversion counter and add converted item(s) to list.
-                    if model_quantity != "No Formats":
-                        export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
-                        export_file_1 = os.path.basename(export_file_1)
-                        export_file_1_list = [export_file_1, export_file_1_file_size]
-                        conversion_list.append(export_file_1_list)
-                        if model_quantity == "2 Formats":
-                            export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
-                            export_file_2 = os.path.basename(export_file_2)
-                            export_file_2_list = [export_file_2, export_file_2_file_size]
-                            conversion_list.append(export_file_2_list)
-                    
-                    conversion_count += 1
+                        # If export_file_1 doesn't exist or does exist and is above maximum when auto_file_size is set to "Only Above Max", convert item.
+                        if export_file_1_file_size > file_size_maximum:
+                            print("File either 1) already exists and is above target maximum or 2) doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                            logging.info("File either 1) already exists and is above target maximum or 2) doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                            # Run the converter on the item that was found.
+                            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+                            # Increment conversion counter and add converted item(s) to list.
+                            if model_quantity != "No Formats":
+                                export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
+                                export_file_1 = os.path.basename(export_file_1)
+                                export_file_1_list = [export_file_1, export_file_1_file_size]
+                                conversion_list.append(export_file_1_list)
+                                if model_quantity == "2 Formats":
+                                    export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
+                                    export_file_2 = os.path.basename(export_file_2)
+                                    export_file_2_list = [export_file_2, export_file_2_file_size]
+                                    conversion_list.append(export_file_2_list)
+                            
+                            conversion_count += 1
+                        
+                        # If export_file_1 already exists and is already below maximum when auto_file_size is set to "Only Above Max", skip item.
+                        elif export_file_1_file_size < file_size_maximum:
+                            print("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
+                            logging.info("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
+
+                    # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
+                    elif auto_file_size != "Only Above Max":
+                        print("Initiating converter for " + str(item) + ".")
+                        logging.info("Initiating converter for " + str(item) + ".")
+                        # Run the converter on the item that was found.
+                        converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+
+                        # Increment conversion counter and add converted item(s) to list.
+                        if model_quantity != "No Formats":
+                            export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
+                            export_file_1 = os.path.basename(export_file_1)
+                            export_file_1_list = [export_file_1, export_file_1_file_size]
+                            conversion_list.append(export_file_1_list)
+                            if model_quantity == "2 Formats":
+                                export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
+                                export_file_2 = os.path.basename(export_file_2)
+                                export_file_2_list = [export_file_2, export_file_2_file_size]
+                                conversion_list.append(export_file_2_list)
+                        
+                        conversion_count += 1
 
                 else:
                     continue

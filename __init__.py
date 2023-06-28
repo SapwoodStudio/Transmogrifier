@@ -22,8 +22,8 @@ import subprocess
 bl_info = {
     "name": "Transmogrifier",
     "author": "Sapwood Studio",
-    "version": (1, 0, 0),
-    "blender": (3, 5, 0),
+    "version": (1, 1, 1),
+    "blender": (3, 6, 0),
     "category": "Import-Export",
     "location": "Set in preferences below. Default: Top Bar (After File, Edit, ...Help)",
     "description": "Batch converts 3D files and associated textures into other formats.",
@@ -691,7 +691,7 @@ class TRANSMOGRIFY(Operator):
             elif conversion_count == 1:
                 self.report({'INFO'}, "Conversion complete. " + str(conversion_count) + " file was converted.")
             else:
-                self.report({'INFO'}, "Could not convert. " + str(conversion_count) + " files were converted.")
+                self.report({'INFO'}, "Could not convert or no items needed conversion. " + str(conversion_count) + " files were converted.")
 
         return {'FINISHED'}
 
