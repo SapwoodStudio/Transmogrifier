@@ -1866,12 +1866,13 @@ def get_export_file_1_size(export_file_1):
         if os.path.exists(export_file_1):
             # Get current file size (in MB)
             export_file_1_file_size = pathlib.Path(export_file_1).stat().st_size / 1048576
-
-            return export_file_1_file_size
         
         else:
             print(export_file_1 + " doesn't exist.")
             logging.info(export_file_1 + " doesn't exist.")
+            export_file_1_file_size = 0
+        
+        return export_file_1_file_size
 
         print("------------------------  GOT EXPORTED FILE SIZE  ------------------------")
         logging.info("GOT EXPORTED FILE SIZE")
@@ -2150,7 +2151,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
         logging.exception("COULD NOT APPLY TEXTURES TO OBJECTS")
 		
 
-# Decide whether to export files or not based on auto_file_size menu.
+# Decide whether to export files (again) or not based on auto_file_size menu.
 def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2):
     try:
         # Force global variables to reset to original settings, specifically export_file_1(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
@@ -2181,14 +2182,22 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
             export_file_1_file_size = get_export_file_1_size(export_file_1)
 
             # If exported file is already above maximum, skip ahead.
-            if export_file_1_file_size < file_size_maximum:
+            if export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
                 print("File already exists and is below target maximum. Skipping automatic file resizing for " + str(item) + ".")
-                logging.info("File already exists is below target maximum. Skipping automatic file resizing for " + str(item) + ".")
+                logging.info("File already exists and is below target maximum. Skipping automatic file resizing for " + str(item) + ".")
                 return
             
             elif export_file_1_file_size > file_size_maximum:
                 print("File already exists and is above target maximum. Initiating automatic file resizing for " + str(item) + ".")
                 logging.info("File already exists is above target maximum. Initiating automatic file resizing for " + str(item) + ".")
+                # Determine how many 3D files to export, then export.
+                export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+                # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
+                auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
+
+            elif export_file_1_file_size == 0:
+                print("File doesn't exist. Exporting item and initiating automatic file resizing for " + str(item) + ".")
+                logging.info("File doesn't exist. Exporting item and initiating automatic file resizing for " + str(item) + ".")
                 # Determine how many 3D files to export, then export.
                 export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
@@ -2312,6 +2321,31 @@ def report_conversion_count(conversion_count):
         logging.exception("COULD NOT REPORT CONVERSION COUNT")
 		
 
+# Make a list of exports for the current item, which will then be appended to the full conversion_list to be reported in the log.
+def list_exports(export_file_1, export_file_2):
+    try:
+        exports_list = []
+        if model_quantity != "No Formats":
+            export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
+            export_file_1 = os.path.basename(export_file_1)
+            export_file_1_list = [export_file_1, export_file_1_file_size]
+            exports_list.append(export_file_1_list)
+
+            if model_quantity == "2 Formats":
+                export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
+                export_file_2 = os.path.basename(export_file_2)
+                export_file_2_list = [export_file_2, export_file_2_file_size]
+                exports_list.append(export_file_2_list)
+        
+        return exports_list
+        
+        print("------------------------  LISTED EXPORTS  ------------------------")
+        logging.info("LISTED EXPORTS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT LIST EXPORTS")
+
+
 # Main function that loops through specified directory and creates variables for the converter
 def batch_converter():
     try:
@@ -2356,30 +2390,36 @@ def batch_converter():
                         # Get current file size (in MB) in order to determine whether to import the current item at all.
                         export_file_1_file_size = get_export_file_1_size(export_file_1)
 
-                        # If export_file_1 doesn't exist or does exist and is above maximum when auto_file_size is set to "Only Above Max", convert item.
+                        # If export_file_1 exists and is above maximum when auto_file_size is set to "Only Above Max", convert item.
                         if export_file_1_file_size > file_size_maximum:
-                            print("File either 1) already exists and is above target maximum or 2) doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
-                            logging.info("File either 1) already exists and is above target maximum or 2) doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                            print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                            logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                             # Run the converter on the item that was found.
                             converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
                             # Increment conversion counter and add converted item(s) to list.
-                            if model_quantity != "No Formats":
-                                export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
-                                export_file_1 = os.path.basename(export_file_1)
-                                export_file_1_list = [export_file_1, export_file_1_file_size]
-                                conversion_list.append(export_file_1_list)
-                                if model_quantity == "2 Formats":
-                                    export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
-                                    export_file_2 = os.path.basename(export_file_2)
-                                    export_file_2_list = [export_file_2, export_file_2_file_size]
-                                    conversion_list.append(export_file_2_list)
+                            exports_list = list_exports(export_file_1, export_file_2)
+                            # Add export(s) to conversion list.
+                            conversion_list.extend(exports_list)
                             
                             conversion_count += 1
                         
                         # If export_file_1 already exists and is already below maximum when auto_file_size is set to "Only Above Max", skip item.
-                        elif export_file_1_file_size < file_size_maximum:
+                        elif export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
                             print("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
                             logging.info("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
+
+                        # If file size is zero, then the file cannot exist and requires export.
+                        elif export_file_1_file_size == 0:
+                            print("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                            logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                            # Run the converter on the item that was found.
+                            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+                            # Increment conversion counter and add converted item(s) to list.
+                            exports_list = list_exports(export_file_1, export_file_2)
+                            # Add export(s) to conversion list.
+                            conversion_list.extend(exports_list)
+                            
+                            conversion_count += 1
 
                     # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
                     elif auto_file_size != "Only Above Max":
@@ -2387,19 +2427,11 @@ def batch_converter():
                         logging.info("Initiating converter for " + str(item) + ".")
                         # Run the converter on the item that was found.
                         converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
-
                         # Increment conversion counter and add converted item(s) to list.
-                        if model_quantity != "No Formats":
-                            export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
-                            export_file_1 = os.path.basename(export_file_1)
-                            export_file_1_list = [export_file_1, export_file_1_file_size]
-                            conversion_list.append(export_file_1_list)
-                            if model_quantity == "2 Formats":
-                                export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
-                                export_file_2 = os.path.basename(export_file_2)
-                                export_file_2_list = [export_file_2, export_file_2_file_size]
-                                conversion_list.append(export_file_2_list)
-                        
+                        exports_list = list_exports(export_file_1, export_file_2)
+                        # Add export(s) to conversion list.
+                        conversion_list.extend(exports_list)
+
                         conversion_count += 1
 
                 else:

@@ -22,7 +22,7 @@ import subprocess
 bl_info = {
     "name": "Transmogrifier",
     "author": "Sapwood Studio",
-    "version": (1, 1, 1),
+    "version": (1, 1, 3),
     "blender": (3, 6, 0),
     "category": "Import-Export",
     "location": "Set in preferences below. Default: Top Bar (After File, Edit, ...Help)",
