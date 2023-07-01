@@ -22,7 +22,7 @@ import subprocess
 bl_info = {
     "name": "Transmogrifier",
     "author": "Sapwood Studio",
-    "version": (1, 1, 3),
+    "version": (1, 0, 0),
     "blender": (3, 6, 0),
     "category": "Import-Export",
     "location": "Set in preferences below. Default: Top Bar (After File, Edit, ...Help)",
@@ -392,15 +392,23 @@ def draw_settings(self, context):
     # Set max file size options.
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
-    col.label(text="File:", icon='FILE')
-    col.prop(settings, 'auto_file_size')
+    col.label(text="File Size:", icon='FILE')
+    col.prop(settings, 'auto_resize_files')
     # Align menu items to the left.
     self.layout.use_property_split = False
     col = self.layout.column(align=True)
-    if settings.auto_file_size != "None":
+    if settings.auto_resize_files != "None":
         col.prop(settings, 'file_size_maximum')
         grid = self.layout.grid_flow(columns=1, align=True)
         grid.prop(settings, 'file_size_methods')
+        if 'Resize Textures' in settings.file_size_methods:
+            self.layout.use_property_split = True
+            col = self.layout.column(align=True)
+            col.prop(settings, 'resize_textures_limit')
+        if 'Decimate Meshes' in settings.file_size_methods:
+            self.layout.use_property_split = False
+            col = self.layout.column(align=True)
+            col.prop(settings, 'decimate_limit')
         self.layout.separator()
 
     # Additional options
@@ -462,9 +470,11 @@ def write_json(
     delete_animations, 
     unit_system, 
     length_unit, 
-    auto_file_size, 
+    auto_resize_files, 
     file_size_maximum, 
     file_size_methods, 
+    resize_textures_limit, 
+    decimate_limit, 
     save_preview_image, 
     save_blend, 
     save_conversion_log, 
@@ -509,9 +519,11 @@ def write_json(
         "delete_animations": delete_animations,
         "unit_system": unit_system, 
         "length_unit": length_unit, 
-        "auto_file_size": auto_file_size, 
+        "auto_resize_files": auto_resize_files, 
         "file_size_maximum": file_size_maximum, 
         "file_size_methods": file_size_methods, 
+        "resize_textures_limit": resize_textures_limit, 
+        "decimate_limit": decimate_limit, 
         "save_preview_image": save_preview_image,
         "save_blend": save_blend,
         "save_conversion_log": save_conversion_log, 
@@ -768,9 +780,11 @@ class TRANSMOGRIFY(Operator):
             length_unit = settings.length_unit_imperial
         elif unit_system == "NONE":
             length_unit = "NONE"
-        auto_file_size = settings.auto_file_size
+        auto_resize_files = settings.auto_resize_files
         file_size_maximum = settings.file_size_maximum
         file_size_methods = list(settings.file_size_methods)
+        resize_textures_limit = int(settings.resize_textures_limit)
+        decimate_limit = settings.decimate_limit
         save_preview_image = settings.save_preview_image
         save_blend = settings.save_blend
         save_conversion_log = settings.save_conversion_log
@@ -1179,9 +1193,11 @@ class TRANSMOGRIFY(Operator):
             delete_animations, 
             unit_system, 
             length_unit, 
-            auto_file_size, 
+            auto_resize_files, 
             file_size_maximum, 
             file_size_methods, 
+            resize_textures_limit, 
+            decimate_limit, 
             save_preview_image, 
             save_blend, 
             save_conversion_log, 
@@ -1605,8 +1621,8 @@ class BatchConvertSettings(PropertyGroup):
         default="INCHES",
     )
     # Option to set file size maximum.
-    auto_file_size: EnumProperty(
-        name="Auto File Size",
+    auto_resize_files: EnumProperty(
+        name="Auto Resize",
         description="Set a maximum file size and Transmogrifier will automatically try to resize the file according to the requested size. Only takes the first file format into account",
         items=[
             ("All", "All", "Convert all specified files in the given directory even if some previously exported files are already below the target maximum", 1),
@@ -1617,7 +1633,7 @@ class BatchConvertSettings(PropertyGroup):
     )
     # File size maximum target.
     file_size_maximum: bpy.props.FloatProperty(
-        name="File Size Max (MB)", 
+        name="File Size Max. (MB)", 
         description="Set the file size maximum for auto-export resizing (Megabytes)",
         default=15.0,
         soft_min=0.0,
@@ -1640,6 +1656,31 @@ class BatchConvertSettings(PropertyGroup):
             'Reformat Textures', 
             'Draco-Compress', 
         },
+    )
+    # Limit resolution that auto resize files should not go below.
+    resize_textures_limit: EnumProperty(
+        name="Resize Min.",
+        description="Set minimum image texture resolution for auto file size not to go below. Images will not be upscaled",
+        items=[
+            ("8192", "8192", "Square aspect ratio", 1),
+            ("4096", "4096", "Square aspect ratio", 2),
+            ("2048", "2048", "Square aspect ratio", 3),
+            ("1024", "1024", "Square aspect ratio", 4),
+            ("512", "512", "Square aspect ratio", 5),
+            ("256", "256", "Square aspect ratio", 6),
+            ("128", "128", "Square aspect ratio", 7),
+            ("64", "64", "Square aspect ratio", 8),
+        ],
+        default="512",
+    )
+    # Limit how many time a mesh can be decimated during auto resize files.
+    decimate_limit: IntProperty(
+        name="Decimate Max.", 
+        description="Limit the number of times an item can be decimated. Items will be decimated by 50% each time",
+        default=3,
+        soft_min=0,
+        soft_max=10,
+        step=1,
     )
     # Save preview image.
     save_preview_image: BoolProperty(

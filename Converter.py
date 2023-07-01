@@ -82,9 +82,11 @@ def get_variables():
         global delete_animations 
         global unit_system 
         global length_unit 
-        global auto_file_size 
+        global auto_resize_files 
         global file_size_maximum 
         global file_size_methods 
+        global resize_textures_limit
+        global decimate_limit
         global save_preview_image 
         global save_blend 
         global save_conversion_log
@@ -138,9 +140,11 @@ def get_variables():
         delete_animations = variables_dict["delete_animations"]
         unit_system = variables_dict["unit_system"]
         length_unit = variables_dict["length_unit"]
-        auto_file_size = variables_dict["auto_file_size"]
+        auto_resize_files = variables_dict["auto_resize_files"]
         file_size_maximum = variables_dict["file_size_maximum"]
         file_size_methods = variables_dict["file_size_methods"]
+        resize_textures_limit = variables_dict["resize_textures_limit"]
+        decimate_limit = variables_dict["decimate_limit"]
         save_preview_image = variables_dict["save_preview_image"]
         save_blend = variables_dict["save_blend"]
         save_conversion_log = variables_dict["save_conversion_log"]
@@ -1919,9 +1923,9 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
         export_file_1_file_size = get_export_file_1_size(export_file_1)
         # If texture_resolution was set to "'Default'", then assume the default is equal to 4096.
         texture_resolution = 4096
-        texture_resolution_minimum = 512
+        texture_resolution_minimum = resize_textures_limit
         decimate_counter = 0
-        decimate_maximum = 3
+        decimate_maximum = decimate_limit
 
         # Keep trying different methods until the file size is less than target.
         while export_file_1_file_size > file_size_maximum and texture_resolution > texture_resolution_minimum:
@@ -2151,7 +2155,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
         logging.exception("COULD NOT APPLY TEXTURES TO OBJECTS")
 		
 
-# Decide whether to export files (again) or not based on auto_file_size menu.
+# Decide whether to export files (again) or not based on auto_resize_files menu.
 def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2):
     try:
         # Force global variables to reset to original settings, specifically export_file_1(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
@@ -2160,7 +2164,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
         export_file_1_options = variables_dict["export_file_1_options"]
         export_file_2_options = variables_dict["export_file_2_options"]
 
-        if auto_file_size == "All":
+        if auto_resize_files == "All":
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
             
@@ -2177,7 +2181,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
             elif export_file_1_file_size > file_size_maximum:
                 auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
 
-        elif auto_file_size == "Only Above Max":
+        elif auto_resize_files == "Only Above Max":
             # Get current file size (in MB)
             export_file_1_file_size = get_export_file_1_size(export_file_1)
 
@@ -2203,7 +2207,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
                 auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
 
-        elif auto_file_size == "None":
+        elif auto_resize_files == "None":
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
@@ -2273,7 +2277,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if set_transforms:
             set_transformations(set_transforms_filter, set_location, set_rotation, set_scale)
         
-        # Decide whether to export files or not based on auto_file_size menu.
+        # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
         # If User elected not to save a .blend file, delete any existing .blend.
@@ -2386,11 +2390,11 @@ def batch_converter():
                     preview_image = os.path.join(subdir, prefix + item + suffix + '_Preview.png')
 
                     # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
-                    if auto_file_size == "Only Above Max":
+                    if auto_resize_files == "Only Above Max":
                         # Get current file size (in MB) in order to determine whether to import the current item at all.
                         export_file_1_file_size = get_export_file_1_size(export_file_1)
 
-                        # If export_file_1 exists and is above maximum when auto_file_size is set to "Only Above Max", convert item.
+                        # If export_file_1 exists and is above maximum when auto_resize_files is set to "Only Above Max", convert item.
                         if export_file_1_file_size > file_size_maximum:
                             print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                             logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
@@ -2403,7 +2407,7 @@ def batch_converter():
                             
                             conversion_count += 1
                         
-                        # If export_file_1 already exists and is already below maximum when auto_file_size is set to "Only Above Max", skip item.
+                        # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
                         elif export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
                             print("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
                             logging.info("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
@@ -2422,7 +2426,7 @@ def batch_converter():
                             conversion_count += 1
 
                     # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
-                    elif auto_file_size != "Only Above Max":
+                    elif auto_resize_files != "Only Above Max":
                         print("Initiating converter for " + str(item) + ".")
                         logging.info("Initiating converter for " + str(item) + ".")
                         # Run the converter on the item that was found.
