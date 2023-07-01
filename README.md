@@ -1,7 +1,7 @@
 # Transmogrifier
 A Blender addon for batch converting 3D files and associated textures into other formats. 
 
-[Installation](#installation-) **·** [Usage](#usage-) **·** [Features](#features-) **·** [Credits](#credits-)
+[Installation](#installation-) **·** [Usage](#usage-) **·** [Benefits](#benefits-) **·** [Features](#features-) **·** [Credits](#credits-)
 
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4c42b86e-10d6-4429-a9a7-aa7d806c9003" height="800">
@@ -31,6 +31,13 @@ A Blender addon for batch converting 3D files and associated textures into other
 3. **Set up export settings** as described in the [Features](#features-) section below. (_Optional: to save current settings for later use, save the current .blend file_)
 4. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation.
 
+## BENEFITS 🎁
+
+- ⏳ **Saves Time**. Automates the boring stuff so you can focus on creating instead of converting. 
+- 🛡️ **Private and Secure**. Runs offline/locally. No account needed.
+- ⚓ **Non-Destructive**. Original files are preserved (unless converting between the same formats).
+- 🔓 **Open Source**. View, modify, and share the code freely. 
+- 🆓 **Free**. No paywall, no trial, no strings attached.
 
 ## FEATURES ✨
 Transmogrifier includes a robust set of tools for non-destructively converting 3D files and associated textures into other formats.
