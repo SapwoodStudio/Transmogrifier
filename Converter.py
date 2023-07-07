@@ -1918,85 +1918,108 @@ def decimate_objects():
 
 # Auto resize premise: Get maximum image texture dimensions to use as a starting point for resizing textures.
 def get_texture_resolution_maximum():
-    resolution_list = []
-    for image in bpy.data.images:
-        width, height = image.size
-        resolution_list.append(width)
-        resolution_list.append(height)  # Check both in case non-square textures are used.
-    
-    texture_resolution_maximum = max(resolution_list)
-    return texture_resolution_maximum
+    try:
+        resolution_list = []
+        for image in bpy.data.images:
+            width, height = image.size
+            resolution_list.append(width)
+            resolution_list.append(height)  # Check both in case non-square textures are used.
+        
+        texture_resolution_maximum = max(resolution_list)
+        return texture_resolution_maximum
+
+        print("------------------------  GOT TEXTURE RESOLUTION MAXIMUM FOR AUTO RESIZE FILES  ------------------------")
+        logging.info("GOT TEXTURE RESOLUTION MAXIMUM FOR AUTO RESIZE FILES")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT GET TEXTURE RESOLUTION MAXIMUM FOR AUTO RESIZE FILES")
 
 
 # Auto resize method: Draco-Compress
 def draco_compress_and_export(export_file_1, export_file_2):
-    if "Draco-Compress" in file_size_methods and export_file_1_ext == ".glb":
-        print("#################  Draco-Compress  #################")
-        logging.info("#################  Draco-Compress  #################")
-        export_file_1_options["export_draco_mesh_compression_enable"] = True
-        
-        # Determine how many 3D files to export, then export.
-        export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+    try:
+        if "Draco-Compress" in file_size_methods and export_file_1_ext == ".glb":
+            print("#################  Draco-Compress  #################")
+            logging.info("#################  Draco-Compress  #################")
+            export_file_1_options["export_draco_mesh_compression_enable"] = True
+            
+            # Determine how many 3D files to export, then export.
+            export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT DRACO-COMPRESS MODEL FOR AUTO RESIZE FILES")
 
 
 # Auto resize method: Resize textures
 def resize_textures_and_export(export_file_1, export_file_2, texture_resolution_current):
-    if "Resize Textures" in file_size_methods:
-        if texture_resolution_current / 2 >= resize_textures_limit:
-            print("#################  Resize Textures  #################")
-            logging.info("#################  Resize Textures  #################")
-            texture_resolution_current = int(texture_resolution_current / 2)
-            # Resize textures (again) and re-export.
-            resize_textures(texture_resolution = texture_resolution_current, texture_resolution_include = texture_resolution_include)
+    try:
+        if "Resize Textures" in file_size_methods:
+            if texture_resolution_current / 2 >= resize_textures_limit:
+                print("#################  Resize Textures  #################")
+                logging.info("#################  Resize Textures  #################")
+                texture_resolution_current = int(texture_resolution_current / 2)
+                # Resize textures (again) and re-export.
+                resize_textures(texture_resolution = texture_resolution_current, texture_resolution_include = texture_resolution_include)
 
-            # Determine how many 3D files to export, then export.
-            export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-        
-        elif texture_resolution_current / 2 < resize_textures_limit:
-            print("#################  Resize Textures  #################")
-            logging.info("#################  Resize Textures  #################")
-            print("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
-            logging.info("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
+                # Determine how many 3D files to export, then export.
+                export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+            
+            elif texture_resolution_current / 2 < resize_textures_limit:
+                print("#################  Resize Textures  #################")
+                logging.info("#################  Resize Textures  #################")
+                print("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
+                logging.info("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
 
-    # Return current resolution.
-    return texture_resolution_current
+        # Return current resolution.
+        return texture_resolution_current
+
+    except Exception as Argument:
+        logging.exception("COULD NOT RESIZE TEXTURES FOR AUTO RESIZE FILES")
 
 
 # Auto resize method: Reformat textures
 def reformat_textures_and_export(export_file_1, export_file_2):
-    if "Reformat Textures" in file_size_methods:
-        print("#################  Reformat Textures  #################")
-        logging.info("#################  Reformat Textures  #################")
-        image_format = 'JPEG'
-        image_quality = 90
-        image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
-        convert_image_format(image_format, image_quality, image_format_include, textures_source)
-        
-        # Determine how many 3D files to export, then export.
-        export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+    try:
+        if "Reformat Textures" in file_size_methods:
+            print("#################  Reformat Textures  #################")
+            logging.info("#################  Reformat Textures  #################")
+            image_format = 'JPEG'
+            image_quality = 90
+            image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
+            convert_image_format(image_format, image_quality, image_format_include, textures_source)
+            
+            # Determine how many 3D files to export, then export.
+            export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT REFORMAT TEXTURES FOR AUTO RESIZE FILES")
 
 
 # Auto resize method: Decimate meshes
 def decimate_meshes_and_export(export_file_1, export_file_2, decimate_counter, decimate_maximum):
-    if "Decimate Meshes" in file_size_methods:
-        if decimate_counter <= decimate_maximum:
-            print("#################  Decimate Meshes  #################")
-            logging.info("#################  Decimate Meshes  #################")
-            select_only_meshes()
-            decimate_objects()
-            select_all()
+    try:
+        if "Decimate Meshes" in file_size_methods:
+            if decimate_counter <= decimate_maximum:
+                print("#################  Decimate Meshes  #################")
+                logging.info("#################  Decimate Meshes  #################")
+                select_only_meshes()
+                decimate_objects()
+                select_all()
 
-            # Determine how many 3D files to export, then export.
-            export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-            decimate_counter += 1
+                # Determine how many 3D files to export, then export.
+                export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+                decimate_counter += 1
 
-        elif decimate_counter > decimate_maximum:
-            print("#################  Decimate Meshes  #################")
-            logging.info("#################  Decimate Meshes  #################")
-            print("Decimation iteration maximum reached. Skipping Decimation.")
-            logging.info("Decimation iteration maximum reached. Skipping Decimation.")
-    
-    return decimate_counter
+            elif decimate_counter > decimate_maximum:
+                print("#################  Decimate Meshes  #################")
+                logging.info("#################  Decimate Meshes  #################")
+                print("Decimation iteration maximum reached. Skipping Decimation.")
+                logging.info("Decimation iteration maximum reached. Skipping Decimation.")
+        
+        return decimate_counter
+
+    except Exception as Argument:
+        logging.exception("COULD NOT DECIMATE MESHES FOR AUTO RESIZE FILES")
 
 
 # Automatically try to resize the exported file (only takes export_file_1 into account)
