@@ -6,7 +6,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 [Installation](#installation-) **·** [Usage](#usage-) **·** [Benefits](#benefits-) **·** [Features](#features-) **·** [Credits](#credits-)
 
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4c42b86e-10d6-4429-a9a7-aa7d806c9003" height="800">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5592793d-f7d9-4c1a-bad1-86da4d4657ba" height="1000">
 
 
 ## INSTALLATION 📥
