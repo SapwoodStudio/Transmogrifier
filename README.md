@@ -78,7 +78,7 @@ Transmogrifier can detect the presence of multiple image texture sets and non-de
 #### Source:
 - **External**: image textures nearby the imported model
   - inside a "textures" subfolder
-  - beside the imported model
+  - in the same directory as the imported 3D file
 - **Packed**: image textures packed into the imported file (e.g. GLB or USDZ)
 - **Custom**: image textures from a custom directory, which will be applied to all models converted.
 
@@ -131,15 +131,20 @@ Set a custom unit system and length unit for export.
 
 
 ### File
-Perform dynamic file-resizing methods to every model in order reduce the exported file size below a custom target maximum. Filter which methods are used. If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on.
+Perform automatic file-resizing methods to every model in order reduce the exported file size below a custom target maximum. Filter which methods are used. If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on.
 
-Auto-File-Resize Methods:
-- Draco compression (only works for GLB/glTF)
-- Resize textures (won't go below 512px resolution)
-- Reformat textures
-- Decimate mesh objects (edge collapse)
+Approaches:
+- All (Always export despite any pre-existing file that is already below the target file size.)
+- Only Above Max (Only export and resize files that are above the target file sizes. Pre-existing files already below the target are ignored.)
+- None (Don't auto-resize at all.)
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/38343153-422a-4b9a-8d31-358b19ae37f1" width="350">
+Methods:
+- Draco compression (Only works for GLB/glTF.)
+- Resize textures (Set a minimum resolution limit.)
+- Reformat textures (Convert all textures to JPG except normal maps.)
+- Decimate mesh objects (Uses edge collapse. Set a maximum decimate iteration.)
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/ccb26492-78eb-4dbe-bc6c-aff84308fb84" width="350">
 
 
 ### Archive
