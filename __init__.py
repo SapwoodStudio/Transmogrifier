@@ -22,7 +22,7 @@ import subprocess
 bl_info = {
     "name": "Transmogrifier",
     "author": "Sapwood Studio",
-    "version": (1, 0, 0),
+    "version": (1, 1, 0),
     "blender": (3, 6, 0),
     "category": "Import-Export",
     "location": "Set in preferences below. Default: Top Bar (After File, Edit, ...Help)",
@@ -1659,7 +1659,7 @@ class BatchConvertSettings(PropertyGroup):
     )
     # Limit resolution that auto resize files should not go below.
     resize_textures_limit: EnumProperty(
-        name="Resize Min.",
+        name="Min. Resolution",
         description="Set minimum image texture resolution for auto file size not to go below. Images will not be upscaled",
         items=[
             ("8192", "8192", "Square aspect ratio", 1),
