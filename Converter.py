@@ -1914,153 +1914,145 @@ def decimate_objects():
 
     except Exception as Argument:
         logging.exception("COULD NOT DECIMATE OBJECTS")
-		
 
-# Automatically try to resize the exported file (only works for export_file_1)
+
+# Auto resize premise: Get maximum image texture dimensions to use as a starting point for resizing textures.
+def get_texture_resolution_maximum():
+    resolution_list = []
+    for image in bpy.data.images:
+        width, height = image.size
+        resolution_list.append(width)
+        resolution_list.append(height)  # Check both in case non-square textures are used.
+    
+    texture_resolution_maximum = max(resolution_list)
+    return texture_resolution_maximum
+
+
+# Auto resize method: Draco-Compress
+def draco_compress_and_export(export_file_1, export_file_2):
+    if "Draco-Compress" in file_size_methods and export_file_1_ext == ".glb":
+        print("#################  Draco-Compress  #################")
+        logging.info("#################  Draco-Compress  #################")
+        export_file_1_options["export_draco_mesh_compression_enable"] = True
+        
+        # Determine how many 3D files to export, then export.
+        export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+
+# Auto resize method: Resize textures
+def resize_textures_and_export(export_file_1, export_file_2, texture_resolution_current):
+    if "Resize Textures" in file_size_methods:
+        if texture_resolution_current / 2 >= resize_textures_limit:
+            print("#################  Resize Textures  #################")
+            logging.info("#################  Resize Textures  #################")
+            texture_resolution_current = int(texture_resolution_current / 2)
+            # Resize textures (again) and re-export.
+            resize_textures(texture_resolution = texture_resolution_current, texture_resolution_include = texture_resolution_include)
+
+            # Determine how many 3D files to export, then export.
+            export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+        
+        elif texture_resolution_current / 2 < resize_textures_limit:
+            print("#################  Resize Textures  #################")
+            logging.info("#################  Resize Textures  #################")
+            print("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
+            logging.info("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
+
+    # Return current resolution.
+    return texture_resolution_current
+
+
+# Auto resize method: Reformat textures
+def reformat_textures_and_export(export_file_1, export_file_2):
+    if "Reformat Textures" in file_size_methods:
+        print("#################  Reformat Textures  #################")
+        logging.info("#################  Reformat Textures  #################")
+        image_format = 'JPEG'
+        image_quality = 90
+        image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
+        convert_image_format(image_format, image_quality, image_format_include, textures_source)
+        
+        # Determine how many 3D files to export, then export.
+        export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+
+# Auto resize method: Decimate meshes
+def decimate_meshes_and_export(export_file_1, export_file_2, decimate_counter, decimate_maximum):
+    if "Decimate Meshes" in file_size_methods:
+        if decimate_counter <= decimate_maximum:
+            print("#################  Decimate Meshes  #################")
+            logging.info("#################  Decimate Meshes  #################")
+            select_only_meshes()
+            decimate_objects()
+            select_all()
+
+            # Determine how many 3D files to export, then export.
+            export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+            decimate_counter += 1
+
+        elif decimate_counter > decimate_maximum:
+            print("#################  Decimate Meshes  #################")
+            logging.info("#################  Decimate Meshes  #################")
+            print("Decimation iteration maximum reached. Skipping Decimation.")
+            logging.info("Decimation iteration maximum reached. Skipping Decimation.")
+    
+    return decimate_counter
+
+
+# Automatically try to resize the exported file (only takes export_file_1 into account)
 def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2):
     try:
         # Get current file size (in MB)
         export_file_1_file_size = get_export_file_1_size(export_file_1)
-        # If texture_resolution was set to "'Default'", then assume the default is equal to 4096.
-        texture_resolution = 4096
-        texture_resolution_minimum = resize_textures_limit
+        texture_resolution_start = get_texture_resolution_maximum()  # Always start with largest existing resolution. That way resizing textures will always occur before reformatting.
+        texture_resolution_current = texture_resolution_start
         decimate_counter = 0
         decimate_maximum = decimate_limit
 
-        # Keep trying different methods until the file size is less than target.
-        while export_file_1_file_size > file_size_maximum and texture_resolution > texture_resolution_minimum:
+        while export_file_1_file_size > file_size_maximum:
             print("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
             logging.info("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
-            # Check if file size is below maximum before moving on.
+            
+            # 1. Draco
+            draco_compress_and_export(export_file_1, export_file_2)
+            # check
+            export_file_1_file_size = get_export_file_1_size(export_file_1)
+            if export_file_1_file_size < file_size_maximum:
+                break
+
+            # 2. Resize
+            texture_resolution_current = resize_textures_and_export(export_file_1, export_file_2, texture_resolution_current)
+            # check
+            export_file_1_file_size = get_export_file_1_size(export_file_1)
+            if export_file_1_file_size < file_size_maximum:
+                break
+           
+            # 3. Reformat
+            reformat_textures_and_export(export_file_1, export_file_2)
+            # check
+            export_file_1_file_size = get_export_file_1_size(export_file_1)
+            if export_file_1_file_size < file_size_maximum:
+                break
+
+            # (4.) Decimate
+            decimate_counter = decimate_meshes_and_export(export_file_1, export_file_2, decimate_counter, decimate_maximum)
+            # check
+            export_file_1_file_size = get_export_file_1_size(export_file_1)
             if export_file_1_file_size < file_size_maximum:
                 break
             
-            elif export_file_1_file_size > file_size_maximum:
-                # Draco compression.
-                if "Draco-Compress" in file_size_methods and export_file_1_ext == ".glb":
-                    print("#################  Draco-Compress  #################")
-                    logging.info("#################  Draco-Compress  #################")
-                    export_file_1_options["export_draco_mesh_compression_enable"] = True
-                    
-                    # Determine how many 3D files to export, then export.
-                    export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-                    
-                    # Get current file size (in MB)
-                    export_file_1_file_size = get_export_file_1_size(export_file_1)
-                    
-                    # Check if file size is below maximum before moving on.
-                    if export_file_1_file_size < file_size_maximum:
-                        break
-                
-                # Resize textures.
-                if "Resize Textures" in file_size_methods:
-                    print("#################  Resize Textures  #################")
-                    logging.info("#################  Resize Textures  #################")
-                    texture_resolution = int(texture_resolution / 2)
-                    # Resize textures (again) and re-export.
-                    resize_textures(texture_resolution, texture_resolution_include)
-
-                # Determine how many 3D files to export, then export.
-                    export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-                    
-                    # Get current file size (in MB)
-                    export_file_1_file_size = get_export_file_1_size(export_file_1)
-                    
-                    # Check if file size is below maximum before moving on.
-                    if export_file_1_file_size < file_size_maximum:
-                        break
-
-                # If textures are resized to 2048 or less, try converting texture formats for all images except the normal map to JPEG's.
-                if "Reformat Textures" in file_size_methods and texture_resolution <= 2048:
-                    print("#################  Reformat Textures  #################")
-                    logging.info("#################  Reformat Textures  #################")
-                    image_format = 'JPEG'
-                    image_quality = 90
-                    image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
-                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
-                    
-                    # Determine how many 3D files to export, then export.
-                    export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-
-                    # Get current file size (in MB)
-                    export_file_1_file_size = get_export_file_1_size(export_file_1)
-
-                    # Check if file size is below maximum before moving on.
-                    if export_file_1_file_size < file_size_maximum:
-                        break
-                
-                # Try converting texture formats for all images except the normal map to JPEG's. Only do this once.
-                if "Reformat Textures" in file_size_methods and "Resize Textures" not in file_size_methods:
-                    print("#################  Reformat Textures  #################")
-                    logging.info("#################  Reformat Textures  #################")
-                    image_format = 'JPEG'
-                    image_quality = 90
-                    image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
-                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
-                    
-                    # Determine how many 3D files to export, then export.
-                    export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-
-                    # Get current file size (in MB)
-                    export_file_1_file_size = get_export_file_1_size(export_file_1)
-                    # Arbitrarily set texture_resolution below the minimum to exit the loop.
-                    texture_resolution = texture_resolution_minimum
-            
-                # Try Draco compression only once if this is the only filter selected.
-                if "Draco-Compress" in file_size_methods and export_file_1_ext == ".glb" and "Resize Textures" not in file_size_methods:
-                    print("#################  Draco-Compress  #################")
-                    logging.info("#################  Draco-Compress  #################")
-                    export_file_1_options["export_draco_mesh_compression_enable"] = True
-                    
-                    # Determine how many 3D files to export, then export.
-                    export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-                    
-                    # Get current file size (in MB)
-                    export_file_1_file_size = get_export_file_1_size(export_file_1)
-                    # Arbitrarily set texture_resolution below the minimum to exit the loop.
-                    texture_resolution = texture_resolution_minimum
-                
-                # If textures are resized to 2048 or less, try decimating up to 3 times.
-                if "Decimate Meshes" in file_size_methods and "Resize Textures" in file_size_methods and texture_resolution <= 2048:
-                    print("#################  Decimate Meshes  #################")
-                    logging.info("#################  Decimate Meshes  #################")
-                    select_only_meshes()
-                    decimate_objects()
-                    select_all()
-
-                    # Determine how many 3D files to export, then export.
-                    export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-                    export_file_1_file_size = get_export_file_1_size(export_file_1)
-                    
-                    decimate_counter += 1
-
-                    if export_file_1_file_size < file_size_maximum:
-                        break
-                    if decimate_counter >= decimate_maximum:
-                        # Arbitrarily set texture_resolution below the minimum to exit the loop after 3 decimations.
-                        texture_resolution = texture_resolution_minimum
-                        break
-
-                # Try decimating only thrice if this is the only filter selected.
-                if "Decimate Meshes" in file_size_methods and "Resize Textures" not in file_size_methods:
-                    print("#################  Decimate Meshes  #################")
-                    logging.info("#################  Decimate Meshes  #################")
-                    select_only_meshes()
-                    decimate_objects()
-                    select_all()
-
-                    # Determine how many 3D files to export, then export.
-                    export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-                    export_file_1_file_size = get_export_file_1_size(export_file_1)
-                    
-                    decimate_counter += 1
-                    
-                    if export_file_1_file_size < file_size_maximum:
-                        break
-                    if decimate_counter >= decimate_maximum:
-                        # Arbitrarily set texture_resolution below the minimum to exit the loop after 3 decimations.
-                        texture_resolution = texture_resolution_minimum
-                        break
+            # repeat unless all methods are exhausted
+            if "Resize Textures" not in file_size_methods and "Decimate Meshes" not in file_size_methods:
+                break
+            elif "Resize Textures" in file_size_methods and "Decimate Meshes" in file_size_methods:
+                if texture_resolution_current <= resize_textures_limit and decimate_counter >= decimate_maximum:
+                    break
+            if "Resize Textures" in file_size_methods and "Decimate Meshes" not in file_size_methods:
+                if texture_resolution_current <= resize_textures_limit:
+                    break
+            elif "Resize Textures" not in file_size_methods and "Decimate Meshes" in file_size_methods:
+                if decimate_counter >= decimate_maximum:
+                    break
 
         # Report on how the auto-resizing turned out.
         if export_file_1_file_size < file_size_maximum:
@@ -2069,13 +2061,174 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
         elif export_file_1_file_size > file_size_maximum:
             print("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
             logging.info("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
-
+        
         print("------------------------  AUTO-RESIZED EXPORTED FILES  ------------------------")
         logging.info("AUTO-RESIZED EXPORTED FILES")
 
     except Exception as Argument:
         logging.exception("COULD NOT AUTO-RESIZE EXPORTED FILES")
-		
+
+
+# # Automatically try to resize the exported file (only works for export_file_1)
+# def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2):
+#     try:
+#         # Get current file size (in MB)
+#         export_file_1_file_size = get_export_file_1_size(export_file_1)
+#         # If texture_resolution was set to "'Default'", then assume the default is equal to 4096.
+#         texture_resolution = 4096
+#         texture_resolution_minimum = resize_textures_limit
+#         decimate_counter = 0
+#         decimate_maximum = decimate_limit
+
+#         # Keep trying different methods until the file size is less than target.
+#         while export_file_1_file_size > file_size_maximum and texture_resolution > texture_resolution_minimum:
+#             print("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
+#             logging.info("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
+#             # Check if file size is below maximum before moving on.
+#             if export_file_1_file_size < file_size_maximum:
+#                 break
+            
+#             elif export_file_1_file_size > file_size_maximum:
+#                 # Draco compression.
+#                 if "Draco-Compress" in file_size_methods and export_file_1_ext == ".glb":
+#                     print("#################  Draco-Compress  #################")
+#                     logging.info("#################  Draco-Compress  #################")
+#                     export_file_1_options["export_draco_mesh_compression_enable"] = True
+                    
+#                     # Determine how many 3D files to export, then export.
+#                     export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+                    
+#                     # Get current file size (in MB)
+#                     export_file_1_file_size = get_export_file_1_size(export_file_1)
+                    
+#                     # Check if file size is below maximum before moving on.
+#                     if export_file_1_file_size < file_size_maximum:
+#                         break
+                
+#                 # Resize textures.
+#                 if "Resize Textures" in file_size_methods:
+#                     print("#################  Resize Textures  #################")
+#                     logging.info("#################  Resize Textures  #################")
+#                     texture_resolution = int(texture_resolution / 2)
+#                     # Resize textures (again) and re-export.
+#                     resize_textures(texture_resolution, texture_resolution_include)
+
+#                 # Determine how many 3D files to export, then export.
+#                     export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+                    
+#                     # Get current file size (in MB)
+#                     export_file_1_file_size = get_export_file_1_size(export_file_1)
+                    
+#                     # Check if file size is below maximum before moving on.
+#                     if export_file_1_file_size < file_size_maximum:
+#                         break
+
+#                 # If textures are resized to 2048 or less, try converting texture formats for all images except the normal map to JPEG's.
+#                 if "Reformat Textures" in file_size_methods and texture_resolution <= 2048:
+#                     print("#################  Reformat Textures  #################")
+#                     logging.info("#################  Reformat Textures  #################")
+#                     image_format = 'JPEG'
+#                     image_quality = 90
+#                     image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
+#                     convert_image_format(image_format, image_quality, image_format_include, textures_source)
+                    
+#                     # Determine how many 3D files to export, then export.
+#                     export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+#                     # Get current file size (in MB)
+#                     export_file_1_file_size = get_export_file_1_size(export_file_1)
+
+#                     # Check if file size is below maximum before moving on.
+#                     if export_file_1_file_size < file_size_maximum:
+#                         break
+                
+#                 # Try converting texture formats for all images except the normal map to JPEG's. Only do this once.
+#                 if "Reformat Textures" in file_size_methods and "Resize Textures" not in file_size_methods:
+#                     print("#################  Reformat Textures  #################")
+#                     logging.info("#################  Reformat Textures  #################")
+#                     image_format = 'JPEG'
+#                     image_quality = 90
+#                     image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
+#                     convert_image_format(image_format, image_quality, image_format_include, textures_source)
+                    
+#                     # Determine how many 3D files to export, then export.
+#                     export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+#                     # Get current file size (in MB)
+#                     export_file_1_file_size = get_export_file_1_size(export_file_1)
+#                     # Arbitrarily set texture_resolution below the minimum to exit the loop.
+#                     texture_resolution = texture_resolution_minimum
+            
+#                 # Try Draco compression only once if this is the only filter selected.
+#                 if "Draco-Compress" in file_size_methods and export_file_1_ext == ".glb" and "Resize Textures" not in file_size_methods:
+#                     print("#################  Draco-Compress  #################")
+#                     logging.info("#################  Draco-Compress  #################")
+#                     export_file_1_options["export_draco_mesh_compression_enable"] = True
+                    
+#                     # Determine how many 3D files to export, then export.
+#                     export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+                    
+#                     # Get current file size (in MB)
+#                     export_file_1_file_size = get_export_file_1_size(export_file_1)
+#                     # Arbitrarily set texture_resolution below the minimum to exit the loop.
+#                     texture_resolution = texture_resolution_minimum
+                
+#                 # If textures are resized to 2048 or less, try decimating up to 3 times.
+#                 if "Decimate Meshes" in file_size_methods and "Resize Textures" in file_size_methods and texture_resolution <= 2048:
+#                     print("#################  Decimate Meshes  #################")
+#                     logging.info("#################  Decimate Meshes  #################")
+#                     select_only_meshes()
+#                     decimate_objects()
+#                     select_all()
+
+#                     # Determine how many 3D files to export, then export.
+#                     export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+#                     export_file_1_file_size = get_export_file_1_size(export_file_1)
+                    
+#                     decimate_counter += 1
+
+#                     if export_file_1_file_size < file_size_maximum:
+#                         break
+#                     if decimate_counter >= decimate_maximum:
+#                         # Arbitrarily set texture_resolution below the minimum to exit the loop after 3 decimations.
+#                         texture_resolution = texture_resolution_minimum
+#                         break
+
+#                 # Try decimating only thrice if this is the only filter selected.
+#                 if "Decimate Meshes" in file_size_methods and "Resize Textures" not in file_size_methods:
+#                     print("#################  Decimate Meshes  #################")
+#                     logging.info("#################  Decimate Meshes  #################")
+#                     select_only_meshes()
+#                     decimate_objects()
+#                     select_all()
+
+#                     # Determine how many 3D files to export, then export.
+#                     export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+#                     export_file_1_file_size = get_export_file_1_size(export_file_1)
+                    
+#                     decimate_counter += 1
+                    
+#                     if export_file_1_file_size < file_size_maximum:
+#                         break
+#                     if decimate_counter >= decimate_maximum:
+#                         # Arbitrarily set texture_resolution below the minimum to exit the loop after 3 decimations.
+#                         texture_resolution = texture_resolution_minimum
+#                         break
+
+#         # Report on how the auto-resizing turned out.
+#         if export_file_1_file_size < file_size_maximum:
+#             print("Exported model is now below the specified maximum.")
+#             logging.info("Exported model is now below the specified maximum.")
+#         elif export_file_1_file_size > file_size_maximum:
+#             print("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
+#             logging.info("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
+
+#         print("------------------------  AUTO-RESIZED EXPORTED FILES  ------------------------")
+#         logging.info("AUTO-RESIZED EXPORTED FILES")
+
+#     except Exception as Argument:
+#         logging.exception("COULD NOT AUTO-RESIZE EXPORTED FILES")
+
 
 # Determine where textures should be sourced, then texture the model.
 def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):

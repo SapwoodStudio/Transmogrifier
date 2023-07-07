@@ -1669,7 +1669,6 @@ class BatchConvertSettings(PropertyGroup):
             ("512", "512", "Square aspect ratio", 5),
             ("256", "256", "Square aspect ratio", 6),
             ("128", "128", "Square aspect ratio", 7),
-            ("64", "64", "Square aspect ratio", 8),
         ],
         default="512",
     )
