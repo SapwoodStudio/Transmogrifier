@@ -36,7 +36,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/6429a930-903f-426b-a8d1-7bc662f4794c" height="700">
 
-_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/))._
+_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)). The scenarios shown depend on whether the selected import or export formats support textures._
 
 ## BENEFITS 🎁
 
@@ -92,6 +92,8 @@ Transmogrifier can detect the presence of multiple image texture sets and non-de
 
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c261ea84-65ba-4c2c-89b2-02e7ca65629b" width="700">
+
+_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)). The scenarios shown depend on whether the selected import or export formats support textures._
 
 
 #### Resolution:
