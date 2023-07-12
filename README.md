@@ -33,6 +33,11 @@ A Blender addon for batch converting 3D files and associated textures into other
 3. **Set up export settings** as described in the [Features](#features-) section below. (_Optional: to save current settings for later use, save the current .blend file_)
 4. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation.
 
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/6429a930-903f-426b-a8d1-7bc662f4794c" height="700">
+
+_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/))._
+
 ## BENEFITS 🎁
 
 - ⏳ **Saves Time**. Automates the boring stuff so you can focus on creating instead of converting. 
@@ -77,12 +82,16 @@ Transmogrifier can detect the presence of multiple image texture sets and non-de
 
 #### Source:
 - **External**: image textures nearby the imported model
-  - inside a "textures" subfolder
+  - in a "textures" subfolder
+  - in "[texture set]" subfolders inside a "textures" subfolder
   - in the same directory as the imported 3D file
 - **Packed**: image textures packed into the imported file (e.g. GLB or USDZ)
 - **Custom**: image textures from a custom directory, which will be applied to all models converted.
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/101e287b-11b9-4728-b347-9b4434003a6e" width="350">
+
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c261ea84-65ba-4c2c-89b2-02e7ca65629b" width="700">
 
 
 #### Resolution:
