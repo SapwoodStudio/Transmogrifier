@@ -12,27 +12,35 @@ A Blender addon for batch converting 3D files and associated textures into other
 ## INSTALLATION 📥
 0. Prerequisites: [Blender 3.6](https://www.blender.org/download/) and Windows. (Transmogrifier may work on GNU/Linux and MacOS, but this has not been tested).
 1. [Download the latest version](https://github.com/SapwoodStudio/Transmogrifier/releases/latest). Select the .zip file with the version number at the end (e.g. "Transmogrifier-**v1.0.0**), not the ones named "Source Code".
-
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/48dec91c-8ca4-42d0-83c8-db54ee7d473a" width="250">
-
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/48dec91c-8ca4-42d0-83c8-db54ee7d473a" width="250">
 
 2. Install the addon, [like this](https://www.youtube.com/watch?v=vYh1qh9y1MI).
 3. Choose where to display the addon menu in Blender.
-
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/ef4212ea-9ad7-455f-97e4-26de81a6070f" height="350">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/ef4212ea-9ad7-455f-97e4-26de81a6070f" height="350">
 
 
 4. (_Optional_) Copy example export presets and a studiolight, "[neutral.hdr](https://github.com/google/model-viewer/blob/master/packages/shared-assets/environments/neutral.hdr)", to local Blender preferences directory. The studiolight is used for rendering preview image thumbnails of converted models.
-
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/08b3569f-4f0d-4524-82fe-4c80ac902c72" height="350">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/08b3569f-4f0d-4524-82fe-4c80ac902c72" height="350">
 
 
 ## USAGE 🏭
-1. **Set the 3D file format** to be imported and converted.
-2. **Select a directory** containing 3D files of the chosen format or a parent directory containing an arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
-3. **Set up export settings** as described in the [Features](#features-) section below. (_Optional: to save current settings for later use, save the current .blend file_)
-4. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation.
+1. **Select the 3D file format** to be imported and converted.
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5e7af679-1536-41cc-87d7-a8b2c4885985" width="250">
 
+3. **Select a directory** containing 3D files of the chosen format inside, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/8690027d-fcbc-42c9-af9f-be0d11b53a12" width="250">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/46975114-4e36-4cdc-be0a-8d4559aafc11" width="600">
+
+
+4. **Set up export settings** as described in the [Features](#features-) section below. (_Optional: to save current settings for later use, save the current .blend file_)
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4f788690-44fe-4f88-9b43-756728f08087" width="250">
+
+5. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation. After the conversion finishes, the greyed-out Blender window and console will disappear and the original Blender instance will report how many files were converted.
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/9f1f804e-e0d2-4963-9a19-935a413bac41" width="600">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/90cc4699-137c-4c69-bf8d-dd887d2cae61" width="350">
+
+
+## HOW IT WORKS ⚙
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/6429a930-903f-426b-a8d1-7bc662f4794c" height="700">
 
