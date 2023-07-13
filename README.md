@@ -54,7 +54,7 @@ _Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativeco
 - ⏳ **Saves Time**. Automates the boring stuff so you can focus on creating instead of converting. 
 - 🛡️ **Private and Secure**. Runs offline/locally. No account needed.
 - ⚓ **Non-Destructive**. Original files are preserved (unless converting between the same formats).
-- 🔓 **Open Source**. View, modify, and share the code freely. 
+- 🔓 **Open Source/Licensed-Free**. View, modify, and share the code freely. 
 - 🆓 **Free**. No paywall, no trial, no strings attached.
 
 ## FEATURES ✨
