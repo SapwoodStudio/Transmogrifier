@@ -3,7 +3,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/8b9ad32e-51cd-4009-8908-4597bb2fa5f1" width="450">
 
-[Installation](#installation-) **·** [Usage](#usage-) **·** [Benefits](#benefits-) **·** [Features](#features-) **·** [Credits](#credits-)
+[Installation](#installation-) 📥 **·** [Usage](#usage-) 🏭 **·** [How it Works](#how-it-works-) ⚙ **·** [Benefits](#benefits-) 🎁 **·** [Features](#features-) ✨ **·** [Credits](#credits-) 🙏
 
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5592793d-f7d9-4c1a-bad1-86da4d4657ba" height="1000">
@@ -41,10 +41,13 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 
 ## HOW IT WORKS ⚙
+Transmogrifier works by searching through a given directory for files ending with the extension of the format selected. When it finds a file, it clears out all the current data blocks in the scene, imports the file, imports the associated textures, creates material(s), assigns that/those material(s) to the object(s) in the scene, and exports the model in the new format specified. If Auto File Resizing is turned on, Transmogrifier will then check the exported file's size and attempt to resize the file. The process then repeats until it has converted all files of the specified import format in the given directory.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/6429a930-903f-426b-a8d1-7bc662f4794c" height="700">
+The diagram below shows the general process and the variety of ways in which Transmogrifier can convert models with respect to available textures and the chosen import and export formats. Each gray box with rounded corners indicates a directory/folder.
 
-_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)). The scenarios shown depend on whether the selected import or export formats support textures._
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/8ece50f5-dc28-4c2c-9a6a-0161e01b7abc" height="700">
+
+_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/))._
 
 ## BENEFITS 🎁
 
@@ -101,7 +104,7 @@ Transmogrifier can detect the presence of multiple image texture sets and non-de
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c261ea84-65ba-4c2c-89b2-02e7ca65629b" width="700">
 
-_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)). The scenarios shown depend on whether the selected import or export formats support textures._
+_Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)). The scenarios shown depend on whether the selected import or export formats support textures. Each gray box with rounded corners indicates a directory/folder._
 
 
 #### Resolution:
