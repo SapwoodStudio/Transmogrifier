@@ -535,11 +535,11 @@ def find_replace_pbr_tag(texture):
         pbr_dict = {
             'B?ase*\s?_?C?olou?r|A?lbedo|D?iffuse|D?iff|col': 'BaseColor',
             'sss|S?ubsurface': 'Subsurface',
-            'M?etall?ic|M?etalness?|mtl|M?etaln.*': 'Metallic', 
+            'M?etall?ic|M?etalness?|M?etaln.*|metal|mtl': 'Metallic', 
             'S?pecul.*': 'Specular',
             'R?ou?gh|R?ou?ghness|rgh': 'Roughness',
             'G?loss.*': 'Gloss',
-            'N?ormal|N?orm|nrm|nrml': 'Normal',
+            'N?ormal|norm|nor|nrm|nrml': 'Normal',
             'B?ump|bmp': 'Bump',
             'D?ispl.*|dsp|H?eight|H?eightmap': 'Height',
             'T?ransmission|transmiss|trnsmss|T?ransm.*': 'Transmission',
