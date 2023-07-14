@@ -157,6 +157,7 @@ def draw_settings(self, context):
     col.prop(settings, 'suffix')
     col = self.layout.column(align=True)
     col.prop(settings, 'set_data_names')
+    col.prop(settings, 'set_UV_map_names')
     
     self.layout.use_property_split = True
     self.layout.separator()
@@ -436,6 +437,7 @@ def write_json(
     prefix, 
     suffix, 
     set_data_names, 
+    set_UV_map_names, 
     import_file_ext, 
     import_file_command, 
     import_file_options, 
@@ -485,6 +487,7 @@ def write_json(
         "prefix": prefix,
         "suffix": suffix,
         "set_data_names": set_data_names, 
+        "set_UV_map_names": set_UV_map_names, 
         "import_file_ext": import_file_ext,
         "import_file_command": import_file_command,
         "import_file_options": import_file_options,
@@ -733,6 +736,7 @@ class TRANSMOGRIFY(Operator):
         prefix = settings.prefix
         suffix = settings.suffix
         set_data_names = settings.set_data_names
+        set_UV_map_names = settings.set_UV_map_names
         model_quantity = settings.model_quantity
         export_file_1_scale = settings.export_file_1_scale
         export_file_2_scale = settings.export_file_2_scale
@@ -1159,6 +1163,7 @@ class TRANSMOGRIFY(Operator):
             prefix, 
             suffix, 
             set_data_names, 
+            set_UV_map_names, 
             import_file_ext, 
             import_file_command, 
             import_file_options, 
@@ -1355,7 +1360,16 @@ class BatchConvertSettings(PropertyGroup):
         name="Data Names from Objects",
         description="Rename object data names according to their corresponding object names",
         default=True,
-    )    
+    )
+    # Set all UV map names to "UVMap". This prevents a material issue with USDZ's - when object A and object B share the same material, but their UV
+    # map names differ, the material has to pick one UVMap in the UV Map node inputs connected to each texture channel. So if object A's UV map is called
+    # "UVMap" but object B's UV map is called "UV_Channel", then the shared material may pick "UV_Channel" as the UV inputs, thus causing object A to appear
+    # untextured despite the fact that it shares the same material as object B.
+    set_UV_map_names: BoolProperty(
+        name="Rename UV Maps",
+        description="Set all UV Map names to 'UVMap'. Multiple UV maps within the same object will increment as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. This prevents an issue in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured",
+        default=True,
+    )
     # Option for how many models to export at a time.
     model_quantity: EnumProperty(
         name="Quantity",

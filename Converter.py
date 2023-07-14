@@ -48,6 +48,7 @@ def get_variables():
         global prefix 
         global suffix 
         global set_data_names 
+        global set_UV_map_names
         global import_file_ext 
         global import_file_command 
         global import_file_options 
@@ -106,6 +107,7 @@ def get_variables():
         prefix = variables_dict["prefix"]
         suffix = variables_dict["suffix"]
         set_data_names = variables_dict["set_data_names"]
+        set_UV_map_names = variables_dict["set_UV_map_names"]
         import_file_ext = variables_dict["import_file_ext"]
         import_file_command = variables_dict["import_file_command"]
         import_file_options = variables_dict["import_file_options"]
@@ -1625,6 +1627,41 @@ def data_name_from_object():
         logging.exception("COULD NOT SET DATA NAMES FROM OBJECTS")
 
 
+# Set all UV map names to "UVMap". This prevents a material issue with USDZ's - when object A and object B share the same material, but their UV
+# map names differ, the material has to pick one UVMap in the UV Map node inputs connected to each texture channel. So if object A's UV map is called
+# "UVMap" but object B's UV map is called "UV_Channel", then the shared material may pick "UV_Channel" as the UV inputs, thus causing object A to appear
+# untextured despite the fact that it shares the same material as object B.
+def rename_UV_maps():
+    try:
+        for obj in bpy.context.selected_objects:
+            uv_index = 1
+            # Loop through every UV map except the first one and rename as "UVMap_1", "UVMap_2", etc.
+            for uvmap in obj.data.uv_layers[1:]:
+                oldName = uvmap.name
+                uvmap.name = "UVMap_" + str(uv_index)
+                newName = uvmap.name
+                uv_index += 1
+
+                print("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
+                logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
+            
+            # Now go back to the first UV map and rename as "UVMap". If this was done first and another UV channel existed with that name, then the first UV channel would be named
+            # like "UV_Map.001" which is not desirable and may contain a character compatible with USD format or Maya (i.e. ".").
+            oldName = obj.data.uv_layers[0].name
+            obj.data.uv_layers[0].name = "UVMap"
+            newName = obj.data.uv_layers[0].name
+
+            print("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
+            logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
+                
+
+        print("------------------------  RENAMED UV MAPS  ------------------------")
+        logging.info("RENAMED UV MAPS")
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT RENAME UV MAPS")
+
+
 # Scale objects before exporting. Reset for each model if exporting 2 formats at once.
 def set_export_scale(scale):
     try:
@@ -2276,6 +2313,10 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Set data name from object name if requested by User.
         if set_data_names:
             data_name_from_object()
+
+        # Rename UV maps if requested by User.
+        if set_UV_map_names:
+            rename_UV_maps()
 
         # Save preview image.
         if save_preview_image:
