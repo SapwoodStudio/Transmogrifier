@@ -1348,6 +1348,60 @@ def rename_objects_by_material_prefixes():
         logging.exception("COULD NOT RENAME OBJECTS BY MATERIAL PREFIXES")
 		
 
+# Find and rename transparent materials that have mispellings of transparency with regex keys. Regex transparent materials to prepare for the next function, which deletes any opaque versions of those transparent materials by relying on "transparent" existing in the material name.
+def regex_transparent_materials():
+    try:
+        for material in bpy.data.materials:
+            material_name = material.name
+            components_original = split_into_components(material_name)
+            components = split_into_components(material_name)
+
+            for component in components:
+                transparency_tag_renamed = find_replace_transparency_tag(component)
+                if transparency_tag_renamed != None:
+                    transparency_tag_renamed = transparency_tag_renamed[0]
+                    print("Found a match for " + transparency_tag_renamed + ".")
+                    logging.info("Found a match for " + transparency_tag_renamed + ".")
+                    tag_index = components.index(component)
+                    components[tag_index] = transparency_tag_renamed
+
+            if components_original != components:
+                material_renamed = '_'.join(components)
+                material.name = material_renamed
+                print("Renamed " + str(material_name) + " to " + str(material_renamed))
+                logging.info("Renamed " + str(matrial_name) + " to " + str(material_renamed))
+                        
+            else:
+                print("No transparency tag match found for current material.")
+                logging.info("No transparency tag match found for current material.")
+
+        print("------------------------  REGEXED TRANSPARENT MATERIALS  ------------------------")
+        logging.info("REGEXED TRANSPARENT MATERIALS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT REGEX TRANSPARENT MATERIALS")
+
+
+# Remove opaque versions of transparent materials to avoid duplicate textures bug, which resulted in models converting untextured.
+def remove_opaque_material():
+    try:
+        transparent_material_list = [material.name for material in bpy.data.materials if "transparent" in material.name]
+        if transparent_material_list:
+            for material in transparent_material_list:
+                opaque_material_name = material.replace("_transparent", "")
+                if opaque_material_name in bpy.data.materials:
+                    opaque_material = bpy.data.materials[opaque_material_name]
+                    bpy.data.materials.remove(opaque_material)
+                    print("Removed " + opaque_material_name + " material data block.")
+                    logging.info("Removed " + opaque_material_name + " material data block.")
+
+        print("------------------------  REMOVED OPAQUE MATERIAL VERSION OF TRANSPARENT MATERIAL  ------------------------")
+        logging.info("REMOVED OPAQUE MATERIAL VERSION OF TRANSPARENT MATERIAL")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT REMOVE OPAQUE MATERIAL VERSION OF TRANSPARENT MATERIAL")
+
+
 # Rename the separated output images with something similar to the combined image name.
 def rename_output(image_texture_ext, image, image_name, add_tag, remove_tag_1, remove_tag_2, textures_temp_dir, output):
     try:
@@ -2157,6 +2211,12 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             # Make sure image textures have their material's prefix before unpacking to avoid any duplicate texture names if they were all lower-cased.
             rename_textures_packed(textures_temp_dir)
             
+            # Find and rename transparent materials that have mispellings of transparency with regex keys. Regex transparent materials to prepare for the next function, which deletes any opaque versions of those transparent materials by relying on "transparent" existing in the material name.
+            regex_transparent_materials()
+
+            # Remove opaque versions of transparent materials to avoid duplicate textures bug, which resulted in models converting untextured.
+            remove_opaque_material()
+
             # Delete any existing textures_temp_dir before unpacking.
             delete_textures_temp(textures_temp_dir)
 
