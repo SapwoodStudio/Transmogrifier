@@ -92,7 +92,7 @@ Set a custom prefix and/or suffix for every exported file. Synchronize object na
 Transmogrifier can detect the presence of multiple image texture sets and non-destructively modify them during the conversion process.
 
 #### Source:
-- **External**: image textures nearby the imported model
+- **External**: image textures nearby the imported model. 
   - in a "textures" subfolder
   - in "[texture set]" subfolders inside a "textures" subfolder
   - in the same directory as the imported 3D file
@@ -101,10 +101,20 @@ Transmogrifier can detect the presence of multiple image texture sets and non-de
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/101e287b-11b9-4728-b347-9b4434003a6e" width="350">
 
-
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c261ea84-65ba-4c2c-89b2-02e7ca65629b" width="700">
 
 _Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)). The scenarios shown depend on whether the selected import or export formats support textures. Each gray box with rounded corners indicates a directory/folder._
+
+
+There are three naming conventions that must be followed in order for textures to be properly imported, materials created, and materials assigned to the right objects.
+1. For "External" and "Custom" texture source and for models with more than one texture set present, a naming convention must be followed for Transmogrifier to correctly import and assign multiple texture sets to the proper objects. Simply ensure that the the **first word** before an underscore or another separator in the textures' and objects' names is 1) **distinct** between texture sets and 2) **consistent** between i.) each PBR image in each texture set and ii.) between the texture sets and the objects to which those textures should be applied (See second image below). As such, multiple materials per one object does not work. For "Packed" textures, Transmogrifier does this process automatically by inserting the exising materials' prefixes as prefixes to the names of their corresponding image textures and objects to which those materials are assigned. 
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5eddbac0-9eb0-4aa9-b28d-f660b681b76f" width="700">
+
+2. For "External" and "Custom" texture sources and for models with only one texture set present, the first rule doesn't matter because it is assumed that that texture set should be applied to all the objects in the scene. 
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4393055d-da1f-4787-a704-56ac2827df1e" width="700">
+
+3. For all texture sources, another rule exists for transparency. Objects that should appear transparent must have the word "transparent" present somewhere in their names. This indicates to Transmogrifier that it should duplicate the material as "[material]_transparent" and turn on "Alpha Blend" blending mode, then assign "[material]" to the opaque objects and "[material]_transparent" to the transparent objects. This convention works for multiple texture sets as well.
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/78ae1583-a459-432b-9779-33ddbf73069e" width="700">
 
 
 #### Resolution:
