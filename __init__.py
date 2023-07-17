@@ -156,6 +156,10 @@ def draw_settings(self, context):
     col.prop(settings, "directory_output_location")
     if settings.directory_output_location == "Custom":
         col.prop(settings, "directory_output_custom")
+        if settings.directory_output_custom:
+            col.prop(settings, "use_subdirectories")
+            if settings.use_subdirectories:
+                col.prop(settings, "copy_item_dir_contents")
     col.prop(settings, "model_quantity")
 
     # Align menu items to the right.
@@ -441,6 +445,8 @@ def write_json(
     import_file_options, 
     directory_output_location, 
     directory_output_custom, 
+    use_subdirectories, 
+    copy_item_dir_contents, 
     model_quantity, 
     export_file_1_ext, 
     export_file_1_command, 
@@ -493,6 +499,8 @@ def write_json(
         "import_file_options": import_file_options,
         "directory_output_location": directory_output_location, 
         "directory_output_custom": directory_output_custom, 
+        "use_subdirectories": use_subdirectories, 
+        "copy_item_dir_contents": copy_item_dir_contents, 
         "model_quantity": model_quantity, 
         "export_file_1_ext": export_file_1_ext,
         "export_file_1_command": export_file_1_command,
@@ -741,6 +749,8 @@ class TRANSMOGRIFY(Operator):
         # Assign user input to variables to be written to Converter_Variables.json
         directory_output_location = settings.directory_output_location
         directory_output_custom = settings.directory_output_custom
+        use_subdirectories = settings.use_subdirectories
+        copy_item_dir_contents = settings.copy_item_dir_contents
         model_quantity = settings.model_quantity
         export_file_1_scale = settings.export_file_1_scale
         export_file_2_scale = settings.export_file_2_scale
@@ -1173,6 +1183,8 @@ class TRANSMOGRIFY(Operator):
             import_file_options, 
             directory_output_location, 
             directory_output_custom, 
+            use_subdirectories, 
+            copy_item_dir_contents, 
             model_quantity, 
             export_file_1_ext, 
             export_file_1_command, 
@@ -1368,11 +1380,24 @@ class BatchConvertSettings(PropertyGroup):
         ],
         default="Adjacent",
     )
+    # Custom export directory
     directory_output_custom: StringProperty(
         name="Custom",
         description="Set a custom directory to which each converted model will be exported\nDefault of // will export to same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
+    )
+    # Option to export models to subdirectories in custom directory
+    use_subdirectories: BoolProperty(
+        name="Subdirectories",
+        description="Export models to their own subdirectories within the parent output custom directory",
+        default=False,
+    )
+    # Option to include only models or also copy original folder contents to custom directory
+    copy_item_dir_contents: BoolProperty(
+        name="Copy Original Contents",
+        description="Include original contents of each item's directory to its custom subdirectory",
+        default=False,
     )
     # Option for how many models to export at a time.
     model_quantity: EnumProperty(

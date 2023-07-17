@@ -45,13 +45,13 @@ def get_variables():
         # Make all variables global.
         global variables_dict
         global base_dir 
-        global prefix 
-        global suffix 
-        global set_data_names 
-        global set_UV_map_names
         global import_file_ext 
         global import_file_command 
         global import_file_options 
+        global directory_output_location 
+        global directory_output_custom 
+        global use_subdirectories
+        global copy_item_dir_contents
         global model_quantity 
         global export_file_1_ext 
         global export_file_1_command 
@@ -61,6 +61,10 @@ def get_variables():
         global export_file_2_command 
         global export_file_2_options 
         global export_file_2_scale 
+        global prefix 
+        global suffix 
+        global set_data_names 
+        global set_UV_map_names
         global use_textures 
         global regex_textures 
         global textures_source 
@@ -104,13 +108,13 @@ def get_variables():
                 conversion_count = 0
                 report_conversion_count(conversion_count)
                 quit_blender()
-        prefix = variables_dict["prefix"]
-        suffix = variables_dict["suffix"]
-        set_data_names = variables_dict["set_data_names"]
-        set_UV_map_names = variables_dict["set_UV_map_names"]
         import_file_ext = variables_dict["import_file_ext"]
         import_file_command = variables_dict["import_file_command"]
         import_file_options = variables_dict["import_file_options"]
+        directory_output_location = variables_dict["directory_output_location"]
+        directory_output_custom = variables_dict["directory_output_custom"]
+        use_subdirectories = variables_dict["use_subdirectories"]
+        copy_item_dir_contents = variables_dict["copy_item_dir_contents"]
         model_quantity = variables_dict["model_quantity"]
         export_file_1_ext = variables_dict["export_file_1_ext"]
         export_file_1_command = variables_dict["export_file_1_command"]
@@ -120,6 +124,10 @@ def get_variables():
         export_file_2_command = variables_dict["export_file_2_command"]
         export_file_2_options = variables_dict["export_file_2_options"]
         export_file_2_scale = variables_dict["export_file_2_scale"]
+        prefix = variables_dict["prefix"]
+        suffix = variables_dict["suffix"]
+        set_data_names = variables_dict["set_data_names"]
+        set_UV_map_names = variables_dict["set_UV_map_names"]        
         use_textures = variables_dict["use_textures"]
         regex_textures = variables_dict["regex_textures"]
         textures_source = variables_dict["textures_source"]
