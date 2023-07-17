@@ -170,7 +170,10 @@ def get_variables():
 def make_log_file():
     # Set path to log file with timestamp
     timestamp = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-    log_file = os.path.join(base_dir, "Transmogrifier_Log_" + timestamp + ".txt")
+    if directory_output_location == "Custom":
+        log_file = os.path.join(directory_output_custom, "Transmogrifier_Log_" + timestamp + ".txt")
+    elif directory_output_location != "Custom":
+        log_file = os.path.join(base_dir, "Transmogrifier_Log_" + timestamp + ".txt")
     
     # Create log file.
     logging.basicConfig(
@@ -2474,6 +2477,24 @@ def list_exports(export_file_1, export_file_2):
         logging.exception("COULD NOT LIST EXPORTS")
 
 
+# Move file from source to destination
+def move_files(directory, file_source):
+    try:
+        # Set destination based on custom output directory
+        file_destination = os.path.join(directory, os.path.basename(file_source))
+        # Remove any existing destination file
+        if os.path.isfile(file_destination):
+            os.remove(file_destination)
+        # Move file, if source exists
+        if os.path.isfile(file_source):
+            shutil.move(file_source, file_destination)
+            print("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
+            logging.info("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MOVE FILE")
+        
+
 # Main function that loops through specified directory and creates variables for the converter
 def batch_converter():
     try:
@@ -2511,7 +2532,7 @@ def batch_converter():
                     export_file_1 = os.path.join(subdir, prefix + item + suffix + export_file_1_ext)
                     export_file_2 = os.path.join(subdir, prefix + item + suffix + export_file_2_ext)
                     blend = os.path.join(subdir, prefix + item + suffix + ".blend")
-                    preview_image = os.path.join(subdir, prefix + item + suffix + '_Preview.png')
+                    preview_image = os.path.join(subdir, prefix + item + suffix + '_Preview.jpg')
 
                     # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
                     if auto_resize_files == "Only Above Max":
@@ -2561,6 +2582,47 @@ def batch_converter():
                         conversion_list.extend(exports_list)
 
                         conversion_count += 1
+
+                    # Now determine whether to copy/move contents to a custom directory
+                    if directory_output_location == "Custom":
+                        # Make the custom directory if it doesn't exist
+                        if not os.path.exists(directory_output_custom):
+                            os.makedirs(directory_output_custom)
+                        # Scenario 1: No subdirectories
+                        if not use_subdirectories:
+                            file_list = [export_file_1, export_file_2, blend, preview_image]
+                            for file in file_list:
+                                move_files(directory = directory_output_custom, file_source = file)
+                        if use_subdirectories:
+                            # Scenario 2: Subdirectories, no copy original item directory
+                            item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
+                            if not os.path.exists(item_dir_custom):
+                                os.makedirs(item_dir_custom)
+                            file_list = [export_file_1, export_file_2, blend, preview_image]
+                            for file in file_list:
+                                move_files(directory = item_dir_custom, file_source = file)
+                            
+                            # Scenario 3: Subdirectories, copy original item directory
+                            if use_subdirectories and copy_item_dir_contents:
+                                # Copy leftover/original subfolders and files
+                                for file in os.listdir(item_dir):
+                                    # Copy subfolders
+                                    if os.path.isdir(os.path.join(item_dir, file)):
+                                        file_custom = os.path.join(item_dir_custom, file)
+                                        file = os.path.join(item_dir, file)
+                                        if os.path.exists(file_custom):
+                                            shutil.rmtree(file_custom)
+                                        shutil.copytree(file, file_custom)
+                                        print("Copied " + str(file) + " to " + str(item_dir_custom))
+                                        logging.info("Copied " + str(file) + " to " + str(item_dir_custom))
+                                    # Copy files
+                                    else:
+                                        file_custom = os.path.join(item_dir_custom, file)
+                                        file = os.path.join(item_dir, file)
+                                        shutil.copy(file, file_custom)
+                                        print("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
+                                        logging.info("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
+
 
                 else:
                     continue
