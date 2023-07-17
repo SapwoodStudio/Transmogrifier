@@ -117,6 +117,8 @@ def draw_settings(self, context):
     self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="IMPORT SETTINGS:", icon='IMPORT')
+    # Directory input
+    col.prop(settings, 'directory')
     col.prop(settings, 'import_file')
     # self.layout.separator()
     # col = self.layout.column()
@@ -142,27 +144,18 @@ def draw_settings(self, context):
     elif settings.import_file == 'X3D':
         col.prop(settings, 'import_x3d_preset_enum')
 
-    # Directory input
-    col.prop(settings, 'directory')
 
 
     # Export Settings
     self.layout.separator()
-    self.layout.separator()
+    # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="EXPORT SETTINGS:", icon='EXPORT')
-    col.label(text="Name:", icon='SORTALPHA')
-    col = self.layout.column(align=True)
-    col.prop(settings, 'prefix')
-    col.prop(settings, 'suffix')
-    col = self.layout.column(align=True)
-    col.prop(settings, 'set_data_names')
-    col.prop(settings, 'set_UV_map_names')
     
-    self.layout.use_property_split = True
-    self.layout.separator()
-    col = self.layout.column(align=True)
-    col.label(text="Models:", icon='OUTLINER_OB_MESH')
+    # col.label(text="Models:", icon='OUTLINER_OB_MESH')
+    col.prop(settings, "directory_output_location")
+    if settings.directory_output_location == "Custom":
+        col.prop(settings, "directory_output_custom")
     col.prop(settings, "model_quantity")
 
     # Align menu items to the right.
@@ -170,9 +163,8 @@ def draw_settings(self, context):
 
     if settings.model_quantity == "2 Formats":
         # File Format 1
-        self.layout.separator()
         col = self.layout.column(align=True)
-        col.label(text="Format 1:", icon='TRIA_RIGHT')
+        col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_1')
 
         if settings.export_file_1 == 'DAE':
@@ -207,11 +199,11 @@ def draw_settings(self, context):
         # Set scale
         col = self.layout.column(align=True)
         col.prop(settings, 'export_file_1_scale')
-        self.layout.separator()
+        # self.layout.separator()
 
         # File Format 2
         col = self.layout.column(align=True)
-        col.label(text="Format 2:", icon='TRIA_RIGHT')
+        col.label(text="Format 2:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_2')
         col.prop(settings, 'mode')
 
@@ -247,14 +239,12 @@ def draw_settings(self, context):
         # Set scale
         col = self.layout.column(align=True)
         col.prop(settings, 'export_file_2_scale')
-        self.layout.separator()
 
 
     elif settings.model_quantity == "1 Format":
         # File Format 1
-        self.layout.separator()
         col = self.layout.column(align=True)
-        col.label(text="Format 1:", icon='TRIA_RIGHT')
+        col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_1')
         col.prop(settings, 'mode')
 
@@ -290,10 +280,22 @@ def draw_settings(self, context):
         # Set scale
         col = self.layout.column(align=True)
         col.prop(settings, 'export_file_1_scale')
-        self.layout.separator()
+        # self.layout.sepaqrator()
         
     else:
         self.layout.separator()
+
+
+    col = self.layout.column(align=True)
+
+    # Name Settings
+    col.label(text="Names:", icon='SORTALPHA')
+    col = self.layout.column(align=True)
+    col.prop(settings, 'prefix')
+    col.prop(settings, 'suffix')
+    col = self.layout.column(align=True)
+    col.prop(settings, 'set_data_names')
+    col.prop(settings, 'set_UV_map_names')
 
     # Texture Settings
     # Align menu items to the left.
@@ -434,13 +436,11 @@ def draw_popover(self, context):
 # Write user variables to a JSON file.
 def write_json(
     base_dir, 
-    prefix, 
-    suffix, 
-    set_data_names, 
-    set_UV_map_names, 
     import_file_ext, 
     import_file_command, 
     import_file_options, 
+    directory_output_location, 
+    directory_output_custom, 
     model_quantity, 
     export_file_1_ext, 
     export_file_1_command, 
@@ -450,6 +450,10 @@ def write_json(
     export_file_2_command, 
     export_file_2_options, 
     export_file_2_scale, 
+    prefix, 
+    suffix, 
+    set_data_names, 
+    set_UV_map_names, 
     use_textures, 
     regex_textures, 
     textures_source, 
@@ -484,13 +488,11 @@ def write_json(
     # Data to be written
     variables_dict = {
         "base_dir": base_dir,
-        "prefix": prefix,
-        "suffix": suffix,
-        "set_data_names": set_data_names, 
-        "set_UV_map_names": set_UV_map_names, 
         "import_file_ext": import_file_ext,
         "import_file_command": import_file_command,
         "import_file_options": import_file_options,
+        "directory_output_location": directory_output_location, 
+        "directory_output_custom": directory_output_custom, 
         "model_quantity": model_quantity, 
         "export_file_1_ext": export_file_1_ext,
         "export_file_1_command": export_file_1_command,
@@ -500,6 +502,10 @@ def write_json(
         "export_file_2_command": export_file_2_command,
         "export_file_2_options": export_file_2_options,
         "export_file_2_scale": export_file_2_scale, 
+        "prefix": prefix,
+        "suffix": suffix,
+        "set_data_names": set_data_names, 
+        "set_UV_map_names": set_UV_map_names, 
         "use_textures": use_textures, 
         "regex_textures": regex_textures, 
         "textures_source": textures_source, 
@@ -733,13 +739,15 @@ class TRANSMOGRIFY(Operator):
         transmogrifier_dir = pathlib.Path(__file__).parent.resolve()
 
         # Assign user input to variables to be written to Converter_Variables.json
+        directory_output_location = settings.directory_output_location
+        directory_output_custom = settings.directory_output_custom
+        model_quantity = settings.model_quantity
+        export_file_1_scale = settings.export_file_1_scale
+        export_file_2_scale = settings.export_file_2_scale
         prefix = settings.prefix
         suffix = settings.suffix
         set_data_names = settings.set_data_names
         set_UV_map_names = settings.set_UV_map_names
-        model_quantity = settings.model_quantity
-        export_file_1_scale = settings.export_file_1_scale
-        export_file_2_scale = settings.export_file_2_scale
         use_textures = settings.use_textures
         regex_textures = settings.regex_textures
 
@@ -1160,13 +1168,11 @@ class TRANSMOGRIFY(Operator):
         # Write variables to JSON file before running converter
         write_json(
             base_dir, 
-            prefix, 
-            suffix, 
-            set_data_names, 
-            set_UV_map_names, 
             import_file_ext, 
             import_file_command, 
             import_file_options, 
+            directory_output_location, 
+            directory_output_custom, 
             model_quantity, 
             export_file_1_ext, 
             export_file_1_command, 
@@ -1176,6 +1182,10 @@ class TRANSMOGRIFY(Operator):
             export_file_2_command, 
             export_file_2_options, 
             export_file_2_scale, 
+            prefix, 
+            suffix, 
+            set_data_names, 
+            set_UV_map_names, 
             use_textures, 
             regex_textures, 
             textures_source, 
@@ -1230,6 +1240,12 @@ class TRANSMOGRIFY(Operator):
 # Groups together all the addon settings that are saved in each .blend file
 class BatchConvertSettings(PropertyGroup):
     # Import Settings
+    directory: StringProperty(
+        name="Directory",
+        description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
+        default="//",
+        subtype='DIR_PATH',
+    )
     import_file: EnumProperty(
         name="Format",
         description="Which file format to import",
@@ -1340,12 +1356,34 @@ class BatchConvertSettings(PropertyGroup):
             self, 'import_x3d_preset', preset_enum_items_refs['import_scene.x3d'][value][0]),
     )
 
-    # Export options:
-    directory: StringProperty(
+
+    # Export Settings:
+    # Option for to where models should be exported.
+    directory_output_location: EnumProperty(
         name="Directory",
-        description="Which folder to place the exported files\nDefault of // will export to same directory as the blend file (only works if the blend file is saved)",
+        description="Select where models should be exported.",
+        items=[
+            ("Adjacent", "Adjacent", "Export each converted model to the same directory from which it was imported", 1),
+            ("Custom", "Custom", "Export each converted model to a custom directory", 2),
+        ],
+        default="Adjacent",
+    )
+    directory_output_custom: StringProperty(
+        name="Custom",
+        description="Set a custom directory to which each converted model will be exported\nDefault of // will export to same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
+    )
+    # Option for how many models to export at a time.
+    model_quantity: EnumProperty(
+        name="Quantity",
+        description="Choose whether to export one, two, or no model formats at a time",
+        items=[
+            ("1 Format", "1 Format", "Export one 3D model format for every model imported", 1),
+            ("2 Formats", "2 Formats", "Export two 3D model formats for every model imported", 2),
+            ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
+        ],
+        default="1 Format",
     )
     prefix: StringProperty(
         name="Prefix",
@@ -1369,17 +1407,6 @@ class BatchConvertSettings(PropertyGroup):
         name="Rename UV Maps",
         description="Set all UV Map names to 'UVMap'. Multiple UV maps within the same object will increment as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. This prevents an issue in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured",
         default=True,
-    )
-    # Option for how many models to export at a time.
-    model_quantity: EnumProperty(
-        name="Quantity",
-        description="Choose whether to export one, two, or no model formats at a time",
-        items=[
-            ("1 Format", "1 Format", "Export one 3D model format for every model imported", 1),
-            ("2 Formats", "2 Formats", "Export two 3D model formats for every model imported", 2),
-            ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
-        ],
-        default="1 Format",
     )
     use_textures: BoolProperty(
         name="Use Textures", 
