@@ -2498,20 +2498,83 @@ def move_file(directory, file_source):
         logging.exception("COULD NOT MOVE FILE")
 
 
-# Determine whether to convert a model before importing in order to save time.
+# Move and or copy files from item directory to custom directory specified by the User.
+def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image):
+    try:
+        # Make the custom directory if it doesn't exist
+        if not os.path.exists(directory_output_custom):
+            os.makedirs(directory_output_custom)
+        # Scenario 1: No subdirectories
+        if not use_subdirectories:
+            file_list = [export_file_1, export_file_2, blend, preview_image]
+            for file in file_list:
+                move_file(directory = directory_output_custom, file_source = file)
+        
+        if use_subdirectories:
+            # Scenario 2: Subdirectories, no copy original item directory
+            item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
+            if not os.path.exists(item_dir_custom):
+                os.makedirs(item_dir_custom)
+            file_list = [export_file_1, export_file_2, blend, preview_image]
+            for file in file_list:
+                move_file(directory = item_dir_custom, file_source = file)
+            
+            # Scenario 3: Subdirectories, copy original item directory
+            if use_subdirectories and copy_item_dir_contents:
+                # Copy leftover/original subfolders and files
+                for file in os.listdir(item_dir):
+                    # Copy subfolders
+                    if os.path.isdir(os.path.join(item_dir, file)):
+                        file_custom = os.path.join(item_dir_custom, file)
+                        file = os.path.join(item_dir, file)
+                        if os.path.exists(file_custom):
+                            shutil.rmtree(file_custom)
+                        shutil.copytree(file, file_custom)
+                        print("Copied " + str(file) + " to " + str(item_dir_custom))
+                        logging.info("Copied " + str(file) + " to " + str(item_dir_custom))
+                    # Copy files
+                    else:
+                        file_custom = os.path.join(item_dir_custom, file)
+                        file = os.path.join(item_dir, file)
+                        shutil.copy(file, file_custom)
+                        print("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
+                        logging.info("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
+        
+        print("------------------------  MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY  ------------------------")
+        logging.info("MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MOVE/COPY ITEMS TO CUSTOM OUTPUT DIRECTORY")
+        
+
+# Determine whether to import a model before converting in order to save time.
 def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list):
     try:
         # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
         if auto_resize_files == "Only Above Max":
             # Get current file size (in MB) in order to determine whether to import the current item at all.
-            export_file_1_file_size = get_export_file_1_size(export_file_1)
+            # Get current file size (in MB) of export_file_1 in the custom location
+            if directory_output_location == "Custom":
+                if use_subdirectories:
+                    item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
+                    export_file_1_custom = os.path.join(item_dir_custom, os.path.basename(export_file_1))
+                    export_file_1_file_size = get_export_file_1_size(export_file_1_custom)
+                else:    
+                    export_file_1_custom = os.path.join(directory_output_custom, os.path.basename(export_file_1))
+                    export_file_1_file_size = get_export_file_1_size(export_file_1_custom)
+            # Get current file size (in MB) of export_file_1 in adjacent locations
+            else: 
+                export_file_1_file_size = get_export_file_1_size(export_file_1)
 
             # If export_file_1 exists and is above maximum when auto_resize_files is set to "Only Above Max", convert item.
             if export_file_1_file_size > file_size_maximum:
                 print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+                if directory_output_location == "Custom":
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -2530,7 +2593,10 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 print("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+                if directory_output_location == "Custom":
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -2543,7 +2609,10 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             print("Initiating converter for " + str(item) + ".")
             logging.info("Initiating converter for " + str(item) + ".")
             # Run the converter on the item that was found.
-            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+            # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+            if directory_output_location == "Custom":
+                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
             # Increment conversion counter and add converted item(s) to list.
             exports_list = list_exports(export_file_1, export_file_2)
             # Add export(s) to conversion list.
@@ -2597,50 +2666,8 @@ def batch_converter():
                     blend = os.path.join(subdir, prefix + item + suffix + ".blend")
                     preview_image = os.path.join(subdir, prefix + item + suffix + '_Preview.jpg')
 
+                    # Determine which models to import, then convert the ones that are eligible for import.
                     conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list)
-
-                    
-
-                    # Now determine whether to copy/move contents to a custom directory
-                    if directory_output_location == "Custom":
-                        # Make the custom directory if it doesn't exist
-                        if not os.path.exists(directory_output_custom):
-                            os.makedirs(directory_output_custom)
-                        # Scenario 1: No subdirectories
-                        if not use_subdirectories:
-                            file_list = [export_file_1, export_file_2, blend, preview_image]
-                            for file in file_list:
-                                move_file(directory = directory_output_custom, file_source = file)
-                        if use_subdirectories:
-                            # Scenario 2: Subdirectories, no copy original item directory
-                            item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
-                            if not os.path.exists(item_dir_custom):
-                                os.makedirs(item_dir_custom)
-                            file_list = [export_file_1, export_file_2, blend, preview_image]
-                            for file in file_list:
-                                move_file(directory = item_dir_custom, file_source = file)
-                            
-                            # Scenario 3: Subdirectories, copy original item directory
-                            if use_subdirectories and copy_item_dir_contents:
-                                # Copy leftover/original subfolders and files
-                                for file in os.listdir(item_dir):
-                                    # Copy subfolders
-                                    if os.path.isdir(os.path.join(item_dir, file)):
-                                        file_custom = os.path.join(item_dir_custom, file)
-                                        file = os.path.join(item_dir, file)
-                                        if os.path.exists(file_custom):
-                                            shutil.rmtree(file_custom)
-                                        shutil.copytree(file, file_custom)
-                                        print("Copied " + str(file) + " to " + str(item_dir_custom))
-                                        logging.info("Copied " + str(file) + " to " + str(item_dir_custom))
-                                    # Copy files
-                                    else:
-                                        file_custom = os.path.join(item_dir_custom, file)
-                                        file = os.path.join(item_dir, file)
-                                        shutil.copy(file, file_custom)
-                                        print("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
-                                        logging.info("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
-
 
                 else:
                     continue
