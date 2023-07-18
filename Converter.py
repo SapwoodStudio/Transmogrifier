@@ -2218,15 +2218,18 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             
             # Separate objects by material. If there is any object containing faces/meshes with different materials, such faces/meshes must be converted to separate objects with one material each.
             separate_by_material()
-
-            # Make sure image textures have their material's prefix before unpacking to avoid any duplicate texture names if they were all lower-cased.
-            rename_textures_packed(textures_temp_dir)
             
             # Find and rename transparent materials that have mispellings of transparency with regex keys. Regex transparent materials to prepare for the next function, which deletes any opaque versions of those transparent materials by relying on "transparent" existing in the material name.
             regex_transparent_materials()
 
             # Remove opaque versions of transparent materials to avoid duplicate textures bug, which resulted in models converting untextured.
             remove_opaque_material()
+
+            # Purge orphaned opaque image textures if they are duplicates, rather than shared/instanced, data blocks.
+            purge_orphans()
+
+            # Make sure image textures have their material's prefix before unpacking to avoid any duplicate texture names if they were all lower-cased.
+            rename_textures_packed(textures_temp_dir)
 
             # Delete any existing textures_temp_dir before unpacking.
             delete_textures_temp(textures_temp_dir)
