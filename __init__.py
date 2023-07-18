@@ -286,8 +286,8 @@ def draw_settings(self, context):
         col.prop(settings, 'export_file_1_scale')
         # self.layout.sepaqrator()
         
-    else:
-        self.layout.separator()
+    # else:
+    #     self.layout.separator()
 
 
     col = self.layout.column(align=True)
@@ -304,7 +304,7 @@ def draw_settings(self, context):
     # Texture Settings
     # Align menu items to the left.
     self.layout.use_property_split = True
-    col = self.layout.column(align=True)
+    # col = self.layout.column(align=True)
     col.label(text="Textures:", icon='TEXTURE')
     col.prop(settings, 'use_textures')
 
@@ -320,7 +320,7 @@ def draw_settings(self, context):
             if settings.copy_textures_custom_dir:
                 col.prop(settings, 'replace_textures')
 
-        col = self.layout.column(align=True)
+        # col = self.layout.column(align=True)
         col.prop(settings, 'texture_resolution')
 
         if settings.texture_resolution != "'Default'":
@@ -329,11 +329,11 @@ def draw_settings(self, context):
 
             grid = self.layout.grid_flow(columns=3, align=True)
             grid.prop(settings, 'texture_resolution_include')
-            self.layout.separator()
+            # self.layout.separator()
         
-        # Align menu items to the right.
-        self.layout.use_property_split = True
-        col = self.layout.column(align=True)
+            # Align menu items to the right.
+            self.layout.use_property_split = True
+            col = self.layout.column(align=True)
 
         col.prop(settings, 'image_format')
         if settings.image_format != "'Default'":
@@ -344,14 +344,12 @@ def draw_settings(self, context):
             grid = self.layout.grid_flow(columns=3, align=True)
             grid.prop(settings, 'image_format_include')
         
-        self.layout.separator()
+        # self.layout.separator()
 
     # Transformation options.
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
     col.label(text="Transformations:", icon='CON_PIVOT')
-    # self.layout.use_property_split = True
-    # col = self.layout.column(align=True)
     col.prop(settings, 'set_transforms')
     if settings.set_transforms:
         self.layout.use_property_split = False
@@ -375,8 +373,8 @@ def draw_settings(self, context):
         self.layout.use_property_split = False
         grid = self.layout.grid_flow(columns=3, align=True)
         grid.prop(settings, 'apply_transforms_filter')
-        col = self.layout.column(align=True)
-    col = self.layout.column(align=True)
+        # col = self.layout.column(align=True)
+    # col = self.layout.column(align=True)
 
     # Set animation options.
     self.layout.use_property_split = True
@@ -385,8 +383,8 @@ def draw_settings(self, context):
     col.prop(settings, 'delete_animations')
 
     # Set scene unit options.
-    self.layout.use_property_split = True
-    col = self.layout.column(align=True)
+    # self.layout.use_property_split = True
+    # col = self.layout.column(align=True)
     col.label(text="Scene:", icon='SCENE_DATA')
     col.prop(settings, 'unit_system')
     if settings.unit_system == "METRIC":
@@ -394,7 +392,7 @@ def draw_settings(self, context):
     elif settings.unit_system == "IMPERIAL":
         col.prop(settings, 'length_unit_imperial')
 
-    self.layout.separator()
+    # self.layout.separator()
     
     # Set max file size options.
     self.layout.use_property_split = True
@@ -416,9 +414,9 @@ def draw_settings(self, context):
             self.layout.use_property_split = False
             col = self.layout.column(align=True)
             col.prop(settings, 'decimate_limit')
-        self.layout.separator()
+        # self.layout.separator()
 
-    # Additional options
+    # Archive options
     # Align menu items to the Right.
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
@@ -1250,7 +1248,7 @@ class TRANSMOGRIFY(Operator):
 
 
 # Groups together all the addon settings that are saved in each .blend file
-class BatchConvertSettings(PropertyGroup):
+class TransmogrifierSettings(PropertyGroup):
     # Import Settings
     directory: StringProperty(
         name="Directory",
@@ -1372,17 +1370,17 @@ class BatchConvertSettings(PropertyGroup):
     # Export Settings:
     # Option for to where models should be exported.
     directory_output_location: EnumProperty(
-        name="Directory",
+        name="Location(s)",
         description="Select where models should be exported.",
         items=[
-            ("Adjacent", "Adjacent", "Export each converted model to the same directory from which it was imported", 1),
+            ("Adjacents", "Adjacents", "Export each converted model to the same directory from which it was imported", 1),
             ("Custom", "Custom", "Export each converted model to a custom directory", 2),
         ],
-        default="Adjacent",
+        default="Adjacents",
     )
     # Custom export directory
     directory_output_custom: StringProperty(
-        name="Custom",
+        name="Directory",
         description="Set a custom directory to which each converted model will be exported\nDefault of // will export to same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
@@ -1699,8 +1697,8 @@ class BatchConvertSettings(PropertyGroup):
     )
     # File size maximum target.
     file_size_maximum: bpy.props.FloatProperty(
-        name="File Size Max. (MB)", 
-        description="Set the file size maximum for auto-export resizing (Megabytes)",
+        name="Max. File Size (MB)", 
+        description="Set the target maximum to which Transmogrifier should attempt to lower the file size (Megabytes)",
         default=15.0,
         soft_min=0.0,
         soft_max=1000.0,
@@ -1927,12 +1925,12 @@ class BatchConvertSettings(PropertyGroup):
 def register():
     # Register classes
     bpy.utils.register_class(TransmogrifierPreferences)
-    bpy.utils.register_class(BatchConvertSettings)
+    bpy.utils.register_class(TransmogrifierSettings)
     bpy.utils.register_class(POPOVER_PT_transmogrify)
     bpy.utils.register_class(TRANSMOGRIFY)
 
     # Add Batch Convert settings to Scene type
-    bpy.types.Scene.batch_convert = PointerProperty(type=BatchConvertSettings)
+    bpy.types.Scene.batch_convert = PointerProperty(type=TransmogrifierSettings)
 
     # Show addon UI
     prefs = bpy.context.preferences.addons[__name__].preferences
@@ -1950,7 +1948,7 @@ def unregister():
 
     # Unregister Classes
     bpy.utils.unregister_class(TransmogrifierPreferences)
-    bpy.utils.unregister_class(BatchConvertSettings)
+    bpy.utils.unregister_class(TransmogrifierSettings)
     bpy.utils.unregister_class(POPOVER_PT_transmogrify)
     bpy.utils.unregister_class(TRANSMOGRIFY)
 
