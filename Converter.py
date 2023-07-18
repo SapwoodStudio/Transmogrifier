@@ -2481,7 +2481,7 @@ def list_exports(export_file_1, export_file_2):
 
 
 # Move file from source to destination
-def move_files(directory, file_source):
+def move_file(directory, file_source):
     try:
         # Set destination based on custom output directory
         file_destination = os.path.join(directory, os.path.basename(file_source))
@@ -2496,7 +2496,67 @@ def move_files(directory, file_source):
 
     except Exception as Argument:
         logging.exception("COULD NOT MOVE FILE")
-        
+
+
+# Determine whether to convert a model before importing in order to save time.
+def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list):
+    try:
+        # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
+        if auto_resize_files == "Only Above Max":
+            # Get current file size (in MB) in order to determine whether to import the current item at all.
+            export_file_1_file_size = get_export_file_1_size(export_file_1)
+
+            # If export_file_1 exists and is above maximum when auto_resize_files is set to "Only Above Max", convert item.
+            if export_file_1_file_size > file_size_maximum:
+                print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                # Run the converter on the item that was found.
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+                # Increment conversion counter and add converted item(s) to list.
+                exports_list = list_exports(export_file_1, export_file_2)
+                # Add export(s) to conversion list.
+                conversion_list.extend(exports_list)
+                conversion_count += 1
+                return conversion_list, conversion_count
+            
+            # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
+            elif export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
+                print("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
+                logging.info("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
+                return conversion_list, conversion_count
+
+            # If file size is zero, then the file cannot exist and requires export.
+            elif export_file_1_file_size == 0:
+                print("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                # Run the converter on the item that was found.
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+                # Increment conversion counter and add converted item(s) to list.
+                exports_list = list_exports(export_file_1, export_file_2)
+                # Add export(s) to conversion list.
+                conversion_list.extend(exports_list)
+                conversion_count += 1
+                return conversion_list, conversion_count
+
+        # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
+        elif auto_resize_files != "Only Above Max":
+            print("Initiating converter for " + str(item) + ".")
+            logging.info("Initiating converter for " + str(item) + ".")
+            # Run the converter on the item that was found.
+            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
+            # Increment conversion counter and add converted item(s) to list.
+            exports_list = list_exports(export_file_1, export_file_2)
+            # Add export(s) to conversion list.
+            conversion_list.extend(exports_list)
+            conversion_count += 1
+            return conversion_list, conversion_count
+
+        print("------------------------  DETERMINED CONVERSION FOR " + str(item) + "  ------------------------")
+        logging.info("DETERMINED CONVERSION FOR " + str(item))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT DETERMINE CONVERSION FOR " + str(item))
+
 
 # Main function that loops through specified directory and creates variables for the converter
 def batch_converter():
@@ -2537,54 +2597,9 @@ def batch_converter():
                     blend = os.path.join(subdir, prefix + item + suffix + ".blend")
                     preview_image = os.path.join(subdir, prefix + item + suffix + '_Preview.jpg')
 
-                    # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
-                    if auto_resize_files == "Only Above Max":
-                        # Get current file size (in MB) in order to determine whether to import the current item at all.
-                        export_file_1_file_size = get_export_file_1_size(export_file_1)
+                    conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list)
 
-                        # If export_file_1 exists and is above maximum when auto_resize_files is set to "Only Above Max", convert item.
-                        if export_file_1_file_size > file_size_maximum:
-                            print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
-                            logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
-                            # Run the converter on the item that was found.
-                            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
-                            # Increment conversion counter and add converted item(s) to list.
-                            exports_list = list_exports(export_file_1, export_file_2)
-                            # Add export(s) to conversion list.
-                            conversion_list.extend(exports_list)
-                            
-                            conversion_count += 1
-                        
-                        # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
-                        elif export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
-                            print("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
-                            logging.info("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
-
-                        # If file size is zero, then the file cannot exist and requires export.
-                        elif export_file_1_file_size == 0:
-                            print("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
-                            logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
-                            # Run the converter on the item that was found.
-                            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
-                            # Increment conversion counter and add converted item(s) to list.
-                            exports_list = list_exports(export_file_1, export_file_2)
-                            # Add export(s) to conversion list.
-                            conversion_list.extend(exports_list)
-                            
-                            conversion_count += 1
-
-                    # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
-                    elif auto_resize_files != "Only Above Max":
-                        print("Initiating converter for " + str(item) + ".")
-                        logging.info("Initiating converter for " + str(item) + ".")
-                        # Run the converter on the item that was found.
-                        converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image) 
-                        # Increment conversion counter and add converted item(s) to list.
-                        exports_list = list_exports(export_file_1, export_file_2)
-                        # Add export(s) to conversion list.
-                        conversion_list.extend(exports_list)
-
-                        conversion_count += 1
+                    
 
                     # Now determine whether to copy/move contents to a custom directory
                     if directory_output_location == "Custom":
@@ -2595,7 +2610,7 @@ def batch_converter():
                         if not use_subdirectories:
                             file_list = [export_file_1, export_file_2, blend, preview_image]
                             for file in file_list:
-                                move_files(directory = directory_output_custom, file_source = file)
+                                move_file(directory = directory_output_custom, file_source = file)
                         if use_subdirectories:
                             # Scenario 2: Subdirectories, no copy original item directory
                             item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
@@ -2603,7 +2618,7 @@ def batch_converter():
                                 os.makedirs(item_dir_custom)
                             file_list = [export_file_1, export_file_2, blend, preview_image]
                             for file in file_list:
-                                move_files(directory = item_dir_custom, file_source = file)
+                                move_file(directory = item_dir_custom, file_source = file)
                             
                             # Scenario 3: Subdirectories, copy original item directory
                             if use_subdirectories and copy_item_dir_contents:
