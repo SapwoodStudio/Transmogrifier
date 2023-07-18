@@ -2485,14 +2485,23 @@ def move_file(directory, file_source):
     try:
         # Set destination based on custom output directory
         file_destination = os.path.join(directory, os.path.basename(file_source))
-        # Remove any existing destination file
-        if os.path.isfile(file_destination):
-            os.remove(file_destination)
-        # Move file, if source exists
-        if os.path.isfile(file_source):
+        # Check if "file" is a directory.
+        if os.path.isdir(file_source):
+            if os.path.exists(file_destination):
+                shutil.rmtree(file_destination)
             shutil.move(file_source, file_destination)
-            print("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
-            logging.info("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
+
+        # Check if "file" is a file
+        if not os.path.isdir(file_source):
+            if os.path.isfile(file_destination):
+            # Remove any existing destination file
+                os.remove(file_destination)
+            # Move file, if source exists
+            if os.path.isfile(file_source):
+                shutil.move(file_source, file_destination)
+                
+        print("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
+        logging.info("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
 
     except Exception as Argument:
         logging.exception("COULD NOT MOVE FILE")
@@ -2504,18 +2513,33 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         # Make the custom directory if it doesn't exist
         if not os.path.exists(directory_output_custom):
             os.makedirs(directory_output_custom)
+        
+        # File list to move
+        file_list = [export_file_1, export_file_2, blend, preview_image]
+        if keep_modified_textures:
+            file_list.append(textures_temp_dir)
+        
         # Scenario 1: No subdirectories
         if not use_subdirectories:
-            file_list = [export_file_1, export_file_2, blend, preview_image]
+            # Delete any pre-existing textures_temp folders in the custom directory.
+            textures_temp_custom = os.path.join(directory_output_custom, os.path.basename(textures_temp_dir))
+            if os.path.exists(textures_temp_custom):
+                shutil.rmtree(textures_temp_custom)
+                
+            # Move files
             for file in file_list:
                 move_file(directory = directory_output_custom, file_source = file)
         
         if use_subdirectories:
             # Scenario 2: Subdirectories, no copy original item directory
             item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
-            if not os.path.exists(item_dir_custom):
-                os.makedirs(item_dir_custom)
-            file_list = [export_file_1, export_file_2, blend, preview_image]
+            
+            # Always start fresh by removing existing custom item directories.
+            if os.path.exists(item_dir_custom):
+                shutil.rmtree(item_dir_custom)
+            os.makedirs(item_dir_custom)
+            
+            # Move files
             for file in file_list:
                 move_file(directory = item_dir_custom, file_source = file)
             
