@@ -546,19 +546,19 @@ def find_replace_pbr_tag(texture):
 
         # Dictionary with regex keys will be used as the pattern by turning it into a list then to a string.
         pbr_dict = {
-            'B?ase*\s?_?C?olou?r|A?lbedo|D?iffuse|D?iff|col': 'BaseColor',
-            'sss|S?ubsurface': 'Subsurface',
-            'M?etall?ic|M?etalness?|M?etaln.*|metal|mtl': 'Metallic', 
-            'S?pecul.*': 'Specular',
-            'R?ou?gh|R?ou?ghness|rgh': 'Roughness',
-            'G?loss.*': 'Gloss',
-            'N?ormal|norm|nor|nrm|nrml': 'Normal',
-            'B?ump|bmp': 'Bump',
-            'D?ispl.*|dsp|H?eight|H?eightmap': 'Height',
-            'T?ransmission|transmiss|trnsmss|T?ransm.*': 'Transmission',
-            'E?miss.*|emit': 'Emission',
-            'A?lph.*|O?pac.*|T?ranspa.*|T?ranspr.*': 'Opacity',
-            'A?mbient*\s?_?O?cc?lusion|A?mbient|O?cc?lus.*|ao': 'Ambient_Occlusion'
+            '[Bb]?ase*\s?_?[Cc]?olou?r|[Aa]?lbedo|[Dd]?iffuse|[Dd]?iff|[Cc]ol': 'BaseColor',
+            '[Ss]?ubsurface|[Ss]ss': 'Subsurface',
+            '[Mm]?etall?ic|[Mm]?etalness?|[Mm]?etaln.*|[Mm]etal|[Mm]tl': 'Metallic', 
+            '[Ss]?pecul.*|[Ss]pec|[Ss]pc': 'Specular',
+            '[Rr]?ou?gh|[Rr]?ou?ghness|[Rr]gh': 'Roughness',
+            '[Gg]?loss.*': 'Gloss',
+            '[Nn]?ormal|[Nn]orm|[Nn]or|[Nn]rm|[Nn]rml': 'Normal',
+            '[Bb]?ump|[Bb]mp': 'Bump',
+            '[Dd]?ispl.*|[Dd]sp|[Hh]?e?ight|[Hh]?i?eght': 'Height',
+            '[Tt]?ransmission|[Tt]ransmiss|[Tt]rnsmss|[Tt]?ransm.*': 'Transmission',
+            '[Ee]?miss.*|[Ee]mit': 'Emission',
+            '[Aa]?lph.*|[Oo]?pac.*|[Tt]?ranspa.*|[Tt]?ranspr.*': 'Opacity',
+            '[Aa]?mbient*\s?_?[Oo]?cc?lusion|[Aa]?mbient|[Oo]?cc?lus.*|[Aa][Oo]': 'Ambient_Occlusion'
         }
 
         dictkeys_pattern = re.compile('|'.join(pbr_dict), re.IGNORECASE)
@@ -591,7 +591,7 @@ def find_replace_transparency_tag(mesh_object):
 
         # Dictionary with regex keys will be used as the pattern by turning it into a list then to a string.
         pbr_dict = {
-            'A?lph.*|O?pac.*|T?ranspa.*|T?ranspr.*|T?rns.*|T?ranp.*|G?lass': 'transparent',
+            '[Aa]?lph.*|[Oo]?pac.*|[Tt]?ranspa.*|[Tt]?ranspr.*|[Tt]?rns.*|[Tt]?ranp.*|[Gg]?lass': 'transparent',
         }
 
         dictkeys_pattern = re.compile('|'.join(pbr_dict), re.IGNORECASE)
