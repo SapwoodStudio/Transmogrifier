@@ -24,18 +24,19 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 
 ## USAGE 🏭
-1. **Select the 3D file format** to be imported and converted.
-- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5e7af679-1536-41cc-87d7-a8b2c4885985" width="250">
-
-3. **Select a directory** containing 3D files of the chosen format inside, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
-- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/8690027d-fcbc-42c9-af9f-be0d11b53a12" width="250">
+1. **Select a directory** containing 3D files of the chosen **import format**, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/dd380972-3559-497d-bb2c-e8f49ce34563" width="250">
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/46975114-4e36-4cdc-be0a-8d4559aafc11" width="600">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/b69a7fd1-6de5-4924-ab92-87f0a16a3248" width="250">
 
+2. **Select an output directory** to which 3D files of the chosen **export format(s)** should be exported. "Adjacents" means that converted models will be saved to the same directories from which they were imported. "Custom" means that converted models will be saved to a chosen custom directory.
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/e182bf04-8866-4dfe-b0ef-0d2f58c3f527" width="250">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/68257c02-6b05-4977-9f5b-1db2f9020a9a" width="250">
 
-4. **Set up export settings** as described in the [Features](#features-) section below. (_Optional: to save current settings for later use, save the current .blend file_)
-- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4f788690-44fe-4f88-9b43-756728f08087" width="250">
+3. **Set additional export settings** as described in the [Features](#features-) section below. (_Optional: to save current settings for later use, save the current .blend file_)
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/0c6c6582-23da-4753-b8a5-1317cad164aa" width="250">
 
-5. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation. After the conversion finishes, the greyed-out Blender window and console will disappear and the original Blender instance will report how many files were converted.
+4. **Click "Batch Convert"**. This will spawn a console window and another instance of Blender. The new Blender window will remain grey while the conversion process gets output to the console window. The original Blender window will remain frozen/unresponsive until the batch conversion is complete. This is normal operation. After the conversion finishes, the greyed-out Blender window and console will disappear and the original Blender instance will report how many files were converted.
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/9f1f804e-e0d2-4963-9a19-935a413bac41" width="600">
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/90cc4699-137c-4c69-bf8d-dd887d2cae61" width="350">
 
