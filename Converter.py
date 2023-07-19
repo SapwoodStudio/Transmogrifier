@@ -2602,14 +2602,14 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
                 converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
-                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
-                if directory_output_location == "Custom":
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
                 conversion_list.extend(exports_list)
                 conversion_count += 1
+                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+                if directory_output_location == "Custom":
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
                 return conversion_list, conversion_count
             
             # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
@@ -2624,14 +2624,14 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
                 converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
-                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
-                if directory_output_location == "Custom":
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
                 conversion_list.extend(exports_list)
                 conversion_count += 1
+                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+                if directory_output_location == "Custom":
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
                 return conversion_list, conversion_count
 
         # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
@@ -2640,14 +2640,14 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             logging.info("Initiating converter for " + str(item) + ".")
             # Run the converter on the item that was found.
             converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
-            # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
-            if directory_output_location == "Custom":
-                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
             # Increment conversion counter and add converted item(s) to list.
             exports_list = list_exports(export_file_1, export_file_2)
             # Add export(s) to conversion list.
             conversion_list.extend(exports_list)
             conversion_count += 1
+            # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+            if directory_output_location == "Custom":
+                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
             return conversion_list, conversion_count
 
         print("------------------------  DETERMINED CONVERSION FOR " + str(item) + "  ------------------------")
