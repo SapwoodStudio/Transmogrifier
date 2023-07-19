@@ -2514,10 +2514,16 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         if not os.path.exists(directory_output_custom):
             os.makedirs(directory_output_custom)
         
-        # File list to move
-        file_list = [export_file_1, export_file_2, blend, preview_image]
+        # File list of items to move
+        file_list = [export_file_1]
+        if model_quantity == "2 Formats":
+            file_list.append(export_file_2)
         if keep_modified_textures:
             file_list.append(textures_temp_dir)
+        if save_blend:
+            file_list.append(blend)
+        if save_preview_image:
+            file_list.append(preview_image)
         
         # Scenario 1: No subdirectories
         if not use_subdirectories:
