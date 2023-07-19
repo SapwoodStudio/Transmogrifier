@@ -6,7 +6,8 @@ A Blender addon for batch converting 3D files and associated textures into other
 [Installation](#installation-) 📥 **·** [Usage](#usage-) 🏭 **·** [How it Works](#how-it-works-) ⚙ **·** [Benefits](#benefits-) 🎁 **·** [Features](#features-) ✨ **·** [Credits](#credits-) 🙏
 
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5592793d-f7d9-4c1a-bad1-86da4d4657ba" height="1000">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/69d88d35-863f-461f-ac9b-eb154590a5b0" height="1000">
+
 
 
 ## INSTALLATION 📥
@@ -61,6 +62,12 @@ _Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativeco
 ## FEATURES ✨
 Transmogrifier includes a robust set of tools for non-destructively converting 3D files and associated textures into other formats.
 
+### Export Location
+Set the export location to either "Adjacent" or "Custom". "Adjacents" means that converted models will be saved to the same directories from which they were imported. "Custom" means that converted models will be saved to a chosen custom directory. Choose whether to place converted models in subdirectories of their same names. If so, choose whether to copy original files from import directories to respective subdirectories.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/f83015fa-f751-43ef-b34f-26ab4db2581d" width="350">
+
+
 ### 3D Formats
 - FBX
 - OBJ
@@ -73,24 +80,24 @@ Transmogrifier includes a robust set of tools for non-destructively converting 3
 - ABC
 - USD/USDA/USDC/USDZ
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/292d28b3-405d-4ecc-ba74-e07cd75856ed" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/e95a8322-d5be-463d-8a2f-81f46103c37c" width="350">
 
 
 ### Import/Export Presets
 Set user-defined import and export presets.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/9c9c9d84-c103-40fd-9498-4ad7d6535670" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/1ecfc99e-46c0-4a22-a42d-fcc2e93c419f" width="350">
 
 
 ### Name
-Set a custom prefix and/or suffix for every exported file. Synchronize object names and object data names according to the former.
+Set a custom prefix and/or suffix for every exported file. Synchronize object names and object data names according to the former. Rename UV channels of all objects to "UVMap" (and "UVMap_1", etc. for objects with more than 1 UV channel).
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/d635f947-e2bd-4747-a695-b3b8dd2ee1c9" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/cfdf71c6-ca26-4758-b007-1642bf360165" width="350">
 
 
 ### Textures
 
-Transmogrifier can detect the presence of multiple image texture sets and non-destructively modify them during the conversion process.
+Transmogrifier can detect the presence of multiple image texture sets and non-destructively modify them during the conversion process. Select whether to use textures, regex the PBR tags in the textures' names, and keep the otherwise temporary textures folders with their modifications.
 
 #### Source:
 - **External**: image textures nearby the imported model. 
@@ -175,9 +182,9 @@ Methods:
 - Draco compression (Only works for GLB/glTF.)
 - Resize textures (Set a minimum resolution limit.)
 - Reformat textures (Convert all textures to JPG except normal maps.)
-- Decimate mesh objects (Uses edge collapse. Set a maximum decimate iteration.)
+- Decimate mesh objects (Uses edge collapse at 50% ratio each time. Set a maximum decimate iteration.)
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/ccb26492-78eb-4dbe-bc6c-aff84308fb84" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/abedd1bb-bf82-4766-a3a6-648eeb9bc4c6" width="350">
 
 
 ### Archive
