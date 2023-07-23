@@ -1,7 +1,7 @@
 # Transmogrifier
 A Blender addon for batch converting 3D files and associated textures into other formats - with an emphasis on visualization for the web and AR.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/8b9ad32e-51cd-4009-8908-4597bb2fa5f1" width="450">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/3166c6a1-5a56-44f0-8cbe-3471d1f3faa6" width="450">
 
 [Installation](#installation-) 📥 **·** [Usage](#usage-) 🏭 **·** [How it Works](#how-it-works-) ⚙ **·** [Benefits](#benefits-) 🎁 **·** [Features](#features-) ✨ **·** [Credits](#credits-) 🙏
 
