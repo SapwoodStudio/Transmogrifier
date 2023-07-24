@@ -74,7 +74,6 @@ Set the export location to either "Adjacent" or "Custom". "Adjacents" means that
 - glTF/GLB
 - STL
 - PLY
-- DAE
 - X3D
 - DAE
 - ABC
