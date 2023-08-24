@@ -123,7 +123,7 @@ def load_transmogrifier_preset(operator, preset):
     if preset == 'NO_PRESET':
         return json_dict
 
-    for d in str(pathlib.Path(__file__).parent) + "\\presets" + operator:
+    for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
         fp = "".join([d, "/", preset, ".json"])
         if os.path.isfile(fp):  # Found the preset file
             print("Using preset " + fp)
@@ -165,7 +165,7 @@ def draw_settings(self, context):
     self.layout.label(text = title)
 
     settings = context.scene.batch_convert
-    
+
     # Batch Convert button
     # self.layout.operator('convert.batch', icon='FILE_CACHE')
     row = self.layout.row()
@@ -178,7 +178,13 @@ def draw_settings(self, context):
     col = self.layout.column(align=True)
     col.label(text="PRESETS", icon='FILE_BLANK')
     col.prop(settings, 'transmogrifier_preset_enum')
-
+    if settings.transmogrifier_preset != "NO_PRESET":
+        # Load selected Transmogrifier preset as a dictionary.
+        transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
+        print(transmogrifier_preset_dict)        
+        # settings.use_textures = False  
+        # Want to update Transmogrifier GUI based on selected preset like with export presets, but Keep getting this error:
+        # AttributeError: Writing to ID classes in this context is not allowed: Scene, Scene datablock, error setting TransmogrifierSettings.use_textures
 
     # Import Settings
     self.layout.separator()
