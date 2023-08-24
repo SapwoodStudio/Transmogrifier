@@ -90,6 +90,66 @@ def get_preset_index(operator, preset_name):
             return p
     return 0
 
+
+
+# A Dictionary of operator_name: [list of preset EnumProperty item tuples].
+# Blender's doc warns that not keeping reference to enum props array can
+# cause crashs and weird issues.
+# Also useful for the get_preset_index function.
+transmogrifier_preset_enum_items_refs = {}
+
+# Returns a list of tuples used for an EnumProperty's items (identifier, name, description)
+# identifier, and name are the file name of the preset without the file extension (.json)
+def get_transmogrifier_presets(operator):
+    presets = [('NO_PRESET', "(no preset)", "", 0)]
+    for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
+        for f in os.listdir(d):
+            if not f.endswith(".json"):
+                continue
+            f = os.path.splitext(f)[0]
+            presets.append((f, f, ""))
+    # Blender's doc warns that not keeping reference to enum props array can
+    # cause crashs and weird issues:
+    transmogrifier_preset_enum_items_refs[operator] = presets
+    return presets
+
+# Returns a dictionary of options from an operator's preset.
+# When calling an operator's method, you can use ** before a dictionary
+# in the method's arguments to set the arguments from that dictionary's
+# key: value pairs. Example:
+# bpy.ops.category.operator(**options)
+def load_transmogrifier_preset(operator, preset):
+    json_dict = {}
+    if preset == 'NO_PRESET':
+        return json_dict
+
+    for d in str(pathlib.Path(__file__).parent) + "\\presets" + operator:
+        fp = "".join([d, "/", preset, ".json"])
+        if os.path.isfile(fp):  # Found the preset file
+            print("Using preset " + fp)
+            
+            # Open JSON file
+            with open(fp, 'r') as openfile:
+            
+                # Read from JSON file
+                json_dict = json.load(openfile)
+            
+            return json_dict
+            
+    # If it didn't find the preset, use empty options
+    # (the preset option should look blank if the file doesn't exist anyway)
+    return json_dict
+
+# Finds the index of a preset with preset_name and returns it
+# Useful for transferring the value of a saved preset (in a StringProperty)
+# to the NOT saved EnumProperty for that preset used to present a nice GUI.
+def get_transmogrifier_preset_index(operator, preset_name):
+    for p in range(len(transmogrifier_preset_enum_items_refs[operator])):
+        if transmogrifier_preset_enum_items_refs[operator][p][0] == preset_name:
+            return p
+    return 0
+
+
 # Draws the .blend file specific settings used in the
 # Popover panel or Side Panel panel
 def draw_settings(self, context):
@@ -112,6 +172,13 @@ def draw_settings(self, context):
     row = row.row(align=True)
     row.operator('convert.batch', text='Batch Convert', icon='FILE_CACHE')
     row.scale_y = 1.5
+
+    # Transmogrifier Presets Menu
+    self.layout.separator()
+    col = self.layout.column(align=True)
+    col.label(text="PRESETS", icon='FILE_BLANK')
+    col.prop(settings, 'transmogrifier_preset_enum')
+
 
     # Import Settings
     self.layout.separator()
@@ -1366,6 +1433,20 @@ class TransmogrifierSettings(PropertyGroup):
             self, 'import_x3d_preset', preset_enum_items_refs['import_scene.x3d'][value][0]),
     )
 
+
+
+    # Preset Settings:
+    # Option to select Transmogrifier presets
+    transmogrifier_preset: StringProperty(default='NO_PRESET')
+    transmogrifier_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use import settings from a preset.\n(Create in the import settings from the File > import > glTF (.glb/.gltf))",
+        items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
+        get=lambda self: get_transmogrifier_preset_index(
+            'transmogrifier', self.transmogrifier_preset),
+        set=lambda self, value: setattr(
+            self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
+    )
 
     # Export Settings:
     # Option for to where models should be exported.
