@@ -179,12 +179,12 @@ def draw_settings(self, context):
     col.label(text="PRESETS", icon='FILE_BLANK')
     col.prop(settings, 'transmogrifier_preset_enum')
     if settings.transmogrifier_preset != "NO_PRESET":
-        # Load selected Transmogrifier preset as a dictionary.
-        transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
-        print(transmogrifier_preset_dict)        
-        # settings.use_textures = False  
-        # Want to update Transmogrifier GUI based on selected preset like with export presets, but Keep getting this error:
-        # AttributeError: Writing to ID classes in this context is not allowed: Scene, Scene datablock, error setting TransmogrifierSettings.use_textures
+        # Refresh UI
+        row = self.layout.row()
+        row = row.row(align=True)
+        row.operator('refreshui.transmogrifier', text='Refresh UI from Preset', icon='FILE_REFRESH')
+        row.scale_y = 1.0
+
 
     # Import Settings
     self.layout.separator()
@@ -747,6 +747,24 @@ class TransmogrifierPreferences(AddonPreferences):
         col = box.column(align=True)
         col.prop(self, "copy_assets", text='Copy Assets to Preferences Directory', toggle=True, icon='DUPLICATE')
 
+
+# Operator called when Transmogrifier preset is selected.
+class REFRESHUI(Operator):
+    """Refreshes Transmogrifier UI to reflect preset settings"""
+    bl_idname = "refreshui.transmogrifier"
+    bl_label = "Refresh UI"
+
+    def execute(self, context):
+        settings = context.scene.batch_convert
+
+        if settings.transmogrifier_preset != "NO_PRESET":
+            # Load selected Transmogrifier preset as a dictionary.
+            transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
+            # Hard-coded change for testing
+            settings.use_textures = False
+            print(settings.use_textures)
+
+        return {'FINISHED'} 
 
 # Operator called when pressing the Batch Convert button.
 class TRANSMOGRIFY(Operator):
@@ -2014,6 +2032,7 @@ def register():
     bpy.utils.register_class(TransmogrifierPreferences)
     bpy.utils.register_class(TransmogrifierSettings)
     bpy.utils.register_class(POPOVER_PT_transmogrify)
+    bpy.utils.register_class(REFRESHUI)
     bpy.utils.register_class(TRANSMOGRIFY)
 
     # Add Batch Convert settings to Scene type
@@ -2037,6 +2056,7 @@ def unregister():
     bpy.utils.unregister_class(TransmogrifierPreferences)
     bpy.utils.unregister_class(TransmogrifierSettings)
     bpy.utils.unregister_class(POPOVER_PT_transmogrify)
+    bpy.utils.unregister_class(REFRESHUI)
     bpy.utils.unregister_class(TRANSMOGRIFY)
 
     # Remove UI
