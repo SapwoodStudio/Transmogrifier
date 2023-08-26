@@ -2269,9 +2269,9 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             assign_materials(item)
 
         # Modify textures if requested.
-        if texture_resolution != "'Default'":
+        if texture_resolution != "Default":
             resize_textures(texture_resolution, texture_resolution_include)
-        if image_format != "'Default'":
+        if image_format != "Default":
             convert_image_format(image_format, image_quality, image_format_include, textures_source)
 
         print("------------------------  APPLIED TEXTURES TO OBJECTS  ------------------------")

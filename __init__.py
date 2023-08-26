@@ -16,7 +16,6 @@ import os
 import shutil
 import pathlib
 import json
-from ast import literal_eval
 import subprocess
 
 bl_info = {
@@ -282,7 +281,7 @@ def draw_settings(self, context):
         col = self.layout.column(align=True)
         col.label(text="Format 2:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_2')
-        col.prop(settings, 'mode')
+        # col.prop(settings, 'mode')
 
         if settings.export_file_2 == 'DAE':
             col.prop(settings, 'dae_preset_enum')
@@ -323,7 +322,7 @@ def draw_settings(self, context):
         col = self.layout.column(align=True)
         col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_1')
-        col.prop(settings, 'mode')
+        # col.prop(settings, 'mode')
 
         if settings.export_file_1 == 'DAE':
             col.prop(settings, 'dae_preset_enum')
@@ -396,7 +395,7 @@ def draw_settings(self, context):
         # col = self.layout.column(align=True)
         col.prop(settings, 'texture_resolution')
 
-        if settings.texture_resolution != "'Default'":
+        if settings.texture_resolution != "Default":
             # Align menu items to the left.
             self.layout.use_property_split = False
 
@@ -409,7 +408,7 @@ def draw_settings(self, context):
             col = self.layout.column(align=True)
 
         col.prop(settings, 'image_format')
-        if settings.image_format != "'Default'":
+        if settings.image_format != "Default":
             col.prop(settings, 'image_quality')
             # Align menu items to the left.
             self.layout.use_property_split = False
@@ -511,6 +510,7 @@ def draw_popover(self, context):
 # Write user variables to a JSON file.
 def write_json(
     base_dir, 
+    import_file, 
     import_file_ext, 
     import_file_command, 
     import_file_options, 
@@ -565,6 +565,7 @@ def write_json(
     # Data to be written
     variables_dict = {
         "base_dir": base_dir,
+        "import_file": import_file, 
         "import_file_ext": import_file_ext,
         "import_file_command": import_file_command,
         "import_file_options": import_file_options,
@@ -592,7 +593,7 @@ def write_json(
         "copy_textures_custom_dir": copy_textures_custom_dir, 
         "replace_textures": replace_textures, 
         "keep_modified_textures": keep_modified_textures, 
-        "texture_resolution": literal_eval(texture_resolution),
+        "texture_resolution": texture_resolution,
         "texture_resolution_include": texture_resolution_include,
         "image_format": image_format,
         "image_quality": image_quality,
@@ -760,9 +761,25 @@ class REFRESHUI(Operator):
         if settings.transmogrifier_preset != "NO_PRESET":
             # Load selected Transmogrifier preset as a dictionary.
             transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
-            # Hard-coded change for testing
-            settings.use_textures = False
-            print(settings.use_textures)
+
+            # Read dictionary and change UI settings to reflect selected preset.
+            for key, value in transmogrifier_preset_dict.items():
+                # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.
+                if type(value) == str:
+                    if value == '':
+                        value = "''"
+                    else:
+                        value = "'" + value + "'"
+                # If a value is a list that contains strings, then change the list to a set.
+                elif type(value) == list and type(value[0]) == str:
+                    value = set(value)
+                # If an integer object is an option of an EnumProperty drop down, make it a string.
+                if key in ("texture_resolution", "resize_textures_limit") and type(value) == int:
+                    value = "'" + str(value) + "'"   
+                # Concatenate the current variable/setting to be updated.
+                update_setting = 'settings.' + str(key) + ' = ' + str(value)
+                # Make the setting (key) equal to the preset (value)
+                exec(update_setting)
 
         return {'FINISHED'} 
 
@@ -775,6 +792,9 @@ class TRANSMOGRIFY(Operator):
 
     def execute(self, context):
         settings = context.scene.batch_convert
+        
+        # Refresh UI from preset if one is selected before writing new JSON and converting.
+        bpy.ops.refreshui.transmogrifier()
 
         base_dir = settings.directory
         if not bpy.path.abspath('//'):  # Then the blend file hasn't been saved
@@ -836,6 +856,7 @@ class TRANSMOGRIFY(Operator):
         transmogrifier_dir = pathlib.Path(__file__).parent.resolve()
 
         # Assign user input to variables to be written to Converter_Variables.json
+        import_file = settings.import_file
         directory_output_location = settings.directory_output_location
         directory_output_custom = settings.directory_output_custom
         use_subdirectories = settings.use_subdirectories
@@ -1267,6 +1288,7 @@ class TRANSMOGRIFY(Operator):
         # Write variables to JSON file before running converter
         write_json(
             base_dir, 
+            import_file, 
             import_file_ext, 
             import_file_command, 
             import_file_options, 
@@ -1581,7 +1603,7 @@ class TransmogrifierSettings(PropertyGroup):
         name="Resolution",
         description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
         items=[
-            ("'Default'", "Default", "Don't resize, use imported resolution", 1),
+            ("Default", "Default", "Don't resize, use imported resolution", 1),
             ("8192", "8192", "Square aspect ratio", 2),
             ("4096", "4096", "Square aspect ratio", 3),
             ("2048", "2048", "Square aspect ratio", 4),
@@ -1590,7 +1612,7 @@ class TransmogrifierSettings(PropertyGroup):
             ("256", "256", "Square aspect ratio", 7),
             ("128", "128", "Square aspect ratio", 8),
         ],
-        default="'Default'",
+        default="Default",
     )
     # Which textures to include in resizing.
     texture_resolution_include: EnumProperty(
@@ -1628,7 +1650,7 @@ class TransmogrifierSettings(PropertyGroup):
         name="Format",
         description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
         items=[
-            ("'Default'", "Default", "Don't convert image textures", 1),
+            ("Default", "Default", "Don't convert image textures", 1),
             ("PNG", "PNG", "Save image textures in PNG format", 2),
             ("JPEG", "JPEG", "Save image textures in JPEG format", 3),
             ("TARGA", "TARGA", "Save image textures in TARGA format", 4),
@@ -1641,7 +1663,7 @@ class TransmogrifierSettings(PropertyGroup):
             # ("DPX", "DPX", "Save image textures in DPX format", 11),
             # ("HDR", "HDR", "Save image textures in HDR format", 12),
         ],
-        default="'Default'",
+        default="Default",
     )
     image_quality: IntProperty(
         name="Quality", 
