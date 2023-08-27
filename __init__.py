@@ -15,6 +15,7 @@ from bpy.props import BoolProperty, IntProperty, EnumProperty, StringProperty, P
 import os
 import shutil
 import pathlib
+import re
 import json
 import subprocess
 
@@ -508,116 +509,8 @@ def draw_popover(self, context):
 
 
 # Write user variables to a JSON file.
-def write_json(
-    base_dir, 
-    import_file, 
-    import_file_ext, 
-    import_file_command, 
-    import_file_options, 
-    directory_output_location, 
-    directory_output_custom, 
-    use_subdirectories, 
-    copy_item_dir_contents, 
-    model_quantity, 
-    export_file_1_ext, 
-    export_file_1_command, 
-    export_file_1_options, 
-    export_file_1_scale, 
-    export_file_2_ext, 
-    export_file_2_command, 
-    export_file_2_options, 
-    export_file_2_scale, 
-    prefix, 
-    suffix, 
-    set_data_names, 
-    set_UV_map_names, 
-    use_textures, 
-    regex_textures, 
-    textures_source, 
-    textures_custom_dir, 
-    copy_textures_custom_dir, 
-    replace_textures, 
-    keep_modified_textures, 
-    texture_resolution, 
-    texture_resolution_include,
-    image_format,
-    image_quality,
-    image_format_include,
-    set_transforms, 
-    set_transforms_filter, 
-    set_location, 
-    set_rotation, 
-    set_scale, 
-    apply_transforms, 
-    apply_transforms_filter, 
-    delete_animations, 
-    unit_system, 
-    length_unit, 
-    auto_resize_files, 
-    file_size_maximum, 
-    file_size_methods, 
-    resize_textures_limit, 
-    decimate_limit, 
-    save_preview_image, 
-    save_blend, 
-    save_conversion_log, 
-):
-    # Data to be written
-    variables_dict = {
-        "base_dir": base_dir,
-        "import_file": import_file, 
-        "import_file_ext": import_file_ext,
-        "import_file_command": import_file_command,
-        "import_file_options": import_file_options,
-        "directory_output_location": directory_output_location, 
-        "directory_output_custom": directory_output_custom, 
-        "use_subdirectories": use_subdirectories, 
-        "copy_item_dir_contents": copy_item_dir_contents, 
-        "model_quantity": model_quantity, 
-        "export_file_1_ext": export_file_1_ext,
-        "export_file_1_command": export_file_1_command,
-        "export_file_1_options": export_file_1_options,
-        "export_file_1_scale": export_file_1_scale, 
-        "export_file_2_ext": export_file_2_ext,
-        "export_file_2_command": export_file_2_command,
-        "export_file_2_options": export_file_2_options,
-        "export_file_2_scale": export_file_2_scale, 
-        "prefix": prefix,
-        "suffix": suffix,
-        "set_data_names": set_data_names, 
-        "set_UV_map_names": set_UV_map_names, 
-        "use_textures": use_textures, 
-        "regex_textures": regex_textures, 
-        "textures_source": textures_source, 
-        "textures_custom_dir": textures_custom_dir, 
-        "copy_textures_custom_dir": copy_textures_custom_dir, 
-        "replace_textures": replace_textures, 
-        "keep_modified_textures": keep_modified_textures, 
-        "texture_resolution": texture_resolution,
-        "texture_resolution_include": texture_resolution_include,
-        "image_format": image_format,
-        "image_quality": image_quality,
-        "image_format_include": image_format_include,
-        "set_transforms": set_transforms, 
-        "set_transforms_filter": set_transforms_filter, 
-        "set_location": set_location, 
-        "set_rotation": set_rotation, 
-        "set_scale": set_scale, 
-        "apply_transforms": apply_transforms, 
-        "apply_transforms_filter": apply_transforms_filter, 
-        "delete_animations": delete_animations,
-        "unit_system": unit_system, 
-        "length_unit": length_unit, 
-        "auto_resize_files": auto_resize_files, 
-        "file_size_maximum": file_size_maximum, 
-        "file_size_methods": file_size_methods, 
-        "resize_textures_limit": resize_textures_limit, 
-        "decimate_limit": decimate_limit, 
-        "save_preview_image": save_preview_image,
-        "save_blend": save_blend,
-        "save_conversion_log": save_conversion_log, 
-    }
-    
+def write_json(variables_dict):
+        
     json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Variables.json")
 
     with open(json_file, "w") as outfile:
@@ -843,6 +736,25 @@ class TRANSMOGRIFY(Operator):
     def export_selection(self, context, base_dir):
         settings = context.scene.batch_convert
 
+        # Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
+        keys = [key for key in TransmogrifierSettings.__annotations__ if "enum" not in key]
+        values = []
+        for key in keys:
+            value = eval('settings.' + str(key))
+            if "{" in str(value):
+                value = tuple(value)
+            elif "<" in str(value):
+                value = str(value)
+                char_start = "("
+                char_end = ")"
+                value = eval(re.sub('[xyz=]', '', "(" + ''.join(value).split(char_start)[1].split(char_end)[0] + ")"))
+            values.append(value)
+            # print(key, "=", value)
+
+        variables_dict = dict(zip(keys, values))
+        print(variables_dict)
+
+
         # Create path to StartConverter.cmd
         start_converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "StartConverter.cmd")
 
@@ -1009,6 +921,8 @@ class TRANSMOGRIFY(Operator):
             import_file_ext = settings.import_usd_extension
         else:
             import_file_ext = "." + settings.import_file.lower()
+        
+        
         # Set import file options
         import_file_options = options
 
@@ -1281,65 +1195,13 @@ class TRANSMOGRIFY(Operator):
             export_file_2_ext = settings.usd_extension
         else:
             export_file_2_ext = "." + settings.export_file_2.lower()
+        
         # Set export file options
         export_file_2_options = options
 
         
         # Write variables to JSON file before running converter
-        write_json(
-            base_dir, 
-            import_file, 
-            import_file_ext, 
-            import_file_command, 
-            import_file_options, 
-            directory_output_location, 
-            directory_output_custom, 
-            use_subdirectories, 
-            copy_item_dir_contents, 
-            model_quantity, 
-            export_file_1_ext, 
-            export_file_1_command, 
-            export_file_1_options, 
-            export_file_1_scale, 
-            export_file_2_ext, 
-            export_file_2_command, 
-            export_file_2_options, 
-            export_file_2_scale, 
-            prefix, 
-            suffix, 
-            set_data_names, 
-            set_UV_map_names, 
-            use_textures, 
-            regex_textures, 
-            textures_source, 
-            textures_custom_dir, 
-            copy_textures_custom_dir, 
-            replace_textures, 
-            keep_modified_textures, 
-            texture_resolution, 
-            texture_resolution_include,
-            image_format,
-            image_quality,
-            image_format_include,
-            set_transforms, 
-            set_transforms_filter, 
-            set_location, 
-            set_rotation, 
-            set_scale, 
-            apply_transforms, 
-            apply_transforms_filter, 
-            delete_animations, 
-            unit_system, 
-            length_unit, 
-            auto_resize_files, 
-            file_size_maximum, 
-            file_size_methods, 
-            resize_textures_limit, 
-            decimate_limit, 
-            save_preview_image, 
-            save_blend, 
-            save_conversion_log, 
-        )
+        write_json(variables_dict)
 
         # Run Converter.py
         # subprocess.call(start_converter_file, creationflags=subprocess.CREATE_NEW_CONSOLE) # Use for troubleshooting purposes
