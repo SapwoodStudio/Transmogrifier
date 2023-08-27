@@ -44,7 +44,7 @@ def get_variables():
     try:
         # Make all variables global.
         global variables_dict
-        global base_dir 
+        global directory 
         global import_file_ext 
         global import_file_command 
         global import_file_options 
@@ -99,10 +99,10 @@ def get_variables():
         # Assign variables from dictionary.
         variables_dict = read_json()
         
-        base_dir = variables_dict["base_dir"]
-        if base_dir == "":
-            base_dir = sys.argv[-1]
-            if base_dir == "Converter.py":
+        directory = variables_dict["directory"]
+        if directory == "":
+            directory = sys.argv[-1]
+            if directory == "Converter.py":
                 print("No base directory given for batch conversion. Exiting.")
                 logging.info("No base directory given for batch conversion. Exiting.")
                 conversion_count = 0
@@ -173,7 +173,7 @@ def make_log_file():
     if directory_output_location == "Custom":
         log_file = os.path.join(directory_output_custom, "Transmogrifier_Log_" + timestamp + ".txt")
     elif directory_output_location != "Custom":
-        log_file = os.path.join(base_dir, "Transmogrifier_Log_" + timestamp + ".txt")
+        log_file = os.path.join(directory, "Transmogrifier_Log_" + timestamp + ".txt")
     
     # Create log file.
     logging.basicConfig(
@@ -358,7 +358,7 @@ def remove_imported_materials():
         logging.exception("COULD NOT REMOVE IMPORTED MATERIALS")
 		
 
-# Copy textures from custom directory and apply to all models in base_dir.
+# Copy textures from custom directory and apply to all models in directory.
 def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures):
     try:
         if os.path.exists(textures_custom_dir):
@@ -2682,7 +2682,7 @@ def batch_converter():
         #set_theme_light(blender_dir, blender_version)
 
         # Run converter in every subdirectory that contains a model of the specified file type.
-        for subdir, dirs, files in os.walk(base_dir):
+        for subdir, dirs, files in os.walk(directory):
             for file in files:
                 item = os.path.splitext(file)[0]
                 file = os.path.join(subdir, file.lower())

@@ -1060,6 +1060,7 @@ class TRANSMOGRIFY(Operator):
             export_file_1_ext = settings.usd_extension
         else:
             export_file_1_ext = "." + settings.export_file_1.lower()
+        
         # Set export file options
         export_file_1_options = options
 
@@ -1199,7 +1200,21 @@ class TRANSMOGRIFY(Operator):
         # Set export file options
         export_file_2_options = options
 
-        
+        # Update variables_dict with additional import/export options
+        additional_settings_dict = {
+            "import_file_ext": import_file_ext,
+            "import_file_command": import_file_command, 
+            "import_file_options": import_file_options, 
+            "export_file_1_ext": export_file_1_ext, 
+            "export_file_1_command": export_file_1_command, 
+            "export_file_1_options": export_file_1_options, 
+            "export_file_2_ext": export_file_2_ext, 
+            "export_file_2_command": export_file_2_command, 
+            "export_file_2_options": export_file_2_options, 
+            "length_unit": length_unit
+        }
+        variables_dict.update(additional_settings_dict)
+
         # Write variables to JSON file before running converter
         write_json(variables_dict)
 
