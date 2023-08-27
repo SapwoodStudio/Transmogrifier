@@ -177,7 +177,12 @@ def draw_settings(self, context):
     self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="PRESETS", icon='FILE_BLANK')
-    col.prop(settings, 'transmogrifier_preset_enum')
+    layout = self.layout
+        
+    row = layout.row(align=True)
+    row.prop(settings, 'transmogrifier_preset_enum')
+    row.operator("transmogrifierpreset.add", text="", icon="ADD")
+    row.operator("transmogrifierpreset.remove", text="", icon="REMOVE")
     if settings.transmogrifier_preset != "NO_PRESET":
         # Refresh UI
         row = self.layout.row()
@@ -508,11 +513,32 @@ def draw_popover(self, context):
     row.popover(panel='POPOVER_PT_transmogrify', text='')
 
 
-# Write user variables to a JSON file.
-def write_json(variables_dict):
-        
-    json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Variables.json")
+# Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
+def get_transmogrifier_settings(self, context):
+    settings = context.scene.batch_convert
+    keys = [key for key in TransmogrifierSettings.__annotations__ if "enum" not in key]
+    values = []
+    for key in keys:
+        value = eval('settings.' + str(key))
+        if "{" in str(value):
+            value = tuple(value)
+        elif "<" in str(value):
+            value = str(value)
+            char_start = "("
+            char_end = ")"
+            value = eval(re.sub('[xyz=]', '', "(" + ''.join(value).split(char_start)[1].split(char_end)[0] + ")"))
+        values.append(value)
+        # print(key, "=", value)
 
+    variables_dict = dict(zip(keys, values))
+    # print(variables_dict)
+
+    return variables_dict
+
+
+# Write user variables to a JSON file.
+def write_json(variables_dict, json_file):
+        
     with open(json_file, "w") as outfile:
         json.dump(variables_dict, outfile)
 
@@ -657,6 +683,9 @@ class REFRESHUI(Operator):
 
             # Read dictionary and change UI settings to reflect selected preset.
             for key, value in transmogrifier_preset_dict.items():
+                # Don't affect currently selected Transmogrifier preset
+                if key == "transmogrifier_preset":
+                    continue
                 # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.
                 if type(value) == str:
                     if value == '':
@@ -675,6 +704,45 @@ class REFRESHUI(Operator):
                 exec(update_setting)
 
         return {'FINISHED'} 
+
+
+class ADD_TRANSMOGRIFIER_PRESET(Operator):
+    """Creates a Transmogrifier preset from current settings"""
+    bl_idname = "transmogrifierpreset.add"
+    bl_label = "Add Preset"
+
+    preset_name: bpy.props.StringProperty(name="Name", default="")
+
+
+    def execute(self, context):
+        
+        variables_dict = get_transmogrifier_settings(self, context)
+        add_preset_name = self.preset_name
+        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets\\operator\\transmogrifier")[0]), add_preset_name + ".json")
+        write_json(variables_dict, json_file)
+
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=200)
+    
+class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
+    """Removes currently selected Transmogrifier preset"""
+    bl_idname = "transmogrifierpreset.remove"
+    bl_label = "Remove Preset"
+
+
+    def execute(self, context):
+        
+        settings = context.scene.batch_convert
+        remove_preset_name = settings.transmogrifier_preset_enum
+        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets\\operator\\transmogrifier")[0]), remove_preset_name + ".json")
+
+        if remove_preset_name != "NO_PRESET":
+            os.remove(json_file)
+
+        return {'FINISHED'}
 
 # Operator called when pressing the Batch Convert button.
 class TRANSMOGRIFY(Operator):
@@ -737,23 +805,7 @@ class TRANSMOGRIFY(Operator):
         settings = context.scene.batch_convert
 
         # Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
-        keys = [key for key in TransmogrifierSettings.__annotations__ if "enum" not in key]
-        values = []
-        for key in keys:
-            value = eval('settings.' + str(key))
-            if "{" in str(value):
-                value = tuple(value)
-            elif "<" in str(value):
-                value = str(value)
-                char_start = "("
-                char_end = ")"
-                value = eval(re.sub('[xyz=]', '', "(" + ''.join(value).split(char_start)[1].split(char_end)[0] + ")"))
-            values.append(value)
-            # print(key, "=", value)
-
-        variables_dict = dict(zip(keys, values))
-        print(variables_dict)
-
+        variables_dict = get_transmogrifier_settings(self, context)
 
         # Create path to StartConverter.cmd
         start_converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "StartConverter.cmd")
@@ -1216,7 +1268,8 @@ class TRANSMOGRIFY(Operator):
         variables_dict.update(additional_settings_dict)
 
         # Write variables to JSON file before running converter
-        write_json(variables_dict)
+        json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Variables.json")
+        write_json(variables_dict, json_file)
 
         # Run Converter.py
         # subprocess.call(start_converter_file, creationflags=subprocess.CREATE_NEW_CONSOLE) # Use for troubleshooting purposes
@@ -1932,6 +1985,8 @@ def register():
     bpy.utils.register_class(TransmogrifierSettings)
     bpy.utils.register_class(POPOVER_PT_transmogrify)
     bpy.utils.register_class(REFRESHUI)
+    bpy.utils.register_class(ADD_TRANSMOGRIFIER_PRESET)
+    bpy.utils.register_class(REMOVE_TRANSMOGRIFIER_PRESET)
     bpy.utils.register_class(TRANSMOGRIFY)
 
     # Add Batch Convert settings to Scene type
@@ -1956,6 +2011,8 @@ def unregister():
     bpy.utils.unregister_class(TransmogrifierSettings)
     bpy.utils.unregister_class(POPOVER_PT_transmogrify)
     bpy.utils.unregister_class(REFRESHUI)
+    bpy.utils.unregister_class(ADD_TRANSMOGRIFIER_PRESET)
+    bpy.utils.unregister_class(REMOVE_TRANSMOGRIFIER_PRESET)
     bpy.utils.unregister_class(TRANSMOGRIFY)
 
     # Remove UI
