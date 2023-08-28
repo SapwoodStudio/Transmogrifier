@@ -167,13 +167,13 @@ def draw_settings(self, context):
     title = bl_info["name"] + " " + version
     self.layout.label(text = title)
 
-    settings = context.scene.batch_convert
+    settings = context.scene.transmogrifier
 
     # Batch Convert button
-    # self.layout.operator('convert.batch', icon='FILE_CACHE')
+    # self.layout.operator('transmogrifier.transmogrify', icon='FILE_CACHE')
     row = self.layout.row()
     row = row.row(align=True)
-    row.operator('convert.batch', text='Batch Convert', icon='FILE_CACHE')
+    row.operator('transmogrifier.transmogrify', text='Batch Convert', icon='FILE_CACHE')
     row.scale_y = 1.5
 
     # Transmogrifier Presets Menu
@@ -512,13 +512,13 @@ def draw_settings(self, context):
 def draw_popover(self, context):
     row = self.layout.row()
     row = row.row(align=True)
-    row.operator('convert.batch', text='', icon='FILE_CACHE')
+    row.operator('transmogrifier.transmogrify', text='', icon='FILE_CACHE')
     row.popover(panel='POPOVER_PT_transmogrify', text='')
 
 
 # Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
 def get_transmogrifier_settings(self, context):
-    settings = context.scene.batch_convert
+    settings = context.scene.transmogrifier
     keys = [key for key in TransmogrifierSettings.__annotations__ if "enum" not in key]
     values = []
     for key in keys:
@@ -678,7 +678,7 @@ class REFRESHUI(Operator):
     bl_label = "Refresh UI"
 
     def execute(self, context):
-        settings = context.scene.batch_convert
+        settings = context.scene.transmogrifier
 
         if settings.transmogrifier_preset != "NO_PRESET":
             # Load selected Transmogrifier preset as a dictionary.
@@ -742,7 +742,7 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
 
     def execute(self, context):
         
-        settings = context.scene.batch_convert
+        settings = context.scene.transmogrifier
         remove_preset_name = settings.transmogrifier_preset_enum
         json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets\\operator\\transmogrifier")[0]), remove_preset_name + ".json")
 
@@ -754,12 +754,12 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
 # Operator called when pressing the Batch Convert button.
 class TRANSMOGRIFY(Operator):
     """Batch converts 3D files and associated textures into other formats"""
-    bl_idname = "convert.batch"
+    bl_idname = "transmogrifier.transmogrify"
     bl_label = "Batch Convert"
     file_count = 0
 
     def execute(self, context):
-        settings = context.scene.batch_convert
+        settings = context.scene.transmogrifier
         
         # Refresh UI from preset if one is selected before writing new JSON and converting.
         # Turned off because it will delete any edits to settings before conversion even after preset has been selected and UI updated.
@@ -804,13 +804,13 @@ class TRANSMOGRIFY(Operator):
 
     def select_children_recursive(self, obj, context):
         for c in obj.children:
-            if obj.type in context.scene.batch_convert.texture_resolution_include:
+            if obj.type in context.scene.transmogrifier.texture_resolution_include:
                 c.select_set(True)
             self.select_children_recursive(c, context)
 
 
     def export_selection(self, context, base_dir):
-        settings = context.scene.batch_convert
+        settings = context.scene.transmogrifier
 
         # Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
         variables_dict = get_transmogrifier_settings(self, context)
@@ -1999,7 +1999,7 @@ def register():
     bpy.utils.register_class(TRANSMOGRIFY)
 
     # Add Batch Convert settings to Scene type
-    bpy.types.Scene.batch_convert = PointerProperty(type=TransmogrifierSettings)
+    bpy.types.Scene.transmogrifier = PointerProperty(type=TransmogrifierSettings)
 
     # Show addon UI
     prefs = bpy.context.preferences.addons[__name__].preferences
@@ -2013,7 +2013,7 @@ def register():
 
 def unregister():
     # Delete the settings from Scene type (Doesn't actually remove existing ones from scenes)
-    del bpy.types.Scene.batch_convert
+    del bpy.types.Scene.transmogrifier
 
     # Unregister Classes
     bpy.utils.unregister_class(TransmogrifierPreferences)
