@@ -686,8 +686,12 @@ class REFRESHUI(Operator):
 
             # Read dictionary and change UI settings to reflect selected preset.
             for key, value in transmogrifier_preset_dict.items():
+                # Make sure double-backslashes are preserved in directory path.
+                directories_set = ("directory", "directory_output_custom", "textures_custom_dir")
+                if key in directories_set and value != "":
+                    value = "'" + repr(value) + "'"
                 # Don't affect currently selected Transmogrifier preset
-                if key == "transmogrifier_preset":
+                elif key == "transmogrifier_preset":
                     continue
                 # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.
                 if type(value) == str:

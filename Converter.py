@@ -549,7 +549,7 @@ def find_replace_pbr_tag(texture):
             '[Bb]?ase*\s?_?[Cc]?olou?r|[Aa]?lbedo|[Dd]?iffuse|[Dd]?iff|[Cc]ol': 'BaseColor',
             '[Ss]?ubsurface|[Ss]ss': 'Subsurface',
             '[Mm]?etall?ic|[Mm]?etalness?|[Mm]?etaln.*|[Mm]etal|[Mm]tl': 'Metallic', 
-            '[Ss]?pecul.*|[Ss]pec|[Ss]pc': 'Specular',
+            '[Ss]?pecul.*|[Ss]pec': 'Specular',
             '[Rr]?ou?gh|[Rr]?ou?ghness|[Rr]gh': 'Roughness',
             '[Gg]?loss.*': 'Gloss',
             '[Nn]?ormal|[Nn]orm|[Nn]or|[Nn]rm|[Nn]rml': 'Normal',
