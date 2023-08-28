@@ -758,7 +758,8 @@ class TRANSMOGRIFY(Operator):
         settings = context.scene.batch_convert
         
         # Refresh UI from preset if one is selected before writing new JSON and converting.
-        bpy.ops.refreshui.transmogrifier()
+        # Turned off because it will delete any edits to settings before conversion even after preset has been selected and UI updated.
+        # bpy.ops.refreshui.transmogrifier()
 
         base_dir = settings.directory
         if not bpy.path.abspath('//'):  # Then the blend file hasn't been saved
