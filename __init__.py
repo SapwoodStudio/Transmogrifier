@@ -149,6 +149,9 @@ def get_transmogrifier_preset_index(operator, preset_name):
             return p
     return 0
 
+# Refresh UI when a Transmogrifier preset is selected by running REFRESHUI operator.
+def refresh_ui(self, context):
+    eval('bpy.ops.refreshui.transmogrifier()')
 
 # Draws the .blend file specific settings used in the
 # Popover panel or Side Panel panel
@@ -176,19 +179,19 @@ def draw_settings(self, context):
     # Transmogrifier Presets Menu
     self.layout.separator()
     col = self.layout.column(align=True)
-    col.label(text="PRESETS", icon='FILE_BLANK')
+    col.label(text="WORKFLOW", icon='DRIVER')
     layout = self.layout
-        
     row = layout.row(align=True)
     row.prop(settings, 'transmogrifier_preset_enum')
     row.operator("transmogrifierpreset.add", text="", icon="ADD")
     row.operator("transmogrifierpreset.remove", text="", icon="REMOVE")
-    if settings.transmogrifier_preset != "NO_PRESET":
-        # Refresh UI
-        row = self.layout.row()
-        row = row.row(align=True)
-        row.operator('refreshui.transmogrifier', text='Refresh UI from Preset', icon='FILE_REFRESH')
-        row.scale_y = 1.0
+    # Manually refresh UI via operator button. No longer needed because of update_enum in transmogrifier_preset propertygroup.
+    # if settings.transmogrifier_preset != "NO_PRESET":
+    #     # Refresh UI
+    #     row = self.layout.row()
+    #     row = row.row(align=True)
+    #     row.operator('refreshui.transmogrifier', text='Refresh UI from Preset', icon='FILE_REFRESH')
+    #     row.scale_y = 1.0
 
 
     # Import Settings
@@ -1416,12 +1419,13 @@ class TransmogrifierSettings(PropertyGroup):
     transmogrifier_preset: StringProperty(default='NO_PRESET')
     transmogrifier_preset_enum: EnumProperty(
         name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > glTF (.glb/.gltf))",
+        description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
         items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
         get=lambda self: get_transmogrifier_preset_index(
             'transmogrifier', self.transmogrifier_preset),
         set=lambda self, value: setattr(
             self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
+        update=refresh_ui
     )
 
     # Export Settings:
