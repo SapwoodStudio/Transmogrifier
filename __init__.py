@@ -522,7 +522,12 @@ def get_transmogrifier_settings(self, context):
     keys = [key for key in TransmogrifierSettings.__annotations__ if "enum" not in key]
     values = []
     for key in keys:
+        # Get value as string to be evaluated later.
         value = eval('settings.' + str(key))
+        # Convert enumproperty numbers to numbers, dictionaries and vectors to tuples
+        if key == "texture_resolution" or key == "resize_textures_limit":
+            if value != "Default":
+                value = int(value)
         if "{" in str(value):
             value = tuple(value)
         elif "<" in str(value):
@@ -534,7 +539,6 @@ def get_transmogrifier_settings(self, context):
         # print(key, "=", value)
 
     variables_dict = dict(zip(keys, values))
-    # print(variables_dict)
 
     return variables_dict
 
