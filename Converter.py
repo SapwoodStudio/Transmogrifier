@@ -42,122 +42,21 @@ def read_json():
 # Read dictionary of variables from JSON file.
 def get_variables():
     try:
-        # Make all variables global.
-        global variables_dict
-        global directory 
-        global import_file_ext 
-        global import_file_command 
-        global import_file_options 
-        global directory_output_location 
-        global directory_output_custom 
-        global use_subdirectories
-        global copy_item_dir_contents
-        global model_quantity 
-        global export_file_1_ext 
-        global export_file_1_command 
-        global export_file_1_options 
-        global export_file_1_scale 
-        global export_file_2_ext 
-        global export_file_2_command 
-        global export_file_2_options 
-        global export_file_2_scale 
-        global prefix 
-        global suffix 
-        global set_data_names 
-        global set_UV_map_names
-        global use_textures 
-        global regex_textures 
-        global textures_source 
-        global textures_custom_dir 
-        global copy_textures_custom_dir 
-        global replace_textures 
-        global keep_modified_textures 
-        global texture_resolution 
-        global texture_resolution_include
-        global image_format
-        global image_quality
-        global image_format_include
-        global set_transforms 
-        global set_transforms_filter 
-        global set_location 
-        global set_rotation 
-        global set_scale 
-        global apply_transforms 
-        global apply_transforms_filter 
-        global delete_animations 
-        global unit_system 
-        global length_unit 
-        global auto_resize_files 
-        global file_size_maximum 
-        global file_size_methods 
-        global resize_textures_limit
-        global decimate_limit
-        global save_preview_image 
-        global save_blend 
-        global save_conversion_log
-
-        # Assign variables from dictionary.
+        # Assign variables from dictionary and make all variables global
         variables_dict = read_json()
-        
-        directory = variables_dict["directory"]
-        if directory == "":
-            directory = sys.argv[-1]
-            if directory == "Converter.py":
-                print("No base directory given for batch conversion. Exiting.")
-                logging.info("No base directory given for batch conversion. Exiting.")
-                conversion_count = 0
-                report_conversion_count(conversion_count)
-                quit_blender()
-        import_file_ext = variables_dict["import_file_ext"]
-        import_file_command = variables_dict["import_file_command"]
-        import_file_options = variables_dict["import_file_options"]
-        directory_output_location = variables_dict["directory_output_location"]
-        directory_output_custom = variables_dict["directory_output_custom"]
-        use_subdirectories = variables_dict["use_subdirectories"]
-        copy_item_dir_contents = variables_dict["copy_item_dir_contents"]
-        model_quantity = variables_dict["model_quantity"]
-        export_file_1_ext = variables_dict["export_file_1_ext"]
-        export_file_1_command = variables_dict["export_file_1_command"]
-        export_file_1_options = variables_dict["export_file_1_options"]
-        export_file_1_scale = variables_dict["export_file_1_scale"]
-        export_file_2_ext = variables_dict["export_file_2_ext"]
-        export_file_2_command = variables_dict["export_file_2_command"]
-        export_file_2_options = variables_dict["export_file_2_options"]
-        export_file_2_scale = variables_dict["export_file_2_scale"]
-        prefix = variables_dict["prefix"]
-        suffix = variables_dict["suffix"]
-        set_data_names = variables_dict["set_data_names"]
-        set_UV_map_names = variables_dict["set_UV_map_names"]        
-        use_textures = variables_dict["use_textures"]
-        regex_textures = variables_dict["regex_textures"]
-        textures_source = variables_dict["textures_source"]
-        textures_custom_dir = variables_dict["textures_custom_dir"]
-        copy_textures_custom_dir = variables_dict["copy_textures_custom_dir"]
-        replace_textures = variables_dict["replace_textures"]
-        keep_modified_textures = variables_dict["keep_modified_textures"]
-        texture_resolution = variables_dict["texture_resolution"]
-        texture_resolution_include = variables_dict["texture_resolution_include"]
-        image_format = variables_dict["image_format"]
-        image_quality = variables_dict["image_quality"]
-        image_format_include = variables_dict["image_format_include"]
-        set_transforms = variables_dict["set_transforms"]
-        set_transforms_filter = variables_dict["set_transforms_filter"]
-        set_location = tuple(variables_dict["set_location"])
-        set_rotation = tuple(variables_dict["set_rotation"])
-        set_scale = tuple(variables_dict["set_scale"])
-        apply_transforms = variables_dict["apply_transforms"]
-        apply_transforms_filter = variables_dict["apply_transforms_filter"]
-        delete_animations = variables_dict["delete_animations"]
-        unit_system = variables_dict["unit_system"]
-        length_unit = variables_dict["length_unit"]
-        auto_resize_files = variables_dict["auto_resize_files"]
-        file_size_maximum = variables_dict["file_size_maximum"]
-        file_size_methods = variables_dict["file_size_methods"]
-        resize_textures_limit = variables_dict["resize_textures_limit"]
-        decimate_limit = variables_dict["decimate_limit"]
-        save_preview_image = variables_dict["save_preview_image"]
-        save_blend = variables_dict["save_blend"]
-        save_conversion_log = variables_dict["save_conversion_log"]
+
+        for key, value in variables_dict.items():
+            # Preserve quotation marks during exec() if value is a string type object.
+            if type(value) == str:
+                value = repr(value)
+            # Don't preserve quotation marks during exec() if value is not a string type object.
+            else:
+                value = str(value)
+
+            # Concatenate command.
+            variable_assignment_command = "globals()" + "['" + str(key) + "']" + " = " + value
+            # Execute variable assignment.
+            exec(variable_assignment_command)
 
         print("------------------------  GOT VARIABLES FROM JSON  ------------------------")
         logging.info("GOT VARIABLES FROM JSON")
@@ -2391,10 +2290,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Rename UV maps if requested by User.
         if set_UV_map_names:
             rename_UV_maps()
-
-        # Save preview image.
-        if save_preview_image:
-            render_preview_image(preview_image)
         
         # Save .blend file.
         if save_blend:
@@ -2406,6 +2301,10 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Set transforms if requested by the User.
         if set_transforms:
             set_transformations(set_transforms_filter, set_location, set_rotation, set_scale)
+
+        # Save preview image.
+        if save_preview_image:
+            render_preview_image(preview_image)
         
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
@@ -2748,6 +2647,7 @@ def transmogrify():
     get_variables()
 
     # Step 2: Start logging conversion if requested by User.
+    print(import_file)
     if save_conversion_log:
         make_log_file()
 
