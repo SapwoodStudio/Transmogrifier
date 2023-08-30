@@ -764,11 +764,8 @@ class TRANSMOGRIFY(Operator):
 
     def execute(self, context):
         settings = context.scene.transmogrifier
-        
-        # Refresh UI from preset if one is selected before writing new JSON and converting.
-        # Turned off because it will delete any edits to settings before conversion even after preset has been selected and UI updated.
-        # bpy.ops.refreshui.transmogrifier()
 
+        # Stop converter if conversion directory has not been selected or .blend file has not been saved.
         base_dir = settings.directory
         if not bpy.path.abspath('//'):  # Then the blend file hasn't been saved
             # Then the path should be relative
@@ -781,16 +778,12 @@ class TRANSMOGRIFY(Operator):
             self.report({'ERROR'}, "Conversion directory doesn't exist")
             return {'FINISHED'}
 
-
         # Create path to Converter.py
         converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter.py")
 
-
         self.file_count = 0
 
-
         self.export_selection(context, base_dir)
-
 
         if self.file_count == 0:
             self.report({'ERROR'}, "Could not convert.")
@@ -805,6 +798,7 @@ class TRANSMOGRIFY(Operator):
                 self.report({'INFO'}, "Could not convert or no items needed conversion. " + str(conversion_count) + " files were converted.")
 
         return {'FINISHED'}
+
 
     def select_children_recursive(self, obj, context):
         for c in obj.children:
@@ -831,22 +825,22 @@ class TRANSMOGRIFY(Operator):
         # Create path to Transmogrifier directory
         transmogrifier_dir = pathlib.Path(__file__).parent.resolve()
 
-        # Assign user input to variables to be written to Converter_Variables.json
-        import_file = settings.import_file
+        # Stop converter if custom output directory has not been selected or .blend file has not been saved.
         directory_output_location = settings.directory_output_location
         directory_output_custom = settings.directory_output_custom
-        use_subdirectories = settings.use_subdirectories
-        copy_item_dir_contents = settings.copy_item_dir_contents
-        model_quantity = settings.model_quantity
-        export_file_1_scale = settings.export_file_1_scale
-        export_file_2_scale = settings.export_file_2_scale
-        prefix = settings.prefix
-        suffix = settings.suffix
-        set_data_names = settings.set_data_names
-        set_UV_map_names = settings.set_UV_map_names
-        use_textures = settings.use_textures
-        regex_textures = settings.regex_textures
+        if directory_output_location == "Custom":
+            if not bpy.path.abspath('//'):  # Then the blend file hasn't been saved
+                # Then the path should be relative
+                if directory_output_custom != bpy.path.abspath(directory_output_custom):
+                    self.report(
+                        {'ERROR'}, "Save .blend file somewhere before exporting model to a relative, custom directory\n(or use an absolute directory)")
+                    return {'FINISHED'}
+            directory_output_custom = bpy.path.abspath(directory_output_custom)  # convert to absolute path
+            if not os.path.isdir(directory_output_custom):
+                self.report({'ERROR'}, "Custom export directory doesn't exist")
+                return {'FINISHED'}
 
+        # Stop converter if custom textures directory has not been selected or .blend file has not been saved.
         textures_source = settings.textures_source
         textures_custom_dir = settings.textures_custom_dir
         if textures_source == "Custom":
@@ -861,44 +855,8 @@ class TRANSMOGRIFY(Operator):
                 self.report({'ERROR'}, "Textures directory doesn't exist")
                 return {'FINISHED'}
 
-        copy_textures_custom_dir = settings.copy_textures_custom_dir
-        replace_textures = settings.replace_textures
-        if not copy_textures_custom_dir:  # If User initially elects to copy textures from custom directory and then to replace textures, but then decides not to copy textures, replace_textures is still True. Make it false.
-            replace_textures = False
-        keep_modified_textures = settings.keep_modified_textures
-        texture_resolution = settings.texture_resolution
-        texture_resolution_include = list(settings.texture_resolution_include)
-        image_format = settings.image_format
-        image_quality = settings.image_quality
-        image_format_include = list(settings.image_format_include)
-        set_transforms = settings.set_transforms
-        set_transforms_filter = list(settings.set_transforms_filter)
-        set_location = list(settings.set_location)
-        set_rotation = list(settings.set_rotation)
-        set_scale = list(settings.set_scale)
-        apply_transforms = settings.apply_transforms
-        apply_transforms_filter = list(settings.apply_transforms_filter)
-        if not apply_transforms:
-            apply_transforms_filter = []
-        delete_animations = settings.delete_animations
-        unit_system = settings.unit_system
-        if unit_system == "METRIC":
-            length_unit = settings.length_unit_metric
-        elif unit_system == "IMPERIAL":
-            length_unit = settings.length_unit_imperial
-        elif unit_system == "NONE":
-            length_unit = "NONE"
-        auto_resize_files = settings.auto_resize_files
-        file_size_maximum = settings.file_size_maximum
-        file_size_methods = list(settings.file_size_methods)
-        resize_textures_limit = int(settings.resize_textures_limit)
-        decimate_limit = settings.decimate_limit
-        save_preview_image = settings.save_preview_image
-        save_blend = settings.save_blend
-        save_conversion_log = settings.save_conversion_log
 
-
-        # Import File Format
+        # Determine options and import command for Import File Format
 
         if settings.import_file == "DAE":
             options = load_operator_preset(
@@ -994,7 +952,7 @@ class TRANSMOGRIFY(Operator):
         
 
 
-        # Export File Format 1
+        # Determine options and export command for Export File Format 1
 
         if settings.export_file_1 == "DAE":
             options = load_operator_preset(
@@ -1132,7 +1090,7 @@ class TRANSMOGRIFY(Operator):
 
         
 
-        # Export File Format 2
+        # Determine options and import command for Export File Format 2
 
         if settings.export_file_2 == "DAE":
             options = load_operator_preset(
@@ -1263,6 +1221,15 @@ class TRANSMOGRIFY(Operator):
         
         # Set export file options
         export_file_2_options = options
+
+        # Set length unit according to unit system.
+        unit_system = settings.unit_system
+        if unit_system == "METRIC":
+            length_unit = settings.length_unit_metric
+        elif unit_system == "IMPERIAL":
+            length_unit = settings.length_unit_imperial
+        elif unit_system == "NONE":
+            length_unit = "NONE"
 
         # Update variables_dict with additional import/export options
         additional_settings_dict = {

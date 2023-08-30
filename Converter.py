@@ -262,9 +262,9 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
     try:
         if os.path.exists(textures_custom_dir):
             if os.path.exists(textures_dir):  # Cannot create another textures folder if one already exists.
-                if replace_textures:  # If User elected to replace an existing textures directory might be inside the item folder, then delete it.
+                if replace_textures and copy_textures_custom_dir:  # If User elected to replace an existing textures directory might be inside the item folder, then delete it.
                     shutil.rmtree(textures_dir)
-                elif not replace_textures:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
+                else:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
                     textures_dir_name = [d for d in os.listdir(item_dir) if "textures" in d.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
                     textures_dir_original_name = [d for d in os.listdir(item_dir) if "textures" in d.lower()][0] + "_original"
                     textures_dir_original = os.path.join(item_dir, textures_dir_original_name)
