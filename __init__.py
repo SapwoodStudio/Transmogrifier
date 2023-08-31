@@ -583,6 +583,42 @@ class POPOVER_PT_transmogrify(Panel):
     def draw(self, context):
         draw_settings(self, context)
 
+# Copy import/export/transmogrifier presets and studiolights shipped with Transmogrifier to relevant Blender Preferences directories.
+class COPY_ASSETS(Operator):
+    """Copy an HDRI and example presets shipped with Transmogrifier to User Preferences"""
+    bl_idname = "copyassets.transmogrifier"
+    bl_label = "Copy Assets to Preferences"
+
+    def execute(self, context):
+        # Define paths.
+        assets_dir = str(pathlib.Path(__file__).parent) + "\\assets"
+        hdr_dir_src = assets_dir + "\\datafiles\\studiolights"
+        hdr_dir_dest = bpy.utils.user_resource('DATAFILES', path="studiolights")
+        presets_dir_src = assets_dir + "\\presets\\operator"
+        presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets\\operator")
+
+        # Make list of source paths and destination paths (parents).
+        dir_src_list = [hdr_dir_src, presets_dir_src]
+        dir_dest_list = [hdr_dir_dest, presets_dir_dest]
+        
+        # Loop through list of source paths and copy files to parent- (or operator) specific destinations. Overwrite original files to ensure they get updated with each release.
+        for dir_src in dir_src_list:
+            for subdir, dirs, files in os.walk(dir_src):
+                for file in files:
+                    operator = os.path.basename(subdir)
+                    file_src = os.path.join(subdir, file)
+                    dir_dest_parent = dir_dest_list[dir_src_list.index(dir_src)]
+                    file_dest = os.path.join(dir_dest_parent, operator, file)
+                    dir_dest = pathlib.Path(file_dest).parent
+                    if not os.path.exists(dir_dest):
+                        os.makedirs(dir_dest)
+                    shutil.copy(file_src, file_dest)
+        
+        self.report({'INFO'}, "Copied Assets to Preferences")
+
+        return {'FINISHED'}
+
+
 # Addon settings that are NOT specific to a .blend file
 class TransmogrifierPreferences(AddonPreferences):
     bl_idname = __name__
@@ -600,47 +636,6 @@ class TransmogrifierPreferences(AddonPreferences):
             bpy.utils.register_class(VIEW3D_PT_transmogrify)
 
 
-    # Copy import/export presets and studiolights shipped with Transmogrifier to relevant Blender Preferences directories
-    def copy_assets(self, context):
-        # Copy provided HDRI to Blender Preferences directory for use in rendering preview images
-        # Create path to studiolights/world directory in Blender Preferences directory
-        studiolight_dir = str(pathlib.Path(__file__).parents[3]) + '\\datafiles\\studiolights\\world'
-        neutral_hdr_source = str(pathlib.Path(__file__).parent) + "\\assets\\neutral.hdr"
-        neutral_hdr_destination = os.path.join(pathlib.Path(studiolight_dir).resolve(), "neutral.hdr")
-                
-        # Copy neutral.hdr from addon directory to studiolights/world.
-        if not os.path.exists(studiolight_dir):
-            os.makedirs(studiolight_dir)
-        if not os.path.isfile(neutral_hdr_destination):
-            shutil.copy(neutral_hdr_source, neutral_hdr_destination)
-
-        # Copy provided export presets to Blender Preferences directory
-        gltf_presets_source = str(pathlib.Path(__file__).parent) + '\\assets\\presets\\operator\\export_scene.gltf'
-        gltf_presets_destination = str(pathlib.Path(__file__).parents[2]) + '\\presets\\operator\\export_scene.gltf'
-        usd_presets_source = str(pathlib.Path(__file__).parent) + '\\assets\\presets\\operator\\wm.usd_export'
-        usd_presets_destination = str(pathlib.Path(__file__).parents[2]) + '\\presets\\operator\\wm.usd_export'
-        glb_preset_src = str(pathlib.Path(__file__).parent) + '\\assets\\presets\\operator\\export_scene.gltf\\GLB_Preset.py'
-        glb_preset_dest = str(pathlib.Path(__file__).parents[2]) + '\\presets\\operator\\export_scene.gltf\\GLB_Preset.py'
-        glb_draco_preset_src = str(pathlib.Path(__file__).parent) + '\\assets\\presets\\operator\\export_scene.gltf\\GLB_Draco_Preset.py'
-        glb_draco_preset_dest = str(pathlib.Path(__file__).parents[2]) + '\\presets\\operator\\export_scene.gltf\\GLB_Draco_Preset.py'
-        usd_preset_src = str(pathlib.Path(__file__).parent) + '\\assets\\presets\\operator\\wm.usd_export\\USDZ_Preset.py'
-        usd_preset_dest = str(pathlib.Path(__file__).parents[2]) + '\\presets\\operator\\wm.usd_export\\USDZ_Preset.py'
-
-        # Copy entire presets directory from addon directory to presets directory if there is no presets directory
-        if not os.path.exists(gltf_presets_destination):
-            shutil.copytree(gltf_presets_source, gltf_presets_destination)
-        if not os.path.exists(usd_presets_destination):
-            shutil.copytree(usd_presets_source, usd_presets_destination)
-
-        # Copy individual preset files from addon directory to presets directory if presets directory exists without these specific presets.
-        if not os.path.isfile(glb_preset_dest):
-            shutil.copy(glb_preset_src, glb_preset_dest)
-        if not os.path.isfile(glb_draco_preset_dest):
-            shutil.copy(glb_draco_preset_src, glb_draco_preset_dest)
-        if not os.path.isfile(usd_preset_dest):
-            shutil.copy(usd_preset_src, usd_preset_dest)
-
-
     addon_location: EnumProperty(
         name="Addon Location",
         description="Where to put the Transmogrifier Addon UI",
@@ -655,13 +650,6 @@ class TransmogrifierPreferences(AddonPreferences):
         update=addon_location_updated,
     )
 
-    copy_assets: BoolProperty(
-        name="Copy assets to Preferences",
-        default=False,
-        description="Copy import/export presets and studiolights shipped with Transmogrifier to relevant Blender Preferences directories",
-        update=copy_assets
-    )
-
     def draw(self, context):
         layout = self.layout
         col = layout.column()
@@ -672,7 +660,7 @@ class TransmogrifierPreferences(AddonPreferences):
         # Display copy assets button
         box = layout.box()
         col = box.column(align=True)
-        col.prop(self, "copy_assets", text='Copy Assets to Preferences Directory', toggle=True, icon='DUPLICATE')
+        col.operator("copyassets.transmogrifier", text="Copy Assets to Preferences", icon="DUPLICATE")
 
 
 # Operator called when Transmogrifier preset is selected.
@@ -1893,7 +1881,7 @@ class TransmogrifierSettings(PropertyGroup):
         set=lambda self, value: setattr(
             self, 'dae_preset', preset_enum_items_refs['wm.collada_export'][value][0]),
     )
-    usd_preset: StringProperty(default='USDZ_Preset')
+    usd_preset: StringProperty(default='USDZ_Preset_Example')
     usd_preset_enum: EnumProperty(
         name="Preset", options={'SKIP_SAVE'},
         description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
@@ -1920,7 +1908,7 @@ class TransmogrifierSettings(PropertyGroup):
         set=lambda self, value: setattr(
             self, 'fbx_preset', preset_enum_items_refs['export_scene.fbx'][value][0]),
     )
-    gltf_preset: StringProperty(default='GLB_Preset')
+    gltf_preset: StringProperty(default='GLB_Preset_Example')
     gltf_preset_enum: EnumProperty(
         name="Preset", options={'SKIP_SAVE'},
         description="Use export settings from a preset.\n(Create in the export settings from the File > Export > glTF (.glb/.gltf))",
@@ -1964,6 +1952,7 @@ def register():
     bpy.utils.register_class(TransmogrifierPreferences)
     bpy.utils.register_class(TransmogrifierSettings)
     bpy.utils.register_class(POPOVER_PT_transmogrify)
+    bpy.utils.register_class(COPY_ASSETS)
     bpy.utils.register_class(REFRESHUI)
     bpy.utils.register_class(ADD_TRANSMOGRIFIER_PRESET)
     bpy.utils.register_class(REMOVE_TRANSMOGRIFIER_PRESET)
@@ -1990,6 +1979,7 @@ def unregister():
     bpy.utils.unregister_class(TransmogrifierPreferences)
     bpy.utils.unregister_class(TransmogrifierSettings)
     bpy.utils.unregister_class(POPOVER_PT_transmogrify)
+    bpy.utils.unregister_class(COPY_ASSETS)
     bpy.utils.unregister_class(REFRESHUI)
     bpy.utils.unregister_class(ADD_TRANSMOGRIFIER_PRESET)
     bpy.utils.unregister_class(REMOVE_TRANSMOGRIFIER_PRESET)
