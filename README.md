@@ -1,5 +1,5 @@
 # Transmogrifier
-A Blender addon for batch converting 3D files and associated textures into other formats - with an emphasis on visualization for the web and AR.
+A Blender addon for batch converting 3D files and associated textures into other formats - with an emphasis on visualization for the web and AR.  Support conversions between FBX, OBJ, glTF/GLB, STL, PLY, X3D, DAE, ABC, and USD/USDA/USDC/USDZ.
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/3166c6a1-5a56-44f0-8cbe-3471d1f3faa6" width="600">
 
