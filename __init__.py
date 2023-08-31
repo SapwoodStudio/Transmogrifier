@@ -181,6 +181,8 @@ def draw_settings(self, context):
     col = self.layout.column(align=True)
     col.label(text="WORKFLOW", icon='DRIVER')
     layout = self.layout
+    # Align menu items to the left.
+    self.layout.use_property_split = False
     row = layout.row(align=True)
     row.prop(settings, 'transmogrifier_preset_enum')
     row.operator("transmogrifierpreset.add", text="", icon="ADD")
@@ -195,6 +197,7 @@ def draw_settings(self, context):
 
 
     # Import Settings
+    self.layout.use_property_split = True
     self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="IMPORT SETTINGS:", icon='IMPORT')
@@ -1380,9 +1383,9 @@ class TransmogrifierSettings(PropertyGroup):
 
     # Preset Settings:
     # Option to select Transmogrifier presets
-    transmogrifier_preset: StringProperty(default='NO_PRESET')
+    transmogrifier_preset: StringProperty(default='FBX_to_GLB')
     transmogrifier_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
+        name="", options={'SKIP_SAVE'},
         description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
         items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
         get=lambda self: get_transmogrifier_preset_index(
