@@ -6,7 +6,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 [Installation](#installation-) 📥 **·** [Usage](#usage-) 🏭 **·** [How it Works](#how-it-works-) ⚙ **·** [Benefits](#benefits-) 🎁 **·** [Features](#features-) ✨ **·** [Credits](#credits-) 🙏
 
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/69d88d35-863f-461f-ac9b-eb154590a5b0" height="1000">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/7332a89c-13d8-4d3f-916a-9b3214a9186d" height="1000"> <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/1bd4fe67-5703-4524-8ab9-0cc1900d074f" height="1000">
 
 
 
@@ -62,10 +62,11 @@ _Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativeco
 ## FEATURES ✨
 Transmogrifier includes a robust set of tools for non-destructively converting 3D files and associated textures into other formats.
 
-### Export Location
-Set the export location to either "Adjacent" or "Custom". "Adjacents" means that converted models will be saved to the same directories from which they were imported. "Custom" means that converted models will be saved to a chosen custom directory. Choose whether to place converted models in subdirectories of their same names. If so, choose whether to copy original files from import directories to respective subdirectories.
+### Workflow
+Create custom Transmogrifier presets (aka "Workflows) for quickly switching between different conversion scenarios. Click the plus button "+" to create a Workflow from all of the current Transmogrifier settings, giving it a custom name. Workflows are stored as "operator presets" in Blender preferences directory. To remove a workflow, select it from the menu, then click the minus button "-". 
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/f83015fa-f751-43ef-b34f-26ab4db2581d" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/95f406bd-d5cc-4a52-970a-55bd69f2b5b7" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/fa8cd957-c372-452d-8f13-8843cc1e3484" width="350">
 
 
 ### 3D Formats
@@ -86,6 +87,18 @@ Set the export location to either "Adjacent" or "Custom". "Adjacents" means that
 Set user-defined import and export presets.
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/1ecfc99e-46c0-4a22-a42d-fcc2e93c419f" width="350">
+
+
+### Import Location
+Select a directory containing 3D files of the chosen import format, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/dd380972-3559-497d-bb2c-e8f49ce34563" width="250">
+
+
+### Export Location
+Set the export location to either "Adjacent" or "Custom". "Adjacents" means that converted models will be saved to the same directories from which they were imported. "Custom" means that converted models will be saved to a chosen custom directory. Choose whether to place converted models in subdirectories of their same names. If so, choose whether to copy original files from import directories to respective subdirectories.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/f83015fa-f751-43ef-b34f-26ab4db2581d" width="350">
 
 
 ### Name
