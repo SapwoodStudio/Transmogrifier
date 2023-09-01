@@ -1279,7 +1279,7 @@ def regex_transparent_materials():
                 material_renamed = '_'.join(components)
                 material.name = material_renamed
                 print("Renamed " + str(material_name) + " to " + str(material_renamed))
-                logging.info("Renamed " + str(matrial_name) + " to " + str(material_renamed))
+                logging.info("Renamed " + str(material_name) + " to " + str(material_renamed))
                         
             else:
                 print("No transparency tag match found for current material.")
