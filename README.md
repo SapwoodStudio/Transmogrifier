@@ -20,7 +20,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/ef4212ea-9ad7-455f-97e4-26de81a6070f" height="350">
 
 
-4. (_Optional_) Copy example export presets and a studiolight, "[neutral.hdr](https://github.com/google/model-viewer/blob/master/packages/shared-assets/environments/neutral.hdr)", to local Blender preferences directory. The studiolight is used for rendering preview image thumbnails of converted models.
+4. (_Optional_) Copy example workflow/import/export presets and a studiolight, "[neutral.hdr](https://github.com/google/model-viewer/blob/master/packages/shared-assets/environments/neutral.hdr)", to local Blender preferences directory. The studiolight is used for rendering preview image thumbnails of converted models.
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/08b3569f-4f0d-4524-82fe-4c80ac902c72" height="350">
 
 
