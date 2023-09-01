@@ -527,10 +527,15 @@ def get_transmogrifier_settings(self, context):
     for key in keys:
         # Get value as string to be evaluated later.
         value = eval('settings.' + str(key))
-        # Convert enumproperty numbers to numbers, dictionaries and vectors to tuples
+        # Convert relative paths to absolute paths.
+        directory_path = ("directory", "directory_output_custom", "textures_custom_dir")
+        if key in directory_path:
+            value = bpy.path.abspath(value)
+        # Convert enumproperty numbers to numbers.
         if key == "texture_resolution" or key == "resize_textures_limit":
             if value != "Default":
                 value = int(value)
+        # Convert dictionaries and vectors to tuples.
         if "{" in str(value):
             value = tuple(value)
         elif "<" in str(value):
@@ -539,7 +544,6 @@ def get_transmogrifier_settings(self, context):
             char_end = ")"
             value = eval(re.sub('[xyz=]', '', "(" + ''.join(value).split(char_start)[1].split(char_end)[0] + ")"))
         values.append(value)
-        # print(key, "=", value)
 
     variables_dict = dict(zip(keys, values))
 

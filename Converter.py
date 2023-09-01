@@ -445,7 +445,7 @@ def find_replace_pbr_tag(texture):
 
         # Dictionary with regex keys will be used as the pattern by turning it into a list then to a string.
         pbr_dict = {
-            '[Bb]?ase*\s?_?[Cc]?olou?r|[Aa]?lbedo|[Dd]?iffuse|[Dd]?iff': 'BaseColor',
+            '[Bb]?ase*\s?_?[Cc]?olou?r|[Aa]?lbedo|[Dd]?iffuse|[Dd]?iff|[Cc]?olou?r': 'BaseColor',
             '[Ss]?ubsurface': 'Subsurface',
             '[Mm]?etall?ic|[Mm]?etalness?|[Mm]?etaln.*|[Mm]etal': 'Metallic', 
             '[Ss]?pecul.*|[Ss]pec': 'Specular',
