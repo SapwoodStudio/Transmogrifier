@@ -445,19 +445,19 @@ def find_replace_pbr_tag(texture):
 
         # Dictionary with regex keys will be used as the pattern by turning it into a list then to a string.
         pbr_dict = {
-            '[Bb]?ase*\s?_?[Cc]?olou?r|[Aa]?lbedo|[Dd]?iffuse|[Dd]?iff|[Cc]ol': 'BaseColor',
-            '[Ss]?ubsurface|[Ss]ss': 'Subsurface',
-            '[Mm]?etall?ic|[Mm]?etalness?|[Mm]?etaln.*|[Mm]etal|[Mm]tl': 'Metallic', 
+            '[Bb]?ase*\s?_?[Cc]?olou?r|[Aa]?lbedo|[Dd]?iffuse|[Dd]?iff': 'BaseColor',
+            '[Ss]?ubsurface': 'Subsurface',
+            '[Mm]?etall?ic|[Mm]?etalness?|[Mm]?etaln.*|[Mm]etal': 'Metallic', 
             '[Ss]?pecul.*|[Ss]pec': 'Specular',
-            '[Rr]?ou?gh|[Rr]?ou?ghness|[Rr]gh': 'Roughness',
+            '[Rr]?ou?gh|[Rr]?ou?ghness': 'Roughness',
             '[Gg]?loss.*': 'Gloss',
-            '[Nn]?ormal|[Nn]orm|[Nn]or|[Nn]rm|[Nn]rml': 'Normal',
-            '[Bb]?ump|[Bb]mp': 'Bump',
-            '[Dd]?ispl.*|[Dd]sp|[Hh]?e?ight|[Hh]?i?eght': 'Height',
+            '[Nn]?ormal|[Nn]orm|[Nn]rml': 'Normal',
+            '[Bb]?ump': 'Bump',
+            '[Dd]?ispl.*|[Hh]?e?ight|[Hh]?i?eght': 'Height',
             '[Tt]?ransmission|[Tt]ransmiss|[Tt]rnsmss|[Tt]?ransm.*': 'Transmission',
             '[Ee]?miss.*|[Ee]mit': 'Emission',
             '[Aa]?lph.*|[Oo]?pac.*|[Tt]?ranspa.*|[Tt]?ranspr.*': 'Opacity',
-            '[Aa]?mbient*\s?_?[Oo]?cc?lusion|[Aa]?mbient|[Oo]?cc?lus.*|[Aa][Oo]': 'Ambient_Occlusion'
+            '[Aa]?mbient*\s?_?[Oo]?cc?lusion|[Aa]?mbient|[Oo]?cc?lus.*': 'Ambient_Occlusion'
         }
 
         dictkeys_pattern = re.compile('|'.join(pbr_dict), re.IGNORECASE)
