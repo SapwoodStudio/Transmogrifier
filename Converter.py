@@ -881,11 +881,11 @@ def assign_materials(item):
                     material_name = str(material.name) # Get the material's name from that material's data block list.
                     for object in bpy.context.selected_objects:
                         if object.type == 'MESH': # Loop only through selected MESH type objects.
-                            if object.name.startswith(str(material_name).split("_")[0]) and transparency_tag in object.name and material_name.endswith('transparent'):
+                            if material_name in object.name and transparency_tag in object.name and material_name.endswith('transparent'):
                                 object.data.materials.append(material)
                                 print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
                                 logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                            elif object.name.startswith(str(material_name)) and not transparency_tag in object.name and not material_name.endswith('transparent'):
+                            elif material_name in object.name and not transparency_tag in object.name and not material_name.endswith('transparent'):
                                 object.data.materials.append(material)
                                 print("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
                                 logging.info("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
