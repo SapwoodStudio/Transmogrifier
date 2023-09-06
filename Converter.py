@@ -457,7 +457,7 @@ def find_replace_pbr_tag(texture):
             '[Tt]?ransmission|[Tt]ransmiss|[Tt]rnsmss|[Tt]?ransm.*': 'Transmission',
             '[Ee]?miss.*|[Ee]mit': 'Emission',
             '[Aa]?lph.*|[Oo]?pac.*|[Tt]?ranspa.*|[Tt]?ranspr.*': 'Opacity',
-            '[Aa]?mbient*\s?_?[Oo]?cc?lusion|[Aa]?mbient|[Oo]?cc?lus.*': 'Ambient_Occlusion'
+            '[Aa]?mbient*\s?_?[Oo]?cc?lusion|[Aa]?mbient|[Oo]?cc?lus.*': 'Occlusion'
         }
 
         dictkeys_pattern = re.compile('|'.join(pbr_dict), re.IGNORECASE)
@@ -574,6 +574,8 @@ def regex_textures_packed():
                     print("Found a match for " + pbr_tag_renamed + ".")
                     logging.info("Found a match for " + pbr_tag_renamed + ".")
                     tag_index = components.index(component)
+                    if pbr_tag_renamed == "Opacity" and len(components) - tag_index != -2:  # Don't rename any transparency string if it's not at the end of the texture name.
+                        continue
                     components[tag_index] = pbr_tag_renamed
                     if pbr_tag_renamed == "BaseColor" and components[tag_index-1].lower() == "base":
                         components.pop(tag_index-1)  # Was getting "...base_BaseColor..." when original name was "base_color"
@@ -1313,14 +1315,16 @@ def remove_opaque_material():
 
 
 # Rename the separated output images with something similar to the combined image name.
-def rename_output(image_texture_ext, image, image_name, add_tag, remove_tag_1, remove_tag_2, textures_temp_dir, output):
+def rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output):
     try:
         # Get the original image's extension to use.
         image_ext = image_texture_ext[image.file_format]
 
         # Create the tag image name base on combined image name.
-        new_image_name = split_into_components(texture=image_name)[0] + "_" + add_tag + image_ext
-        # new_image_name = image_name.replace(remove_tag_1, "").replace(remove_tag_2, "") + "_" + add_tag + image_ext
+        components = split_into_components(texture=image_name)
+        remove_tags = [tag_1, tag_2, tag_3]
+        components_without_tags = [component for component in components if component not in remove_tags]
+        new_image_name = "_".join(components_without_tags) + "_" + add_tag + image_ext
 
         # Create placeholder path for the tag image name
         new_image_path = os.path.join(textures_temp_dir, new_image_name)
@@ -1381,21 +1385,14 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                 if output_list:
                     for output in output_list:
                         if tag_1_k in output:
-                            # Tag to remove.
-                            add_tag = tag_1 + "_SEPARATE"
-                            remove_tag_1 = tag_2
-                            remove_tag_2 = tag_3
-                            rename_output(image_texture_ext, image, image_name, add_tag, remove_tag_1, remove_tag_2, textures_temp_dir, output)
+                            add_tag = tag_1
+                            rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output)
                         elif tag_2_k in output:
-                            add_tag = tag_2 + "_SEPARATE"
-                            remove_tag_1 = tag_1
-                            remove_tag_2 = tag_3
-                            rename_output(image_texture_ext, image, image_name, add_tag, remove_tag_1, remove_tag_2, textures_temp_dir, output)
+                            add_tag = tag_2
+                            rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output)
                         elif tag_3_k in output and tag_3_k != tag_2_k:
-                            add_tag = tag_3 + "_SEPARATE"
-                            remove_tag_1 = tag_1
-                            remove_tag_2 = tag_2
-                            rename_output(image_texture_ext, image, image_name, add_tag, remove_tag_1, remove_tag_2, textures_temp_dir, output)
+                            add_tag = tag_3
+                            rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output)
                 
                 # Finally, remove the original combined image.
                 image_path = bpy.path.abspath(image.filepath)
@@ -1538,23 +1535,19 @@ def rename_textures_packed(textures_temp_dir):
                             image_name = node.image.name
                             # Get the original image's extension to use.
                             image_ext = image_texture_ext[node.image.file_format]
-                            # Get the material prefix.
-                            material_prefix = split_into_components(texture = material.name)[0]
                             # Create the tag image name base on combined image name. Don't use .split(".") method because then "metallic.png-roughness.png" will become "[material prefix]_metallic.[image extension]", and both pbr tags must be maintained.
-                            # Old Method: Used packed image texture name. Found to be unreliable if image texture names did not include proper PBR tags.
-                            # new_image_name = material_prefix + "_" + os.path.splitext(image_name)[0] + image_ext
-                            # New Method: Use image texture node label. Blender always imports GLB's with at least 3 image texture nodes per material that are named the same way every time: "BASE COLOR", "METALLIC ROUGHNESS", and "NORMALMAP".
+                            # Use image texture node label. Blender always imports GLB's with at least 3 image texture nodes per material that are named the same way every time: "BASE COLOR", "METALLIC ROUGHNESS", and "NORMALMAP".
                             # Don't rename "base color" to include "opacity" if there is no evident connection between the alpha output of the "BASE COLOR" image texture and the alpha input of the "Principled BSDF" shader node.
                             if node.label.lower() == "base color" and node.outputs['Alpha'].is_linked:
-                                new_image_name = material_prefix + "_" + "BaseColor_Opacity" + image_ext
+                                new_image_name = material.name + "_" + "BaseColor_Opacity" + image_ext
                             else:
-                                new_image_name = material_prefix + "_" + node.label.lower().replace(" ", "_") + image_ext
+                                new_image_name = material.name + "_" + node.label.lower().replace(" ", "_") + image_ext
         
                             # Rename the image texture
                             node.image.name = new_image_name
                                 
-                            print(image_name + " now shares its material's prefix of " + str(material_prefix) + ". New texture name: " + new_image_name)
-                            logging.info(image_name + " now shares its material's prefix of " + str(material_prefix) + ". New texture name: " + new_image_name)
+                            print(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
+                            logging.info(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
                                 
                     except AttributeError:
                         print("Image texture node does not contain an image")
@@ -1570,6 +1563,81 @@ def rename_textures_packed(textures_temp_dir):
     except Exception as Argument:
         logging.exception("COULD NOT RENAME PACKED TEXTURES")
 		
+
+# For packed textures, reimport textures to respective existing materials after they have been unpacked and separated.
+def reimport_textures_to_existing_materials(textures_temp_dir):
+    try:
+        # Sever all input connections to the Principled shader to prepare for texture reimport.
+        for material in bpy.data.materials:
+            if material.name == "Dots Stroke":
+                continue
+            material_node = material.node_tree.nodes
+            for node in material_node:
+                if node.name == "Principled BSDF" or node.name == "Material Output":
+                    continue
+                material_node.remove(node)
+
+            # Select shader before importing textures.
+            material.use_nodes = True
+            tree = material.node_tree
+            nodes = tree.nodes
+
+            # Make sure the Principled BSDF shader is selected.
+            material.node_tree.nodes['Material Output'].select = False
+            material.node_tree.nodes['Principled BSDF'].select = True
+            material.node_tree.nodes.active = material.node_tree.nodes.get("Principled BSDF")
+            
+            # Import textures with Node Wrangler addon
+            image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
+            textures_list = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+            material_name_normalized = "_".join(split_into_components(texture=material.name))  # Normalize the material name to match the normalization of the texture name during rename_output.
+            textures = [texture for texture in textures_list if material_name_normalized in texture]
+            files = []
+            
+            for texture in textures:
+                if texture == '.DS_Store':
+                    continue
+
+                files.append(
+                    {
+                        "name": texture,
+                        "name": texture
+                    }
+                )
+                
+                filepath = textures_temp_dir + '/'
+                directory = textures_temp_dir + '/'
+                relative_path = True
+                
+                win = bpy.context.window
+                scr = win.screen
+                areas  = [area for area in scr.areas if area.type == 'NODE_EDITOR']
+                areas[0].spaces.active.node_tree = material.node_tree
+                regions = [region for region in areas[0].regions if region.type == 'WINDOW']
+
+                override = {
+                    'window': win,
+                    'screen': scr,
+                    'area': areas[0],
+                    'region': regions[0],
+                }
+                
+                bpy.ops.node.nw_add_textures_for_principled(
+                    override,
+                    filepath=filepath,
+                    directory=directory,
+                    files=files,
+                    relative_path=relative_path
+                )
+            print("Reimported textures to material: " + str(material.name))
+            logging.info("Reimported textures to material: " + str(material.name))
+
+        print("------------------------  RE-IMPORTED TEXTURES TO EXISTING MATERIALS  ------------------------")
+        logging.info("RE-IMPORTED TEXTURES TO EXISTING MATERIALS")
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT RE-IMPORT TEXTURES TO EXISTING MATERIALS")
+
 
 # Set object data names as object names. Sometimes, upon export, object data names are used instead of object names, depending on the export format (e.g. USD).
 # Code adapted from Simple Renaming Panel (GPL-3.0 License, https://github.com/Weisl/simple_renaming_panel/), renaming_operators.py, Line 609
@@ -2097,7 +2165,7 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
 def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
     try:
         # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
-        if regex_textures:
+        if regex_textures and textures_source != "Packed":
             regex_transparent_objects()
         
         # Determine from where to import textures.
@@ -2141,20 +2209,14 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 # Set textures_temp_dir to location of unpacked images.
                 textures_temp_dir = os.path.join(textures_temp_dir, "textures")
 
-                # Make sure material prefixes match object prefixes before attempting to re-import.
-                rename_objects_by_material_prefixes()
-
                 # Separate the combined maps.
                 separate_gltf_maps(textures_temp_dir)
 
-                # Now pretend that these were external textures all along, but don't re-create textures_temp.
-                remove_imported_materials()
-                # Brute force the deletion of images and materials because purge orphans does not always delete every image. Might be due to the last combined image loaded into the Compositor "Image Node ORM" node.
-                clean_data_block(bpy.data.materials)
+                # Remove existing images from Converter.blend file.
                 clean_data_block(bpy.data.images)
-                regex_textures_external(textures_temp_dir)
-                create_materials(item, textures_temp_dir)
-                assign_materials(item)
+
+                # Reimport unpacked & separated textures to their original materials.
+                reimport_textures_to_existing_materials(textures_temp_dir)
 
         elif textures_source == "Custom":
             print("Using custom textures for conversion")
