@@ -1526,8 +1526,16 @@ def rename_textures_packed(textures_temp_dir):
                 for node in material.node_tree.nodes:
                     try:
                         if node.type=='TEX_IMAGE':
-                            # If multiple materials use the same image texture, then make it a single user copy before unpacking.
-                            if node.image.users != 1:
+                            materials = [material.name for material in bpy.data.materials]  # Get a list of materials.
+                            transparent_tag = "_transparent"
+                            # Skip over an image texture in opaque material if it's shared between that material and a sister transparent material. Only get shared textures (including opacity map) from transparent material
+                            if transparent_tag not in material.name and material.name + transparent_tag in materials and node.image.users != 1:
+                                continue
+                            # If multiple materials use the same image texture and it's not a shared texture between an opaque and transparent material, then make it a single user copy before unpacking.
+                            elif transparent_tag not in material.name and material.name + transparent_tag not in materials and node.image.users != 1:
+                                new_image = node.image.copy()
+                                node.image = new_image
+                            elif transparent_tag in material.name and material.name.replace(transparent_tag, "") not in materials and node.image.users != 1:
                                 new_image = node.image.copy()
                                 node.image = new_image
 
@@ -1540,8 +1548,12 @@ def rename_textures_packed(textures_temp_dir):
                             # Don't rename "base color" to include "opacity" if there is no evident connection between the alpha output of the "BASE COLOR" image texture and the alpha input of the "Principled BSDF" shader node.
                             if node.label.lower() == "base color" and node.outputs['Alpha'].is_linked:
                                 new_image_name = material.name + "_" + "BaseColor_Opacity" + image_ext
+                                if transparent_tag in material.name and material.name.replace(transparent_tag, "") in materials:
+                                    new_image_name = new_image_name.replace(transparent_tag, "")
                             else:
                                 new_image_name = material.name + "_" + node.label.lower().replace(" ", "_") + image_ext
+                                if transparent_tag in material.name and material.name.replace(transparent_tag, "") in materials:
+                                    new_image_name = new_image_name.replace(transparent_tag, "")
         
                             # Rename the image texture
                             node.image.name = new_image_name
@@ -1590,7 +1602,12 @@ def reimport_textures_to_existing_materials(textures_temp_dir):
             # Import textures with Node Wrangler addon
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
             textures_list = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
-            material_name_normalized = "_".join(split_into_components(texture=material.name))  # Normalize the material name to match the normalization of the texture name during rename_output.
+            # Normalize the material name to match the normalization of the texture name during rename_output.
+            material_name_normalized = "_".join(split_into_components(texture=material.name))
+            materials = [material.name for material in bpy.data.materials]
+            transparent_tag = "_transparent"
+            if transparent_tag in material.name and material.name.replace(transparent_tag, "") in materials:
+                material_name_normalized = material_name_normalized.replace(transparent_tag, "")
             textures = [texture for texture in textures_list if material_name_normalized in texture]
             files = []
             
@@ -1629,6 +1646,13 @@ def reimport_textures_to_existing_materials(textures_temp_dir):
                     files=files,
                     relative_path=relative_path
                 )
+                
+                # If an Opacity map was imported to an opaque material, delete the map.
+                for node in material.node_tree.nodes:
+                    if node.type == 'BSDF_PRINCIPLED' and node.inputs['Alpha'].is_linked and material.blend_method != 'BLEND':
+                        alpha_node = node.inputs['Alpha'].links[0].from_node
+                        material.node_tree.nodes.remove(alpha_node)
+
             print("Reimported textures to material: " + str(material.name))
             logging.info("Reimported textures to material: " + str(material.name))
 
@@ -2188,9 +2212,6 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             
             # Find and rename transparent materials that have mispellings of transparency with regex keys. Regex transparent materials to prepare for the next function, which deletes any opaque versions of those transparent materials by relying on "transparent" existing in the material name.
             regex_transparent_materials()
-
-            # Remove opaque versions of transparent materials to avoid duplicate textures bug, which resulted in models converting untextured.
-            remove_opaque_material()
 
             # Purge orphaned opaque image textures if they are duplicates, rather than shared/instanced, data blocks.
             purge_orphans()
