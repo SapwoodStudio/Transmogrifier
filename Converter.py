@@ -1235,6 +1235,49 @@ def unpack_textures(textures_temp_dir, blend):
     except Exception as Argument:
         logging.exception("COULD NOT UNPACK TEXTURES")
 		
+# Returns a dictionary of which textures are assigned to which materials.
+def map_textures_to_materials():
+    try:
+        materials = []
+        texture_sets = []
+        for material in bpy.data.materials:
+            if material.node_tree:
+                material_name = material.name
+                materials.append(material_name)
+                texture_set = []
+                for node in material.node_tree.nodes:
+                    if node.type=='TEX_IMAGE':
+                        texture = os.path.splitext(node.image.name)[0]  # Remove any leftover image texture extensions.
+                        if import_file_ext == ".glb":
+                            if "BaseColor" in texture:
+                                base_color = texture.replace("_Opacity", "")
+                                texture_set.append(base_color)
+                                if node.outputs['Alpha'].is_linked:
+                                    opacity = texture.replace("_BaseColor", "")
+                                    texture_set.append(opacity)
+                            elif "Roughness" in texture:
+                                roughness = texture.replace("_Metallic", "")
+                                metallic = texture.replace("_Roughness", "")
+                                occlusion = texture.replace("_Roughness", "").replace("Metallic", "Occlusion")
+                                texture_set.append(roughness)
+                                texture_set.append(metallic)
+                                texture_set.append(occlusion)
+                            else:
+                                texture_set.append(texture)
+                        else:
+                            texture_set.append(texture)
+                texture_sets.append(texture_set)
+
+        mapped_textures = dict(zip(materials, texture_sets))
+        
+        return mapped_textures
+
+        print("------------------------ MAPPED TEXTURES TO MATERIALS  ------------------------")
+        logging.info("MAPPED TEXTURES TO MATERIALS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MAP TEXTURES TO MATERIALS")
+
 
 # Add material name as prefix to objects for later texture set matching.
 def rename_objects_by_material_prefixes():
@@ -1446,7 +1489,6 @@ def separate_gltf_maps(textures_temp_dir):
         file_output_BO_node_name = 'File Output BO'
         # Make a list from the tags for later loops
         file_output_node_list = [file_output_ORM_node_name, file_output_BO_node_name]
-
         
         # Set compositor variables.
         scene = bpy.context.scene
@@ -1463,8 +1505,7 @@ def separate_gltf_maps(textures_temp_dir):
                 image_node = image_node_ORM
                 tag_1 = tags_ORM[0]
                 tag_2 = tags_ORM[1]
-                tag_3 = tags_ORM[2]
-                
+                tag_3 = tags_ORM[2] 
                 render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_texture_ext)
 
             # Separate and rename BO map channels.             
@@ -1531,13 +1572,6 @@ def rename_textures_packed(textures_temp_dir):
                             # Skip over an image texture in opaque material if it's shared between that material and a sister transparent material. Only get shared textures (including opacity map) from transparent material
                             if transparent_tag not in material.name and material.name + transparent_tag in materials and node.image.users != 1:
                                 continue
-                            # If multiple materials use the same image texture and it's not a shared texture between an opaque and transparent material, then make it a single user copy before unpacking.
-                            elif transparent_tag not in material.name and material.name + transparent_tag not in materials and node.image.users != 1:
-                                new_image = node.image.copy()
-                                node.image = new_image
-                            elif transparent_tag in material.name and material.name.replace(transparent_tag, "") not in materials and node.image.users != 1:
-                                new_image = node.image.copy()
-                                node.image = new_image
 
                             # Assign image name.
                             image_name = node.image.name
@@ -1577,7 +1611,7 @@ def rename_textures_packed(textures_temp_dir):
 		
 
 # For packed textures, reimport textures to respective existing materials after they have been unpacked and separated.
-def reimport_textures_to_existing_materials(textures_temp_dir):
+def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
     try:
         # Sever all input connections to the Principled shader to prepare for texture reimport.
         for material in bpy.data.materials:
@@ -1601,14 +1635,12 @@ def reimport_textures_to_existing_materials(textures_temp_dir):
             
             # Import textures with Node Wrangler addon
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            textures_list = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
-            # Normalize the material name to match the normalization of the texture name during rename_output.
-            material_name_normalized = "_".join(split_into_components(texture=material.name))
-            materials = [material.name for material in bpy.data.materials]
-            transparent_tag = "_transparent"
-            if transparent_tag in material.name and material.name.replace(transparent_tag, "") in materials:
-                material_name_normalized = material_name_normalized.replace(transparent_tag, "")
-            textures = [texture for texture in textures_list if material_name_normalized in texture]
+            textures_available = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+            textures = [texture for texture in textures_available if os.path.splitext(texture)[0] in mapped_textures[material.name]]
+
+            print("Textures for " + str(material.name) + ": " + str(textures))
+            logging.info("Textures for " + str(material.name) + ": " + str(textures))
+
             files = []
             
             for texture in textures:
@@ -2225,6 +2257,9 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             # Unpack textures before modifying them.
             unpack_textures(textures_temp_dir, blend)
 
+            # Get a dictionary of which textures are assigned to which materials.
+            mapped_textures = map_textures_to_materials()
+
             # Only separate image textures if imported file is a GLB.
             if import_file_ext == ".glb":
                 # Set textures_temp_dir to location of unpacked images.
@@ -2237,7 +2272,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 clean_data_block(bpy.data.images)
 
                 # Reimport unpacked & separated textures to their original materials.
-                reimport_textures_to_existing_materials(textures_temp_dir)
+                reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
 
         elif textures_source == "Custom":
             print("Using custom textures for conversion")
