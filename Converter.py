@@ -1556,49 +1556,81 @@ def separate_by_material():
 # Rename textures based on associated material's prefix (for packed textures only)
 def rename_textures_packed(textures_temp_dir):
     try:
-        # Get image extension dictionary
-        image_texture_ext = image_texture_ext_dict()
+        # Get Principled BSDF inputs as list of pairs of image texture names and pbr tag names.
+        def get_node_inputs(node):
+            texture_list = []
+            for input in node.inputs:
+                for node_links in input.links:
+                    pbr_tag = input.name
+                    texture = node_links.from_node.name
+                    if pbr_tag == "Base Color" or pbr_tag == "Alpha":
+                        image = material.node_tree.nodes.get(texture)
+                        if image.outputs["Alpha"].is_linked:
+                            pbr_tag = "BaseColor_Opacity"
+                        elif not image.outputs["Alpha"].is_linked:
+                            if pbr_tag == "Base Color":
+                                pbr_tag = "BaseColor"
+                            elif pbr_tag == "Alpha":
+                                pbr_tag = "Opacity"
+                    elif texture == "Normal Map":
+                        normal_map = material.node_tree.nodes.get("Normal Map")
+                        texture = normal_map.inputs["Color"].links[0].from_node.name
+                    elif texture == "Separate Color":
+                        orm_map = material.node_tree.nodes.get("Separate Color")
+                        texture = orm_map.inputs["Color"].links[0].from_node.name
+                        pbr_tag = "Metallic_Roughness"
+                    node_pair = [texture, pbr_tag]
+                    texture_list.append(node_pair)
+            
+            # Remove duplicates
+            texture_list = [list(i) for i in set(map(tuple, texture_list))]
+
+            return texture_list
+
+
+        # Rename the textures based from retrieved list.
+        def rename_textures(texture_list, material, materials, transparent_tag, image_texture_ext):
+            try:
+                for node_pair in texture_list:
+                    node = bpy.data.materials[material.name].node_tree.nodes[node_pair[0]]
+                    # Skip over an image texture in opaque material if it's shared between that material and a sister transparent material. Only get shared textures (including opacity map) from transparent material
+                    if transparent_tag not in material.name and material.name + transparent_tag in materials and node.image.users != 1:
+                        continue
+
+                    # Get original image name.
+                    image_name = node.image.name
+                    # Get the original image's extension to use.
+                    image_ext = image_texture_ext[node.image.file_format]
+
+                    # Rename the image texture.
+                    new_image_name = material.name + "_" + node_pair[1] + image_ext
+                    #  If there's a transparent material and a sister opaque material that uses all the same textures except opacity, don't include "transparent" in name
+                    if transparent_tag in material.name and material.name.replace(transparent_tag, "") in materials:
+                        new_image_name = new_image_name.replace(transparent_tag, "")
+                    node.image.name = new_image_name
+                    
+                    print(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
+                    logging.info(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
+            
+            except AttributeError:
+                print("Image texture node does not contain an image")
+                logging.error("Image texture node does not contain an image")
+
+
+        materials = [material.name for material in bpy.data.materials]  # Get a list of materials.
+        transparent_tag = "_transparent"
+        image_texture_ext = image_texture_ext_dict()  # Get image extension dictionary
 
         # Add material prefix to images before regexing.
         for material in bpy.data.materials:
             if material.node_tree:
                 print("material: " + str(material.name))
                 logging.info("material: " + str(material.name))
-                for node in material.node_tree.nodes:
-                    try:
-                        if node.type=='TEX_IMAGE':
-                            materials = [material.name for material in bpy.data.materials]  # Get a list of materials.
-                            transparent_tag = "_transparent"
-                            # Skip over an image texture in opaque material if it's shared between that material and a sister transparent material. Only get shared textures (including opacity map) from transparent material
-                            if transparent_tag not in material.name and material.name + transparent_tag in materials and node.image.users != 1:
-                                continue
 
-                            # Assign image name.
-                            image_name = node.image.name
-                            # Get the original image's extension to use.
-                            image_ext = image_texture_ext[node.image.file_format]
-                            # Create the tag image name base on combined image name. Don't use .split(".") method because then "metallic.png-roughness.png" will become "[material prefix]_metallic.[image extension]", and both pbr tags must be maintained.
-                            # Use image texture node label. Blender always imports GLB's with at least 3 image texture nodes per material that are named the same way every time: "BASE COLOR", "METALLIC ROUGHNESS", and "NORMALMAP".
-                            # Don't rename "base color" to include "opacity" if there is no evident connection between the alpha output of the "BASE COLOR" image texture and the alpha input of the "Principled BSDF" shader node.
-                            if node.label.lower() == "base color" and node.outputs['Alpha'].is_linked:
-                                new_image_name = material.name + "_" + "BaseColor_Opacity" + image_ext
-                                if transparent_tag in material.name and material.name.replace(transparent_tag, "") in materials:
-                                    new_image_name = new_image_name.replace(transparent_tag, "")
-                            else:
-                                new_image_name = material.name + "_" + node.label.lower().replace(" ", "_") + image_ext
-                                if transparent_tag in material.name and material.name.replace(transparent_tag, "") in materials:
-                                    new_image_name = new_image_name.replace(transparent_tag, "")
-        
-                            # Rename the image texture
-                            node.image.name = new_image_name
-                                
-                            print(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
-                            logging.info(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
-                                
-                    except AttributeError:
-                        print("Image texture node does not contain an image")
-                        logging.error("Image texture node does not contain an image")
-            
+                bsdf = material.node_tree.nodes.get("Principled BSDF")
+                texture_list = get_node_inputs(bsdf)
+                rename_textures(texture_list, material, materials, transparent_tag, image_texture_ext)
+
         # Regex image textures before unpacking.
         if regex_textures:
             regex_textures_packed()
