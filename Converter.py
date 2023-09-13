@@ -1363,11 +1363,14 @@ def rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, t
         # Get the original image's extension to use.
         image_ext = image_texture_ext[image.file_format]
 
-        # Create the tag image name base on combined image name.
-        components = split_into_components(texture=image_name)
-        remove_tags = [tag_1, tag_2, tag_3]
-        components_without_tags = [component for component in components if component not in remove_tags]
-        new_image_name = "_".join(components_without_tags) + "_" + add_tag + image_ext
+        # Remove any existing tags from image name.
+        if tag_1 == "BaseColor":
+            image_name = image_name.replace("_" + tag_1, "").replace("_" + tag_2, "")
+        else:
+            image_name = image_name.replace("_" + tag_1, "").replace("_" + tag_2, "").replace("_" + tag_3, "")
+        
+        # Create new image name from un-tagged image name.
+        new_image_name = image_name + "_" + add_tag + image_ext
 
         # Create placeholder path for the tag image name
         new_image_path = os.path.join(textures_temp_dir, new_image_name)
