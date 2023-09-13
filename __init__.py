@@ -1534,7 +1534,7 @@ class TransmogrifierSettings(PropertyGroup):
             ('Displacement', "Displacement", "", 256),
             ('Emission', "Emission", "", 512),
             ('Opacity', "Opacity", "", 1024),
-            ('Ambient_Occlusion', "Ambient_Occlusion", "", 2048),
+            ('Occlusion', "Occlusion", "", 2048),
         ],
         description="Filter texture maps to resize",
         default={
@@ -1548,7 +1548,7 @@ class TransmogrifierSettings(PropertyGroup):
             'Displacement', 
             'Emission', 
             'Opacity', 
-            'Ambient_Occlusion'
+            'Occlusion'
         },
     )
     image_format: EnumProperty(
@@ -1593,7 +1593,7 @@ class TransmogrifierSettings(PropertyGroup):
             ('Displacement', "Displacement", "", 256),
             ('Emission', "Emission", "", 512),
             ('Opacity', "Opacity", "", 1024),
-            ('Ambient_Occlusion', "Ambient_Occlusion", "", 2048),
+            ('Occlusion', "Occlusion", "", 2048),
         ],
         description="Filter texture maps to convert",
         default={
@@ -1607,7 +1607,7 @@ class TransmogrifierSettings(PropertyGroup):
             'Displacement', 
             'Emission', 
             'Opacity', 
-            'Ambient_Occlusion'
+            'Occlusion'
         },
     )
     # # Option to set custom transformations

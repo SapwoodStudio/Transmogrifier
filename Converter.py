@@ -536,7 +536,7 @@ def regex_textures_external(textures_temp_dir):
                         components[tag_index] = pbr_tag_renamed
                         if pbr_tag_renamed == "BaseColor" and components[tag_index-1].lower() == "base":
                             components.pop(tag_index-1)  # Was getting "...base_BaseColor..." when original name was "base_color"
-                        elif pbr_tag_renamed == "Ambient_Occlusion" and components[tag_index+1].lower() == "occlusion":
+                        elif pbr_tag_renamed == "Occlusion" and components[tag_index+1].lower() == "occlusion":
                             components.pop(tag_index+1)  # Was getting "...Ambient_Occlusion_Occlusion..." when original name was "Ambient_Occlusion"
                         break
 
@@ -579,7 +579,7 @@ def regex_textures_packed():
                     components[tag_index] = pbr_tag_renamed
                     if pbr_tag_renamed == "BaseColor" and components[tag_index-1].lower() == "base":
                         components.pop(tag_index-1)  # Was getting "...base_BaseColor..." when original name was "base_color"
-                    elif pbr_tag_renamed == "Ambient_Occlusion" and components[tag_index+1].lower() == "occlusion":
+                    elif pbr_tag_renamed == "Occlusion" and components[tag_index+1].lower() == "occlusion":
                         components.pop(tag_index+1)  # Was getting "...Ambient_Occlusion_Occlusion..." when original name was "Ambient_Occlusion"
 
             if components_original != components:
@@ -2142,7 +2142,7 @@ def reformat_textures_and_export(export_file_1, export_file_2):
             logging.info("#################  Reformat Textures  #################")
             image_format = 'JPEG'
             image_quality = 90
-            image_format_include = ["Ambient_Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
+            image_format_include = ["Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
             convert_image_format(image_format, image_quality, image_format_include, textures_source)
             
             # Determine how many 3D files to export, then export.
