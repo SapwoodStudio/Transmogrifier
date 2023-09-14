@@ -236,8 +236,8 @@ def apply_transformations(apply_transforms_filter):
         logging.exception("COULD NOT APPLY TRANSFORMATIONS: " + str(apply_transforms_filter))
 		
 
-# Remove all imported materials and textures.
-def remove_imported_materials():
+# Clear all users of all materials.
+def clear_materials_users():
     try:
         # Remove any imported materials.
         bpy.ops.view3d.materialutilities_remove_all_material_slots(only_active=False)
@@ -247,7 +247,6 @@ def remove_imported_materials():
         
         for material in bpy.data.materials:
             material.user_clear()
-            # bpy.data.materials.remove(material)
 
         print("------------------------  REMOVED IMPORTED MATERIALS  ------------------------")
         logging.info("REMOVED IMPORTED MATERIALS")
@@ -2278,7 +2277,9 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
         if textures_source == "External":
             print("Using external textures for conversion")
             logging.info("Using external textures for conversion")
-            remove_imported_materials()
+            
+            # Clear all users of all materials.
+            clear_materials_users()
             
             # Brute force-remove all materials and images.
             clean_data_block(bpy.data.materials)
@@ -2330,7 +2331,8 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             print("Using custom textures for conversion")
             logging.info("Using custom textures for conversion")
             
-            remove_imported_materials()
+            # Clear all users of all materials.
+            clear_materials_users()
 
             # Copy original custom textures to item directory.
             copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
@@ -2477,7 +2479,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if use_textures:
             apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
         elif not use_textures:
-            remove_imported_materials()
+            # Clear all users of all materials.
+            clear_materials_users()
+            
             # Brute force-remove all materials and images.
             clean_data_block(bpy.data.materials)
             clean_data_block(bpy.data.images)
