@@ -155,6 +155,22 @@ def clean_data_block(block):
         logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
 		
 
+# Sometimes purge orphans won't delete data blocks (e.g. images) even though they have no users. This will force the deletion of any data blocks within a specified bpy.data.[data type]
+def clean_data_block_except_custom(block, custom_data):
+    try:
+        # iterate over every entry in the data block
+        for data in block:
+            if data.name in custom_data:
+                continue
+            block.remove(data)
+
+        print("------------------------  CLEANED DATA BLOCK: " + str(block).upper() + "  ------------------------")
+        logging.info("CLEANED DATA BLOCK: " + str(block).upper())
+
+    except Exception as Argument:
+        logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
+
+
 # Import file of a format type supplied by the user.
 def import_file_function(import_file_command, import_file_options, import_file):
     try:
@@ -220,6 +236,26 @@ def apply_transformations(apply_transforms_filter):
         logging.exception("COULD NOT APPLY TRANSFORMATIONS: " + str(apply_transforms_filter))
 		
 
+# Remove all imported materials and textures.
+def remove_imported_materials():
+    try:
+        # Remove any imported materials.
+        bpy.ops.view3d.materialutilities_remove_all_material_slots(only_active=False)
+        
+        # Delete any old materials that might have the same name as the imported object.
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+        
+        for material in bpy.data.materials:
+            material.user_clear()
+            # bpy.data.materials.remove(material)
+
+        print("------------------------  REMOVED IMPORTED MATERIALS  ------------------------")
+        logging.info("REMOVED IMPORTED MATERIALS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT REMOVE IMPORTED MATERIALS")
+
+
 # Prevent an empty from being actively selected object. This prevents a later error from happening when imported materials are removed later.
 def select_only_meshes():
     try:
@@ -235,26 +271,6 @@ def select_only_meshes():
 
     except Exception as Argument:
         logging.exception("COULD NOT SELECT ONLY MESH-TYPE OBJECTS")
-		
-
-# Remove all imported materials and textures.
-def remove_imported_materials():
-    try:
-        # Remove any imported materials.
-        bpy.ops.view3d.materialutilities_remove_all_material_slots(only_active=False)
-        
-        # Delete any old materials that might have the same name as the imported object.
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
-        
-        for material in bpy.data.materials:
-            material.user_clear()
-            bpy.data.materials.remove(material)
-
-        print("------------------------  REMOVED IMPORTED MATERIALS  ------------------------")
-        logging.info("REMOVED IMPORTED MATERIALS")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT REMOVE IMPORTED MATERIALS")
 		
 
 # Copy textures from custom directory and apply to all models in directory.
@@ -283,7 +299,6 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
     except Exception as Argument:
         logging.exception("COULD NOT COPY TEXTURES FROM CUSTOM SOURCE")
 		
-
 
 # If User elected not to copy the custom textures directory to each item folder, delete the temporary copy of it there.
 def remove_copy_textures_custom_dir(item_dir, textures_dir):
@@ -2253,7 +2268,7 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
 
 
 # Determine where textures should be sourced, then texture the model.
-def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
+def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
     try:
         # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
         if regex_textures and textures_source != "Packed":
@@ -2264,6 +2279,11 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             print("Using external textures for conversion")
             logging.info("Using external textures for conversion")
             remove_imported_materials()
+            
+            # Brute force-remove all materials and images.
+            clean_data_block(bpy.data.materials)
+            clean_data_block(bpy.data.images)
+
             create_textures_temp(item_dir, textures_dir, textures_temp_dir)
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
@@ -2309,19 +2329,47 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
         elif textures_source == "Custom":
             print("Using custom textures for conversion")
             logging.info("Using custom textures for conversion")
+            
             remove_imported_materials()
-            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
-            create_textures_temp(item_dir, textures_dir, textures_temp_dir)
-            if regex_textures:
-                regex_textures_external(textures_temp_dir)
-            create_materials(item, textures_temp_dir)
-            assign_materials(item)
 
-        # Modify textures if requested.
-        if texture_resolution != "Default":
-            resize_textures(texture_resolution, texture_resolution_include)
-        if image_format != "Default":
-            convert_image_format(image_format, image_quality, image_format_include, textures_source)
+            # Copy original custom textures to item directory.
+            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
+            
+            # Reassign textures_temp to be beside custom textures source.
+            textures_temp_dir = textures_custom_dir + "_temp"
+            
+            # Reassign item as "Custom_Textures"
+            item = "Custom_Textures"
+
+            if conversion_count == 0:
+                create_textures_temp(textures_custom_dir, textures_custom_dir, textures_temp_dir)
+                
+                # Remove existing materials and textures from Converter.blend file only once.
+                clean_data_block(bpy.data.materials)
+                clean_data_block(bpy.data.images)
+                
+                # Only regex textures and create materials once.
+                if regex_textures:
+                    regex_textures_external(textures_temp_dir)
+                create_materials(item, textures_temp_dir)
+                
+                # Modify textures if requested.
+                if texture_resolution != "Default":
+                    resize_textures(texture_resolution, texture_resolution_include)
+                if image_format != "Default":
+                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
+                    
+                # Get custom materials and textures not to be deleted during conversion.
+                global custom_materials
+                global custom_textures
+                custom_materials = [material.name for material in bpy.data.materials]
+                custom_textures = [texture.name for texture in bpy.data.images]
+            
+            elif conversion_count > 0:
+                clean_data_block_except_custom(bpy.data.materials, custom_materials)
+                clean_data_block_except_custom(bpy.data.images, custom_textures)
+
+            assign_materials(item)
 
         print("------------------------  APPLIED TEXTURES TO OBJECTS  ------------------------")
         logging.info("APPLIED TEXTURES TO OBJECTS")
@@ -2394,7 +2442,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
 
 
 # Convert the file for every file found inside the given directory.
-def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image):
+def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count):
     try:
         print("-------------------------------------------------------------------")
         print("------------------------  CONVERTER START: " + str(os.path.basename(import_file)) + "  ------------------------")
@@ -2407,8 +2455,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         scene_setup()
 
         # Brute force-remove all materials and images.
-        clean_data_block(bpy.data.materials)
-        clean_data_block(bpy.data.images)
+        if textures_source != "Custom":
+            clean_data_block(bpy.data.materials)
+            clean_data_block(bpy.data.images)
 
         # Import the file.
         import_file_function(import_file_command, import_file_options, import_file)
@@ -2426,9 +2475,12 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # Determine whether to use textures and from where they should come.
         if use_textures:
-            apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+            apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
         elif not use_textures:
             remove_imported_materials()
+            # Brute force-remove all materials and images.
+            clean_data_block(bpy.data.materials)
+            clean_data_block(bpy.data.images)
             
         # Set scene units.
         set_scene_units(unit_system, length_unit)
@@ -2650,7 +2702,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -2672,7 +2724,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 print("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -2688,7 +2740,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             print("Initiating converter for " + str(item) + ".")
             logging.info("Initiating converter for " + str(item) + ".")
             # Run the converter on the item that was found.
-            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count)
             # Increment conversion counter and add converted item(s) to list.
             exports_list = list_exports(export_file_1, export_file_2)
             # Add export(s) to conversion list.
