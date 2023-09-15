@@ -161,6 +161,8 @@ def clean_data_block_except_custom(block, custom_data):
         # iterate over every entry in the data block
         for data in block:
             if data.name in custom_data:
+                print("Preserved custom data: " + data.name)
+                logging.info("Preserved custom data: " + data.name)
                 continue
             block.remove(data)
 
@@ -248,11 +250,11 @@ def clear_materials_users():
         for material in bpy.data.materials:
             material.user_clear()
 
-        print("------------------------  REMOVED IMPORTED MATERIALS  ------------------------")
-        logging.info("REMOVED IMPORTED MATERIALS")
+        print("------------------------  CLEARED ALL USERS OF ALL MATERIALS  ------------------------")
+        logging.info("CLEARED ALL USERS OF ALL MATERIALS")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REMOVE IMPORTED MATERIALS")
+        logging.exception("COULD NOT CLEAR ALL USERS OF ALL MATERIALS")
 
 
 # Prevent an empty from being actively selected object. This prevents a later error from happening when imported materials are removed later.
@@ -799,18 +801,21 @@ def create_a_material(item, textures_temp_dir, textures):
                 directory=directory,
                 files=files,
                 relative_path=relative_path
-            )
+            ) 
         
-        # Copy current material and make transparent in case there are any transparent objects in scene.
-        material_transparent = material.copy()
-        bpy.data.materials[item + ".001"].name = item + "_transparent"
-        material_transparent.blend_method = 'BLEND' 
-        
-        # If an Opacity map was imported, delete it from the original opaque material's shader setup after creating transparent material. USD files will automatically set the material blend method/mode to "Blend" as above if an opacity map is present. GLB's do not change the material blend method/mode unless explicitly commanded.
-        for node in material.node_tree.nodes:
-            if node.type == 'BSDF_PRINCIPLED' and node.inputs['Alpha'].is_linked:
-                image_node =  node.inputs['Alpha'].links[0].from_node
-                material.node_tree.nodes.remove(image_node)
+        # Check if this material includes an opacity map.
+        transparency_check = [node for node in material.node_tree.nodes if node.type == 'BSDF_PRINCIPLED' and node.inputs['Alpha'].is_linked]
+        if transparency_check:
+            # Copy current material and make opaque version in case there are any opaque objects in scene using the same texture set.
+            material_opaque = material.copy()
+            material_opaque.blend_method = 'OPAQUE'
+            bpy.data.materials[item + ".001"].name = item
+            # Remove opacity map from opaque material.
+            opacity_map = material_opaque.node_tree.nodes["Principled BSDF"].inputs['Alpha'].links[0].from_node
+            material_opaque.node_tree.nodes.remove(opacity_map)
+            # Add transparency tag to material name and set alpha blend.
+            material.name = item + "_transparent"
+            material.blend_method = "BLEND"
 
         print("------------------------  CREATED A MATERIAL: " + str(item) + "  ------------------------")
         logging.info("CREATED A MATERIAL: " + str(item))
@@ -867,15 +872,26 @@ def assign_materials(item):
         for material in bpy.data.materials:
             material_count += 1
 
-        # Old Method: Get a tuple of alpha tags defined in Node Wrangler preferences.
-        # alpha_tags = get_nw_alpha_tags()
-        # Assuming object names have been regexed for transparency tags, assign the transparency regex dictionary value to variable
+        # Assuming object names have been regexed for transparency tags, assign the transparency regex dictionary value to variable.
         transparency_tag = "transparent"
-
+        # Test for presence of transparent versions of opaque materials.
+        transparent_materials = [material.name for material in bpy.data.materials if transparency_tag in material.name and material.name.replace("_" + transparency_tag, "") in bpy.data.materials]
+        
         # If more than one object exists in the scene, there can be multiple materials
         if object_count > 1:
+            # Only one texture set was imported (one opaque or transparent material)
+            if material_count == 1:
+                for material in bpy.data.materials:
+                    material_name = str(material.name) # Get the material's name from that material's data block list.
+                    for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
+                        if object.type == 'MESH':
+                            object.data.materials.append(material)
+                            print("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
+                            logging.info("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
+                        else:
+                            continue 
             # Only one texture set was imported (one opaque material, one transparent version/copy of that opaque material).
-            if material_count <= 2:
+            elif material_count == 2 and transparent_materials:
                 for material in bpy.data.materials:
                     material_name = str(material.name) # Get the material's name from that material's data block list.
                     for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
@@ -909,7 +925,7 @@ def assign_materials(item):
                                 continue
 
 
-        # If there is only one object in the scene, there can only be one material.
+        # If there is only one object in the scene, there is likely only one material.
         elif object_count == 1:
             # Check if there is an opacity map plugged into material_transparent. If there is, then that object must be a transparent object regardless of name.
             material = bpy.data.materials[str(item)+"_transparent"]
