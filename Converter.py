@@ -876,26 +876,28 @@ def assign_materials(item):
         transparency_tag = "transparent"
         # Test for presence of transparent versions of opaque materials.
         transparent_materials = [material.name for material in bpy.data.materials if transparency_tag in material.name and material.name.replace("_" + transparency_tag, "") in bpy.data.materials]
-        
-        # If more than one object exists in the scene, there can be multiple materials
-        if object_count > 1:
-            # Only one texture set was imported (one opaque or transparent material)
-            if material_count == 1:
-                for material in bpy.data.materials:
-                    material_name = str(material.name) # Get the material's name from that material's data block list.
-                    for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
-                        if object.type == 'MESH':
+
+        # Only one texture set was imported (one opaque or one transparent material)
+        if material_count == 1:
+            material = bpy.data.materials[0]
+            material_name = str(material.name) # Get the material's name from that material's data block list.
+            for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
+                if object.type == 'MESH':
+                    object.data.materials.append(material)
+                    print("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
+                    logging.info("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
+
+        # Only one texture set was imported (one opaque material, one transparent version/copy of that opaque material).
+        elif material_count == 2 and transparent_materials:
+            for material in bpy.data.materials:
+                material_name = str(material.name) # Get the material's name from that material's data block list.
+                for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
+                    if object.type == 'MESH' and material_name.replace("_transparent", "") == item: # Ignore the "_transparent" suffix of the transparent material.
+                        if object_count == 1 and material_name.endswith('transparent'):
                             object.data.materials.append(material)
-                            print("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
-                            logging.info("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
-                        else:
-                            continue 
-            # Only one texture set was imported (one opaque material, one transparent version/copy of that opaque material).
-            elif material_count == 2 and transparent_materials:
-                for material in bpy.data.materials:
-                    material_name = str(material.name) # Get the material's name from that material's data block list.
-                    for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
-                        if object.type == 'MESH' and material_name.replace("_transparent", "") == item: # Ignore the "_transparent" suffix of the transparent material.
+                            print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
+                            logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
+                        elif object_count > 1:
                             if transparency_tag in object.name and material_name.endswith('transparent'):
                                 object.data.materials.append(material)
                                 print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
@@ -905,51 +907,29 @@ def assign_materials(item):
                                 print("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
                                 logging.info("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
                             else:
-                                continue    
-
-            # More than one texture set was imported.
-            else:
-                for material in bpy.data.materials:
-                    material_name = str(material.name) # Get the material's name from that material's data block list.
-                    for object in bpy.context.selected_objects:
-                        if object.type == 'MESH': # Loop only through selected MESH type objects.
-                            if material_name in object.name and transparency_tag in object.name and material_name.endswith('transparent'):
-                                object.data.materials.append(material)
-                                print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                                logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                            elif material_name in object.name and not transparency_tag in object.name and not material_name.endswith('transparent'):
-                                object.data.materials.append(material)
-                                print("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
-                                logging.info("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
-                            else:
                                 continue
 
+        # More than one texture set was imported.
+        elif material_count >= 2:
+            for material in bpy.data.materials:
+                material_name = str(material.name) # Get the material's name from that material's data block list.
+                for object in bpy.context.selected_objects:
+                    if object.type == 'MESH': # Loop only through selected MESH type objects.
+                        if material_name in object.name and transparency_tag in object.name and material_name.endswith('transparent'):
+                            object.data.materials.append(material)
+                            print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
+                            logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
+                        elif material_name in object.name and not transparency_tag in object.name and not material_name.endswith('transparent'):
+                            object.data.materials.append(material)
+                            print("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
+                            logging.info("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
+                        else:
+                            continue
 
-        # If there is only one object in the scene, there is likely only one material.
-        elif object_count == 1:
-            # Check if there is an opacity map plugged into material_transparent. If there is, then that object must be a transparent object regardless of name.
-            material = bpy.data.materials[str(item)+"_transparent"]
-            material_name = str(material.name) # Get the material's name from that material's data block list.
-            for node in material.node_tree.nodes:
-                if node.type == 'BSDF_PRINCIPLED' and node.inputs['Alpha'].is_linked:
-                    opacity_map_check = "Yes"
-                elif node.type == 'BSDF_PRINCIPLED' and not node.inputs['Alpha'].is_linked:
-                    opacity_map_check = "No"
-
-            if opacity_map_check == "Yes":    
-                object = bpy.context.selected_objects[0]
-                object.data.materials.append(material)
-                print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                    
-            elif opacity_map_check == "No":
-                material = bpy.data.materials[str(item)]
-                object = bpy.context.selected_objects[0]
-                object.data.materials.append(material)
-                print("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
-                logging.info("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
-
-            # Currently does support more than one texture set if there is only one object in the scene. 
+        # If there aren't any mesh-type objects in the scene (e.g. an empty FBX), continue on to the next item.
+        else:
+            print("There are no mesh-type objects in the scene")
+            logging.info("There are no mesh-type objects in the scene")
 
         print("------------------------  ASSIGNED MATERIALS TO OBJECTS  ------------------------")
         logging.info("ASSIGNED MATERIALS TO OBJECTS")
