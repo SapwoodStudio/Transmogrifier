@@ -443,14 +443,14 @@ def split_into_components(texture):
 
         components = texture.split(" ")
         
-        print("------------------------  SPLIT INTO COMPONENTS: " + str(texture_original) + " to " + str(components) + "  ------------------------")
-        logging.info("SPLIT INTO COMPONENTS: " + str(texture_original) + " to " + str(components))
+        print("------------------------  SPLIT INTO COMPONENTS: " + str(os.path.basename(texture_original)) + " to " + str(components) + "  ------------------------")
+        logging.info("SPLIT INTO COMPONENTS: " + str(os.path.basename(texture_original)) + " to " + str(components))
 
         return components
 
 
     except Exception as Argument:
-        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(texture))
+        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(os.path.basename(texture)))
 		
 
 # Regex, i.e. find and replace messy/misspelled PBR tag with clean PBR tag in a given image texture's name supplied by the regex_textures_external function.
@@ -560,8 +560,8 @@ def regex_textures_external(textures_temp_dir):
                     texture = os.path.join(texture_path, texture)
                     texture_renamed = '_'.join(components[:-1])
                     texture_renamed = os.path.join(texture_path, texture_renamed + '.' + components[-1])
-                    print("Renamed texture from " + str(texture) + " to " + str(texture_renamed))
-                    logging.info("Renamed texture from " + str(texture) + " to " + str(texture_renamed))
+                    print("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
+                    logging.info("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
                     os.rename(texture, texture_renamed)
                         
                 else:
@@ -600,8 +600,8 @@ def regex_textures_packed():
 
             if components_original != components:
                 texture_renamed = '_'.join(components[:-1])
-                print("Renamed texture from " + str(texture) + " to " + str(texture_renamed))
-                logging.info("Renamed texture from " + str(texture) + " to " + str(texture_renamed))
+                print("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
+                logging.info("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
                 texture.name = texture_renamed
                 print("Renamed " + texture_name + " to " + texture_renamed)
                 logging.info("Renamed " + texture_name + " to " + texture_renamed)
@@ -1411,8 +1411,9 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
     try:
         # Get a list of either ORM images or BO images.
         combined_images_list = [i for i in bpy.data.images if tag_1.lower() in i.name.lower() and tag_2.lower() in i.name.lower()]
-        print("Combined images detected: " + str(combined_images_list))
-        logging.info("Combined images detected: " + str(combined_images_list))
+        combined_images_list_names = [i.name for i in combined_images_list]
+        print("Combined images detected: " + str(combined_images_list_names))
+        logging.info("Combined images detected: " + str(combined_images_list_names))
 
         if combined_images_list:
             for image in combined_images_list:
@@ -1452,8 +1453,6 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                 
                 # Finally, remove the original combined image.
                 image_path = bpy.path.abspath(image.filepath)
-                print(image_path)
-                logging.info(image_path)
                 if os.path.exists(image_path):
                     os.remove(image_path)
                 else:
@@ -1843,38 +1842,6 @@ def set_scene_units(unit_system, length_unit):
         logging.exception("COULD NOT SET SCENE UNITS")
 		
 
-# Export file 1 of a format type supplied by the user.
-def export_file_1_function(export_file_1_command, export_file_1_options, export_file_1):
-    try:
-        export_file_1_options["filepath"] = export_file_1  # Set filepath to the location of the model to be imported
-        export_file_1_command = str(export_file_1_command) + str(export_file_1_options) + ")"  # Concatenate the import command with the import options dictionary
-        print(export_file_1_command)
-        logging.info(export_file_1_command)
-        exec(export_file_1_command)  # Run export_file_1_command, which is stored as a string and won't run otherwise.
-
-        print("------------------------  EXPORTED FILE 1: " + str(os.path.basename(export_file_1)) + "  ------------------------")
-        logging.info("EXPORTED FILE 1: " + str(os.path.basename(export_file_1)))
-
-    except Exception as Argument:
-        logging.exception("COULD NOT EXPORT FILE 1: " + str(os.path.basename(export_file_1)))
-		
-
-# Export file 2 of a format type supplied by the user.
-def export_file_2_function(export_file_2_command, export_file_2_options, export_file_2):
-    try:
-        export_file_2_options["filepath"] = export_file_2  # Set filepath to the location of the model to be imported
-        export_file_2_command = str(export_file_2_command) + str(export_file_2_options) + ")"  # Concatenate the import command with the import options dictionary
-        print(export_file_2_command)
-        logging.info(export_file_2_command)
-        exec(export_file_2_command)  # Run export_file_2_command, which is stored as a string and won't run otherwise.
-
-        print("------------------------  EXPORTED FILE 2: " + str(os.path.basename(export_file_2)) + "  ------------------------")
-        logging.info("EXPORTED FILE 2: " + str(os.path.basename(export_file_2)))
-
-    except Exception as Argument:
-        logging.exception("COULD NOT EXPORT FILE 2: " + str(os.path.basename(export_file_2)))
-		
-
 # Set custom transformations if requested by the User.
 def set_transformations(set_transforms_filter, set_location, set_rotation, set_scale):
     try:
@@ -1905,93 +1872,57 @@ def set_transformations(set_transforms_filter, set_location, set_rotation, set_s
     except Exception as Argument:
         logging.exception("COULD NOT SET TRANSFORMATIONS")
 		
-    
+
+# Export a model.
+def export_a_model(export_file_scale, export_file_command, export_file_options, export_file):
+    try:
+        # Set scale
+        set_export_scale(export_file_scale)
+        print("Scaled models by " + str(export_file_scale))
+        logging.info("Scaled models by " + str(export_file_scale))
+        # Apply transforms if requested
+        if apply_transforms:
+            apply_transformations(apply_transforms_filter)
+        
+        # Export the model.
+        export_file_options["filepath"] = export_file  # Set filepath to the location of the model to be imported
+        export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the import command with the import options dictionary
+        print(export_file_command)
+        logging.info(export_file_command)
+        exec(export_file_command)  # Run export_file_command, which is stored as a string and won't run otherwise.
+
+        # Reset scale
+        export_file_scale = 1 / export_file_scale
+        # Apply transforms if requested
+        if apply_transforms:
+            apply_transformations(apply_transforms_filter)
+        set_export_scale(export_file_scale)
+        print("Reset scale of models by " + str(export_file_scale))
+        logging.info("Reset scale of models by " + str(export_file_scale))
+        # Apply transforms if requested
+        if apply_transforms:
+            apply_transformations(apply_transforms_filter)
+        print("------------------------  EXPORTED A MODEL: " + str(os.path.basename(export_file)) + "  ------------------------")
+        logging.info("EXPORTED A MODEL: " + str(os.path.basename(export_file)))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT EXPORT A MODEL")
+
+
 # Determine how many, if any, models to export.
 def export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2):
     try:
         if model_quantity == "2 Formats":
-            ## Export file 1
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-            # Set scale
-            set_export_scale(export_file_1_scale)
-            print("Scaled models by " + str(export_file_1_scale))
-            logging.info("Scaled models by " + str(export_file_1_scale))
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
+            # Export file 1
+            export_a_model(export_file_1_scale, export_file_1_command, export_file_1_options, export_file_1)
+            # Export file 2
+            export_a_model(export_file_2_scale, export_file_2_command, export_file_2_options, export_file_2)
             
-            # Export the first model.
-            export_file_1_function(export_file_1_command, export_file_1_options, export_file_1)
-
-            # Reset scale
-            export_file_1_scale = 1 / export_file_1_scale
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-            set_export_scale(export_file_1_scale)
-            print("Reset scale of models by " + str(export_file_1_scale))
-            logging.info("Reset scale of models by " + str(export_file_1_scale))
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-
-            ## Export file 2
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-            # Set scale
-            set_export_scale(export_file_2_scale)
-            print("Scaled models by " + str(export_file_2_scale))
-            logging.info("Scaled models by " + str(export_file_2_scale))
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-
-            # Export the second model.
-            export_file_2_function(export_file_2_command, export_file_2_options, export_file_2)
-            # Reset scale
-            export_file_2_scale = 1 / export_file_2_scale
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-            set_export_scale(export_file_2_scale)
-            print("Reset scale of models by " + str(export_file_2_scale))
-            logging.info("Reset scale of models by " + str(export_file_2_scale))
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-
-        if model_quantity == "1 Format":
-            ## Export file 1
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-            # Set scale
-            set_export_scale(export_file_1_scale)
-            print("Scaled models by " + str(export_file_1_scale))
-            logging.info("Scaled models by " + str(export_file_1_scale))
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
+        elif model_quantity == "1 Format":
+            # Export file 1
+            export_a_model(export_file_1_scale, export_file_1_command, export_file_1_options, export_file_1)
             
-            # Export the first model.
-            export_file_1_function(export_file_1_command, export_file_1_options, export_file_1)
-
-            # Reset scale
-            export_file_1_scale = 1 / export_file_1_scale
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-            set_export_scale(export_file_1_scale)
-            print("Reset scale of models by " + str(export_file_1_scale))
-            logging.info("Reset scale of models by " + str(export_file_1_scale))
-            # Apply transforms if requested
-            if apply_transforms:
-                apply_transformations(apply_transforms_filter)
-
-        if model_quantity == "No Formats":
+        elif model_quantity == "No Formats":
             print("No models will be exported")
             logging.info("No models will be exported")
 
