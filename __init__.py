@@ -179,7 +179,7 @@ def draw_settings(self, context):
     # Transmogrifier Presets Menu
     self.layout.separator()
     col = self.layout.column(align=True)
-    col.label(text="WORKFLOW", icon='DRIVER')
+    col.label(text="WORKFLOW:", icon='DRIVER')
     layout = self.layout
     # Align menu items to the left.
     self.layout.use_property_split = False
