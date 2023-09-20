@@ -461,19 +461,19 @@ def find_replace_pbr_tag(texture):
 
         # Dictionary with regex keys will be used as the pattern by turning it into a list then to a string.
         pbr_dict = {
-            '[Bb]?ase*\s?_?[Cc]?olou?r|[Aa]?lbedo|[Dd]?iffuse|[Dd]?iff|[Cc]?olou?r': 'BaseColor',
-            '[Ss]?ubsurface': 'Subsurface',
-            '[Mm]?etall?ic|[Mm]?etalness?|[Mm]?etaln.*|[Mm]etal': 'Metallic', 
-            '[Ss]?pecul.*|[Ss]pec': 'Specular',
-            '[Rr]?ou?gh|[Rr]?ou?ghness': 'Roughness',
-            '[Gg]?loss.*': 'Gloss',
-            '[Nn]?ormal|[Nn]orm|[Nn]rml': 'Normal',
-            '[Bb]?ump': 'Bump',
-            '[Dd]?ispl.*|[Hh]?e?ight|[Hh]?i?eght': 'Height',
-            '[Tt]?ransmission|[Tt]ransmiss|[Tt]rnsmss|[Tt]?ransm.*': 'Transmission',
-            '[Ee]?miss.*|[Ee]mit': 'Emission',
-            '[Aa]?lph.*|[Oo]?pac.*|[Tt]?ranspa.*|[Tt]?ranspr.*': 'Opacity',
-            '[Aa]?mbient*\s?_?[Oo]?cc?lusion|[Aa]?mbient|[Oo]?cc?lus.*': 'Occlusion'
+            '(?i)^basecolor$|^albedo$|^d?iffuse$|^d?iff$|^colou?r$|^col$': 'BaseColor',
+            '(?i)^subsurf.*|^sss$': 'Subsurface',
+            '(?i)^m?etall?ic$|^m?etalness?$|^metal$|^mtl$': 'Metallic', 
+            '(?i)^specul.*|^spe?c$': 'Specular',
+            '(?i)^rou?gh$|^rou?ghn.*|^rgh$': 'Roughness',
+            '(?i)^gloss?y?$|^gloss?iness?$|^gls$': 'Gloss',
+            '(?i)^no?rma?l?$': 'Normal',
+            '(?i)^bu?mp$|^bumpiness?$': 'Bump',
+            '(?i)^displacem?e?n?t?$|^di?sp$|^he?i?ght$|^hi?e?ght$': 'Height',
+            '(?i)^tra?nsmi?ss?i?o?n$': 'Transmission',
+            '(?i)^emiss.*|^emit$': 'Emission',
+            '(?i)^alpha$|^opac.*|^tra?ns?pa.*|^transpr.*': 'Opacity',
+            '(?i)^ambi?e?nt$|^occ?lus.*|^ambi?e?ntocc?lusion$|^ao$': 'Occlusion'
         }
 
         dictkeys_pattern = re.compile('|'.join(pbr_dict), re.IGNORECASE)
@@ -506,7 +506,7 @@ def find_replace_transparency_tag(mesh_object):
 
         # Dictionary with regex keys will be used as the pattern by turning it into a list then to a string.
         pbr_dict = {
-            '[Aa]?lph.*|[Oo]?pac.*|[Tt]?ranspa.*|[Tt]?ranspr.*|[Tt]?rns.*|[Tt]?ranp.*|[Gg]?lass': 'transparent',
+            '(?i)^alpha$|^opac.*|^tra?ns?pa.*|^transpr.*|^glass$': 'transparent',
             '(?i)^cutout$|^cut$|^out$': 'cutout',
         }
 
@@ -553,7 +553,7 @@ def regex_textures_external(textures_temp_dir):
                         components[tag_index] = pbr_tag_renamed
                         if pbr_tag_renamed == "BaseColor" and components[tag_index-1].lower() == "base":
                             components.pop(tag_index-1)  # Was getting "...base_BaseColor..." when original name was "base_color"
-                        elif pbr_tag_renamed == "Occlusion" and components[tag_index+1].lower() == "occlusion":
+                        elif pbr_tag_renamed == "Occlusion" and components[tag_index-1].lower() == "occlusion":
                             components.pop(tag_index+1)  # Was getting "...Ambient_Occlusion_Occlusion..." when original name was "Ambient_Occlusion"
                         break
 
