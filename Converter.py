@@ -461,7 +461,7 @@ def find_replace_pbr_tag(texture):
 
         # Dictionary with regex keys will be used as the pattern by turning it into a list then to a string.
         pbr_dict = {
-            '(?i)^basecolor$|^albedo$|^d?iffuse$|^d?iff$|^colou?r$|^col$': 'BaseColor',
+            '(?i)^basecolou?r$|^albedo$|^d?iffuse$|^d?iff$|^colou?r$|^col$': 'BaseColor',
             '(?i)^subsurf.*|^sss$': 'Subsurface',
             '(?i)^m?etall?ic$|^m?etalness?$|^metal$|^mtl$': 'Metallic', 
             '(?i)^specul.*|^spe?c$': 'Specular',
@@ -2223,6 +2223,11 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
             create_materials(item, textures_temp_dir)
+            # Modify textures if requested.
+            if texture_resolution != "Default":
+                resize_textures(texture_resolution, texture_resolution_include)
+            if image_format != "Default":
+                convert_image_format(image_format, image_quality, image_format_include, textures_source)
             assign_materials(item)
 
         elif textures_source == "Packed":
@@ -2244,8 +2249,15 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             # Unpack textures before modifying them.
             unpack_textures(textures_temp_dir, blend)
 
+            # Modify textures if requested.
+            if import_file_ext != ".glb":
+                if texture_resolution != "Default":
+                    resize_textures(texture_resolution, texture_resolution_include)
+                if image_format != "Default":
+                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
+
             # Only separate image textures if imported file is a GLB.
-            if import_file_ext == ".glb":
+            elif import_file_ext == ".glb":
                 # Get a dictionary of which textures are assigned to which materials.
                 mapped_textures = map_textures_to_materials()
                 
@@ -2260,6 +2272,12 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
 
                 # Reimport unpacked & separated textures to their original materials.
                 reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
+                
+                # Modify textures if requested.
+                if texture_resolution != "Default":
+                    resize_textures(texture_resolution, texture_resolution_include)
+                if image_format != "Default":
+                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
 
         elif textures_source == "Custom":
             print("Using custom textures for conversion")
