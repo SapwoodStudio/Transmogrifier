@@ -745,15 +745,9 @@ def create_materials(item, textures_temp_dir):
         logging.exception("COULD NOT CREATE MATERIALS")
 		
 
-# Add materials, import textures, and assign materials to objects.
-def create_a_material(item, textures_temp_dir, textures):
+# Add principled setup with Node Wrangler.
+def add_principled_setup(material, textures_temp_dir, textures):
     try:
-        # Assign currently active object to variable.
-        object = bpy.context.view_layer.objects.active
-        
-        # Create a new material. This will be the opaque material.
-        material = bpy.data.materials.new(name=item) # Create new material from item name.
-
         # Select shader before importing textures.
         material.use_nodes = True
         tree = material.node_tree
@@ -763,16 +757,13 @@ def create_a_material(item, textures_temp_dir, textures):
         material.node_tree.nodes['Material Output'].select = False
         material.node_tree.nodes['Principled BSDF'].select = True
         material.node_tree.nodes.active = material.node_tree.nodes.get("Principled BSDF")
-        
-        # Import textures with Node Wrangler addon
-        textures = textures
 
         # Log the textures to be used for this material.
         print("Textures for " + str(material.name) + ": " + str(textures))
         logging.info("Textures for " + str(material.name) + ": " + str(textures))
 
         files = []
-        
+
         for texture in textures:
             if texture == '.DS_Store':
                 continue
@@ -807,7 +798,26 @@ def create_a_material(item, textures_temp_dir, textures):
                 directory=directory,
                 files=files,
                 relative_path=relative_path
-            ) 
+            )
+        
+        print("------------------------  Added Principled Setup for " + str(material.name) + "  ------------------------")
+        logging.info("Added Principled Setup for " + str(material.name))
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT ADD PRINCIPLED SETUP FOR " + str(material.name))
+
+
+# Add materials, import textures, and assign materials to objects.
+def create_a_material(item, textures_temp_dir, textures):
+    try:
+        # Create a new material. This will be the opaque material.
+        material = bpy.data.materials.new(name=item) # Create new material from item name.
+        
+        # Import textures with Node Wrangler addon
+        textures = textures
+        
+        # Add principled setup via Node Wrangler.
+        add_principled_setup(material, textures_temp_dir, textures)
         
         # Check if this material includes an opacity map.
         transparency_check = [node for node in material.node_tree.nodes if node.type == 'BSDF_PRINCIPLED' and node.inputs['Alpha'].is_linked]
@@ -1670,6 +1680,30 @@ def rename_textures_packed(textures_temp_dir):
 # For packed textures, reimport textures to respective existing materials after they have been unpacked and separated.
 def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
     try:
+        for material in bpy.data.materials:
+            if material.name == "Dots Stroke":
+                continue
+            
+            # Define material for handoff to add principled setup function.
+            material = material
+
+            # Import textures with Node Wrangler addon
+            image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
+            textures_available = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+            textures = [texture for texture in textures_available if os.path.splitext(texture)[0] in mapped_textures[material.name]]
+
+           # Add principled setup via Node Wrangler.
+            add_principled_setup(material, textures_temp_dir, textures)
+
+        print("------------------------  RE-IMPORTED TEXTURES TO EXISTING MATERIALS  ------------------------")
+        logging.info("RE-IMPORTED TEXTURES TO EXISTING MATERIALS")
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT RE-IMPORT TEXTURES TO EXISTING MATERIALS")
+
+
+# Delete all nodes for all materials except Principled BSDF's and Material Outputs.
+def remove_nodes_except_shaders():
         # Sever all input connections to the Principled shader to prepare for texture reimport.
         for material in bpy.data.materials:
             if material.name == "Dots Stroke":
@@ -1679,72 +1713,7 @@ def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
                 if node.name == "Principled BSDF" or node.name == "Material Output":
                     continue
                 material_node.remove(node)
-
-            # Select shader before importing textures.
-            material.use_nodes = True
-            tree = material.node_tree
-            nodes = tree.nodes
-
-            # Make sure the Principled BSDF shader is selected.
-            material.node_tree.nodes['Material Output'].select = False
-            material.node_tree.nodes['Principled BSDF'].select = True
-            material.node_tree.nodes.active = material.node_tree.nodes.get("Principled BSDF")
             
-            # Import textures with Node Wrangler addon
-            image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            textures_available = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
-            textures = [texture for texture in textures_available if os.path.splitext(texture)[0] in mapped_textures[material.name]]
-
-            print("Textures for " + str(material.name) + ": " + str(textures))
-            logging.info("Textures for " + str(material.name) + ": " + str(textures))
-
-            files = []
-            
-            for texture in textures:
-                if texture == '.DS_Store':
-                    continue
-
-                files.append(
-                    {
-                        "name": texture,
-                        "name": texture
-                    }
-                )
-                
-                filepath = textures_temp_dir + '/'
-                directory = textures_temp_dir + '/'
-                relative_path = True
-                
-                win = bpy.context.window
-                scr = win.screen
-                areas  = [area for area in scr.areas if area.type == 'NODE_EDITOR']
-                areas[0].spaces.active.node_tree = material.node_tree
-                regions = [region for region in areas[0].regions if region.type == 'WINDOW']
-
-                override = {
-                    'window': win,
-                    'screen': scr,
-                    'area': areas[0],
-                    'region': regions[0],
-                }
-                
-                bpy.ops.node.nw_add_textures_for_principled(
-                    override,
-                    filepath=filepath,
-                    directory=directory,
-                    files=files,
-                    relative_path=relative_path
-                )
-                
-            print("Reimported textures to material: " + str(material.name))
-            logging.info("Reimported textures to material: " + str(material.name))
-
-        print("------------------------  RE-IMPORTED TEXTURES TO EXISTING MATERIALS  ------------------------")
-        logging.info("RE-IMPORTED TEXTURES TO EXISTING MATERIALS")
-    
-    except Exception as Argument:
-        logging.exception("COULD NOT RE-IMPORT TEXTURES TO EXISTING MATERIALS")
-
 
 # Set object data names as object names. Sometimes, upon export, object data names are used instead of object names, depending on the export format (e.g. USD).
 # Code adapted from Simple Renaming Panel (GPL-3.0 License, https://github.com/Weisl/simple_renaming_panel/), renaming_operators.py, Line 609
@@ -2269,6 +2238,9 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
 
                 # Remove existing images from Converter.blend file.
                 clean_data_block(bpy.data.images)
+                
+                # Delete all nodes for all materials except Principled BSDF's and Material Outputs.
+                remove_nodes_except_shaders()
 
                 # Reimport unpacked & separated textures to their original materials.
                 reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
