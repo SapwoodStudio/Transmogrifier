@@ -658,6 +658,7 @@ class TransmogrifierPreferences(AddonPreferences):
             ('3DSIDE', "3D Viewport Side Panel (Transmogrifier Tab)",
              "Place in the 3D Viewport's right side panel, in the Transmogrifier Tab"),
         ],
+        default='3DSIDE',
         update=addon_location_updated,
     )
 
