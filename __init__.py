@@ -494,8 +494,12 @@ def draw_settings(self, context):
             self.layout.use_property_split = True
             col = self.layout.column(align=True)
             col.prop(settings, 'resize_textures_limit')
+        if 'Reformat Textures' in settings.file_size_methods:
+            self.layout.use_property_split = True
+            col = self.layout.column(align=True)
+            col.prop(settings, 'reformat_normal_maps')
         if 'Decimate Meshes' in settings.file_size_methods:
-            self.layout.use_property_split = False
+            self.layout.use_property_split = True
             col = self.layout.column(align=True)
             col.prop(settings, 'decimate_limit')
         # self.layout.separator()
@@ -1768,6 +1772,12 @@ class TransmogrifierSettings(PropertyGroup):
         ],
         default="512",
     )
+    # Include normal map in auto-reformatting.
+    reformat_normal_maps: BoolProperty(
+        name="Reformat Normal Maps",
+        description="Determine whether normal maps should be included in 'Reformat Textures' (to JPG's)",
+        default=False,
+        )
     # Limit how many time a mesh can be decimated during auto resize files.
     decimate_limit: IntProperty(
         name="Decimate Max.", 

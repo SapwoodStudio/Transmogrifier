@@ -2063,6 +2063,8 @@ def reformat_textures_and_export(export_file_1, export_file_2):
             image_format = 'JPEG'
             image_quality = 90
             image_format_include = ["Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
+            if reformat_normal_maps == True:
+                image_format_include.append("Normal")
             convert_image_format(image_format, image_quality, image_format_include, textures_source)
             
             # Determine how many 3D files to export, then export.
