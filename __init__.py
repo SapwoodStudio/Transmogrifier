@@ -1567,7 +1567,7 @@ class TransmogrifierSettings(PropertyGroup):
             ("TIFF", "TIFF", "Save image textures in TIFF format", 5),
             ("WEBP", "WEBP", "Save image textures in WEBP format", 6),
             ("BMP", "BMP", "Save image textures in BMP format", 7),
-            # ("OPEN_EXR", "OPEN_EXR", "Save image textures in OPEN_EXR format", 8),
+            ("OPEN_EXR", "OPEN_EXR", "Save image textures in OpenEXR format", 8),
             # ("JPEG2000", "JPEG2000", "Save image textures in JPEG2000 format", 9),
             # ("CINEON", "CINEON", "Save image textures in CINEON format", 10),
             # ("DPX", "DPX", "Save image textures in DPX format", 11),

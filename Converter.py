@@ -467,7 +467,7 @@ def find_replace_pbr_tag(texture):
             '(?i)^specul.*|^spe?c$': 'Specular',
             '(?i)^rou?gh$|^rou?ghn.*|^rgh$': 'Roughness',
             '(?i)^gloss?y?$|^gloss?iness?$|^gls$': 'Gloss',
-            '(?i)^no?rma?l?$': 'Normal',
+            '(?i)^no?rma?l?$|^nor$': 'Normal',
             '(?i)^bu?mp$|^bumpiness?$': 'Bump',
             '(?i)^displacem?e?n?t?$|^di?sp$|^he?i?ght$|^hi?e?ght$': 'Height',
             '(?i)^tra?nsmi?ss?i?o?n$': 'Transmission',
@@ -1071,7 +1071,20 @@ def convert_image_format(image_format, image_quality, image_format_include, text
     try:
         # Get dictionary.
         ext_dict = image_texture_ext_dict()
-        
+
+        # Set color management to sRGB Standard.
+        set_color_management(
+            image_format=image_format, 
+            image_quality=image_quality,
+            display_device='sRGB', 
+            view_transform='Standard', 
+            look='None', 
+            exposure=0, 
+            gamma=1, 
+            sequencer='sRGB', 
+            use_curves=False, 
+        )
+
         # Convert each relevant image.
         for image in bpy.data.images:
             
@@ -1080,12 +1093,16 @@ def convert_image_format(image_format, image_quality, image_format_include, text
                 continue
             
             # Include only the images specified by the User.
-            for pbr_type in image_format_include:
-                if pbr_type in image.name:        
+            for pbr_tag in image_format_include:
+                if pbr_tag in image.name:        
                     image_path = bpy.path.abspath(image.filepath)
 
                     # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
                     image.name = pathlib.Path(image_path).name
+                    
+
+                    # DON'T REFORMAT IMAGE IF CONVERTING TO THE SAME TYPE. (BLOATS .EXR FILES A LOT)
+
                     
                     # Change image extension and pathing.
                     image_ext = "." + image.name.split(".")[-1]
@@ -1096,19 +1113,6 @@ def convert_image_format(image_format, image_quality, image_format_include, text
                     image_name = image.name
                     image_name_new = image.name.replace(image_ext, image_ext_new)
 
-                    # Set color management to sRGB Standard.
-                    set_color_management(
-                        image_format=image_format, 
-                        image_quality=image_quality,
-                        display_device='sRGB', 
-                        view_transform='Standard', 
-                        look='None', 
-                        exposure=0, 
-                        gamma=1, 
-                        sequencer='sRGB', 
-                        use_curves=False, 
-                    )
-
                     # Save image as input specified by the User.
                     image.save_render(filepath = image_path_new)
                     if image_path != image_path_new and os.path.exists(image_path):  # Don't delete image if converting to the same file format.
@@ -1117,6 +1121,11 @@ def convert_image_format(image_format, image_quality, image_format_include, text
                     # Repath the image textures to the new format.
                     image.name = image_name_new
                     bpy.data.images[image.name].filepath = bpy.path.abspath(image_path_new)
+
+                    if pbr_tag == "BaseColor" and image_format == "OPEN_EXR":
+                        image.colorspace_settings.name = 'Raw'
+                        print("Set EXR Basecolor image color space to Raw for " + str(image.name))
+                        logging.info("Set EXR Basecolor image color space to Raw for " + str(image.name))
 
                     print(image_name + " was converted to a " + image_format + ".")
                     logging.info(image_name + " was converted to a " + image_format + ".")
