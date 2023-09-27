@@ -18,6 +18,8 @@ import pathlib
 import json
 import re
 import logging
+from bpy.app.handlers import persistent
+from itertools import chain
 
 
 # Read Converter_Variables.json file where the user variables are stored.
@@ -115,19 +117,18 @@ def set_theme_light(blender_dir, blender_version):
         logging.exception("COULD NOT SET THEME TO BLENDER LIGHT")
 
 
-# Enable addon dependencies and clear the scene
-def scene_setup():
+# Preserve unused materials & textures by setting fake user(s).
+def use_fake_user():
     try:
-        bpy.ops.object.select_all(action='SELECT')
-        bpy.ops.object.delete(use_global=False)
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
-
-        print("------------------------  SET UP SCENE  ------------------------")
-        logging.info("SET UP SCENE")
+        for datablock in chain(bpy.data.materials, bpy.data.textures):
+            datablock.use_fake_user = True
+        
+        print("------------------------  USED FAKE USER FOR TEXTURES & MATERIALS  ------------------------")
+        logging.info("USED FAKE USER FOR TEXTURES & MATERIALS")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SET UP SCENE")
-		
+        logging.exception("COULD NOT USE FAKE USER FOR TEXTURES & MATERIALS")
+
 
 # Recursively delete orphaned data blocks.
 def purge_orphans():
@@ -139,6 +140,20 @@ def purge_orphans():
 
     except Exception as Argument:
         logging.exception("COULD NOT PURGE ORPHANED DATA BLOCKS RECURSIVELY")
+		
+
+# Enable addon dependencies and clear the scene
+def scene_setup():
+    try:
+        bpy.ops.object.select_all(action='SELECT')
+        bpy.ops.object.delete(use_global=False)
+        purge_orphans()
+
+        print("------------------------  SET UP SCENE  ------------------------")
+        logging.info("SET UP SCENE")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SET UP SCENE")
 		
 
 # Sometimes purge orphans won't delete data blocks (e.g. images) even though they have no users. This will force the deletion of any data blocks within a specified bpy.data.[data type]
@@ -245,7 +260,7 @@ def clear_materials_users():
         bpy.ops.view3d.materialutilities_remove_all_material_slots(only_active=False)
         
         # Delete any old materials that might have the same name as the imported object.
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+        purge_orphans()
         
         for material in bpy.data.materials:
             material.user_clear()
@@ -1211,14 +1226,9 @@ def save_blend_file(blend):
             use_curves=False, 
         )
 
-        # Purge orphaned data blocks before saving.
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
-
-        from bpy.app.handlers import persistent
-        from itertools import chain
-
-        for datablock in chain(bpy.data.materials, bpy.data.textures):
-            datablock.use_fake_user = True
+        # Preserve unused materials & textures by setting fake user(s).
+        use_fake_user()
+        
         bpy.ops.wm.save_as_mainfile(filepath=blend)
 
         # Delete Blender "save version" backup file (also known as a .blend1 file).
@@ -2290,7 +2300,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
             
             # Reassign textures_temp to be beside custom textures source.
-            textures_temp_dir = textures_custom_dir + "_temp"
+            textures_temp_dir = os.path.splitext(textures_custom_dir)[0].rstrip("\\") + "_temp"
             
             # Reassign item as "Custom_Textures"
             item = "Custom_Textures"
@@ -2318,10 +2328,16 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 global custom_textures
                 custom_materials = [material.name for material in bpy.data.materials]
                 custom_textures = [texture.name for texture in bpy.data.images]
+
+                # Preserve material(s) and texture(s).
+                use_fake_user()
             
             elif conversion_count > 0:
                 clean_data_block_except_custom(bpy.data.materials, custom_materials)
                 clean_data_block_except_custom(bpy.data.images, custom_textures)
+                
+                # Preserve material(s) and texture(s).
+                use_fake_user()
 
             assign_materials(item)
 
@@ -2468,18 +2484,15 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
         # If User elected not to save a .blend file, delete any existing .blend.
-        if not save_blend:
-            if os.path.isfile(blend):
-                os.remove(blend)
+        if not save_blend and os.path.isfile(blend):
+            os.remove(blend)
 
         # Modified or copied textures can now be delete after the conversion is over.
         if use_textures:
-            if not keep_modified_textures:
-                if os.path.exists(textures_temp_dir):
-                    delete_textures_temp(textures_temp_dir)
-            if textures_source == "Custom":
-                if not copy_textures_custom_dir:
-                    remove_copy_textures_custom_dir(item_dir, textures_dir)
+            if not keep_modified_textures and textures_source != "Custom" and os.path.exists(textures_temp_dir):
+                delete_textures_temp(textures_temp_dir)
+            if textures_source == "Custom" and not copy_textures_custom_dir:
+                remove_copy_textures_custom_dir(item_dir, textures_dir)
 
         print("-------------------------------------------------------------------")
         print("----------------  CONVERTER END: " + str(os.path.basename(import_file)) + "  ----------------")
