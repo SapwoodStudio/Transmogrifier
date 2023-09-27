@@ -2774,6 +2774,12 @@ def batch_converter():
         
         # Reset interface theme dark after rendering all Preview images.
         #set_theme_dark(blender_dir, blender_version)
+        
+        # If using custom textures, delete temporary textures directory only after all items have been converted.
+        if use_textures and textures_source == "Custom" and not keep_modified_textures:
+            textures_temp_dir = os.path.splitext(textures_custom_dir)[0].rstrip("\\") + "_temp"
+            if os.path.exists(textures_temp_dir):
+                delete_textures_temp(textures_temp_dir)
 
         # Report conversion count to Converter_Report.json
         report_conversion_count(conversion_count)
