@@ -1082,7 +1082,7 @@ def set_color_management(
 		
 
 # Convert images to specified format.
-def convert_image_format(image_format, image_quality, image_format_include, textures_source):
+def reformat_images(image_format, image_quality, image_format_include, textures_source):
     try:
         # Get dictionary.
         ext_dict = image_texture_ext_dict()
@@ -1109,21 +1109,23 @@ def convert_image_format(image_format, image_quality, image_format_include, text
             
             # Include only the images specified by the User.
             for pbr_tag in image_format_include:
-                if pbr_tag in image.name:        
+                if pbr_tag in image.name:
                     image_path = bpy.path.abspath(image.filepath)
 
                     # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
                     image.name = pathlib.Path(image_path).name
-                    
 
-                    # DON'T REFORMAT IMAGE IF CONVERTING TO THE SAME TYPE. (BLOATS .EXR FILES A LOT)
-
-                    
                     # Change image extension and pathing.
                     image_ext = "." + image.name.split(".")[-1]
                     image_ext_new = ext_dict[image_format]
                     image_path_new = bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new))
                     
+                    # Don't reformat image if converting between identical formats.
+                    if image_ext.lower() == image_ext_new.lower():
+                        print(image.name + " is already formatted as " + image_format + ". Skipping conversion.")
+                        logging.info(image.name + " is already formatted as " + image_format + ". Skipping conversion.")
+                        continue
+
                     # Change image name.
                     image_name = image.name
                     image_name_new = image.name.replace(image_ext, image_ext_new)
@@ -1137,22 +1139,27 @@ def convert_image_format(image_format, image_quality, image_format_include, text
                     image.name = image_name_new
                     bpy.data.images[image.name].filepath = bpy.path.abspath(image_path_new)
 
-                    if pbr_tag == "BaseColor" and image_format == "OPEN_EXR":
-                        image.colorspace_settings.name = 'Raw'
-                        print("Set EXR Basecolor image color space to Raw for " + str(image.name))
-                        logging.info("Set EXR Basecolor image color space to Raw for " + str(image.name))
+                    # Prepare extra settings for OpenEXR format.
+                    if image_format == "OPEN_EXR":
+                        image.alpha_mode = 'PREMUL'
+                        print(image.name + "'s alpha mode was set to 'Premultiplied' for EXR format.")
+                        logging.info(image.name + "'s alpha mode was set to 'Premultiplied' for EXR format.")
+                        if pbr_tag == "BaseColor":
+                            image.colorspace_settings.name = 'Linear'
+                            print(image.name + "'s BaseColor texture's color space was set to 'Linear' for EXR format.")
+                            logging.info(image.name + "'s BaseColor texture's color space was set to 'Linear' for EXR format.")
 
-                    print(image_name + " was converted to a " + image_format + ".")
-                    logging.info(image_name + " was converted to a " + image_format + ".")
+                    print(image_name + " was reformatted as " + image_format + ".")
+                    logging.info(image_name + " was reformatted as " + image_format + ".")
 
                 else:
                     continue
 
-        print("------------------------  CONVERTED IMAGE FORMAT  ------------------------")
-        logging.info("CONVERTED IMAGE FORMAT")
+        print("------------------------  REFORMATTED IMAGES  ------------------------")
+        logging.info("REFORMATTED IMAGES")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CONVERT IMAGE FORMAT")
+        logging.exception("COULD NOT REFORMAT IMAGES")
 		    
 
 # Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
@@ -2084,7 +2091,7 @@ def reformat_textures_and_export(export_file_1, export_file_2):
             image_format_include = ["Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
             if reformat_normal_maps == True:
                 image_format_include.append("Normal")
-            convert_image_format(image_format, image_quality, image_format_include, textures_source)
+            reformat_images(image_format, image_quality, image_format_include, textures_source)
             
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
@@ -2217,7 +2224,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             if texture_resolution != "Default":
                 resize_textures(texture_resolution, texture_resolution_include)
             if image_format != "Default":
-                convert_image_format(image_format, image_quality, image_format_include, textures_source)
+                reformat_images(image_format, image_quality, image_format_include, textures_source)
             assign_materials(item)
 
         elif textures_source == "Packed":
@@ -2244,7 +2251,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 if texture_resolution != "Default":
                     resize_textures(texture_resolution, texture_resolution_include)
                 if image_format != "Default":
-                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
+                    reformat_images(image_format, image_quality, image_format_include, textures_source)
 
             # Only separate image textures if imported file is a GLB.
             elif import_file_ext == ".glb":
@@ -2270,7 +2277,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 if texture_resolution != "Default":
                     resize_textures(texture_resolution, texture_resolution_include)
                 if image_format != "Default":
-                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
+                    reformat_images(image_format, image_quality, image_format_include, textures_source)
 
         elif textures_source == "Custom":
             print("Using custom textures for conversion")
@@ -2304,7 +2311,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 if texture_resolution != "Default":
                     resize_textures(texture_resolution, texture_resolution_include)
                 if image_format != "Default":
-                    convert_image_format(image_format, image_quality, image_format_include, textures_source)
+                    reformat_images(image_format, image_quality, image_format_include, textures_source)
                     
                 # Get custom materials and textures not to be deleted during conversion.
                 global custom_materials
