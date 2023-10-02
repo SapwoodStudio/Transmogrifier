@@ -1116,12 +1116,12 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
                     image.name = pathlib.Path(image_path).name
 
                     # Change image extension and pathing.
-                    image_ext = "." + image.name.split(".")[-1]
+                    image_ext = "." + image.name.split(".")[-1].lower()
                     image_ext_new = ext_dict[image_format]
                     image_path_new = bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new))
                     
                     # Don't reformat image if converting between identical formats.
-                    if image_ext.lower() == image_ext_new.lower():
+                    if image_ext == image_ext_new:
                         print(image.name + " is already formatted as " + image_format + ". Skipping conversion.")
                         logging.info(image.name + " is already formatted as " + image_format + ". Skipping conversion.")
                         continue
@@ -1139,7 +1139,7 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
                     image.name = image_name_new
                     bpy.data.images[image.name].filepath = bpy.path.abspath(image_path_new)
 
-                    # Prepare extra settings for OpenEXR format.
+                    # Ensure alpha modes and color spaces are set appropriately for EXR format.
                     if image_format == "OPEN_EXR":
                         image.alpha_mode = 'PREMUL'
                         print(image.name + "'s alpha mode was set to 'Premultiplied' for EXR format.")
@@ -1148,6 +1148,16 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
                             image.colorspace_settings.name = 'Linear'
                             print(image.name + "'s BaseColor texture's color space was set to 'Linear' for EXR format.")
                             logging.info(image.name + "'s BaseColor texture's color space was set to 'Linear' for EXR format.")
+
+                    # Ensure alpha modes and color spaces are set appropriately for non-EXR formats.
+                    elif image_format != "OPEN_EXR" and image_ext == ".exr":
+                        image.alpha_mode = 'STRAIGHT'
+                        print(image.name + "'s alpha mode was set to 'Straight'.")
+                        logging.info(image.name + "'s alpha mode was set to 'Straight'.")
+                        if pbr_tag == "BaseColor":
+                            image.colorspace_settings.name = 'sRGB'
+                            print(image.name + "'s BaseColor texture's color space was set to 'sRGB'.")
+                            logging.info(image.name + "'s BaseColor texture's color space was set to 'sRGB'.")
 
                     print(image_name + " was reformatted as " + image_format + ".")
                     logging.info(image_name + " was reformatted as " + image_format + ".")
