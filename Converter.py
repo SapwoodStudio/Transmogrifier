@@ -14,7 +14,7 @@ import os.path
 import datetime
 import sys
 import shutil
-import pathlib
+from pathlib import Path
 import json
 import re
 import logging
@@ -26,7 +26,7 @@ from itertools import chain
 def read_json():
     try:
         # Open JSON file
-        json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Variables.json")
+        json_file = os.path.join(Path(__file__).parent.resolve(), "Converter_Variables.json")
 
         with open(json_file, 'r') as openfile:
         
@@ -102,7 +102,7 @@ def enable_addons():
 # Temporarily change interface theme to force a white background in Material Preview viewport mode for rendering Preview images.
 def set_theme_light(blender_dir, blender_version):
     try:
-        theme_white = os.path.join(pathlib.Path(blender_dir).parent.resolve(), blender_version, "scripts", "addons", "presets", "interface_theme", "White.xml")
+        theme_white = os.path.join(Path(blender_dir).parent.resolve(), blender_version, "scripts", "addons", "presets", "interface_theme", "White.xml")
         
         # White theme
         bpy.ops.script.execute_preset(
@@ -554,7 +554,7 @@ def regex_textures_external(textures_temp_dir):
             for file in files:
                 file = os.path.join(subdir, file)
                 texture = file
-                texture_path = pathlib.Path(texture).parent.resolve()
+                texture_path = Path(texture).parent.resolve()
                 components_original = split_into_components(texture)
                 components = split_into_components(texture)
 
@@ -1113,7 +1113,7 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
                     image_path = bpy.path.abspath(image.filepath)
 
                     # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
-                    image.name = pathlib.Path(image_path).name
+                    image.name = Path(image_path).name
 
                     # Change image extension and pathing.
                     image_ext = "." + image.name.split(".")[-1].lower()
@@ -1290,7 +1290,7 @@ def unpack_textures(textures_temp_dir, blend):
             os.makedirs(textures_temp_dir)
 
         # Repath blend location to inside textures_temp_dir
-        blend = os.path.join(textures_temp_dir, pathlib.Path(blend).name)
+        blend = os.path.join(textures_temp_dir, Path(blend).name)
 
         # Save blend inside textures_temp_dir
         save_blend_file(blend)
@@ -1962,7 +1962,7 @@ def delete_textures_temp(textures_temp_dir):
 def set_theme_dark(blender_dir, blender_version):
     try:
         # Reset interface theme to dark theme.
-        theme_dark = os.path.join(pathlib.Path(blender_dir).parent.resolve(), blender_version, "scripts", "presets", "interface_theme", "Blender_Dark.xml")
+        theme_dark = os.path.join(Path(blender_dir).parent.resolve(), blender_version, "scripts", "presets", "interface_theme", "Blender_Dark.xml")
         
         # Default dark theme.
         bpy.ops.script.execute_preset(
@@ -1982,7 +1982,7 @@ def get_export_file_1_size(export_file_1):
     try:
         if os.path.exists(export_file_1):
             # Get current file size (in MB)
-            export_file_1_file_size = pathlib.Path(export_file_1).stat().st_size / 1048576
+            export_file_1_file_size = Path(export_file_1).stat().st_size / 1048576
         
         else:
             print(export_file_1 + " doesn't exist.")
@@ -2513,7 +2513,7 @@ def report_conversion_count(conversion_count):
             "conversion_count": conversion_count,
         }
         
-        json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Report.json")
+        json_file = os.path.join(Path(__file__).parent.resolve(), "Converter_Report.json")
 
         with open(json_file, "w") as outfile:
             json.dump(conversion_report_dict, outfile)

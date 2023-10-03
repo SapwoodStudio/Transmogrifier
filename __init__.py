@@ -14,7 +14,7 @@ from bpy.types import AddonPreferences, PropertyGroup, Operator, Panel
 from bpy.props import BoolProperty, IntProperty, EnumProperty, StringProperty, PointerProperty, FloatVectorProperty
 import os
 import shutil
-import pathlib
+from pathlib import Path
 import re
 import json
 import subprocess
@@ -564,7 +564,7 @@ def write_json(variables_dict, json_file):
 # Read the JSON file where the conversion count is stored.
 def read_json():
     # Open JSON file
-    json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Report.json")
+    json_file = os.path.join(Path(__file__).parent.resolve(), "Converter_Report.json")
 
     with open(json_file, 'r') as openfile:
     
@@ -602,11 +602,11 @@ class COPY_ASSETS(Operator):
 
     def execute(self, context):
         # Define paths.
-        assets_dir = str(pathlib.Path(__file__).parent) + "\\assets"
-        hdr_dir_src = assets_dir + "\\datafiles\\studiolights"
+        assets_dir = Path(__file__).parent / "assets"
+        hdr_dir_src = assets_dir / "datafiles" / "studiolights"
         hdr_dir_dest = bpy.utils.user_resource('DATAFILES', path="studiolights")
-        presets_dir_src = assets_dir + "\\presets\\operator"
-        presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets\\operator")
+        presets_dir_src = assets_dir / "presets" / "operator"
+        presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets/operator")
 
         # Make list of source paths and destination paths (parents).
         dir_src_list = [hdr_dir_src, presets_dir_src]
@@ -620,7 +620,7 @@ class COPY_ASSETS(Operator):
                     file_src = os.path.join(subdir, file)
                     dir_dest_parent = dir_dest_list[dir_src_list.index(dir_src)]
                     file_dest = os.path.join(dir_dest_parent, operator, file)
-                    dir_dest = pathlib.Path(file_dest).parent
+                    dir_dest = Path(file_dest).parent
                     if not os.path.exists(dir_dest):
                         os.makedirs(dir_dest)
                     shutil.copy(file_src, file_dest)
@@ -779,7 +779,7 @@ class TRANSMOGRIFY(Operator):
             return {'FINISHED'}
 
         # Create path to Converter.py
-        converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter.py")
+        converter_file = os.path.join(Path(__file__).parent.resolve(), "Converter.py")
 
         self.file_count = 0
 
@@ -814,16 +814,16 @@ class TRANSMOGRIFY(Operator):
         variables_dict = get_transmogrifier_settings(self, context)
 
         # Create path to StartConverter.cmd
-        start_converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "StartConverter.cmd")
+        start_converter_file = os.path.join(Path(__file__).parent.resolve(), "StartConverter.cmd")
 
         # Create path to blender.exe
         blender_dir = bpy.app.binary_path
 
         # Create path to Converter.py
-        converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter.py")
+        converter_file = os.path.join(Path(__file__).parent.resolve(), "Converter.py")
         
         # Create path to Transmogrifier directory
-        transmogrifier_dir = pathlib.Path(__file__).parent.resolve()
+        transmogrifier_dir = Path(__file__).parent.resolve()
 
         # Stop converter if custom output directory has not been selected or .blend file has not been saved.
         directory_output_location = settings.directory_output_location
@@ -1247,7 +1247,7 @@ class TRANSMOGRIFY(Operator):
         variables_dict.update(additional_settings_dict)
 
         # Write variables to JSON file before running converter
-        json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Variables.json")
+        json_file = os.path.join(Path(__file__).parent.resolve(), "Converter_Variables.json")
         write_json(variables_dict, json_file)
 
         # Run Converter.py
