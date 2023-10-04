@@ -729,7 +729,7 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
         
         variables_dict = get_transmogrifier_settings(self, context)
         add_preset_name = self.preset_name
-        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets\\operator\\transmogrifier")[0]), add_preset_name + ".json")
+        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]), add_preset_name + ".json")
         write_json(variables_dict, json_file)
 
         return {'FINISHED'}
@@ -748,7 +748,7 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
         
         settings = context.scene.transmogrifier
         remove_preset_name = settings.transmogrifier_preset_enum
-        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets\\operator\\transmogrifier")[0]), remove_preset_name + ".json")
+        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]), remove_preset_name + ".json")
 
         if remove_preset_name != "NO_PRESET":
             os.remove(json_file)
@@ -774,12 +774,12 @@ class TRANSMOGRIFY(Operator):
                     {'ERROR'}, "Save .blend file somewhere before importing models from a relative directory\n(or use an absolute directory)")
                 return {'FINISHED'}
         base_dir = bpy.path.abspath(base_dir)  # convert to absolute path
-        if not os.path.isdir(base_dir):
+        if not Path(base_dir).is_dir():
             self.report({'ERROR'}, "Conversion directory doesn't exist")
             return {'FINISHED'}
 
         # Create path to Converter.py
-        converter_file = os.path.join(Path(__file__).parent.resolve(), "Converter.py")
+        converter_py = Path(__file__).parent.resolve() / "Converter.py"
 
         self.file_count = 0
 
@@ -814,13 +814,16 @@ class TRANSMOGRIFY(Operator):
         variables_dict = get_transmogrifier_settings(self, context)
 
         # Create path to StartConverter.cmd
-        start_converter_file = os.path.join(Path(__file__).parent.resolve(), "StartConverter.cmd")
+        start_converter_file = Path(__file__).parent.resolve() / "StartConverter.cmd"
 
         # Create path to blender.exe
         blender_dir = bpy.app.binary_path
 
+        # Create path to Converter.blend
+        converter_blend = Path(__file__).parent.resolve() / "Converter.blend"
+
         # Create path to Converter.py
-        converter_file = os.path.join(Path(__file__).parent.resolve(), "Converter.py")
+        converter_py = Path(__file__).parent.resolve() / "Converter.py"
         
         # Create path to Transmogrifier directory
         transmogrifier_dir = Path(__file__).parent.resolve()
@@ -836,7 +839,7 @@ class TRANSMOGRIFY(Operator):
                         {'ERROR'}, "Save .blend file somewhere before exporting model to a relative, custom directory\n(or use an absolute directory)")
                     return {'FINISHED'}
             directory_output_custom = bpy.path.abspath(directory_output_custom)  # convert to absolute path
-            if not os.path.isdir(directory_output_custom):
+            if not Path(directory_output_custom).is_dir():
                 self.report({'ERROR'}, "Custom export directory doesn't exist")
                 return {'FINISHED'}
 
@@ -851,7 +854,7 @@ class TRANSMOGRIFY(Operator):
                         {'ERROR'}, "Save .blend file somewhere before importing textures from a relative, custom directory\n(or use an absolute directory)")
                     return {'FINISHED'}
             textures_custom_dir = bpy.path.abspath(textures_custom_dir)  # convert to absolute path
-            if not os.path.isdir(textures_custom_dir):
+            if not Path(textures_custom_dir).is_dir():
                 self.report({'ERROR'}, "Textures directory doesn't exist")
                 return {'FINISHED'}
 
@@ -1247,7 +1250,7 @@ class TRANSMOGRIFY(Operator):
         variables_dict.update(additional_settings_dict)
 
         # Write variables to JSON file before running converter
-        json_file = os.path.join(Path(__file__).parent.resolve(), "Converter_Variables.json")
+        json_file = Path(__file__).parent.resolve() / "Converter_Variables.json"
         write_json(variables_dict, json_file)
 
         # Run Converter.py
@@ -1255,14 +1258,12 @@ class TRANSMOGRIFY(Operator):
         subprocess.call(
             [
                 blender_dir,
-                "Converter.blend",
+                converter_blend,
                 "--python",
-                "Converter.py",
+                converter_py,
             ],
-            creationflags=subprocess.CREATE_NEW_CONSOLE,
             cwd=transmogrifier_dir
         ) 
-        
         
 
         print("Conversion Complete")
