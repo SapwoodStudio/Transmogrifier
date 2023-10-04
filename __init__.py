@@ -45,7 +45,7 @@ def get_operator_presets(operator):
         for f in os.listdir(d):
             if not f.endswith(".py"):
                 continue
-            f = os.path.splitext(f)[0]
+            f = Path(f).stem
             presets.append((f, f, ""))
     # Blender's doc warns that not keeping reference to enum props array can
     # cause crashs and weird issues:
@@ -64,7 +64,7 @@ def load_operator_preset(operator, preset):
 
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
         fp = "".join([d, "/", preset, ".py"])
-        if os.path.isfile(fp):  # Found the preset file
+        if Path(fp).is_file():  # Found the preset file
             print("Using preset " + fp)
             file = open(fp, 'r')
             for line in file.readlines():
@@ -106,7 +106,7 @@ def get_transmogrifier_presets(operator):
         for f in os.listdir(d):
             if not f.endswith(".json"):
                 continue
-            f = os.path.splitext(f)[0]
+            f = Path(f).stem
             presets.append((f, f, ""))
     # Blender's doc warns that not keeping reference to enum props array can
     # cause crashs and weird issues:
@@ -125,7 +125,7 @@ def load_transmogrifier_preset(operator, preset):
 
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
         fp = "".join([d, "/", preset, ".json"])
-        if os.path.isfile(fp):  # Found the preset file
+        if Path(fp).is_file():  # Found the preset file
             print("Using preset " + fp)
             
             # Open JSON file
@@ -564,7 +564,7 @@ def write_json(variables_dict, json_file):
 # Read the JSON file where the conversion count is stored.
 def read_json():
     # Open JSON file
-    json_file = os.path.join(Path(__file__).parent.resolve(), "Converter_Report.json")
+    json_file = Path(__file__).parent.resolve() / "Converter_Report.json"
 
     with open(json_file, 'r') as openfile:
     
@@ -616,12 +616,12 @@ class COPY_ASSETS(Operator):
         for dir_src in dir_src_list:
             for subdir, dirs, files in os.walk(dir_src):
                 for file in files:
-                    operator = os.path.basename(subdir)
-                    file_src = os.path.join(subdir, file)
+                    operator = Path(subdir).name
+                    file_src = Path(subdir, file)
                     dir_dest_parent = dir_dest_list[dir_src_list.index(dir_src)]
-                    file_dest = os.path.join(dir_dest_parent, operator, file)
+                    file_dest = Path(dir_dest_parent, operator, file)
                     dir_dest = Path(file_dest).parent
-                    if not os.path.exists(dir_dest):
+                    if not Path(dir_dest).exists():
                         os.makedirs(dir_dest)
                     shutil.copy(file_src, file_dest)
         
@@ -728,8 +728,8 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
     def execute(self, context):
         
         variables_dict = get_transmogrifier_settings(self, context)
-        add_preset_name = self.preset_name
-        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]), add_preset_name + ".json")
+        add_preset_name = self.preset_name + ".json"
+        json_file = Path(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]) / add_preset_name
         write_json(variables_dict, json_file)
 
         return {'FINISHED'}
@@ -747,8 +747,8 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
     def execute(self, context):
         
         settings = context.scene.transmogrifier
-        remove_preset_name = settings.transmogrifier_preset_enum
-        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]), remove_preset_name + ".json")
+        remove_preset_name = settings.transmogrifier_preset_enum + ".json"
+        json_file = Path(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]) / remove_preset_name
 
         if remove_preset_name != "NO_PRESET":
             os.remove(json_file)
