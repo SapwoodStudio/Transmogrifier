@@ -296,13 +296,13 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
                 if replace_textures and copy_textures_custom_dir:  # If User elected to replace an existing textures directory might be inside the item folder, then delete it.
                     shutil.rmtree(textures_dir)
                 else:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
-                    textures_dir_name = [d for d in os.listdir(item_dir) if "textures" in d.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
-                    textures_dir_original_name = [d for d in os.listdir(item_dir) if "textures" in d.lower()][0] + "_original"
+                    textures_dir_name = [d for d in Path.iterdir(item_dir) if "textures" in d.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
+                    textures_dir_original_name = [d for d in Path.iterdir(item_dir) if "textures" in d.lower()][0] + "_original"
                     textures_dir_original = Path(item_dir, textures_dir_original_name)
                     if Path(textures_dir_original).exists():  # If a textures folder had already existed and had been preserved as "textures_original", assume that the item_dir has already been transmogrified and the current textures_dir is a copy from the custom source.
                         shutil.rmtree(textures_dir)
                     elif not Path(textures_dir_original).exists():  # If a textures folder already exists but had not yet been preserved as a "textures_orignal" folder, then rename it so.
-                        os.rename(textures_dir, textures_dir_original)
+                        Path(textures_dir).rename(textures_dir_original)
             shutil.copytree(textures_custom_dir, textures_dir)  # Temporarily copy textures from custom directory as the current textures_dir.
         else:
             print("Custom textures directory does not exist.")
@@ -321,12 +321,12 @@ def remove_copy_textures_custom_dir(item_dir, textures_dir):
         if Path(textures_dir).exists():
             shutil.rmtree(textures_dir)
 
-        textures_dir_original_name = [d for d in os.listdir(item_dir) if "textures_original" in d.lower()]
+        textures_dir_original_name = [d for d in Path.iterdir(item_dir) if "textures_original" in d.lower()]
         if textures_dir_original_name:  # If there was a textures_dir there before transmogrification, return its name to its original form.
             textures_dir_original_name = textures_dir_original_name[0]  # If the list is not empty, get the first item in the list.
             textures_dir_original = Path(item_dir, textures_dir_original_name)
             if Path(textures_dir_original).exists():
-                os.rename(textures_dir_original, Path(item_dir, textures_dir_original_name.replace("_original", "")))  # Return original textures_dir back to its former name before the conversion.
+                Path(textures_dir_original).rename(Path(item_dir, textures_dir_original_name.replace("_original", "")))  # Return original textures_dir back to its former name before the conversion.
 
         print("------------------------  REMOVED COPIED TEXTURES FROM CUSTOM SOURCE  ------------------------")
         logging.info("REMOVED COPIED TEXTURES FROM CUSTOM SOURCE")
@@ -395,12 +395,12 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         if textures_dir_check != "":
             textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
             # If a textures directory exists but is empty, make one and fill it with images.
-            if not os.listdir(textures_dir):
+            if not Path.iterdir(textures_dir):
                 print("Textures directory is empty. Looking for textures in parent directory...")
                 logging.info("Textures directory is empty. Looking for textures in parent directory...")
-                os.makedirs(textures_temp_dir)
+                Path.mkdir(textures_temp_dir)
                 image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-                image_list = [file for file in os.listdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+                image_list = [file for file in Path.iterdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
                 if not image_list:  # i.e. if image_list is empty
                     print("No potential image textures found in " + str(item_dir))
                     logging.info("No potential image textures found in " + str(item_dir))
@@ -418,9 +418,9 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         
         # If no textures directory exists, make one and fill it with images.
         else: 
-            os.makedirs(textures_temp_dir)
+            Path.mkdir(textures_temp_dir)
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            image_list = [file for file in os.listdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+            image_list = [file for file in Path.iterdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
             if not image_list:  # i.e. if image_list is empty
                 print("No potential image textures found in " + str(item_dir))
                 logging.info("No potential image textures found in " + str(item_dir))
@@ -580,7 +580,7 @@ def regex_textures_external(textures_temp_dir):
                     texture_renamed = Path(texture_path, texture_renamed + '.' + components[-1])
                     print("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
                     logging.info("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
-                    os.rename(texture, texture_renamed)
+                    Path(texture).rename(texture_renamed)
                         
                 else:
                     print("No PBR match found for current texture.")
@@ -683,28 +683,28 @@ def create_materials(item, textures_temp_dir):
         if texture_set_dir_list:
             for texture_set_dir in texture_set_dir_list:
                 texture_set_dir = Path(textures_temp_dir, texture_set_dir)
-                textures_in_subdirs = [texture for texture in os.listdir(texture_set_dir) if texture.lower().endswith(image_ext)]
+                textures_in_subdirs = [texture for texture in Path.iterdir(texture_set_dir) if texture.lower().endswith(image_ext)]
             # If there are images stored in subdirectories, assume all texture sets are organized in subdirectories and use these to create materials.
             if textures_in_subdirs:
                 for texture_set_dir in texture_set_dir_list:
                     texture_set_dir = Path(textures_temp_dir, texture_set_dir)
                     texture_set = Path(texture_set_dir).name # Get the subdirectory's name, which will be used as the material name.
                     # Add texture set prefix to images based on texture set directory name.
-                    for texture in os.listdir(texture_set_dir):
+                    for texture in Path.iterdir(texture_set_dir):
                         texture_path = Path(texture_set_dir, texture)
                         texture_renamed = texture_set + "_" + texture
                         texture_renamed_path = Path(texture_set_dir, texture_renamed)
                         if not texture.startswith(texture_set) and texture_set != "textures_temp":  # If all textures exist directly in textures_temp_dir, don't add that directory name as a prefix.
-                            os.rename(texture_path, texture_renamed_path)
+                            Path(texture_path).rename(texture_renamed_path)
                         else:
                             continue
-                    textures = [texture for texture in os.listdir(texture_set_dir)]
+                    textures = [texture for texture in Path.iterdir(texture_set_dir)]
 
                     create_a_material(item=texture_set, textures_temp_dir=texture_set_dir, textures=textures)  # Parameters are temporarily reassigned in order that the create_a_material function can be reused.
             
             # If there are no subdirectories containing images, then determine how many texture sets exists in textures_temp directory.
             elif not textures_in_subdirs:
-                textures_list = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+                textures_list = [image for image in Path.iterdir(textures_temp_dir) if image.lower().endswith(image_ext)]
                 basecolor_count = 0
                 # Count how many times the regexed "BaseColor" string occurs in the list of images.
                 for texture in textures_list:
@@ -728,7 +728,7 @@ def create_materials(item, textures_temp_dir):
 
         # If there are no subdirectories containing images, then determine how many texture sets exists in textures_temp directory.
         elif not texture_set_dir_list:
-            textures_list = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+            textures_list = [image.name for image in Path.iterdir(textures_temp_dir) if image.name.lower().endswith(image_ext)]
             basecolor_count = 0
             # Count how many times the regexed "BaseColor" string occurs in the list of images.
             for texture in textures_list:
@@ -1135,7 +1135,7 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
                     # Save image as input specified by the User.
                     image.save_render(filepath = image_path_new)
                     if image_path != image_path_new and Path(image_path).exists():  # Don't delete image if converting to the same file format.
-                        os.remove(image_path)
+                        Path.unlink(image_path)
 
                     # Repath the image textures to the new format.
                     image.name = image_name_new
@@ -1270,9 +1270,9 @@ def save_blend_file(blend):
         bpy.ops.wm.save_as_mainfile(filepath=str(blend))
 
         # Delete Blender "save version" backup file (also known as a .blend1 file).
-        blend1 = str(blend) + "1"
+        blend1 = Path(str(blend) + "1")
         if Path(blend1).is_file():
-            os.remove(blend1)
+            Path.unlink(blend1)
 
         print("------------------------  SAVED BLEND FILE: " + str(Path(blend).name) + "  ------------------------")
         logging.info("SAVED BLEND FILE: " + str(Path(blend).name))
@@ -1286,10 +1286,10 @@ def unpack_textures(textures_temp_dir, blend):
     try:
         # Create textures_temp_dir
         if not Path(textures_temp_dir).exists():
-            os.makedirs(textures_temp_dir)
+            Path.mkdir(textures_temp_dir)
         elif Path(textures_temp_dir).exists():
             shutil.rmtree(textures_temp_dir)
-            os.makedirs(textures_temp_dir)
+            Path.mkdir(textures_temp_dir)
 
         # Repath blend location to inside textures_temp_dir
         blend = Path(textures_temp_dir, Path(blend).name)
@@ -1451,12 +1451,12 @@ def rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, t
 
         # Rename the output to something closer to the combined image name.
         if Path(output_path).exists() and not Path(new_image_path).exists():
-            os.rename(output_path, new_image_path)
+            Path(output_path).rename(new_image_path)
             print("Output renamed from " + output + " to " + new_image_name)
             logging.info("Output renamed from " + output + " to " + new_image_name)
         else:
             if Path(output_path).exists():
-                os.remove(output_path)
+                Path.unlink(output_path)
                 print(new_image_path + " already exists. Deleted output.")
                 logging.info(new_image_path + " already exists. Deleted output.")
         
@@ -1497,7 +1497,7 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                 elif tag_3 != "":  # When separating ORM, three arguments are used.
                     tag_3_k = tag_3 + keyframe
                 # Now get a list of images and rename them before the next combined map output overwrites them.
-                output_list = [i for i in os.listdir(textures_temp_dir) if tag_1_k in i or tag_2_k in i or tag_3_k in i]
+                output_list = [i for i in Path.iterdir(textures_temp_dir) if tag_1_k in i or tag_2_k in i or tag_3_k in i]
                 print("Output list: " + str(output_list))
                 logging.info("Output list: " + str(output_list))
                 if output_list:
@@ -1515,7 +1515,7 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                 # Finally, remove the original combined image.
                 image_path = bpy.path.abspath(image.filepath)
                 if Path(image_path).exists():
-                    os.remove(image_path)
+                    Path.unlink(image_path)
                 else:
                     print("No such combined image exists")
                     logging.info("No such combined image exists")
@@ -1727,7 +1727,7 @@ def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
 
             # Import textures with Node Wrangler addon
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            textures_available = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+            textures_available = [image for image in Path.iterdir(textures_temp_dir) if image.lower().endswith(image_ext)]
             textures = [texture for texture in textures_available if Path(texture).stem in mapped_textures[material.name]]
 
            # Add principled setup via Node Wrangler.
@@ -2487,7 +2487,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # If User elected not to save a .blend file, delete any existing .blend.
         if not save_blend and Path(blend).is_file():
-            os.remove(blend)
+            Path.unlink(blend)
 
         # Modified or copied textures can now be delete after the conversion is over.
         if use_textures:
@@ -2567,7 +2567,7 @@ def move_file(directory, file_source):
         if not Path(file_source).is_dir():
             if Path(file_destination).is_file():
             # Remove any existing destination file
-                os.remove(file_destination)
+                Path.unlink(file_destination)
             # Move file, if source exists
             if Path(file_source).is_file():
                 shutil.move(file_source, file_destination)
@@ -2584,7 +2584,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
     try:
         # Make the custom directory if it doesn't exist
         if not Path(directory_output_custom).exists():
-            os.makedirs(directory_output_custom)
+            Path.mkdir(directory_output_custom)
         
         # File list of items to move
         file_list = [export_file_1]
@@ -2615,7 +2615,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             # Always start fresh by removing existing custom item directories.
             if Path(item_dir_custom).exists():
                 shutil.rmtree(item_dir_custom)
-            os.makedirs(item_dir_custom)
+            Path.mkdir(item_dir_custom)
             
             # Move files
             for file in file_list:
@@ -2624,7 +2624,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             # Scenario 3: Subdirectories, copy original item directory
             if use_subdirectories and copy_item_dir_contents:
                 # Copy leftover/original subfolders and files
-                for file in os.listdir(item_dir):
+                for file in Path.iterdir(item_dir):
                     # Copy subfolders
                     if Path(item_dir, file).is_dir():
                         file_custom = Path(item_dir_custom, file)

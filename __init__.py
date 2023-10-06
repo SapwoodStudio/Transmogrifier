@@ -42,8 +42,8 @@ preset_enum_items_refs = {}
 def get_operator_presets(operator):
     presets = [('NO_PRESET', "(no preset)", "", 0)]
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
-        for f in os.listdir(d):
-            if not f.endswith(".py"):
+        for f in Path(d).iterdir():
+            if f.suffix != ".py":
                 continue
             f = Path(f).stem
             presets.append((f, f, ""))
@@ -103,8 +103,8 @@ transmogrifier_preset_enum_items_refs = {}
 def get_transmogrifier_presets(operator):
     presets = [('NO_PRESET', "(no preset)", "", 0)]
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
-        for f in os.listdir(d):
-            if not f.endswith(".json"):
+        for f in Path(d).iterdir():
+            if f.suffix != ".json":
                 continue
             f = Path(f).stem
             presets.append((f, f, ""))
@@ -622,7 +622,7 @@ class COPY_ASSETS(Operator):
                     file_dest = Path(dir_dest_parent, operator, file)
                     dir_dest = Path(file_dest).parent
                     if not Path(dir_dest).exists():
-                        os.makedirs(dir_dest)
+                        Path(dir_dest).mkdir()
                     shutil.copy(file_src, file_dest)
         
         self.report({'INFO'}, "Copied Assets to Preferences")
@@ -751,7 +751,7 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
         json_file = Path(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]) / remove_preset_name
 
         if remove_preset_name != "NO_PRESET":
-            os.remove(json_file)
+            Path.unlink(json_file)
 
         return {'FINISHED'}
 
