@@ -390,8 +390,10 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         delete_textures_temp(textures_temp_dir)
         
         # Check if a "textures" directory exists and is not empty. Copy it and call it textures_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
-        if str(Path(textures_dir).name).lower() == "textures":
-            textures_dir = Path(textures_dir).parent / [i for i in os.listdir(item_dir) if "textures" in i.lower()][0]
+        # if str(Path(textures_dir).name).lower() == "textures":
+        textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
+        if textures_dir_check != "":
+            textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
             # If a textures directory exists but is empty, make one and fill it with images.
             if not os.listdir(textures_dir):
                 print("Textures directory is empty. Looking for textures in parent directory...")
