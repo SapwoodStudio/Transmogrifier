@@ -1135,7 +1135,7 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
                     # Save image as input specified by the User.
                     image.save_render(filepath = image_path_new)
                     if image_path != image_path_new and Path(image_path).exists():  # Don't delete image if converting to the same file format.
-                        Path.unlink(image_path)
+                        Path.unlink(Path(image_path))
 
                     # Repath the image textures to the new format.
                     image.name = image_name_new
@@ -1497,7 +1497,7 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                 elif tag_3 != "":  # When separating ORM, three arguments are used.
                     tag_3_k = tag_3 + keyframe
                 # Now get a list of images and rename them before the next combined map output overwrites them.
-                output_list = [i for i in Path.iterdir(textures_temp_dir) if tag_1_k in i or tag_2_k in i or tag_3_k in i]
+                output_list = [i.name for i in Path.iterdir(textures_temp_dir) if tag_1_k in i.name or tag_2_k in i.name or tag_3_k in i.name]
                 print("Output list: " + str(output_list))
                 logging.info("Output list: " + str(output_list))
                 if output_list:
@@ -1513,8 +1513,8 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                             rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output)
                 
                 # Finally, remove the original combined image.
-                image_path = bpy.path.abspath(image.filepath)
-                if Path(image_path).exists():
+                image_path = Path(bpy.path.abspath(image.filepath))
+                if image_path.exists():
                     Path.unlink(image_path)
                 else:
                     print("No such combined image exists")
@@ -1566,8 +1566,8 @@ def separate_gltf_maps(textures_temp_dir):
         # Set compositor variables.
         scene = bpy.context.scene
         compositing_node_tree = scene.node_tree
-        bpy.data.scenes["Scene"].node_tree.nodes["File Output BO"].base_path = textures_temp_dir
-        bpy.data.scenes["Scene"].node_tree.nodes["File Output ORM"].base_path = textures_temp_dir
+        bpy.data.scenes["Scene"].node_tree.nodes["File Output BO"].base_path = str(textures_temp_dir)
+        bpy.data.scenes["Scene"].node_tree.nodes["File Output ORM"].base_path = str(textures_temp_dir)
         
         # Mute the opposite File Output node before rendering any outputs.
         for file_output in file_output_node_list:
@@ -1727,7 +1727,7 @@ def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
 
             # Import textures with Node Wrangler addon
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            textures_available = [image for image in Path.iterdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+            textures_available = [image.name for image in Path.iterdir(textures_temp_dir) if image.name.lower().endswith(image_ext)]
             textures = [texture for texture in textures_available if Path(texture).stem in mapped_textures[material.name]]
 
            # Add principled setup via Node Wrangler.
