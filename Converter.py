@@ -321,7 +321,7 @@ def remove_copy_textures_custom_dir(item_dir, textures_dir):
         if Path(textures_dir).exists():
             shutil.rmtree(textures_dir)
 
-        textures_dir_original_name = [d for d in Path.iterdir(item_dir) if "textures_original" in d.lower()]
+        textures_dir_original_name = [d.name for d in Path.iterdir(item_dir) if "textures_original" in d.name.lower()]
         if textures_dir_original_name:  # If there was a textures_dir there before transmogrification, return its name to its original form.
             textures_dir_original_name = textures_dir_original_name[0]  # If the list is not empty, get the first item in the list.
             textures_dir_original = Path(item_dir, textures_dir_original_name)
@@ -389,11 +389,8 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         # Delete "textures_temp" if folder already exists. It will already exist if the User elected to save a .blend file, and it may exist if Transmogrifier quit after an error.
         delete_textures_temp(textures_temp_dir)
         
-        # Check if a "textures" directory exists and is not empty. Copy it and call it textures_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
-        # if str(Path(textures_dir).name).lower() == "textures":
-        textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
-        if textures_dir_check != "":
-            textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
+        # Check if a "textures" directory exists and is not empty. Copy it and call it textures_[item]_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
+        if Path(textures_dir).exists():
             # If a textures directory exists but is empty, make one and fill it with images.
             if not Path.iterdir(textures_dir):
                 print("Textures directory is empty. Looking for textures in parent directory...")
@@ -2228,6 +2225,11 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             clean_data_block(bpy.data.materials)
             clean_data_block(bpy.data.images)
 
+            # Check if a "textures" directory exists.
+            textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
+            if textures_dir_check != "":
+                textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
+
             create_textures_temp(item_dir, textures_dir, textures_temp_dir)
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
@@ -2758,7 +2760,7 @@ def batch_converter():
             for file in files:
                 item = Path(file).stem
                 file = Path(subdir, file.lower())
-                item_dir = subdir
+                item_dir = Path(subdir)
                 if import_file_ext in file.name:
                     import_file = str(Path(subdir, item + import_file_ext))
                     textures_dir = Path(subdir, 'textures')
