@@ -1984,14 +1984,14 @@ def get_export_file_1_size(export_file_1):
             export_file_1_file_size = Path(export_file_1).stat().st_size / 1048576
         
         else:
-            print(export_file_1 + " doesn't exist.")
-            logging.info(export_file_1 + " doesn't exist.")
+            print(str(export_file_1) + " doesn't exist.")
+            logging.info(str(export_file_1) + " doesn't exist.")
             export_file_1_file_size = 0
         
-        return export_file_1_file_size
-
         print("------------------------  GOT EXPORTED FILE SIZE  ------------------------")
         logging.info("GOT EXPORTED FILE SIZE")
+        
+        return export_file_1_file_size
 
     except Exception as Argument:
         logging.exception("COULD NOT GET EXPORTED FILE SIZE")
@@ -2097,9 +2097,11 @@ def reformat_textures_and_export(export_file_1, export_file_2):
             logging.info("#################  Reformat Textures  #################")
             image_format = 'JPEG'
             image_quality = 90
-            image_format_include = ["Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
-            if reformat_normal_maps == True:
+            # Override image_format_include for normal maps with reformat_normal_maps setting.
+            if reformat_normal_maps == True and "Normal" not in image_format_include:
                 image_format_include.append("Normal")
+            elif reformat_normal_maps == False and "Normal" in image_format_include:
+                image_format_include.remove("Normal")
             reformat_images(image_format, image_quality, image_format_include, textures_source)
             
             # Determine how many 3D files to export, then export.
@@ -2302,9 +2304,6 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
 
             # Copy original custom textures to item directory.
             copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
-            
-            # Reassign textures_temp to be beside custom textures source.
-            textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
             
             # Reassign item as "Custom_Textures"
             item = "Custom_Textures"
@@ -2592,8 +2591,6 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         file_list = [export_file_1]
         if model_quantity == "2 Formats":
             file_list.append(export_file_2)
-        if keep_modified_textures:
-            file_list.append(textures_temp_dir)
         if copy_textures_custom_dir:
             file_list.append(textures_dir)
         if save_blend:
@@ -2767,6 +2764,8 @@ def batch_converter():
                     import_file = str(Path(subdir, item + import_file_ext))
                     textures_dir = Path(subdir, 'textures')
                     textures_temp_dir = Path(subdir, 'textures_' + prefix + item + suffix)
+                    if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
+                        textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
                     export_file_1 = str(Path(subdir, prefix + item + suffix + export_file_1_ext))
                     export_file_2 = str(Path(subdir, prefix + item + suffix + export_file_2_ext))
                     blend = Path(subdir, prefix + item + suffix + ".blend")
