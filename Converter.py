@@ -293,11 +293,11 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
     try:
         if Path(textures_custom_dir).exists():
             if Path(textures_dir).exists():  # Cannot create another textures folder if one already exists.
-                if replace_textures and copy_textures_custom_dir:  # If User elected to replace an existing textures directory might be inside the item folder, then delete it.
+                if replace_textures and copy_textures_custom_dir:  # If User elected to replace an existing textures directory that might be inside the item folder, then delete it.
                     shutil.rmtree(textures_dir)
                 else:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
-                    textures_dir_name = [d for d in Path.iterdir(item_dir) if "textures" in d.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
-                    textures_dir_original_name = [d for d in Path.iterdir(item_dir) if "textures" in d.lower()][0] + "_original"
+                    textures_dir_name = [d.name for d in Path.iterdir(item_dir) if "textures" in d.name.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
+                    textures_dir_original_name = [d.name for d in Path.iterdir(item_dir) if "textures" in d.name.lower() and "_original" not in d.name.lower()][0] + "_original"
                     textures_dir_original = Path(item_dir, textures_dir_original_name)
                     if Path(textures_dir_original).exists():  # If a textures folder had already existed and had been preserved as "textures_original", assume that the item_dir has already been transmogrified and the current textures_dir is a copy from the custom source.
                         shutil.rmtree(textures_dir)
@@ -2594,6 +2594,8 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             file_list.append(export_file_2)
         if keep_modified_textures:
             file_list.append(textures_temp_dir)
+        if copy_textures_custom_dir:
+            file_list.append(textures_dir)
         if save_blend:
             file_list.append(blend)
         if save_preview_image:
@@ -2628,21 +2630,21 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
                 # Copy leftover/original subfolders and files
                 for file in Path.iterdir(item_dir):
                     # Copy subfolders
-                    if Path(item_dir, file).is_dir():
-                        file_custom = Path(item_dir_custom, file)
-                        file = Path(item_dir, file)
+                    if Path(item_dir, file.name).is_dir():
+                        file_custom = Path(item_dir_custom, file.name)
+                        file = Path(item_dir, file.name)
                         if Path(file_custom).exists():
                             shutil.rmtree(file_custom)
                         shutil.copytree(file, file_custom)
-                        print("Copied " + str(file) + " to " + str(item_dir_custom))
-                        logging.info("Copied " + str(file) + " to " + str(item_dir_custom))
+                        print("Copied " + str(file.name) + " to " + str(item_dir_custom))
+                        logging.info("Copied " + str(file.name) + " to " + str(item_dir_custom))
                     # Copy files
                     else:
-                        file_custom = Path(item_dir_custom, file)
-                        file = Path(item_dir, file)
+                        file_custom = Path(item_dir_custom, file.name)
+                        file = Path(item_dir, file.name)
                         shutil.copy(file, file_custom)
-                        print("Copied " + str(Path(file).name) + " to " + str(item_dir_custom))
-                        logging.info("Copied " + str(Path(file).name) + " to " + str(item_dir_custom))
+                        print("Copied " + str(Path(file.name).name) + " to " + str(item_dir_custom))
+                        logging.info("Copied " + str(Path(file.name).name) + " to " + str(item_dir_custom))
         
         print("------------------------  MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY  ------------------------")
         logging.info("MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY")
