@@ -392,12 +392,12 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         # Check if a "textures" directory exists and is not empty. Copy it and call it textures_[item]_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
         if Path(textures_dir).exists():
             # If a textures directory exists but is empty, make one and fill it with images.
-            if not Path.iterdir(textures_dir):
+            if not any(Path.iterdir(textures_dir)):
                 print("Textures directory is empty. Looking for textures in parent directory...")
                 logging.info("Textures directory is empty. Looking for textures in parent directory...")
                 Path.mkdir(textures_temp_dir)
                 image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-                image_list = [file for file in Path.iterdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+                image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
                 if not image_list:  # i.e. if image_list is empty
                     print("No potential image textures found in " + str(item_dir))
                     logging.info("No potential image textures found in " + str(item_dir))
@@ -417,7 +417,7 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         else: 
             Path.mkdir(textures_temp_dir)
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            image_list = [file for file in Path.iterdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+            image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
             if not image_list:  # i.e. if image_list is empty
                 print("No potential image textures found in " + str(item_dir))
                 logging.info("No potential image textures found in " + str(item_dir))
@@ -680,7 +680,7 @@ def create_materials(item, textures_temp_dir):
         if texture_set_dir_list:
             for texture_set_dir in texture_set_dir_list:
                 texture_set_dir = Path(textures_temp_dir, texture_set_dir)
-                textures_in_subdirs = [texture for texture in Path.iterdir(texture_set_dir) if texture.lower().endswith(image_ext)]
+                textures_in_subdirs = [texture.name for texture in Path.iterdir(texture_set_dir) if texture.name.lower().endswith(image_ext)]
             # If there are images stored in subdirectories, assume all texture sets are organized in subdirectories and use these to create materials.
             if textures_in_subdirs:
                 for texture_set_dir in texture_set_dir_list:
@@ -689,19 +689,19 @@ def create_materials(item, textures_temp_dir):
                     # Add texture set prefix to images based on texture set directory name.
                     for texture in Path.iterdir(texture_set_dir):
                         texture_path = Path(texture_set_dir, texture)
-                        texture_renamed = texture_set + "_" + texture
+                        texture_renamed = texture_set + "_" + texture.name
                         texture_renamed_path = Path(texture_set_dir, texture_renamed)
-                        if not texture.startswith(texture_set) and texture_set != "textures_temp":  # If all textures exist directly in textures_temp_dir, don't add that directory name as a prefix.
+                        if not texture.name.startswith(texture_set) and texture_set != "textures_temp":  # If all textures exist directly in textures_temp_dir, don't add that directory name as a prefix.
                             Path(texture_path).rename(texture_renamed_path)
                         else:
                             continue
-                    textures = [texture for texture in Path.iterdir(texture_set_dir)]
+                    textures = [texture.name for texture in Path.iterdir(texture_set_dir)]
 
                     create_a_material(item=texture_set, textures_temp_dir=texture_set_dir, textures=textures)  # Parameters are temporarily reassigned in order that the create_a_material function can be reused.
             
             # If there are no subdirectories containing images, then determine how many texture sets exists in textures_temp directory.
             elif not textures_in_subdirs:
-                textures_list = [image for image in Path.iterdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+                textures_list = [image.name for image in Path.iterdir(textures_temp_dir) if image.name.lower().endswith(image_ext)]
                 basecolor_count = 0
                 # Count how many times the regexed "BaseColor" string occurs in the list of images.
                 for texture in textures_list:
@@ -2309,7 +2309,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             item = "Custom_Textures"
 
             if conversion_count == 0:
-                create_textures_temp(textures_custom_dir, textures_custom_dir, textures_temp_dir)
+                create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
                 
                 # Remove existing materials and textures from Converter.blend file only once.
                 clean_data_block(bpy.data.materials)
