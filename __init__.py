@@ -155,7 +155,8 @@ def refresh_ui(self, context):
 
 # Draws the .blend file specific settings used in the
 # Popover panel or Side Panel panel
-def draw_settings(self, context):
+def draw_settings_general(self, context):
+    settings = context.scene.transmogrifier
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
 
@@ -166,8 +167,6 @@ def draw_settings(self, context):
     version = version.lstrip(".")
     title = bl_info["name"] + " " + version
     self.layout.label(text = title)
-
-    settings = context.scene.transmogrifier
 
     # Batch Convert button
     # self.layout.operator('transmogrifier.transmogrify', icon='FILE_CACHE')
@@ -187,20 +186,12 @@ def draw_settings(self, context):
     row.prop(settings, 'transmogrifier_preset_enum')
     row.operator("transmogrifierpreset.add", text="", icon="ADD")
     row.operator("transmogrifierpreset.remove", text="", icon="REMOVE")
-    # Manually refresh UI via operator button. No longer needed because of update_enum in transmogrifier_preset propertygroup.
-    # if settings.transmogrifier_preset != "NO_PRESET":
-    #     # Refresh UI
-    #     row = self.layout.row()
-    #     row = row.row(align=True)
-    #     row.operator('refreshui.transmogrifier', text='Refresh UI from Preset', icon='FILE_REFRESH')
-    #     row.scale_y = 1.0
-
 
     # Import Settings
     self.layout.use_property_split = True
     self.layout.separator()
     col = self.layout.column(align=True)
-    col.label(text="IMPORT SETTINGS:", icon='IMPORT')
+    col.label(text="Import:", icon='IMPORT')
     # Directory input
     col.prop(settings, 'directory')
     col.prop(settings, 'import_file')
@@ -234,7 +225,7 @@ def draw_settings(self, context):
     self.layout.separator()
     # self.layout.separator()
     col = self.layout.column(align=True)
-    col.label(text="EXPORT SETTINGS:", icon='EXPORT')
+    col.label(text="Export:", icon='EXPORT')
     
     # col.label(text="Models:", icon='OUTLINER_OB_MESH')
     col.prop(settings, "directory_output_location")
@@ -385,7 +376,13 @@ def draw_settings(self, context):
     col.prop(settings, 'set_data_names')
     col.prop(settings, 'set_UV_map_names')
 
-    # Texture Settings
+
+# Texture Settings
+def draw_settings_textures(self, context):
+    settings = context.scene.transmogrifier
+    self.layout.use_property_split = True
+    self.layout.use_property_decorate = False
+    col = self.layout.column(align=True)
     # Align menu items to the left.
     self.layout.use_property_split = True
     # col = self.layout.column(align=True)
@@ -430,6 +427,12 @@ def draw_settings(self, context):
         
         # self.layout.separator()
 
+def draw_settings_transforms(self, context):
+    settings = context.scene.transmogrifier
+    self.layout.use_property_split = True
+    self.layout.use_property_decorate = False
+    col = self.layout.column(align=True)
+
     # Transformation options.
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
@@ -450,7 +453,6 @@ def draw_settings(self, context):
     
         self.layout.use_property_split = True
         col = self.layout.column(align=True)
-
 
     col.prop(settings, 'apply_transforms')
     if settings.apply_transforms:
@@ -478,10 +480,16 @@ def draw_settings(self, context):
 
     # self.layout.separator()
     
-    # Set max file size options.
+# Set max file size options.
+def draw_settings_optimize_files(self, context):
+    settings = context.scene.transmogrifier
+    self.layout.use_property_split = True
+    self.layout.use_property_decorate = False
+    col = self.layout.column(align=True)
+
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
-    col.label(text="File Size:", icon='FILE')
+    col.label(text="Optimize Files:", icon='TRIA_DOWN_BAR')
     col.prop(settings, 'auto_resize_files')
     # Align menu items to the left.
     self.layout.use_property_split = False
@@ -504,7 +512,13 @@ def draw_settings(self, context):
             col.prop(settings, 'decimate_limit')
         # self.layout.separator()
 
-    # Archive options
+# Archive options
+def draw_settings_archive(self, context):
+    settings = context.scene.transmogrifier
+    self.layout.use_property_split = True
+    self.layout.use_property_decorate = False
+    col = self.layout.column(align=True)
+
     # Align menu items to the Right.
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
@@ -576,14 +590,50 @@ def read_json():
 
 
 # Side Panel panel (used with Side Panel option)
-class VIEW3D_PT_transmogrify(Panel):
+class VIEW3D_PT_transmogrify_general(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
-    bl_label = "Transmogrifier"
+    bl_label = "⚙  General"
 
     def draw(self, context):
-        draw_settings(self, context)
+        draw_settings_general(self, context)
+        
+class VIEW3D_PT_transmogrify_textures(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "🏁  Textures"
+
+    def draw(self, context):
+        draw_settings_textures(self, context)
+
+class VIEW3D_PT_transmogrify_scene(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "📐  Scene"
+
+    def draw(self, context):
+        draw_settings_transforms(self, context)
+
+class VIEW3D_PT_transmogrify_optimize_files(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "⏬  Optimize Files"
+
+    def draw(self, context):
+        draw_settings_optimize_files(self, context)
+
+class VIEW3D_PT_transmogrify_archive(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "🗄   Archive"
+
+    def draw(self, context):
+        draw_settings_archive(self, context)
 
 # Popover panel (used on 3D Viewport Header or Top Bar option)
 class POPOVER_PT_transmogrify(Panel):
@@ -592,7 +642,11 @@ class POPOVER_PT_transmogrify(Panel):
     bl_label = "Transmogrifier"
 
     def draw(self, context):
-        draw_settings(self, context)
+        draw_settings_general(self, context)
+        draw_settings_textures(self, context)
+        draw_settings_transforms(self, context)
+        draw_settings_optimize_files(self, context)
+        draw_settings_archive(self, context)
 
 # Copy import/export/transmogrifier presets and studiolights shipped with Transmogrifier to relevant Blender Preferences directories.
 class COPY_ASSETS(Operator):
@@ -637,14 +691,22 @@ class TransmogrifierPreferences(AddonPreferences):
     def addon_location_updated(self, context):
         bpy.types.TOPBAR_MT_editor_menus.remove(draw_popover)
         bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
-        if hasattr(bpy.types, "VIEW3D_PT_transmogrify"):
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrify)
+        if hasattr(bpy.types, "VIEW3D_PT_transmogrify_general"):
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_general)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_textures)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scene)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_optimize_files)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_archive)
         if self.addon_location == 'TOPBAR':
             bpy.types.TOPBAR_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DHEADER':
             bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DSIDE':
-            bpy.utils.register_class(VIEW3D_PT_transmogrify)
+            bpy.utils.register_class(VIEW3D_PT_transmogrify_general)
+            bpy.utils.register_class(VIEW3D_PT_transmogrify_textures)
+            bpy.utils.register_class(VIEW3D_PT_transmogrify_scene)
+            bpy.utils.register_class(VIEW3D_PT_transmogrify_optimize_files)
+            bpy.utils.register_class(VIEW3D_PT_transmogrify_archive)
 
 
     addon_location: EnumProperty(
@@ -1724,8 +1786,8 @@ class TransmogrifierSettings(PropertyGroup):
     )
     # Option to set file size maximum.
     auto_resize_files: EnumProperty(
-        name="Auto Resize",
-        description="Set a maximum file size and Transmogrifier will automatically try to resize the file according to the requested size. Only takes the first file format into account",
+        name="Method",
+        description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size. Only takes the first file format into account",
         items=[
             ("All", "All", "Convert all specified files in the given directory even if some previously exported files are already below the target maximum", 1),
             ("Only Above Max", "Only Above Max", "Only convert such specified files in the given directory that are still above the target maximum. Ignore the rest already below the target maximum", 2),
@@ -1987,7 +2049,11 @@ def register():
     if prefs.addon_location == '3DHEADER':
         bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
     elif prefs.addon_location == '3DSIDE':
-        bpy.utils.register_class(VIEW3D_PT_transmogrify)
+        bpy.utils.register_class(VIEW3D_PT_transmogrify_general)
+        bpy.utils.register_class(VIEW3D_PT_transmogrify_textures)
+        bpy.utils.register_class(VIEW3D_PT_transmogrify_scene)
+        bpy.utils.register_class(VIEW3D_PT_transmogrify_optimize_files)
+        bpy.utils.register_class(VIEW3D_PT_transmogrify_archive)
 
 
 def unregister():
@@ -2007,8 +2073,12 @@ def unregister():
     # Remove UI
     bpy.types.TOPBAR_MT_editor_menus.remove(draw_popover)
     bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
-    if hasattr(bpy.types, "VIEW3D_PT_transmogrify"):
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrify)
+    if hasattr(bpy.types, "VIEW3D_PT_transmogrify_general"):
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_general)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_textures)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scene)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_optimize_files)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_archive)
 
 
 if __name__ == '__main__':
