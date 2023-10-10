@@ -14,7 +14,7 @@ from bpy.types import AddonPreferences, PropertyGroup, Operator, Panel
 from bpy.props import BoolProperty, IntProperty, EnumProperty, StringProperty, PointerProperty, FloatVectorProperty
 import os
 import shutil
-import pathlib
+from pathlib import Path
 import re
 import json
 import subprocess
@@ -42,10 +42,10 @@ preset_enum_items_refs = {}
 def get_operator_presets(operator):
     presets = [('NO_PRESET', "(no preset)", "", 0)]
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
-        for f in os.listdir(d):
-            if not f.endswith(".py"):
+        for f in Path(d).iterdir():
+            if f.suffix != ".py":
                 continue
-            f = os.path.splitext(f)[0]
+            f = Path(f).stem
             presets.append((f, f, ""))
     # Blender's doc warns that not keeping reference to enum props array can
     # cause crashs and weird issues:
@@ -64,7 +64,7 @@ def load_operator_preset(operator, preset):
 
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
         fp = "".join([d, "/", preset, ".py"])
-        if os.path.isfile(fp):  # Found the preset file
+        if Path(fp).is_file():  # Found the preset file
             print("Using preset " + fp)
             file = open(fp, 'r')
             for line in file.readlines():
@@ -103,10 +103,10 @@ transmogrifier_preset_enum_items_refs = {}
 def get_transmogrifier_presets(operator):
     presets = [('NO_PRESET', "(no preset)", "", 0)]
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
-        for f in os.listdir(d):
-            if not f.endswith(".json"):
+        for f in Path(d).iterdir():
+            if f.suffix != ".json":
                 continue
-            f = os.path.splitext(f)[0]
+            f = Path(f).stem
             presets.append((f, f, ""))
     # Blender's doc warns that not keeping reference to enum props array can
     # cause crashs and weird issues:
@@ -125,7 +125,7 @@ def load_transmogrifier_preset(operator, preset):
 
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
         fp = "".join([d, "/", preset, ".json"])
-        if os.path.isfile(fp):  # Found the preset file
+        if Path(fp).is_file():  # Found the preset file
             print("Using preset " + fp)
             
             # Open JSON file
@@ -564,7 +564,7 @@ def write_json(variables_dict, json_file):
 # Read the JSON file where the conversion count is stored.
 def read_json():
     # Open JSON file
-    json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Report.json")
+    json_file = Path(__file__).parent.resolve() / "Converter_Report.json"
 
     with open(json_file, 'r') as openfile:
     
@@ -602,11 +602,11 @@ class COPY_ASSETS(Operator):
 
     def execute(self, context):
         # Define paths.
-        assets_dir = str(pathlib.Path(__file__).parent) + "\\assets"
-        hdr_dir_src = assets_dir + "\\datafiles\\studiolights"
+        assets_dir = Path(__file__).parent / "assets"
+        hdr_dir_src = assets_dir / "datafiles" / "studiolights"
         hdr_dir_dest = bpy.utils.user_resource('DATAFILES', path="studiolights")
-        presets_dir_src = assets_dir + "\\presets\\operator"
-        presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets\\operator")
+        presets_dir_src = assets_dir / "presets" / "operator"
+        presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets/operator")
 
         # Make list of source paths and destination paths (parents).
         dir_src_list = [hdr_dir_src, presets_dir_src]
@@ -616,13 +616,13 @@ class COPY_ASSETS(Operator):
         for dir_src in dir_src_list:
             for subdir, dirs, files in os.walk(dir_src):
                 for file in files:
-                    operator = os.path.basename(subdir)
-                    file_src = os.path.join(subdir, file)
+                    operator = Path(subdir).name
+                    file_src = Path(subdir, file)
                     dir_dest_parent = dir_dest_list[dir_src_list.index(dir_src)]
-                    file_dest = os.path.join(dir_dest_parent, operator, file)
-                    dir_dest = pathlib.Path(file_dest).parent
-                    if not os.path.exists(dir_dest):
-                        os.makedirs(dir_dest)
+                    file_dest = Path(dir_dest_parent, operator, file)
+                    dir_dest = Path(file_dest).parent
+                    if not Path(dir_dest).exists():
+                        Path(dir_dest).mkdir()
                     shutil.copy(file_src, file_dest)
         
         self.report({'INFO'}, "Copied Assets to Preferences")
@@ -728,8 +728,8 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
     def execute(self, context):
         
         variables_dict = get_transmogrifier_settings(self, context)
-        add_preset_name = self.preset_name
-        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets\\operator\\transmogrifier")[0]), add_preset_name + ".json")
+        add_preset_name = self.preset_name + ".json"
+        json_file = Path(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]) / add_preset_name
         write_json(variables_dict, json_file)
 
         return {'FINISHED'}
@@ -747,11 +747,11 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
     def execute(self, context):
         
         settings = context.scene.transmogrifier
-        remove_preset_name = settings.transmogrifier_preset_enum
-        json_file = os.path.join(str(bpy.utils.script_paths(subdir="presets\\operator\\transmogrifier")[0]), remove_preset_name + ".json")
+        remove_preset_name = settings.transmogrifier_preset_enum + ".json"
+        json_file = Path(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]) / remove_preset_name
 
         if remove_preset_name != "NO_PRESET":
-            os.remove(json_file)
+            Path.unlink(json_file)
 
         return {'FINISHED'}
 
@@ -774,12 +774,12 @@ class TRANSMOGRIFY(Operator):
                     {'ERROR'}, "Save .blend file somewhere before importing models from a relative directory\n(or use an absolute directory)")
                 return {'FINISHED'}
         base_dir = bpy.path.abspath(base_dir)  # convert to absolute path
-        if not os.path.isdir(base_dir):
+        if not Path(base_dir).is_dir():
             self.report({'ERROR'}, "Conversion directory doesn't exist")
             return {'FINISHED'}
 
         # Create path to Converter.py
-        converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter.py")
+        converter_py = Path(__file__).parent.resolve() / "Converter.py"
 
         self.file_count = 0
 
@@ -814,16 +814,19 @@ class TRANSMOGRIFY(Operator):
         variables_dict = get_transmogrifier_settings(self, context)
 
         # Create path to StartConverter.cmd
-        start_converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "StartConverter.cmd")
+        start_converter_file = Path(__file__).parent.resolve() / "StartConverter.cmd"
 
         # Create path to blender.exe
         blender_dir = bpy.app.binary_path
 
+        # Create path to Converter.blend
+        converter_blend = Path(__file__).parent.resolve() / "Converter.blend"
+
         # Create path to Converter.py
-        converter_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter.py")
+        converter_py = Path(__file__).parent.resolve() / "Converter.py"
         
         # Create path to Transmogrifier directory
-        transmogrifier_dir = pathlib.Path(__file__).parent.resolve()
+        transmogrifier_dir = Path(__file__).parent.resolve()
 
         # Stop converter if custom output directory has not been selected or .blend file has not been saved.
         directory_output_location = settings.directory_output_location
@@ -836,7 +839,7 @@ class TRANSMOGRIFY(Operator):
                         {'ERROR'}, "Save .blend file somewhere before exporting model to a relative, custom directory\n(or use an absolute directory)")
                     return {'FINISHED'}
             directory_output_custom = bpy.path.abspath(directory_output_custom)  # convert to absolute path
-            if not os.path.isdir(directory_output_custom):
+            if not Path(directory_output_custom).is_dir():
                 self.report({'ERROR'}, "Custom export directory doesn't exist")
                 return {'FINISHED'}
 
@@ -851,7 +854,7 @@ class TRANSMOGRIFY(Operator):
                         {'ERROR'}, "Save .blend file somewhere before importing textures from a relative, custom directory\n(or use an absolute directory)")
                     return {'FINISHED'}
             textures_custom_dir = bpy.path.abspath(textures_custom_dir)  # convert to absolute path
-            if not os.path.isdir(textures_custom_dir):
+            if not Path(textures_custom_dir).is_dir():
                 self.report({'ERROR'}, "Textures directory doesn't exist")
                 return {'FINISHED'}
 
@@ -1247,7 +1250,7 @@ class TRANSMOGRIFY(Operator):
         variables_dict.update(additional_settings_dict)
 
         # Write variables to JSON file before running converter
-        json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Variables.json")
+        json_file = Path(__file__).parent.resolve() / "Converter_Variables.json"
         write_json(variables_dict, json_file)
 
         # Run Converter.py
@@ -1255,14 +1258,12 @@ class TRANSMOGRIFY(Operator):
         subprocess.call(
             [
                 blender_dir,
-                "Converter.blend",
+                converter_blend,
                 "--python",
-                "Converter.py",
+                converter_py,
             ],
-            creationflags=subprocess.CREATE_NEW_CONSOLE,
             cwd=transmogrifier_dir
         ) 
-        
         
 
         print("Conversion Complete")

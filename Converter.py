@@ -10,11 +10,10 @@
 
 import bpy
 import os
-import os.path
 import datetime
 import sys
 import shutil
-import pathlib
+from pathlib import Path
 import json
 import re
 import logging
@@ -26,7 +25,7 @@ from itertools import chain
 def read_json():
     try:
         # Open JSON file
-        json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Variables.json")
+        json_file = Path(__file__).parent.resolve() / "Converter_Variables.json"
 
         with open(json_file, 'r') as openfile:
         
@@ -72,9 +71,9 @@ def make_log_file():
     # Set path to log file with timestamp
     timestamp = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     if directory_output_location == "Custom":
-        log_file = os.path.join(directory_output_custom, "Transmogrifier_Log_" + timestamp + ".txt")
+        log_file = Path(directory_output_custom, "Transmogrifier_Log_" + timestamp + ".txt")
     elif directory_output_location != "Custom":
-        log_file = os.path.join(directory, "Transmogrifier_Log_" + timestamp + ".txt")
+        log_file = Path(directory, "Transmogrifier_Log_" + timestamp + ".txt")
     
     # Create log file.
     logging.basicConfig(
@@ -102,7 +101,7 @@ def enable_addons():
 # Temporarily change interface theme to force a white background in Material Preview viewport mode for rendering Preview images.
 def set_theme_light(blender_dir, blender_version):
     try:
-        theme_white = os.path.join(pathlib.Path(blender_dir).parent.resolve(), blender_version, "scripts", "addons", "presets", "interface_theme", "White.xml")
+        theme_white = Path(blender_dir).parent.resolve() / blender_version / "scripts" / "addons" / "presets" / "interface_theme" / "White.xml"
         
         # White theme
         bpy.ops.script.execute_preset(
@@ -197,11 +196,11 @@ def import_file_function(import_file_command, import_file_options, import_file):
         logging.info(import_file_command)
         exec(import_file_command)  # Run import_file_command, which is stored as a string and won't run otherwise.
 
-        print("------------------------  IMPORTED FILE: " + str(os.path.basename(import_file)) + "  ------------------------")
-        logging.info("IMPORTED FILE: " + str(os.path.basename(import_file)))
+        print("------------------------  IMPORTED FILE: " + str(Path(import_file).name) + "  ------------------------")
+        logging.info("IMPORTED FILE: " + str(Path(import_file).name))
 
     except Exception as Argument:
-        logging.exception("COULD NOT IMPORT FILE: " + str(os.path.basename(import_file)))
+        logging.exception("COULD NOT IMPORT FILE: " + str(Path(import_file).name))
 		
 
 # Remove all animation data from imported objects. Sometimes 3DS Max exports objects with keyframes that cause scaling/transform issues in a GLB and USDZ.
@@ -292,18 +291,18 @@ def select_only_meshes():
 # Copy textures from custom directory and apply to all models in directory.
 def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures):
     try:
-        if os.path.exists(textures_custom_dir):
-            if os.path.exists(textures_dir):  # Cannot create another textures folder if one already exists.
-                if replace_textures and copy_textures_custom_dir:  # If User elected to replace an existing textures directory might be inside the item folder, then delete it.
+        if Path(textures_custom_dir).exists():
+            if Path(textures_dir).exists():  # Cannot create another textures folder if one already exists.
+                if replace_textures and copy_textures_custom_dir:  # If User elected to replace an existing textures directory that might be inside the item folder, then delete it.
                     shutil.rmtree(textures_dir)
                 else:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
-                    textures_dir_name = [d for d in os.listdir(item_dir) if "textures" in d.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
-                    textures_dir_original_name = [d for d in os.listdir(item_dir) if "textures" in d.lower()][0] + "_original"
-                    textures_dir_original = os.path.join(item_dir, textures_dir_original_name)
-                    if os.path.exists(textures_dir_original):  # If a textures folder had already existed and had been preserved as "textures_original", assume that the item_dir has already been transmogrified and the current textures_dir is a copy from the custom source.
+                    textures_dir_name = [d.name for d in Path.iterdir(item_dir) if "textures" in d.name.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
+                    textures_dir_original_name = [d.name for d in Path.iterdir(item_dir) if "textures" in d.name.lower() and "_original" not in d.name.lower()][0] + "_original"
+                    textures_dir_original = Path(item_dir, textures_dir_original_name)
+                    if Path(textures_dir_original).exists():  # If a textures folder had already existed and had been preserved as "textures_original", assume that the item_dir has already been transmogrified and the current textures_dir is a copy from the custom source.
                         shutil.rmtree(textures_dir)
-                    elif not os.path.exists(textures_dir_original):  # If a textures folder already exists but had not yet been preserved as a "textures_orignal" folder, then rename it so.
-                        os.rename(textures_dir, textures_dir_original)
+                    elif not Path(textures_dir_original).exists():  # If a textures folder already exists but had not yet been preserved as a "textures_orignal" folder, then rename it so.
+                        Path(textures_dir).rename(textures_dir_original)
             shutil.copytree(textures_custom_dir, textures_dir)  # Temporarily copy textures from custom directory as the current textures_dir.
         else:
             print("Custom textures directory does not exist.")
@@ -319,15 +318,15 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
 # If User elected not to copy the custom textures directory to each item folder, delete the temporary copy of it there.
 def remove_copy_textures_custom_dir(item_dir, textures_dir):
     try:
-        if os.path.exists(textures_dir):
+        if Path(textures_dir).exists():
             shutil.rmtree(textures_dir)
 
-        textures_dir_original_name = [d for d in os.listdir(item_dir) if "textures_original" in d.lower()]
+        textures_dir_original_name = [d.name for d in Path.iterdir(item_dir) if "textures_original" in d.name.lower()]
         if textures_dir_original_name:  # If there was a textures_dir there before transmogrification, return its name to its original form.
             textures_dir_original_name = textures_dir_original_name[0]  # If the list is not empty, get the first item in the list.
-            textures_dir_original = os.path.join(item_dir, textures_dir_original_name)
-            if os.path.exists(textures_dir_original):  
-                os.rename(textures_dir_original, os.path.join(item_dir, textures_dir_original_name.replace("_original", "")))  # Return original textures_dir back to its former name before the conversion.
+            textures_dir_original = Path(item_dir, textures_dir_original_name)
+            if Path(textures_dir_original).exists():
+                Path(textures_dir_original).rename(Path(item_dir, textures_dir_original_name.replace("_original", "")))  # Return original textures_dir back to its former name before the conversion.
 
         print("------------------------  REMOVED COPIED TEXTURES FROM CUSTOM SOURCE  ------------------------")
         logging.info("REMOVED COPIED TEXTURES FROM CUSTOM SOURCE")
@@ -372,7 +371,7 @@ def supported_image_ext():
 def delete_textures_temp(textures_temp_dir):
     try:
         # Delete "textures_temp" if folder already exists. It will already exist if the User elected to save a .blend file, and it may exist if Transmogrifier quit after an error.
-        if os.path.exists(textures_temp_dir):
+        if Path(textures_temp_dir).exists():
             shutil.rmtree(textures_temp_dir)
         
         print("------------------------  DELETED TEMPORARY TEXTURES DIRECTORY  ------------------------")
@@ -390,15 +389,15 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         # Delete "textures_temp" if folder already exists. It will already exist if the User elected to save a .blend file, and it may exist if Transmogrifier quit after an error.
         delete_textures_temp(textures_temp_dir)
         
-        # Check if a "textures" directory exists and is not empty. Copy it and call it textures_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
-        if os.path.exists(textures_dir):
+        # Check if a "textures" directory exists and is not empty. Copy it and call it textures_[item]_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
+        if Path(textures_dir).exists():
             # If a textures directory exists but is empty, make one and fill it with images.
-            if not os.listdir(textures_dir):
+            if not any(Path.iterdir(textures_dir)):
                 print("Textures directory is empty. Looking for textures in parent directory...")
                 logging.info("Textures directory is empty. Looking for textures in parent directory...")
-                os.makedirs(textures_temp_dir)
+                Path.mkdir(textures_temp_dir)
                 image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-                image_list = [file for file in os.listdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+                image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
                 if not image_list:  # i.e. if image_list is empty
                     print("No potential image textures found in " + str(item_dir))
                     logging.info("No potential image textures found in " + str(item_dir))
@@ -406,8 +405,8 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
                     print("The following images will be copied to textures_temp: " + str(image_list))
                     logging.info("The following images will be copied to textures_temp: " + str(image_list))
                     for image in image_list:
-                        image_src = os.path.join(item_dir, image)
-                        image_dest = os.path.join(textures_temp_dir, image)
+                        image_src = Path(item_dir, image)
+                        image_dest = Path(textures_temp_dir, image)
                         shutil.copy(image_src, image_dest)  # Copy each potential image texture to textures_temp
 
             # If a textures directory exists and is not empty, assume it contains images or texture set subdirectories containing images.
@@ -416,9 +415,9 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         
         # If no textures directory exists, make one and fill it with images.
         else: 
-            os.makedirs(textures_temp_dir)
+            Path.mkdir(textures_temp_dir)
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            image_list = [file for file in os.listdir(item_dir) if file.lower().endswith(image_ext) and not file.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+            image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
             if not image_list:  # i.e. if image_list is empty
                 print("No potential image textures found in " + str(item_dir))
                 logging.info("No potential image textures found in " + str(item_dir))
@@ -426,8 +425,8 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
                 print("The following images will be copied to textures_temp: " + str(image_list))
                 logging.info("The following images will be copied to textures_temp: " + str(image_list))
                 for image in image_list:
-                    image_src = os.path.join(item_dir, image)
-                    image_dest = os.path.join(textures_temp_dir, image)
+                    image_src = Path(item_dir, image)
+                    image_dest = Path(textures_temp_dir, image)
                     shutil.copy(image_src, image_dest)  # Copy each potential image texture to textures_temp
 
         print("------------------------  CREATED TEMPORARY TEXTURES DIRECTORY  ------------------------")
@@ -449,7 +448,7 @@ def split_into_components(texture):
         texture_original = texture
 
         # Remove file path
-        texture = texture.split(os.path.sep)[-1]
+        texture = Path(texture).name
         
         # Replace common separators with SPACE
         separators = ["_", ".", "-", "__", "--", "#"]
@@ -458,14 +457,14 @@ def split_into_components(texture):
 
         components = texture.split(" ")
         
-        print("------------------------  SPLIT INTO COMPONENTS: " + str(os.path.basename(texture_original)) + " to " + str(components) + "  ------------------------")
-        logging.info("SPLIT INTO COMPONENTS: " + str(os.path.basename(texture_original)) + " to " + str(components))
+        print("------------------------  SPLIT INTO COMPONENTS: " + str(Path(texture_original).name) + " to " + str(components) + "  ------------------------")
+        logging.info("SPLIT INTO COMPONENTS: " + str(Path(texture_original).name) + " to " + str(components))
 
         return components
 
 
     except Exception as Argument:
-        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(os.path.basename(texture)))
+        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(Path(texture_original).name))
 		
 
 # Regex, i.e. find and replace messy/misspelled PBR tag with clean PBR tag in a given image texture's name supplied by the regex_textures_external function.
@@ -552,9 +551,9 @@ def regex_textures_external(textures_temp_dir):
     try:
         for subdir, dirs, files in os.walk(textures_temp_dir):
             for file in files:
-                file = os.path.join(subdir, file)
+                file = Path(subdir, file)
                 texture = file
-                texture_path = pathlib.Path(texture).parent.resolve()
+                texture_path = Path(texture).parent.resolve()
                 components_original = split_into_components(texture)
                 components = split_into_components(texture)
 
@@ -573,12 +572,12 @@ def regex_textures_external(textures_temp_dir):
                         break
 
                 if components_original != components:
-                    texture = os.path.join(texture_path, texture)
+                    texture = Path(texture_path, texture)
                     texture_renamed = '_'.join(components[:-1])
-                    texture_renamed = os.path.join(texture_path, texture_renamed + '.' + components[-1])
-                    print("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
-                    logging.info("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
-                    os.rename(texture, texture_renamed)
+                    texture_renamed = Path(texture_path, texture_renamed + '.' + components[-1])
+                    print("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
+                    logging.info("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
+                    Path(texture).rename(texture_renamed)
                         
                 else:
                     print("No PBR match found for current texture.")
@@ -616,8 +615,8 @@ def regex_textures_packed():
 
             if components_original != components:
                 texture_renamed = '_'.join(components[:-1])
-                print("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
-                logging.info("Renamed texture from " + str(os.path.basename(texture)) + " to " + str(os.path.basename(texture_renamed)))
+                print("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
+                logging.info("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
                 texture.name = texture_renamed
                 print("Renamed " + texture_name + " to " + texture_renamed)
                 logging.info("Renamed " + texture_name + " to " + texture_renamed)
@@ -680,29 +679,29 @@ def create_materials(item, textures_temp_dir):
         # Check if there are images in subdirectories or if these folders are used for other purposes.
         if texture_set_dir_list:
             for texture_set_dir in texture_set_dir_list:
-                texture_set_dir = os.path.join(textures_temp_dir, texture_set_dir)
-                textures_in_subdirs = [texture for texture in os.listdir(texture_set_dir) if texture.lower().endswith(image_ext)]
+                texture_set_dir = Path(textures_temp_dir, texture_set_dir)
+                textures_in_subdirs = [texture.name for texture in Path.iterdir(texture_set_dir) if texture.name.lower().endswith(image_ext)]
             # If there are images stored in subdirectories, assume all texture sets are organized in subdirectories and use these to create materials.
             if textures_in_subdirs:
                 for texture_set_dir in texture_set_dir_list:
-                    texture_set_dir = os.path.join(textures_temp_dir, texture_set_dir)
-                    texture_set = texture_set_dir.split(os.path.sep)[-1] # Get the subdirectory's name, which will be used as the material name.
+                    texture_set_dir = Path(textures_temp_dir, texture_set_dir)
+                    texture_set = Path(texture_set_dir).name # Get the subdirectory's name, which will be used as the material name.
                     # Add texture set prefix to images based on texture set directory name.
-                    for texture in os.listdir(texture_set_dir):
-                        texture_path = os.path.join(texture_set_dir, texture)
-                        texture_renamed = texture_set + "_" + texture
-                        texture_renamed_path = os.path.join(texture_set_dir, texture_renamed)
-                        if not texture.startswith(texture_set) and texture_set != "textures_temp":  # If all textures exist directly in textures_temp_dir, don't add that directory name as a prefix.
-                            os.rename(texture_path, texture_renamed_path)
+                    for texture in Path.iterdir(texture_set_dir):
+                        texture_path = Path(texture_set_dir, texture)
+                        texture_renamed = texture_set + "_" + texture.name
+                        texture_renamed_path = Path(texture_set_dir, texture_renamed)
+                        if not texture.name.startswith(texture_set) and texture_set != "textures_temp":  # If all textures exist directly in textures_temp_dir, don't add that directory name as a prefix.
+                            Path(texture_path).rename(texture_renamed_path)
                         else:
                             continue
-                    textures = [texture for texture in os.listdir(texture_set_dir)]
+                    textures = [texture.name for texture in Path.iterdir(texture_set_dir)]
 
                     create_a_material(item=texture_set, textures_temp_dir=texture_set_dir, textures=textures)  # Parameters are temporarily reassigned in order that the create_a_material function can be reused.
             
             # If there are no subdirectories containing images, then determine how many texture sets exists in textures_temp directory.
             elif not textures_in_subdirs:
-                textures_list = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+                textures_list = [image.name for image in Path.iterdir(textures_temp_dir) if image.name.lower().endswith(image_ext)]
                 basecolor_count = 0
                 # Count how many times the regexed "BaseColor" string occurs in the list of images.
                 for texture in textures_list:
@@ -726,7 +725,7 @@ def create_materials(item, textures_temp_dir):
 
         # If there are no subdirectories containing images, then determine how many texture sets exists in textures_temp directory.
         elif not texture_set_dir_list:
-            textures_list = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
+            textures_list = [image.name for image in Path.iterdir(textures_temp_dir) if image.name.lower().endswith(image_ext)]
             basecolor_count = 0
             # Count how many times the regexed "BaseColor" string occurs in the list of images.
             for texture in textures_list:
@@ -790,8 +789,8 @@ def add_principled_setup(material, textures_temp_dir, textures):
                 }
             )
             
-            filepath = textures_temp_dir + '/'
-            directory = textures_temp_dir + '/'
+            filepath = str(textures_temp_dir) + '/'
+            directory = str(textures_temp_dir) + '/'
             relative_path = True
             
             win = bpy.context.window
@@ -1113,7 +1112,7 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
                     image_path = bpy.path.abspath(image.filepath)
 
                     # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
-                    image.name = pathlib.Path(image_path).name
+                    image.name = Path(image_path).name
 
                     # Change image extension and pathing.
                     image_ext = "." + image.name.split(".")[-1].lower()
@@ -1132,8 +1131,8 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
 
                     # Save image as input specified by the User.
                     image.save_render(filepath = image_path_new)
-                    if image_path != image_path_new and os.path.exists(image_path):  # Don't delete image if converting to the same file format.
-                        os.remove(image_path)
+                    if image_path != image_path_new and Path(image_path).exists():  # Don't delete image if converting to the same file format.
+                        Path.unlink(Path(image_path))
 
                     # Repath the image textures to the new format.
                     image.name = image_name_new
@@ -1265,32 +1264,32 @@ def save_blend_file(blend):
         # Preserve unused materials & textures by setting fake user(s).
         use_fake_user()
         
-        bpy.ops.wm.save_as_mainfile(filepath=blend)
+        bpy.ops.wm.save_as_mainfile(filepath=str(blend))
 
         # Delete Blender "save version" backup file (also known as a .blend1 file).
-        blend1 = blend + "1"
-        if os.path.isfile(blend1):
-            os.remove(blend1)
+        blend1 = Path(str(blend) + "1")
+        if Path(blend1).is_file():
+            Path.unlink(blend1)
 
-        print("------------------------  SAVED BLEND FILE: " + str(os.path.basename(blend)) + "  ------------------------")
-        logging.info("SAVED BLEND FILE: " + str(os.path.basename(blend)))
+        print("------------------------  SAVED BLEND FILE: " + str(Path(blend).name) + "  ------------------------")
+        logging.info("SAVED BLEND FILE: " + str(Path(blend).name))
 
     except Exception as Argument:
-        logging.exception("COULD NOT SAVE BLEND FILE: " + str(os.path.basename(blend)))
+        logging.exception("COULD NOT SAVE BLEND FILE: " + str(Path(blend).name))
 		
 
 # Save.blend file and unpack images to textures_temp whenever packed images are used for conversion and are to be resized and/or reformatted.
 def unpack_textures(textures_temp_dir, blend):
     try:
         # Create textures_temp_dir
-        if not os.path.exists(textures_temp_dir):
-            os.makedirs(textures_temp_dir)
-        elif os.path.exists(textures_temp_dir):
+        if not Path(textures_temp_dir).exists():
+            Path.mkdir(textures_temp_dir)
+        elif Path(textures_temp_dir).exists():
             shutil.rmtree(textures_temp_dir)
-            os.makedirs(textures_temp_dir)
+            Path.mkdir(textures_temp_dir)
 
         # Repath blend location to inside textures_temp_dir
-        blend = os.path.join(textures_temp_dir, pathlib.Path(blend).name)
+        blend = Path(textures_temp_dir, Path(blend).name)
 
         # Save blend inside textures_temp_dir
         save_blend_file(blend)
@@ -1316,7 +1315,7 @@ def map_textures_to_materials():
                 texture_set = []
                 for node in material.node_tree.nodes:
                     if node.type=='TEX_IMAGE':
-                        texture = os.path.splitext(node.image.name)[0]  # Remove any leftover image texture extensions.
+                        texture = Path(node.image.name).stem  # Remove any leftover image texture extensions.
                         if import_file_ext == ".glb":
                             if "BaseColor" in texture:
                                 base_color = texture.replace("_Opacity", "")
@@ -1442,19 +1441,19 @@ def rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, t
         new_image_name = image_name + "_" + add_tag + image_ext
 
         # Create placeholder path for the tag image name
-        new_image_path = os.path.join(textures_temp_dir, new_image_name)
+        new_image_path = Path(textures_temp_dir, new_image_name)
 
         # Get the output path of the current output.
-        output_path = os.path.join(textures_temp_dir, output)
+        output_path = Path(textures_temp_dir, output)
 
         # Rename the output to something closer to the combined image name.
-        if os.path.exists(output_path) and not os.path.exists(new_image_path):
-            os.rename(output_path, new_image_path)
+        if Path(output_path).exists() and not Path(new_image_path).exists():
+            Path(output_path).rename(new_image_path)
             print("Output renamed from " + output + " to " + new_image_name)
             logging.info("Output renamed from " + output + " to " + new_image_name)
         else:
-            if os.path.exists(output_path):
-                os.remove(output_path)
+            if Path(output_path).exists():
+                Path.unlink(output_path)
                 print(new_image_path + " already exists. Deleted output.")
                 logging.info(new_image_path + " already exists. Deleted output.")
         
@@ -1477,7 +1476,7 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
         if combined_images_list:
             for image in combined_images_list:
                 # Get image name without an extension
-                image_name = os.path.splitext(image.name)[0]
+                image_name = Path(image.name).stem
                 # Set the current image in the Image Node BO to current image from combined_images_list
                 # Set compositor variables.
                 scene = bpy.context.scene
@@ -1495,7 +1494,7 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                 elif tag_3 != "":  # When separating ORM, three arguments are used.
                     tag_3_k = tag_3 + keyframe
                 # Now get a list of images and rename them before the next combined map output overwrites them.
-                output_list = [i for i in os.listdir(textures_temp_dir) if tag_1_k in i or tag_2_k in i or tag_3_k in i]
+                output_list = [i.name for i in Path.iterdir(textures_temp_dir) if tag_1_k in i.name or tag_2_k in i.name or tag_3_k in i.name]
                 print("Output list: " + str(output_list))
                 logging.info("Output list: " + str(output_list))
                 if output_list:
@@ -1511,9 +1510,9 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                             rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output)
                 
                 # Finally, remove the original combined image.
-                image_path = bpy.path.abspath(image.filepath)
-                if os.path.exists(image_path):
-                    os.remove(image_path)
+                image_path = Path(bpy.path.abspath(image.filepath))
+                if image_path.exists():
+                    Path.unlink(image_path)
                 else:
                     print("No such combined image exists")
                     logging.info("No such combined image exists")
@@ -1564,8 +1563,8 @@ def separate_gltf_maps(textures_temp_dir):
         # Set compositor variables.
         scene = bpy.context.scene
         compositing_node_tree = scene.node_tree
-        bpy.data.scenes["Scene"].node_tree.nodes["File Output BO"].base_path = textures_temp_dir
-        bpy.data.scenes["Scene"].node_tree.nodes["File Output ORM"].base_path = textures_temp_dir
+        bpy.data.scenes["Scene"].node_tree.nodes["File Output BO"].base_path = str(textures_temp_dir)
+        bpy.data.scenes["Scene"].node_tree.nodes["File Output ORM"].base_path = str(textures_temp_dir)
         
         # Mute the opposite File Output node before rendering any outputs.
         for file_output in file_output_node_list:
@@ -1725,8 +1724,8 @@ def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
 
             # Import textures with Node Wrangler addon
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            textures_available = [image for image in os.listdir(textures_temp_dir) if image.lower().endswith(image_ext)]
-            textures = [texture for texture in textures_available if os.path.splitext(texture)[0] in mapped_textures[material.name]]
+            textures_available = [image.name for image in Path.iterdir(textures_temp_dir) if image.name.lower().endswith(image_ext)]
+            textures = [texture for texture in textures_available if Path(texture).stem in mapped_textures[material.name]]
 
            # Add principled setup via Node Wrangler.
             add_principled_setup(material, textures_temp_dir, textures)
@@ -1914,8 +1913,8 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
         # Apply transforms if requested
         if apply_transforms:
             apply_transformations(apply_transforms_filter)
-        print("------------------------  EXPORTED A MODEL: " + str(os.path.basename(export_file)) + "  ------------------------")
-        logging.info("EXPORTED A MODEL: " + str(os.path.basename(export_file)))
+        print("------------------------  EXPORTED A MODEL: " + str(Path(export_file).name) + "  ------------------------")
+        logging.info("EXPORTED A MODEL: " + str(Path(export_file).name))
 
     except Exception as Argument:
         logging.exception("COULD NOT EXPORT A MODEL")
@@ -1948,7 +1947,7 @@ def export_models(export_file_1_command, export_file_1_options, export_file_1_sc
 # Deletes the temporary textures folder.
 def delete_textures_temp(textures_temp_dir):
     try:
-        if os.path.exists(textures_temp_dir):
+        if Path(textures_temp_dir).exists():
             shutil.rmtree(textures_temp_dir)
 
         print("------------------------  DELETED TEMPORARY TEXTURES DIRECTORY  ------------------------")
@@ -1962,7 +1961,7 @@ def delete_textures_temp(textures_temp_dir):
 def set_theme_dark(blender_dir, blender_version):
     try:
         # Reset interface theme to dark theme.
-        theme_dark = os.path.join(pathlib.Path(blender_dir).parent.resolve(), blender_version, "scripts", "presets", "interface_theme", "Blender_Dark.xml")
+        theme_dark = Path(Path(blender_dir).parent.resolve(), blender_version, "scripts", "presets", "interface_theme", "Blender_Dark.xml")
         
         # Default dark theme.
         bpy.ops.script.execute_preset(
@@ -1980,19 +1979,19 @@ def set_theme_dark(blender_dir, blender_version):
 # Get file size of export_file_1
 def get_export_file_1_size(export_file_1):
     try:
-        if os.path.exists(export_file_1):
+        if Path(export_file_1).exists():
             # Get current file size (in MB)
-            export_file_1_file_size = pathlib.Path(export_file_1).stat().st_size / 1048576
+            export_file_1_file_size = Path(export_file_1).stat().st_size / 1048576
         
         else:
-            print(export_file_1 + " doesn't exist.")
-            logging.info(export_file_1 + " doesn't exist.")
+            print(str(export_file_1) + " doesn't exist.")
+            logging.info(str(export_file_1) + " doesn't exist.")
             export_file_1_file_size = 0
         
-        return export_file_1_file_size
-
         print("------------------------  GOT EXPORTED FILE SIZE  ------------------------")
         logging.info("GOT EXPORTED FILE SIZE")
+        
+        return export_file_1_file_size
 
     except Exception as Argument:
         logging.exception("COULD NOT GET EXPORTED FILE SIZE")
@@ -2098,9 +2097,11 @@ def reformat_textures_and_export(export_file_1, export_file_2):
             logging.info("#################  Reformat Textures  #################")
             image_format = 'JPEG'
             image_quality = 90
-            image_format_include = ["Occlusion", "Roughness", "BaseColor", "Metallic", "Emission", "Opacity", "Bump", "Displacement", "Specular", "Subsurface"]
-            if reformat_normal_maps == True:
+            # Override image_format_include for normal maps with reformat_normal_maps setting.
+            if reformat_normal_maps == True and "Normal" not in image_format_include:
                 image_format_include.append("Normal")
+            elif reformat_normal_maps == False and "Normal" in image_format_include:
+                image_format_include.remove("Normal")
             reformat_images(image_format, image_quality, image_format_include, textures_source)
             
             # Determine how many 3D files to export, then export.
@@ -2226,6 +2227,11 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             clean_data_block(bpy.data.materials)
             clean_data_block(bpy.data.images)
 
+            # Check if a "textures" directory exists.
+            textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
+            if textures_dir_check != "":
+                textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
+
             create_textures_temp(item_dir, textures_dir, textures_temp_dir)
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
@@ -2269,7 +2275,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 mapped_textures = map_textures_to_materials()
                 
                 # Set textures_temp_dir to location of unpacked images.
-                textures_temp_dir = os.path.join(textures_temp_dir, "textures")
+                textures_temp_dir = Path(textures_temp_dir, "textures")
 
                 # Separate the combined maps.
                 separate_gltf_maps(textures_temp_dir)
@@ -2299,14 +2305,11 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             # Copy original custom textures to item directory.
             copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
             
-            # Reassign textures_temp to be beside custom textures source.
-            textures_temp_dir = os.path.splitext(textures_custom_dir)[0].rstrip("\\") + "_temp"
-            
             # Reassign item as "Custom_Textures"
             item = "Custom_Textures"
 
             if conversion_count == 0:
-                create_textures_temp(textures_custom_dir, textures_custom_dir, textures_temp_dir)
+                create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
                 
                 # Remove existing materials and textures from Converter.blend file only once.
                 clean_data_block(bpy.data.materials)
@@ -2415,10 +2418,10 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
 def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count):
     try:
         print("-------------------------------------------------------------------")
-        print("------------------------  CONVERTER START: " + str(os.path.basename(import_file)) + "  ------------------------")
+        print("------------------------  CONVERTER START: " + str(Path(import_file).name) + "  ------------------------")
         print("-------------------------------------------------------------------")
         logging.info("-------------------------------------------------------------------")
-        logging.info("------------------------  CONVERTER START: " + str(os.path.basename(import_file)) + "  ------------------------")
+        logging.info("------------------------  CONVERTER START: " + str(Path(import_file).name) + "  ------------------------")
         logging.info("-------------------------------------------------------------------")
         
         # Set up scene.
@@ -2484,25 +2487,25 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
         # If User elected not to save a .blend file, delete any existing .blend.
-        if not save_blend and os.path.isfile(blend):
-            os.remove(blend)
+        if not save_blend and Path(blend).is_file():
+            Path.unlink(blend)
 
         # Modified or copied textures can now be delete after the conversion is over.
         if use_textures:
-            if not keep_modified_textures and textures_source != "Custom" and os.path.exists(textures_temp_dir):
+            if not keep_modified_textures and textures_source != "Custom" and Path(textures_temp_dir).exists():
                 delete_textures_temp(textures_temp_dir)
             if textures_source == "Custom" and not copy_textures_custom_dir:
                 remove_copy_textures_custom_dir(item_dir, textures_dir)
 
         print("-------------------------------------------------------------------")
-        print("----------------  CONVERTER END: " + str(os.path.basename(import_file)) + "  ----------------")
+        print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
         print("-------------------------------------------------------------------")
         logging.info("-------------------------------------------------------------------")
-        logging.info("----------------  CONVERTER END: " + str(os.path.basename(import_file)) + "  ----------------")
+        logging.info("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
         logging.info("-------------------------------------------------------------------")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CONVERT FILE: " + str(os.path.basename(import_file)))
+        logging.exception("COULD NOT CONVERT FILE: " + str(Path(import_file).name))
 		
 
 # Write conversion report to a JSON file.
@@ -2513,7 +2516,7 @@ def report_conversion_count(conversion_count):
             "conversion_count": conversion_count,
         }
         
-        json_file = os.path.join(pathlib.Path(__file__).parent.resolve(), "Converter_Report.json")
+        json_file = Path(Path(__file__).parent.resolve(), "Converter_Report.json")
 
         with open(json_file, "w") as outfile:
             json.dump(conversion_report_dict, outfile)
@@ -2531,13 +2534,13 @@ def list_exports(export_file_1, export_file_2):
         exports_list = []
         if model_quantity != "No Formats":
             export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
-            export_file_1 = os.path.basename(export_file_1)
+            export_file_1 = Path(export_file_1).name
             export_file_1_list = [export_file_1, export_file_1_file_size]
             exports_list.append(export_file_1_list)
 
             if model_quantity == "2 Formats":
                 export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
-                export_file_2 = os.path.basename(export_file_2)
+                export_file_2 = Path(export_file_2).name
                 export_file_2_list = [export_file_2, export_file_2_file_size]
                 exports_list.append(export_file_2_list)
         
@@ -2554,24 +2557,24 @@ def list_exports(export_file_1, export_file_2):
 def move_file(directory, file_source):
     try:
         # Set destination based on custom output directory
-        file_destination = os.path.join(directory, os.path.basename(file_source))
+        file_destination = Path(directory, Path(file_source).name)
         # Check if "file" is a directory.
-        if os.path.isdir(file_source):
-            if os.path.exists(file_destination):
+        if Path(file_source).is_dir():
+            if Path(file_destination).exists():
                 shutil.rmtree(file_destination)
             shutil.move(file_source, file_destination)
 
         # Check if "file" is a file
-        if not os.path.isdir(file_source):
-            if os.path.isfile(file_destination):
+        if not Path(file_source).is_dir():
+            if Path(file_destination).is_file():
             # Remove any existing destination file
-                os.remove(file_destination)
+                Path.unlink(file_destination)
             # Move file, if source exists
-            if os.path.isfile(file_source):
+            if Path(file_source).is_file():
                 shutil.move(file_source, file_destination)
                 
-        print("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
-        logging.info("Moved " + str(os.path.basename(file_source)) + " to " + str(directory))
+        print("Moved " + str(Path(file_source).name) + " to " + str(directory))
+        logging.info("Moved " + str(Path(file_source).name) + " to " + str(directory))
 
     except Exception as Argument:
         logging.exception("COULD NOT MOVE FILE")
@@ -2581,15 +2584,15 @@ def move_file(directory, file_source):
 def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image):
     try:
         # Make the custom directory if it doesn't exist
-        if not os.path.exists(directory_output_custom):
-            os.makedirs(directory_output_custom)
+        if not Path(directory_output_custom).exists():
+            Path.mkdir(directory_output_custom)
         
         # File list of items to move
         file_list = [export_file_1]
         if model_quantity == "2 Formats":
             file_list.append(export_file_2)
-        if keep_modified_textures:
-            file_list.append(textures_temp_dir)
+        if copy_textures_custom_dir:
+            file_list.append(textures_dir)
         if save_blend:
             file_list.append(blend)
         if save_preview_image:
@@ -2598,8 +2601,8 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         # Scenario 1: No subdirectories
         if not use_subdirectories:
             # Delete any pre-existing textures_temp folders in the custom directory.
-            textures_temp_custom = os.path.join(directory_output_custom, os.path.basename(textures_temp_dir))
-            if os.path.exists(textures_temp_custom):
+            textures_temp_custom = Path(directory_output_custom, Path(textures_temp_dir).name)
+            if Path(textures_temp_custom).exists():
                 shutil.rmtree(textures_temp_custom)
                 
             # Move files
@@ -2608,12 +2611,12 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         
         if use_subdirectories:
             # Scenario 2: Subdirectories, no copy original item directory
-            item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
+            item_dir_custom = Path(directory_output_custom, prefix + item + suffix)
             
             # Always start fresh by removing existing custom item directories.
-            if os.path.exists(item_dir_custom):
+            if Path(item_dir_custom).exists():
                 shutil.rmtree(item_dir_custom)
-            os.makedirs(item_dir_custom)
+            Path.mkdir(item_dir_custom)
             
             # Move files
             for file in file_list:
@@ -2622,23 +2625,23 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             # Scenario 3: Subdirectories, copy original item directory
             if use_subdirectories and copy_item_dir_contents:
                 # Copy leftover/original subfolders and files
-                for file in os.listdir(item_dir):
+                for file in Path.iterdir(item_dir):
                     # Copy subfolders
-                    if os.path.isdir(os.path.join(item_dir, file)):
-                        file_custom = os.path.join(item_dir_custom, file)
-                        file = os.path.join(item_dir, file)
-                        if os.path.exists(file_custom):
+                    if Path(item_dir, file.name).is_dir():
+                        file_custom = Path(item_dir_custom, file.name)
+                        file = Path(item_dir, file.name)
+                        if Path(file_custom).exists():
                             shutil.rmtree(file_custom)
                         shutil.copytree(file, file_custom)
-                        print("Copied " + str(file) + " to " + str(item_dir_custom))
-                        logging.info("Copied " + str(file) + " to " + str(item_dir_custom))
+                        print("Copied " + str(file.name) + " to " + str(item_dir_custom))
+                        logging.info("Copied " + str(file.name) + " to " + str(item_dir_custom))
                     # Copy files
                     else:
-                        file_custom = os.path.join(item_dir_custom, file)
-                        file = os.path.join(item_dir, file)
+                        file_custom = Path(item_dir_custom, file.name)
+                        file = Path(item_dir, file.name)
                         shutil.copy(file, file_custom)
-                        print("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
-                        logging.info("Copied " + str(os.path.basename(file)) + " to " + str(item_dir_custom))
+                        print("Copied " + str(Path(file.name).name) + " to " + str(item_dir_custom))
+                        logging.info("Copied " + str(Path(file.name).name) + " to " + str(item_dir_custom))
         
         print("------------------------  MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY  ------------------------")
         logging.info("MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY")
@@ -2656,11 +2659,11 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             # Get current file size (in MB) of export_file_1 in the custom location
             if directory_output_location == "Custom":
                 if use_subdirectories:
-                    item_dir_custom = os.path.join(directory_output_custom, prefix + item + suffix)
-                    export_file_1_custom = os.path.join(item_dir_custom, os.path.basename(export_file_1))
+                    item_dir_custom = Path(directory_output_custom, prefix + item + suffix)
+                    export_file_1_custom = Path(item_dir_custom, Path(export_file_1).name)
                     export_file_1_file_size = get_export_file_1_size(export_file_1_custom)
                 else:    
-                    export_file_1_custom = os.path.join(directory_output_custom, os.path.basename(export_file_1))
+                    export_file_1_custom = Path(directory_output_custom, Path(export_file_1).name)
                     export_file_1_file_size = get_export_file_1_size(export_file_1_custom)
             # Get current file size (in MB) of export_file_1 in adjacent locations
             else: 
@@ -2754,17 +2757,19 @@ def batch_converter():
         # Run converter in every subdirectory that contains a model of the specified file type.
         for subdir, dirs, files in os.walk(directory):
             for file in files:
-                item = os.path.splitext(file)[0]
-                file = os.path.join(subdir, file.lower())
-                item_dir = subdir
-                if file.endswith(import_file_ext):
-                    import_file = os.path.join(subdir, item + import_file_ext)
-                    textures_dir = os.path.join(subdir, 'textures')
-                    textures_temp_dir = os.path.join(subdir, 'textures_' + prefix + item + suffix)
-                    export_file_1 = os.path.join(subdir, prefix + item + suffix + export_file_1_ext)
-                    export_file_2 = os.path.join(subdir, prefix + item + suffix + export_file_2_ext)
-                    blend = os.path.join(subdir, prefix + item + suffix + ".blend")
-                    preview_image = os.path.join(subdir, prefix + item + suffix + '_Preview.jpg')
+                item = Path(file).stem
+                file = Path(subdir, file.lower())
+                item_dir = Path(subdir)
+                if import_file_ext in file.name:
+                    import_file = str(Path(subdir, item + import_file_ext))
+                    textures_dir = Path(subdir, 'textures')
+                    textures_temp_dir = Path(subdir, 'textures_' + prefix + item + suffix)
+                    if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
+                        textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
+                    export_file_1 = str(Path(subdir, prefix + item + suffix + export_file_1_ext))
+                    export_file_2 = str(Path(subdir, prefix + item + suffix + export_file_2_ext))
+                    blend = Path(subdir, prefix + item + suffix + ".blend")
+                    preview_image = Path(subdir, prefix + item + suffix + '_Preview.jpg')
 
                     # Determine which models to import, then convert the ones that are eligible for import.
                     conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list)
@@ -2777,8 +2782,8 @@ def batch_converter():
         
         # If using custom textures, delete temporary textures directory only after all items have been converted.
         if use_textures and textures_source == "Custom" and not keep_modified_textures:
-            textures_temp_dir = os.path.splitext(textures_custom_dir)[0].rstrip("\\") + "_temp"
-            if os.path.exists(textures_temp_dir):
+            textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
+            if Path(textures_temp_dir).exists():
                 delete_textures_temp(textures_temp_dir)
 
         # Report conversion count to Converter_Report.json
@@ -2824,7 +2829,6 @@ def transmogrify():
     get_variables()
 
     # Step 2: Start logging conversion if requested by User.
-    print(import_file)
     if save_conversion_log:
         make_log_file()
 
