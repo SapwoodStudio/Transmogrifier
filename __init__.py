@@ -178,7 +178,7 @@ def draw_settings_general(self, context):
     # Transmogrifier Presets Menu
     self.layout.separator()
     col = self.layout.column(align=True)
-    col.label(text="WORKFLOW:", icon='DRIVER')
+    col.label(text="Workflow:", icon='DRIVER')
     layout = self.layout
     # Align menu items to the left.
     self.layout.use_property_split = False
@@ -489,7 +489,7 @@ def draw_settings_optimize_files(self, context):
 
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
-    col.label(text="Optimize Files:", icon='TRIA_DOWN_BAR')
+    col.label(text="Auto-Optimize:", icon='TRIA_DOWN_BAR')
     col.prop(settings, 'auto_resize_files')
     # Align menu items to the left.
     self.layout.use_property_split = False
@@ -621,7 +621,7 @@ class VIEW3D_PT_transmogrify_optimize_files(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
-    bl_label = "⏬  Optimize Files"
+    bl_label = "⏬  Optimize"
 
     def draw(self, context):
         draw_settings_optimize_files(self, context)
@@ -630,7 +630,7 @@ class VIEW3D_PT_transmogrify_archive(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
-    bl_label = "🗄   Archive"
+    bl_label = "🗄  Archive"
 
     def draw(self, context):
         draw_settings_archive(self, context)
@@ -1786,7 +1786,7 @@ class TransmogrifierSettings(PropertyGroup):
     )
     # Option to set file size maximum.
     auto_resize_files: EnumProperty(
-        name="Method",
+        name="Files Included",
         description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size. Only takes the first file format into account",
         items=[
             ("All", "All", "Convert all specified files in the given directory even if some previously exported files are already below the target maximum", 1),

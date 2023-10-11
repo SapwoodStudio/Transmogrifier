@@ -174,10 +174,12 @@ def clean_data_block_except_custom(block, custom_data):
     try:
         # iterate over every entry in the data block
         for data in block:
-            if data.name in custom_data:
-                print("Preserved custom data: " + data.name)
-                logging.info("Preserved custom data: " + data.name)
+            if Path(data.name).stem in custom_data:
+                print("Preserved custom data block: " + data.name)
+                logging.info("Preserved custom data block: " + data.name)
                 continue
+            print("Removed data block: " + data.name)
+            logging.info("Removed data block: " + data.name)
             block.remove(data)
 
         print("------------------------  CLEANED DATA BLOCK: " + str(block).upper() + "  ------------------------")
@@ -2329,8 +2331,8 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 # Get custom materials and textures not to be deleted during conversion.
                 global custom_materials
                 global custom_textures
-                custom_materials = [material.name for material in bpy.data.materials]
-                custom_textures = [texture.name for texture in bpy.data.images]
+                custom_materials = [Path(material.name).stem for material in bpy.data.materials]
+                custom_textures = [Path(texture.name).stem for texture in bpy.data.images]  # Ignore image format extension
 
                 # Preserve material(s) and texture(s).
                 use_fake_user()
