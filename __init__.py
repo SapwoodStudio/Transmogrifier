@@ -11,7 +11,7 @@
 
 import bpy
 from bpy.types import AddonPreferences, PropertyGroup, Operator, Panel
-from bpy.props import BoolProperty, IntProperty, EnumProperty, StringProperty, PointerProperty, FloatVectorProperty
+from bpy.props import BoolProperty, IntProperty, EnumProperty, StringProperty, PointerProperty, FloatVectorProperty, FloatProperty
 import os
 import shutil
 from pathlib import Path
@@ -374,7 +374,6 @@ def draw_settings_general(self, context):
     col.prop(settings, 'suffix')
     col = self.layout.column(align=True)
     col.prop(settings, 'set_data_names')
-    col.prop(settings, 'set_UV_map_names')
 
 
 # Texture Settings
@@ -410,7 +409,6 @@ def draw_settings_textures(self, context):
 
             grid = self.layout.grid_flow(columns=3, align=True)
             grid.prop(settings, 'texture_resolution_include')
-            # self.layout.separator()
         
             # Align menu items to the right.
             self.layout.use_property_split = True
@@ -425,7 +423,19 @@ def draw_settings_textures(self, context):
             grid = self.layout.grid_flow(columns=3, align=True)
             grid.prop(settings, 'image_format_include')
         
-        # self.layout.separator()
+    
+        col = self.layout.column(align=True)
+        col.label(text="UVs:", icon='UV')
+        col.prop(settings, 'set_UV_map_names')
+        col.prop(settings, 'export_uv_layout')
+        if settings.export_uv_layout:
+            col.prop(settings, 'all_uvs')
+            col.prop(settings, 'modified_uvs')
+            col.prop(settings, 'uv_resolution')
+            col.prop(settings, 'uv_format')
+            col.prop(settings, 'uv_fill_opacity')
+        self.layout.separator()
+            
 
 def draw_settings_transforms(self, context):
     settings = context.scene.transmogrifier
@@ -1522,15 +1532,6 @@ class TransmogrifierSettings(PropertyGroup):
         description="Rename object data names according to their corresponding object names",
         default=True,
     )
-    # Set all UV map names to "UVMap". This prevents a material issue with USDZ's - when object A and object B share the same material, but their UV
-    # map names differ, the material has to pick one UVMap in the UV Map node inputs connected to each texture channel. So if object A's UV map is called
-    # "UVMap" but object B's UV map is called "UV_Channel", then the shared material may pick "UV_Channel" as the UV inputs, thus causing object A to appear
-    # untextured despite the fact that it shares the same material as object B.
-    set_UV_map_names: BoolProperty(
-        name="Rename UV Maps",
-        description="Set all UV Map names to 'UVMap'. Multiple UV maps within the same object will increment as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. This prevents an issue in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured",
-        default=True,
-    )
     use_textures: BoolProperty(
         name="Use Textures", 
         description="Texture models with images from a selected source",
@@ -1678,7 +1679,63 @@ class TransmogrifierSettings(PropertyGroup):
             'Occlusion'
         },
     )
-    # # Option to set custom transformations
+    # Set all UV map names to "UVMap". This prevents a material issue with USDZ's - when object A and object B share the same material, but their UV
+    # map names differ, the material has to pick one UVMap in the UV Map node inputs connected to each texture channel. So if object A's UV map is called
+    # "UVMap" but object B's UV map is called "UV_Channel", then the shared material may pick "UV_Channel" as the UV inputs, thus causing object A to appear
+    # untextured despite the fact that it shares the same material as object B.
+    set_UV_map_names: BoolProperty(
+        name="Rename UV Maps",
+        description="Set all UV Map names to 'UVMap'. Multiple UV maps within the same object will increment as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. This prevents an issue in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured",
+        default=True,
+    )
+    export_uv_layout: BoolProperty(
+        name="Export UV Maps",
+        description="Export UV layout to file",
+        default=False,
+    )
+    all_uvs: BoolProperty(
+        name="All UVs",
+        description="Export all UVs in this mesh (not just the visible ones).",
+        default=True,
+    )
+    modified_uvs: BoolProperty(
+        name="Modified",
+        description="Export UVs from the modified mesh",
+        default=False,
+    )
+    uv_resolution: EnumProperty(
+        name="Resolution",
+        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
+        items=[
+            ("8192", "8192", "Square aspect ratio", 1),
+            ("4096", "4096", "Square aspect ratio", 2),
+            ("2048", "2048", "Square aspect ratio", 3),
+            ("1024", "1024", "Square aspect ratio", 4),
+            ("512", "512", "Square aspect ratio", 5),
+            ("256", "256", "Square aspect ratio", 6),
+            ("128", "128", "Square aspect ratio", 7),
+        ],
+        default="1024",
+    )
+    uv_format: EnumProperty(
+        name="Format",
+        description="File format to export the UV layout to:",
+        items=[
+            ("PNG", "PNG", "Export the UV layout to bitmap image", 1),
+            ("EPS", "EPS", "Export the UV layout to a vector EPS file", 2),
+            ("SVG", "SVG", "Export the UV layout to a vector SVG file", 3),
+        ],
+        default="PNG",
+    )
+    uv_fill_opacity: FloatProperty(
+        name="Fill Opacity", 
+        description="Set amount of opacity for export UV layout",
+        default=0.0,
+        soft_min=0.0,
+        soft_max=1.0,
+        step=1.0,
+    )
+    # Option to set custom transformations
     set_transforms: BoolProperty(
         name="Set", 
         description="Set custom transformations of the imported object(s) before exporting", 
@@ -1796,7 +1853,7 @@ class TransmogrifierSettings(PropertyGroup):
         default="All",
     )
     # File size maximum target.
-    file_size_maximum: bpy.props.FloatProperty(
+    file_size_maximum: FloatProperty(
         name="Max. File Size (MB)", 
         description="Set the target maximum to which Transmogrifier should attempt to lower the file size (Megabytes)",
         default=15.0,
@@ -1889,7 +1946,7 @@ class TransmogrifierSettings(PropertyGroup):
         default="glTF",
     )
     # File 1 scale.
-    export_file_1_scale: bpy.props.FloatProperty(
+    export_file_1_scale: FloatProperty(
         name="Scale", 
         description="Set the scale of the model before exporting",
         default=1.0,
@@ -1917,7 +1974,7 @@ class TransmogrifierSettings(PropertyGroup):
         default="USD",
     )
     # File 2 scale.
-    export_file_2_scale: bpy.props.FloatProperty(
+    export_file_2_scale: FloatProperty(
         name="Scale", 
         description="Set the scale of the model before exporting",
         default=1.0,
