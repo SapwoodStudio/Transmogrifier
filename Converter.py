@@ -273,6 +273,30 @@ def clear_materials_users():
         logging.exception("COULD NOT CLEAR ALL USERS OF ALL MATERIALS")
 
 
+# Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
+def select_all():
+    try:
+        bpy.ops.object.select_all(action='SELECT')
+
+        print("------------------------  SELECTED ALL OBJECTS OF ALL TYPES  ------------------------")
+        logging.info("SELECTED ALL OBJECTS OF ALL TYPES")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SELECT ALL OBJECTS OF ALL TYPES")
+		
+
+# Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
+def deselect_all():
+    try:
+        bpy.ops.object.select_all(action='DESELECT')
+
+        print("------------------------  DESELECTED ALL OBJECTS OF ALL TYPES  ------------------------")
+        logging.info("DESELECTED ALL OBJECTS OF ALL TYPES")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT DESELECT ALL OBJECTS OF ALL TYPES")
+		
+
 # Prevent an empty from being actively selected object. This prevents a later error from happening when imported materials are removed later.
 def select_only_meshes():
     try:
@@ -288,6 +312,18 @@ def select_only_meshes():
 
     except Exception as Argument:
         logging.exception("COULD NOT SELECT ONLY MESH-TYPE OBJECTS")
+		
+
+# Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
+def select_by_material(material):
+    try:
+        bpy.ops.view3d.materialutilities_select_by_material_name(material_name = material.name)
+
+        print("------------------------  SELECTED OBJECTS WITH MATERIAL: " + str(material.name) + "  ------------------------")
+        logging.info("SELECTED OBJECTS WITH MATERIAL: " + str(material.name))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SELECT OBJECTS WITH MATERIAL: " + str(material.name))
 		
 
 # Copy textures from custom directory and apply to all models in directory.
@@ -1172,18 +1208,6 @@ def reformat_images(image_format, image_quality, image_format_include, textures_
     except Exception as Argument:
         logging.exception("COULD NOT REFORMAT IMAGES")
 		    
-
-# Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
-def select_all():
-    try:
-        bpy.ops.object.select_all(action='SELECT')
-
-        print("------------------------  SELECTED ALL OBJECTS OF ALL TYPES  ------------------------")
-        logging.info("SELECTED ALL OBJECTS OF ALL TYPES")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT SELECT ALL OBJECTS OF ALL TYPES")
-		
 
 # Render a preview image of the scene for archiving.
 def render_preview_image(preview_image):
@@ -2416,6 +2440,64 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
         logging.exception("COULD NOT DETERMINE WHETHER/WHAT TO EXPORT")
 
 
+# Export UV Layout.
+def export_a_uv_layout(item, name, textures_dir, export_all):
+    try:
+        # bpy.ops.uv.export_layout(filepath="", export_all=False, modified=False, mode='PNG', size=(1024, 1024), opacity=0.25, check_existing=True)
+        uv_name = prefix + item + name + suffix + "_UV." + uv_format.lower()
+        export_uv_layout_options = {
+            "filepath": str(Path(textures_dir) / uv_name),
+            "export_all": export_all, 
+            "modified": modified_uvs, 
+            "mode": uv_format, 
+            "size": (uv_resolution, uv_resolution),
+            "opacity": uv_fill_opacity, 
+            "check_existing": True
+        }
+
+        export_uv_layout_command = "bpy.ops.uv.export_layout(**" + str(export_uv_layout_options) + ")"
+        print(export_uv_layout_command)
+        logging.info(export_uv_layout_command)
+        exec(export_uv_layout_command)
+
+        print("------------------------  EXPORTED UV LAYOUT  ------------------------")
+        logging.info("EXPORTED UV LAYOUT")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT EXPORT UV LAYOUT")
+
+
+# Determine how to export UV layouts.
+def determine_export_uv_layout(item, textures_dir):
+    try:
+        if uv_combination == "All":
+            export_all = True
+            name = ""
+            export_a_uv_layout(item, name, textures_dir, export_all)
+        elif uv_combination == "Object":
+            export_all = False
+            select_only_meshes()
+            objects = [object for object in bpy.context.selected_objects]
+            for object in objects:
+                deselect_all()
+                object.select_set(object.type == "MESH")
+                bpy.context.view_layer.objects.active = object
+                export_a_uv_layout(item + "_", object.name, textures_dir, export_all)
+        elif uv_combination == "Material":
+            export_all = False
+            for material in bpy.data.materials:
+                deselect_all()
+                select_by_material(material)
+                item = ""
+                export_a_uv_layout(item, material.name, textures_dir, export_all)
+                
+        print("------------------------  DETERMINED HOW TO EXPORT UV LAYOUT(S)  ------------------------")
+        logging.info("DETERMINED HOW TO EXPORT UV LAYOUT(S)")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT DETERMINE HOW TO EXPORT UV LAYOUT(S)")
+
+
 # Convert the file for every file found inside the given directory.
 def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count):
     try:
@@ -2481,10 +2563,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if set_transforms:
             set_transformations(set_transforms_filter, set_location, set_rotation, set_scale)
 
-        # Save preview image.
-        if save_preview_image:
-            render_preview_image(preview_image)
-        
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
@@ -2492,12 +2570,19 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if not save_blend and Path(blend).is_file():
             Path.unlink(blend)
 
+        # Save preview image.
+        if save_preview_image:
+            render_preview_image(preview_image)        
+
         # Modified or copied textures can now be delete after the conversion is over.
         if use_textures:
             if not keep_modified_textures and textures_source != "Custom" and Path(textures_temp_dir).exists():
                 delete_textures_temp(textures_temp_dir)
             if textures_source == "Custom" and not copy_textures_custom_dir:
                 remove_copy_textures_custom_dir(item_dir, textures_dir)
+
+        if export_uv_layout:
+            determine_export_uv_layout(item, textures_dir)
 
         print("-------------------------------------------------------------------")
         print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")

@@ -429,8 +429,8 @@ def draw_settings_textures(self, context):
         col.prop(settings, 'set_UV_map_names')
         col.prop(settings, 'export_uv_layout')
         if settings.export_uv_layout:
-            col.prop(settings, 'all_uvs')
             col.prop(settings, 'modified_uvs')
+            col.prop(settings, 'uv_combination')
             col.prop(settings, 'uv_resolution')
             col.prop(settings, 'uv_format')
             col.prop(settings, 'uv_fill_opacity')
@@ -560,7 +560,7 @@ def get_transmogrifier_settings(self, context):
         if key in directory_path:
             value = bpy.path.abspath(value)
         # Convert enumproperty numbers to numbers.
-        if key == "texture_resolution" or key == "resize_textures_limit":
+        if key == "texture_resolution" or key == "resize_textures_limit" or key == "uv_resolution":
             if value != "Default":
                 value = int(value)
         # Convert dictionaries and vectors to tuples.
@@ -1693,11 +1693,6 @@ class TransmogrifierSettings(PropertyGroup):
         description="Export UV layout to file",
         default=False,
     )
-    all_uvs: BoolProperty(
-        name="All UVs",
-        description="Export all UVs in this mesh (not just the visible ones).",
-        default=True,
-    )
     modified_uvs: BoolProperty(
         name="Modified",
         description="Export UVs from the modified mesh",
@@ -1734,6 +1729,16 @@ class TransmogrifierSettings(PropertyGroup):
         soft_min=0.0,
         soft_max=1.0,
         step=1.0,
+    )
+    uv_combination: EnumProperty(
+        name="Combination",
+        description="Select how UV layouts should be combined upon export",
+        items=[
+            ("All", "All", "Export all UVs in this mesh (not just the visible ones)", 1),
+            ("Object", "Object", "Export UVs by object (1 UV layout per object)", 2),
+            ("Material", "Material", "Export UVs by material (1 UV layout per material)", 3),
+        ],
+        default="Material",
     )
     # Option to set custom transformations
     set_transforms: BoolProperty(
