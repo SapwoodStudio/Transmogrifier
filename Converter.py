@@ -2441,12 +2441,11 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
 
 
 # Export UV Layout.
-def export_a_uv_layout(item, name, textures_dir, export_all):
+def export_a_uv_layout(item, name, directory, export_all):
     try:
-        # bpy.ops.uv.export_layout(filepath="", export_all=False, modified=False, mode='PNG', size=(1024, 1024), opacity=0.25, check_existing=True)
         uv_name = prefix + item + name + suffix + "_UV." + uv_format.lower()
         export_uv_layout_options = {
-            "filepath": str(Path(textures_dir) / uv_name),
+            "filepath": str(Path(directory) / uv_name),
             "export_all": export_all, 
             "modified": modified_uvs, 
             "mode": uv_format, 
@@ -2467,13 +2466,50 @@ def export_a_uv_layout(item, name, textures_dir, export_all):
         logging.exception("COULD NOT EXPORT UV LAYOUT")
 
 
+# Create a directory.  Overwrite if exists.
+def create_a_directory(directory):
+    try:
+        if Path(directory).exists():
+            return
+        elif not Path(directory).exists():
+            Path(directory).mkdir()
+
+        print("------------------------  CREATED A DIRECTORY: " + Path(directory).name + "  ------------------------")
+        logging.info("CREATED A DIRECTORY: " + Path(directory).name)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT CREATE A DIRECTORY: " + Path(directory).name)
+
+
+# Get UV directory based on menu option.
+def determine_uv_directory(textures_dir):
+    try:
+        if uv_export_location == "Textures":
+            directory = textures_dir
+            create_a_directory(directory)
+        elif uv_export_location == "UV":
+            directory = Path(textures_dir).parent / "UV"
+            create_a_directory(directory)
+        elif uv_export_location == "Adjacents":
+            directory = Path(textures_dir).parent
+        elif uv_export_location == "Custom":
+            directory = Path(uv_directory_custom)
+
+        print("------------------------  DETERMINED UV DIRECTORY  ------------------------")
+        logging.info("DETERMINED UV DIRECTORY")
+        return directory
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT DETERMINE UV DIRECTORY")
+
 # Determine how to export UV layouts.
 def determine_export_uv_layout(item, textures_dir):
     try:
+        directory = determine_uv_directory(textures_dir)
         if uv_combination == "All":
             export_all = True
             name = ""
-            export_a_uv_layout(item, name, textures_dir, export_all)
+            export_a_uv_layout(item, name, directory, export_all)
         elif uv_combination == "Object":
             export_all = False
             select_only_meshes()
@@ -2482,14 +2518,14 @@ def determine_export_uv_layout(item, textures_dir):
                 deselect_all()
                 object.select_set(object.type == "MESH")
                 bpy.context.view_layer.objects.active = object
-                export_a_uv_layout(item + "_", object.name, textures_dir, export_all)
+                export_a_uv_layout(item + "_", object.name, directory, export_all)
         elif uv_combination == "Material":
             export_all = False
             for material in bpy.data.materials:
                 deselect_all()
                 select_by_material(material)
                 item = ""
-                export_a_uv_layout(item, material.name, textures_dir, export_all)
+                export_a_uv_layout(item, material.name, directory, export_all)
                 
         print("------------------------  DETERMINED HOW TO EXPORT UV LAYOUT(S)  ------------------------")
         logging.info("DETERMINED HOW TO EXPORT UV LAYOUT(S)")

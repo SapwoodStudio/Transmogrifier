@@ -430,6 +430,9 @@ def draw_settings_textures(self, context):
         col.prop(settings, 'export_uv_layout')
         if settings.export_uv_layout:
             col.prop(settings, 'modified_uvs')
+            col.prop(settings, 'uv_export_location')
+            if settings.uv_export_location == "Custom":
+                col.prop(settings, 'uv_directory_custom')
             col.prop(settings, 'uv_combination')
             col.prop(settings, 'uv_resolution')
             col.prop(settings, 'uv_format')
@@ -834,20 +837,24 @@ class TRANSMOGRIFY(Operator):
     bl_label = "Batch Convert"
     file_count = 0
 
+    # Stop converter if directory has not been selected or .blend file has not been saved.
+    def check_directory_path(self, context, directory):
+        if directory != bpy.path.abspath(directory): # Then the blend file hasn't been saved
+            self.report({'ERROR'}, "Save .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
+            return False
+        directory = bpy.path.abspath(directory)  # Convert to absolute path
+        if not Path(directory).is_dir() or directory == "":
+            self.report({'ERROR'}, (Path(directory).name + " directory doesn't exist"))
+            return False
+        return True
+
+
     def execute(self, context):
         settings = context.scene.transmogrifier
 
-        # Stop converter if conversion directory has not been selected or .blend file has not been saved.
         base_dir = settings.directory
-        if not bpy.path.abspath('//'):  # Then the blend file hasn't been saved
-            # Then the path should be relative
-            if base_dir != bpy.path.abspath(base_dir):
-                self.report(
-                    {'ERROR'}, "Save .blend file somewhere before importing models from a relative directory\n(or use an absolute directory)")
-                return {'FINISHED'}
-        base_dir = bpy.path.abspath(base_dir)  # convert to absolute path
-        if not Path(base_dir).is_dir():
-            self.report({'ERROR'}, "Conversion directory doesn't exist")
+        directory_checks_out = self.check_directory_path(context, settings.directory)
+        if not directory_checks_out:
             return {'FINISHED'}
 
         # Create path to Converter.py
@@ -900,36 +907,19 @@ class TRANSMOGRIFY(Operator):
         # Create path to Transmogrifier directory
         transmogrifier_dir = Path(__file__).parent.resolve()
 
-        # Stop converter if custom output directory has not been selected or .blend file has not been saved.
-        directory_output_location = settings.directory_output_location
-        directory_output_custom = settings.directory_output_custom
-        if directory_output_location == "Custom":
-            if not bpy.path.abspath('//'):  # Then the blend file hasn't been saved
-                # Then the path should be relative
-                if directory_output_custom != bpy.path.abspath(directory_output_custom):
-                    self.report(
-                        {'ERROR'}, "Save .blend file somewhere before exporting model to a relative, custom directory\n(or use an absolute directory)")
-                    return {'FINISHED'}
-            directory_output_custom = bpy.path.abspath(directory_output_custom)  # convert to absolute path
-            if not Path(directory_output_custom).is_dir():
-                self.report({'ERROR'}, "Custom export directory doesn't exist")
+        # Check directories and stop converter if they're not right.
+        custom_menu_options_to_check = [settings.directory_output_location, settings.textures_source, settings.uv_export_location]
+        directories_to_check = [settings.directory_output_custom, settings.textures_custom_dir, settings.uv_directory_custom]
+        index = 0
+        for menu in custom_menu_options_to_check:
+            if menu != "Custom":
+                index += 1
+                continue
+            directory_checks_out = self.check_directory_path(context, directories_to_check[index])
+            if not directory_checks_out:
                 return {'FINISHED'}
-
-        # Stop converter if custom textures directory has not been selected or .blend file has not been saved.
-        textures_source = settings.textures_source
-        textures_custom_dir = settings.textures_custom_dir
-        if textures_source == "Custom":
-            if not bpy.path.abspath('//'):  # Then the blend file hasn't been saved
-                # Then the path should be relative
-                if textures_custom_dir != bpy.path.abspath(textures_custom_dir):
-                    self.report(
-                        {'ERROR'}, "Save .blend file somewhere before importing textures from a relative, custom directory\n(or use an absolute directory)")
-                    return {'FINISHED'}
-            textures_custom_dir = bpy.path.abspath(textures_custom_dir)  # convert to absolute path
-            if not Path(textures_custom_dir).is_dir():
-                self.report({'ERROR'}, "Textures directory doesn't exist")
-                return {'FINISHED'}
-
+            index += 1
+            
 
         # Determine options and import command for Import File Format
 
@@ -1483,8 +1473,8 @@ class TransmogrifierSettings(PropertyGroup):
         name="Location(s)",
         description="Select where models should be exported.",
         items=[
-            ("Adjacents", "Adjacents", "Export each converted model to the same directory from which it was imported", 1),
-            ("Custom", "Custom", "Export each converted model to a custom directory", 2),
+            ("Adjacents", "Adjacents", "Export each converted model to the same directory from which it was imported", 'FILE_FOLDER', 1),
+            ("Custom", "Custom", "Export each converted model to a custom directory", 'NEWFOLDER', 2),
         ],
         default="Adjacents",
     )
@@ -1698,6 +1688,33 @@ class TransmogrifierSettings(PropertyGroup):
         description="Export UVs from the modified mesh",
         default=False,
     )
+    uv_export_location: EnumProperty(
+        name="Location(s)",
+        description="Select where UV layouts should be exported",
+        items=[
+            ("Textures", "Textures", "Export UVs to a Textures subfolder for each item. If none exists, create one", 'TEXTURE', 1),
+            ("UV", "UV", "Export UVs to a 'UV' subfolder for each item. If none exists, create one", 'UV', 2),
+            ("Adjacents", "Adjacents", "Export UVs to the same directories as converted models for each item", 'FILE_FOLDER', 3),
+            ("Custom", "Custom", "Export all UVs to a custom directory of choice", 'NEWFOLDER', 4),
+        ],
+        default="UV",
+    )
+    uv_directory_custom: StringProperty(
+        name="Directory",
+        description="Set a custom directory to which UV maps will be exported\nDefault of // will export to same directory as the blend file (only works if the blend file is saved)",
+        default="//",
+        subtype='DIR_PATH',
+    )
+    uv_combination: EnumProperty(
+        name="Combination",
+        description="Select how UV layouts should be combined upon export",
+        items=[
+            ("All", "All", "Export all UVs together (1 UV layout per converted model)", 'STICKY_UVS_LOC', 1),
+            ("Object", "Object", "Export UVs by object (1 UV layout per object)", 'OBJECT_DATA', 2),
+            ("Material", "Material", "Export UVs by material (1 UV layout per material)", 'MATERIAL', 3),
+        ],
+        default="Material",
+    )
     uv_resolution: EnumProperty(
         name="Resolution",
         description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
@@ -1729,16 +1746,6 @@ class TransmogrifierSettings(PropertyGroup):
         soft_min=0.0,
         soft_max=1.0,
         step=1.0,
-    )
-    uv_combination: EnumProperty(
-        name="Combination",
-        description="Select how UV layouts should be combined upon export",
-        items=[
-            ("All", "All", "Export all UVs in this mesh (not just the visible ones)", 1),
-            ("Object", "Object", "Export UVs by object (1 UV layout per object)", 2),
-            ("Material", "Material", "Export UVs by material (1 UV layout per material)", 3),
-        ],
-        default="Material",
     )
     # Option to set custom transformations
     set_transforms: BoolProperty(
