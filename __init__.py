@@ -415,15 +415,18 @@ def draw_settings_textures(self, context):
             col = self.layout.column(align=True)
 
         col.prop(settings, 'image_format')
+        lossy_compression_support = ("JPEG", "WEBP")
         if settings.image_format != "Default":
-            col.prop(settings, 'image_quality')
+            if settings.image_format in lossy_compression_support:
+                col.prop(settings, 'image_quality')
             # Align menu items to the left.
             self.layout.use_property_split = False
 
             grid = self.layout.grid_flow(columns=3, align=True)
             grid.prop(settings, 'image_format_include')
         
-    
+
+        self.layout.use_property_split = True
         col = self.layout.column(align=True)
         col.label(text="UVs:", icon='UV')
         col.prop(settings, 'set_UV_map_names')
@@ -436,6 +439,8 @@ def draw_settings_textures(self, context):
             col.prop(settings, 'uv_combination')
             col.prop(settings, 'uv_resolution')
             col.prop(settings, 'uv_format')
+            if settings.uv_format in lossy_compression_support:
+                col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
             col.prop(settings, 'uv_fill_opacity')
         self.layout.separator()
             
@@ -1731,17 +1736,31 @@ class TransmogrifierSettings(PropertyGroup):
     )
     uv_format: EnumProperty(
         name="Format",
-        description="File format to export the UV layout to:",
+        description="File format to export the UV layout to \n(Transparency only works for PNG, EPS, and SVG)",
         items=[
-            ("PNG", "PNG", "Export the UV layout to bitmap image", 1),
+            ("PNG", "PNG", "Export the UV layout to bitmap PNG image", 1),
             ("EPS", "EPS", "Export the UV layout to a vector EPS file", 2),
             ("SVG", "SVG", "Export the UV layout to a vector SVG file", 3),
+            ("JPEG", "JPEG", "Export the UV layout to bitmap JPEG format", 4),
+            ("TARGA", "TARGA", "Export the UV layout to bitmap TARGA format", 5),
+            ("TIFF", "TIFF", "Export the UV layout to bitmap TIFF format", 6),
+            ("WEBP", "WEBP", "Export the UV layout to bitmap WEBP format", 7),
+            ("BMP", "BMP", "Export the UV layout to bitmap BMP format", 8),
+            ("OPEN_EXR", "OPEN_EXR", "Export the UV layout to bitmap OpenEXR format", 9),
         ],
         default="PNG",
     )
+    uv_image_quality: IntProperty(
+        name="Quality", 
+        description="(%) Quality for image formats that support lossy compression",
+        default=90,
+        soft_min=0,
+        soft_max=100,
+        step=5,
+    )
     uv_fill_opacity: FloatProperty(
         name="Fill Opacity", 
-        description="Set amount of opacity for export UV layout",
+        description="Set amount of opacity for export UV layout \n(between 0.0 and 1.0)",
         default=0.0,
         soft_min=0.0,
         soft_max=1.0,

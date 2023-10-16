@@ -1119,7 +1119,7 @@ def set_color_management(
 		
 
 # Convert images to specified format.
-def reformat_images(image_format, image_quality, image_format_include, textures_source):
+def reformat_images(image_format, image_quality, image_format_include):
     try:
         # Get dictionary.
         ext_dict = image_texture_ext_dict()
@@ -2128,7 +2128,7 @@ def reformat_textures_and_export(export_file_1, export_file_2):
                 image_format_include.append("Normal")
             elif reformat_normal_maps == False and "Normal" in image_format_include:
                 image_format_include.remove("Normal")
-            reformat_images(image_format, image_quality, image_format_include, textures_source)
+            reformat_images(image_format, image_quality, image_format_include)
             
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
@@ -2266,7 +2266,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             if texture_resolution != "Default":
                 resize_textures(texture_resolution, texture_resolution_include)
             if image_format != "Default":
-                reformat_images(image_format, image_quality, image_format_include, textures_source)
+                reformat_images(image_format, image_quality, image_format_include)
             assign_materials(item)
 
         elif textures_source == "Packed":
@@ -2293,7 +2293,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 if texture_resolution != "Default":
                     resize_textures(texture_resolution, texture_resolution_include)
                 if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include, textures_source)
+                    reformat_images(image_format, image_quality, image_format_include)
 
             # Only separate image textures if imported file is a GLB.
             elif import_file_ext == ".glb":
@@ -2319,7 +2319,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 if texture_resolution != "Default":
                     resize_textures(texture_resolution, texture_resolution_include)
                 if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include, textures_source)
+                    reformat_images(image_format, image_quality, image_format_include)
 
         elif textures_source == "Custom":
             print("Using custom textures for conversion")
@@ -2350,7 +2350,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
                 if texture_resolution != "Default":
                     resize_textures(texture_resolution, texture_resolution_include)
                 if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include, textures_source)
+                    reformat_images(image_format, image_quality, image_format_include)
                     
                 # Get custom materials and textures not to be deleted during conversion.
                 global custom_materials
@@ -2440,12 +2440,25 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
         logging.exception("COULD NOT DETERMINE WHETHER/WHAT TO EXPORT")
 
 
+# Import UV images to Blender for reformatting.
+def import_uv_image(uv_path):
+    try:
+        bpy.ops.image.open(filepath=str(uv_path))
+
+        print("------------------------  IMPORTED UV IMAGE: " + Path(uv_path).name + "  ------------------------")
+        logging.info("IMPORTED UV IMAGE: " + Path(uv_path).name)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT IMPORT UV IMAGE: " + Path(uv_path).name)
+
+
 # Export UV Layout.
 def export_a_uv_layout(item, name, directory, export_all):
     try:
         uv_name = prefix + item + name + suffix + "_UV." + uv_format.lower()
+        uv_path = str(Path(directory) / uv_name)
         export_uv_layout_options = {
-            "filepath": str(Path(directory) / uv_name),
+            "filepath": uv_path,
             "export_all": export_all, 
             "modified": modified_uvs, 
             "mode": uv_format, 
@@ -2454,10 +2467,19 @@ def export_a_uv_layout(item, name, directory, export_all):
             "check_existing": True
         }
 
+        uv_default_formats = ("PNG", "SVG", "EPS")
+        if uv_format not in uv_default_formats:
+            export_uv_layout_options["mode"] = "PNG"  # Save as bitmap because all other image non-default options are bitmaps.
+            uv_path_png = uv_path.replace(uv_format.lower(), "png")
+            export_uv_layout_options["filepath"] = uv_path_png
+
         export_uv_layout_command = "bpy.ops.uv.export_layout(**" + str(export_uv_layout_options) + ")"
         print(export_uv_layout_command)
         logging.info(export_uv_layout_command)
         exec(export_uv_layout_command)
+        
+        if uv_format not in uv_default_formats:
+            import_uv_image(uv_path_png)
 
         print("------------------------  EXPORTED UV LAYOUT  ------------------------")
         logging.info("EXPORTED UV LAYOUT")
@@ -2502,6 +2524,7 @@ def determine_uv_directory(textures_dir):
     except Exception as Argument:
         logging.exception("COULD NOT DETERMINE UV DIRECTORY")
 
+
 # Determine how to export UV layouts.
 def determine_export_uv_layout(item, textures_dir):
     try:
@@ -2526,7 +2549,12 @@ def determine_export_uv_layout(item, textures_dir):
                 select_by_material(material)
                 item = ""
                 export_a_uv_layout(item, material.name, directory, export_all)
-                
+        
+        uv_default_formats = ("PNG", "SVG", "EPS")
+        if uv_format not in uv_default_formats:
+            uv_tag = ["_UV"]
+            reformat_images(uv_format, uv_image_quality, uv_tag)
+
         print("------------------------  DETERMINED HOW TO EXPORT UV LAYOUT(S)  ------------------------")
         logging.info("DETERMINED HOW TO EXPORT UV LAYOUT(S)")
 
