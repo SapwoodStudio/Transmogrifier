@@ -429,7 +429,10 @@ def draw_settings_textures(self, context):
         self.layout.use_property_split = True
         col = self.layout.column(align=True)
         col.label(text="UVs:", icon='UV')
-        col.prop(settings, 'set_UV_map_names')
+        col.prop(settings, 'rename_uvs')
+        if settings.rename_uvs:
+            col.prop(settings, 'rename_uvs_name')
+            col = self.layout.column(align=True)
         col.prop(settings, 'export_uv_layout')
         if settings.export_uv_layout:
             col.prop(settings, 'modified_uvs')
@@ -1678,10 +1681,15 @@ class TransmogrifierSettings(PropertyGroup):
     # map names differ, the material has to pick one UVMap in the UV Map node inputs connected to each texture channel. So if object A's UV map is called
     # "UVMap" but object B's UV map is called "UV_Channel", then the shared material may pick "UV_Channel" as the UV inputs, thus causing object A to appear
     # untextured despite the fact that it shares the same material as object B.
-    set_UV_map_names: BoolProperty(
+    rename_uvs: BoolProperty(
         name="Rename UV Maps",
-        description="Set all UV Map names to 'UVMap'. Multiple UV maps within the same object will increment as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. This prevents an issue in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured",
+        description="Normalize UV map names.  Multiple UV maps within the same object will increment, for example, as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. This prevents an issue in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured",
         default=True,
+    )
+    rename_uvs_name: StringProperty(
+        name="Name",
+        description="Text to rename all UV maps (e.g. 'UVMap', 'UVChannel', 'map')",
+        default="UVMap"
     )
     export_uv_layout: BoolProperty(
         name="Export UV Maps",

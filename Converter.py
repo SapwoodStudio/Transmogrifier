@@ -1783,11 +1783,11 @@ def data_name_from_object():
         for obj in bpy.context.selected_objects:
             objName = obj.name
             if hasattr(obj, 'data') and obj.data != None:
-                oldName = obj.data.name
-                newName = objName
-                obj.data.name = newName
-                print("Renamed object data from " + str(oldName) + " to " + str(newName))
-                logging.info("Renamed object data from " + str(oldName) + " to " + str(newName))
+                old_name = obj.data.name
+                new_name = objName
+                obj.data.name = new_name
+                print("Renamed object data from " + str(old_name) + " to " + str(new_name))
+                logging.info("Renamed object data from " + str(old_name) + " to " + str(new_name))
 
         print("------------------------  SET DATA NAMES FROM OBJECTS  ------------------------")
         logging.info("SET DATA NAMES FROM OBJECTS")
@@ -1804,24 +1804,24 @@ def rename_UV_maps():
     try:
         for obj in bpy.context.selected_objects:
             uv_index = 1
-            # Loop through every UV map except the first one and rename as "UVMap_1", "UVMap_2", etc.
+            # Loop through every UV map except the first one and rename as "[UVMap]_1", "[UVMap]_2", etc.
             for uvmap in obj.data.uv_layers[1:]:
-                oldName = uvmap.name
-                uvmap.name = "UVMap_" + str(uv_index)
-                newName = uvmap.name
+                old_name = uvmap.name
+                uvmap.name = str(rename_uvs_name) + str(uv_index)
+                new_name = uvmap.name
                 uv_index += 1
 
-                print("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
-                logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
+                print("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
+                logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
             
-            # Now go back to the first UV map and rename as "UVMap". If this was done first and another UV channel existed with that name, then the first UV channel would be named
+            # Now go back to the first UV map and rename. If this was done first and another UV channel existed with that name, then the first UV channel would be named
             # like "UV_Map.001" which is not desirable and may contain a character compatible with USD format or Maya (i.e. ".").
-            oldName = obj.data.uv_layers[0].name
-            obj.data.uv_layers[0].name = "UVMap"
-            newName = obj.data.uv_layers[0].name
+            old_name = obj.data.uv_layers[0].name
+            obj.data.uv_layers[0].name = str(rename_uvs_name)
+            new_name = obj.data.uv_layers[0].name
 
-            print("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
-            logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(oldName) + " to " + str(newName))
+            print("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
+            logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
                 
 
         print("------------------------  RENAMED UV MAPS  ------------------------")
@@ -2613,7 +2613,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
             data_name_from_object()
 
         # Rename UV maps if requested by User.
-        if set_UV_map_names:
+        if rename_uvs:
             rename_UV_maps()
         
         # Save .blend file.
