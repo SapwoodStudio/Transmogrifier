@@ -23,7 +23,7 @@ bl_info = {
     "name": "Transmogrifier",
     "author": "Sapwood Studio",
     "version": (1, 3, "1-hotfix.1"),
-    "blender": (3, 6, 0),
+    "blender": (3, 6),
     "category": "Import-Export",
     "location": "Set in preferences below. Default: Top Bar (After File, Edit, ...Help)",
     "description": "Batch converts 3D files and associated textures into other formats.",
@@ -426,25 +426,25 @@ def draw_settings_textures(self, context):
             grid.prop(settings, 'image_format_include')
         
 
-        self.layout.use_property_split = True
+    self.layout.use_property_split = True
+    col = self.layout.column(align=True)
+    col.label(text="UVs:", icon='UV')
+    col.prop(settings, 'rename_uvs')
+    if settings.rename_uvs:
+        col.prop(settings, 'rename_uvs_name')
         col = self.layout.column(align=True)
-        col.label(text="UVs:", icon='UV')
-        col.prop(settings, 'rename_uvs')
-        if settings.rename_uvs:
-            col.prop(settings, 'rename_uvs_name')
-            col = self.layout.column(align=True)
-        col.prop(settings, 'export_uv_layout')
-        if settings.export_uv_layout:
-            col.prop(settings, 'modified_uvs')
-            col.prop(settings, 'uv_export_location')
-            if settings.uv_export_location == "Custom":
-                col.prop(settings, 'uv_directory_custom')
-            col.prop(settings, 'uv_combination')
-            col.prop(settings, 'uv_resolution')
-            col.prop(settings, 'uv_format')
-            if settings.uv_format in lossy_compression_support:
-                col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
-            col.prop(settings, 'uv_fill_opacity')
+    col.prop(settings, 'export_uv_layout')
+    if settings.export_uv_layout:
+        col.prop(settings, 'modified_uvs')
+        col.prop(settings, 'uv_export_location')
+        if settings.uv_export_location == "Custom":
+            col.prop(settings, 'uv_directory_custom')
+        col.prop(settings, 'uv_combination')
+        col.prop(settings, 'uv_resolution')
+        col.prop(settings, 'uv_format')
+        if settings.uv_format in lossy_compression_support:
+            col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
+        col.prop(settings, 'uv_fill_opacity')
         self.layout.separator()
             
 
@@ -567,7 +567,7 @@ def get_transmogrifier_settings(self, context):
         # Get value as string to be evaluated later.
         value = eval('settings.' + str(key))
         # Convert relative paths to absolute paths.
-        directory_path = ("directory", "directory_output_custom", "textures_custom_dir")
+        directory_path = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
         if key in directory_path:
             value = bpy.path.abspath(value)
         # Convert enumproperty numbers to numbers.
@@ -774,7 +774,7 @@ class REFRESHUI(Operator):
             # Read dictionary and change UI settings to reflect selected preset.
             for key, value in transmogrifier_preset_dict.items():
                 # Make sure double-backslashes are preserved in directory path.
-                directories_set = ("directory", "directory_output_custom", "textures_custom_dir")
+                directories_set = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
                 if key in directories_set and value != "":
                     value = "'" + repr(value) + "'"
                 # Don't affect currently selected Transmogrifier preset
@@ -790,7 +790,7 @@ class REFRESHUI(Operator):
                 elif type(value) == list and type(value[0]) == str:
                     value = set(value)
                 # If an integer object is an option of an EnumProperty drop down, make it a string.
-                if key in ("texture_resolution", "resize_textures_limit") and type(value) == int:
+                if key in ("texture_resolution", "resize_textures_limit", "uv_resolution") and type(value) == int:
                     value = "'" + str(value) + "'"   
                 # Concatenate the current variable/setting to be updated.
                 update_setting = 'settings.' + str(key) + ' = ' + str(value)
