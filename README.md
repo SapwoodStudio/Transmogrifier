@@ -113,7 +113,7 @@ Set the export location to either "Adjacent" or "Custom". "Adjacents" means that
 
 
 ### Name
-Set a custom prefix and/or suffix for every exported file. Synchronize object names and object data names according to the former. Rename UV channels of all objects to "UVMap" (and "UVMap_1", etc. for objects with more than 1 UV channel).
+Set a custom prefix and/or suffix for every exported file. Synchronize object names and object data names according to the former.
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/bc0f4688-ee44-4811-81af-6ac891aebd58" width="350">
 
@@ -179,6 +179,30 @@ Reformat textures and filter what to include by PBR type.
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5d2522cb-2b95-43ea-bd86-d713d70a42b1" width="350">
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/53de71c5-ceaf-4430-8bdd-fc1cb2a5cb70" width="350">
+
+
+### UVs
+#### Rename UV Maps
+Rename all UV maps for all objects converted with a custom name.  This is important for USD, where objects sharing the same material evidently need to share the same UV map name as well.  If an object has more than one UV map, a numerical incrementer suffix will be applied to each UV map (e.g. "UVMap_1", "UVMap_2", etc.).
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/02ef204d-02b7-4242-ab41-6f68732bf13e" width="350">
+
+
+#### Export UV Maps
+Export UVs with the same options available via the UV Editor and more.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/186eed7c-1d03-4d65-988f-3d6aba34357e" width="350">
+
+
+Set a location for UV's to be exported into:
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c2df1cfe-4463-4ab1-8371-3933aa37a531" width="350">
+
+
+Set how UVs should be combined for export:
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/0541a1c9-f0e4-4551-a04c-88f875237321" width="350">
+
 
 
 ### Transformations
