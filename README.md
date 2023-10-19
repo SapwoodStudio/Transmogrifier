@@ -6,7 +6,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 [Installation](#installation-) 📥 **·** [Usage](#usage-) 🏭 **·** [How it Works](#how-it-works-) ⚙ **·** [Benefits](#benefits-) 🎁 **·** [Features](#features-) ✨ **·** [Credits](#credits-) 🙏
 
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/7332a89c-13d8-4d3f-916a-9b3214a9186d" height="1000"> <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/1bd4fe67-5703-4524-8ab9-0cc1900d074f" height="1000">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/a8474e89-84bf-44ea-befd-1db00a76354a" height="1000"> <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/84eb82b8-c46f-47d9-afea-c4a6afb0ccfd" height="1000">
 
 
 
@@ -15,13 +15,14 @@ A Blender addon for batch converting 3D files and associated textures into other
 1. [Download the latest version](https://github.com/SapwoodStudio/Transmogrifier/releases/latest). Select the .zip file with the version number at the end (e.g. "Transmogrifier-**v1.x.x.zip**"), not the ones named "Source Code".
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/551e98a3-15e4-4cd2-be31-8ae30c729f24" width="250">
 
+
 2. Install the addon, [like this](https://www.youtube.com/watch?v=vYh1qh9y1MI).
 3. Choose where to display the addon menu in Blender.
-- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5eb3afe8-e3e6-45d3-8462-50992dac60aa" height="350">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/6d30d803-9290-4b96-95c0-f130d1565291" height="350">
 
 
 4. (_Optional_) Copy example workflow/import/export presets and a studiolight, "[neutral.hdr](https://github.com/google/model-viewer/blob/master/packages/shared-assets/environments/neutral.hdr)", to local Blender preferences directory. The studiolight is used for rendering preview image thumbnails of converted models.
-- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/467fcc94-d58d-487c-87f8-57a87212e48c" height="350">
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/fef58e7c-4f17-4d6c-b299-6b589618a558" height="350">
 
 
 ## USAGE 🏭
@@ -72,8 +73,9 @@ Transmogrifier includes a robust set of tools for non-destructively converting 3
 ### Workflow
 Create custom Transmogrifier presets (aka "Workflows) for quickly switching between different conversion scenarios. Click the plus button "+" to create a Workflow from all of the current Transmogrifier settings, giving it a custom name. Workflows are stored as "operator presets" in Blender preferences directory. To remove a workflow, select it from the menu, then click the minus button "-". 
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/95f406bd-d5cc-4a52-970a-55bd69f2b5b7" width="350">
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/fa8cd957-c372-452d-8f13-8843cc1e3484" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4bc129b8-f3e3-42c2-9a0a-e9075614645d" width="350">
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c4feafda-0e2d-4a39-a828-fc8ad9ed16cf" width="350">
 
 
 ### 3D Formats
@@ -87,31 +89,33 @@ Create custom Transmogrifier presets (aka "Workflows) for quickly switching betw
 - ABC
 - USD/USDA/USDC/USDZ
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/e95a8322-d5be-463d-8a2f-81f46103c37c" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/b9cd086a-a5d4-47c0-ab5e-ba5a372cc5e3" width="350">
 
 
 ### Import/Export Presets
 Set user-defined import and export presets.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/1ecfc99e-46c0-4a22-a42d-fcc2e93c419f" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4b47db1d-2a2c-4ff3-8d6c-dbfcef1ff03a" width="350">
 
 
 ### Import Location
 Select a directory containing 3D files of the chosen import format, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/dd380972-3559-497d-bb2c-e8f49ce34563" width="250">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/59cc7cd1-a190-44d3-93c5-14b4be71d011" width="350">
 
 
 ### Export Location
 Set the export location to either "Adjacent" or "Custom". "Adjacents" means that converted models will be saved to the same directories from which they were imported. "Custom" means that converted models will be saved to a chosen custom directory. Choose whether to place converted models in subdirectories of their same names. If so, choose whether to copy original files from import directories to respective subdirectories.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/f83015fa-f751-43ef-b34f-26ab4db2581d" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/af484984-c556-4238-875a-6cff2e9fb455" width="350">
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/9d0c3d9d-ab4e-4e84-bdbf-6066c3d24b35" width="350">
 
 
 ### Name
 Set a custom prefix and/or suffix for every exported file. Synchronize object names and object data names according to the former. Rename UV channels of all objects to "UVMap" (and "UVMap_1", etc. for objects with more than 1 UV channel).
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/cfdf71c6-ca26-4758-b007-1642bf360165" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/bc0f4688-ee44-4811-81af-6ac891aebd58" width="350">
 
 
 ### Textures
@@ -126,7 +130,8 @@ Transmogrifier can detect the presence of multiple image texture sets and non-de
 - **Packed**: image textures packed into the imported file (e.g. GLB or USDZ)
 - **Custom**: image textures from a custom directory, which will be applied to all models converted.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/101e287b-11b9-4728-b347-9b4434003a6e" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/aba24831-c3fb-459d-990d-846e3870e46b" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/ff6a4355-1888-413b-940e-67d1a06c9aaf" width="350">
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/c261ea84-65ba-4c2c-89b2-02e7ca65629b" width="700">
 
@@ -156,7 +161,9 @@ Resize textures and filter what to include by PBR type. Images will not be upsca
 - 256
 - 128
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/a5fe3bb7-8fd1-47d7-9766-443927e7c201" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/b6f7aa82-c207-42c6-bda0-0588fcf81e1d" width="350">
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/8e566708-0a43-453f-9a2c-8945c1d52a7e" width="350">
 
 
 #### Format: 
@@ -168,35 +175,40 @@ Reformat textures and filter what to include by PBR type.
 - TIFF
 - WEBP
 - BMP
+- OPEN_EXR
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/6399d39a-8220-4a59-8182-8455ec4b1ba3" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5d2522cb-2b95-43ea-bd86-d713d70a42b1" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/53de71c5-ceaf-4430-8bdd-fc1cb2a5cb70" width="350">
 
 
 ### Transformations
 Perform custom transformations and/or apply transformations to every model before export. Filter what transformations to set/apply.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/39ab41d8-b6d7-4fce-bc16-30ff5c949ece" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/f44b1325-5415-45a8-a302-3f668608ef4b" width="350">
 
 
 ### Animations
 Delete animations of every imported object before export. 
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4b72b4c1-4a37-4698-8d1d-e8cdd765b494" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/09d58e75-8c56-49c5-b6ee-6e8890e2cf8e" width="350">
 
 
 ### Scene
 Set a custom unit system and length unit for export.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/977e734f-ac85-4e17-8505-942272ec4f16" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/273edb83-792e-4cef-9a88-b6dec3b6fda1" width="350">
 
 
-### File
-Perform automatic file-resizing methods to every model in order reduce the exported file size below a custom target maximum. Filter which methods are used. If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on.
+### Optimize
+Perform automatic file-optmization methods to every model in order reduce the exported file size below a custom target maximum. Filter which methods are used. If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on.
 
-Approaches:
+File Included:
 - All (Always export despite any pre-existing file that is already below the target file size.)
 - Only Above Max (Only export and resize files that are above the target file sizes. Pre-existing files already below the target are ignored.)
 - None (Don't auto-resize at all.)
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/1261bf79-2aeb-40a6-b789-9e4e5309c0ba" width="350">
+
 
 Methods:
 - Draco compression (Only works for GLB/glTF.)
@@ -204,13 +216,13 @@ Methods:
 - Reformat textures (Convert all textures to JPG except normal maps.)
 - Decimate mesh objects (Uses edge collapse at 50% ratio each time. Set a maximum decimate iteration.)
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/abedd1bb-bf82-4766-a3a6-648eeb9bc4c6" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/052d2b6c-ffa3-4f42-b798-eb6d59e84f82" width="350">
 
 
 ### Archive
 Save a .blend and/or render an image preivew thumbnail with Material Preview viewport shading for every imported file. Save a log of the conversion process to troubleshoot errors or simply to get a list of the output files and their file sizes.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/46035d1d-8f2b-4e88-824f-713184da04d1" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/e59911c7-2835-4072-a16e-2ddabd614d45" width="350">
 
 
 ## CREDITS 🙏
