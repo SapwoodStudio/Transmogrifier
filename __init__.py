@@ -697,7 +697,7 @@ class COPY_ASSETS(Operator):
                     file_dest = Path(dir_dest_parent, operator, file)
                     dir_dest = Path(file_dest).parent
                     if not Path(dir_dest).exists():
-                        Path(dir_dest).mkdir()
+                        Path(dir_dest).mkdir(parents=True, exist_ok=True)
                     shutil.copy(file_src, file_dest)
         
         self.report({'INFO'}, "Copied Assets to Preferences")
