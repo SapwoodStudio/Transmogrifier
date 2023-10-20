@@ -3,7 +3,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/3166c6a1-5a56-44f0-8cbe-3471d1f3faa6" width="600">
 
-[Installation](#installation-) 📥 **·** [Usage](#usage-) 🏭 **·** [How it Works](#how-it-works-) ⚙ **·** [Benefits](#benefits-) 🎁 **·** [Features](#features-) ✨ **·** [Credits](#credits-) 🙏
+[Installation](#installation-) 📥 **·** [Usage](#usage-) 🏭 **·** [Demo](#demo-) 🧪 **·** [How it Works](#how-it-works-) ⚙ **·** [Benefits](#benefits-) 🎁 **·** [Features](#features-) ✨ **·** [Credits](#credits-) 🙏
 
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/a8474e89-84bf-44ea-befd-1db00a76354a" height="1000"> <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/84eb82b8-c46f-47d9-afea-c4a6afb0ccfd" height="1000">
@@ -26,7 +26,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 
 
 ## USAGE 🏭
-1. **Select a directory** containing 3D files of the chosen **import format**, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.
+1. **Select a directory** containing 3D files of the chosen **import format**, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.  Try out the [Demo](#demo-) 🧪 below to get started.
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/9e977a7f-57d7-4659-a5eb-df903e837e79" width="250">
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/e3dc4110-ff04-4297-8698-18a1ce5a358f" width="600">
 
@@ -48,6 +48,15 @@ A Blender addon for batch converting 3D files and associated textures into other
 - (Windows Example)
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/053903c1-5167-488e-86e4-a5c65a7aa6ad" width="600">
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/90cc4699-137c-4c69-bf8d-dd887d2cae61" width="350">
+
+
+## DEMO 🧪
+1. Download "PolyHaven_Demo_Files.zip" from the [latest release page](https://github.com/SapwoodStudio/Transmogrifier/releases/latest).
+2. Unzip the directory.
+3. Select the unzipped "PolyHaven_Demo_Files" as the "Import Directory".
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/d9cb4665-ad16-4757-ae3b-881cf2c2a542" width="350">
+
+4. Click "Batch Convert".
 
 
 ## HOW IT WORKS ⚙
