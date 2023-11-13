@@ -1852,7 +1852,8 @@ def set_export_scale(scale):
             use_snap_self=True, 
             use_snap_edit=True, 
             use_snap_nonedit=True, 
-            use_snap_selectable=False
+            use_snap_selectable=False,
+            center_override=bpy.context.scene.cursor.location
             )
 
         print("------------------------  SET EXPORT SCALE  ------------------------")
