@@ -1831,35 +1831,84 @@ def rename_UV_maps():
         logging.exception("COULD NOT RENAME UV MAPS")
 
 
-# Scale objects before exporting. Reset for each model if exporting 2 formats at once.
-def set_export_scale(scale):
+# Scale all objects by the factors provided.
+def transform_resize(scales_list):
     try:
         bpy.ops.transform.resize(
-            value=(scale, scale, scale), 
+            value=tuple(scales_list), 
             orient_type='GLOBAL', 
             orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), 
             orient_matrix_type='GLOBAL', 
-            mirror=False, 
-            use_proportional_edit=False, 
-            proportional_edit_falloff='SMOOTH', 
-            proportional_size=1, 
-            use_proportional_connected=False, 
-            use_proportional_projected=False, 
-            snap=False, 
-            snap_elements={'INCREMENT'}, 
-            use_snap_project=False, 
-            snap_target='CLOSEST', 
-            use_snap_self=True, 
-            use_snap_edit=True, 
-            use_snap_nonedit=True, 
-            use_snap_selectable=False
+            center_override=(0, 0, 0)
             )
 
-        print("------------------------  SET EXPORT SCALE  ------------------------")
-        logging.info("SET EXPORT SCALE")
+        print("------------------------  SCALED OBJECTS BY: " + str(scales_list) + "  ------------------------")
+        logging.info("SCALED OBJECTS BY: " + str(scales_list))
 
     except Exception as Argument:
-        logging.exception("COULD NOT SET EXPORT SCALE")
+        logging.exception("COULD NOT SCALE OBJECTS")
+
+
+# Rotate all objects by angles provided.
+def transform_rotate(angles_list):
+    try:
+        axes = ["X", "Y", "Z"]
+        axis_index = 0
+        for angle in angles_list:
+            constraint_axes = [False, False, False]
+            constraint_axes[axis_index] = True
+            bpy.ops.transform.rotate(
+                value=angle, 
+                orient_axis=axes[axis_index], 
+                orient_type='GLOBAL', 
+                orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), 
+                orient_matrix_type='GLOBAL',
+                constraint_axis=tuple(constraint_axes),
+                center_override=(0, 0, 0)
+            )
+            axis_index += 1
+
+        print("------------------------  ROTATED OBJECTS BY: " + str(angles_list) + "  ------------------------")
+        logging.info("ROTATED OBJECTS BY: " + str(angles_list))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT ROTATE OBJECTS")
+
+
+# Move all objects by lengths provided.
+def transform_translate(lengths_list):
+    try:
+        bpy.ops.transform.translate(
+            value=tuple(lengths_list), 
+            orient_type='GLOBAL'
+        )
+
+        print("------------------------  TRANSLATED OBJECTS BY: " + str(lengths_list) + "  ------------------------")
+        logging.info("TRANSLATED OBJECTS BY: " + str(lengths_list))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT TRANSLATE OBJECTS")
+
+
+# Set custom transformations if requested by the User.
+def set_transformations(set_transforms_filter, set_location, set_rotation, set_scale):
+    try:
+        print("Set the following transformations: " + str(set_transforms_filter))
+        logging.info("Set the following transformations: " + str(set_transforms_filter))
+
+        # All objects (including empties) have already been selected.
+        if "Location" in set_transforms_filter:
+            transform_translate(set_location)
+        if "Rotation" in set_transforms_filter:
+            transform_rotate(set_rotation)
+        if "Scale" in set_transforms_filter:
+            transform_resize(set_scale)
+
+        print("------------------------  SET TRANSFORMATIONS  ------------------------")
+        logging.info("SET TRANSFORMATIONS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SET TRANSFORMATIONS")
 		
 
 # Set scene units before exporting.
@@ -1879,42 +1928,11 @@ def set_scene_units(unit_system, length_unit):
         logging.exception("COULD NOT SET SCENE UNITS")
 		
 
-# Set custom transformations if requested by the User.
-def set_transformations(set_transforms_filter, set_location, set_rotation, set_scale):
-    try:
-        print("Set the following transformations: " + str(set_transforms_filter))
-        logging.info("Set the following transformations: " + str(set_transforms_filter))
-
-        # All objects (including empties) have already been selected.
-        for object in bpy.context.selected_objects:
-            # Don't transform an object if it has a parent since the parent will control it's childrens' transformations.
-            if not object.parent:
-                if "Location" in set_transforms_filter:
-                    object.location = set_location
-                    print("Moved " + object.name + " to " + str(set_location))
-                    logging.info("Moved " + object.name + " to " + str(set_location))
-                if "Rotation" in set_transforms_filter:
-                    object.rotation_mode = 'XYZ'
-                    object.rotation_euler = set_rotation
-                    print("Rotated " + object.name + " to " + str(set_rotation))
-                    logging.info("Rotated " + object.name + " to " + str(set_rotation))
-                if "Scale" in set_transforms_filter:
-                    object.scale = set_scale
-                    print("Scaled " + object.name + " to " + str(set_scale))
-                    logging.info("Scaled " + object.name + " to " + str(set_scale))
-
-        print("------------------------  SET TRANSFORMATIONS  ------------------------")
-        logging.info("SET TRANSFORMATIONS")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT SET TRANSFORMATIONS")
-		
-
 # Export a model.
 def export_a_model(export_file_scale, export_file_command, export_file_options, export_file):
     try:
         # Set scale
-        set_export_scale(export_file_scale)
+        transform_resize([export_file_scale, export_file_scale, export_file_scale])
         print("Scaled models by " + str(export_file_scale))
         logging.info("Scaled models by " + str(export_file_scale))
         # Apply transforms if requested
@@ -1933,7 +1951,7 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
         # Apply transforms if requested
         if apply_transforms:
             apply_transformations(apply_transforms_filter)
-        set_export_scale(export_file_scale)
+        transform_resize([export_file_scale, export_file_scale, export_file_scale])
         print("Reset scale of models by " + str(export_file_scale))
         logging.info("Reset scale of models by " + str(export_file_scale))
         # Apply transforms if requested
