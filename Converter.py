@@ -844,13 +844,13 @@ def add_principled_setup(material, textures_temp_dir, textures):
                 'region': regions[0],
             }
             
-            bpy.ops.node.nw_add_textures_for_principled(
-                override,
-                filepath=filepath,
-                directory=directory,
-                files=files,
-                relative_path=relative_path
-            )
+            with bpy.context.temp_override(**override):
+                bpy.ops.node.nw_add_textures_for_principled(
+                    filepath=filepath,
+                    directory=directory,
+                    files=files,
+                    relative_path=relative_path
+                )
         
         print("------------------------  Added Principled Setup for " + str(material.name) + "  ------------------------")
         logging.info("Added Principled Setup for " + str(material.name))
@@ -1257,12 +1257,13 @@ def render_preview_image(preview_image):
             'region': regions[0],
         }
 
-        # Frame all objects into viewport so objects are neither too small nor too large in the render. 
-        # They tend to be a bit small, but it's better than not at all for the time being.
-        bpy.ops.view3d.view_selected(override, use_all_regions=False)
+        with bpy.context.temp_override(**override):
+            # Frame all objects into viewport so objects are neither too small nor too large in the render. 
+            # They tend to be a bit small, but it's better than not at all for the time being.
+            bpy.ops.view3d.view_selected(use_all_regions=False)
 
-        # Render image through viewport and save the image to location provided above.
-        bpy.ops.render.opengl(write_still=True)
+            # Render image through viewport and save the image to location provided above.
+            bpy.ops.render.opengl(write_still=True)
 
         print("------------------------  RENDERED PREVIEW IMAGE THUMBNAIL  ------------------------")
         logging.info("RENDERED PREVIEW IMAGE THUMBNAIL")
