@@ -175,6 +175,14 @@ def draw_settings_general(self, context):
     row.operator('transmogrifier.transmogrify', text='Batch Convert', icon='FILE_CACHE')
     row.scale_y = 1.5
 
+    # UI settings
+    self.layout.separator()
+    col = self.layout.column(align=True)
+    col.label(text="User Interface:", icon='WORKSPACE')
+    self.layout.use_property_split = False
+    grid = self.layout.grid_flow(columns=2, align=True)
+    grid.prop(settings, 'ui_toggle', expand=True)
+
     # Transmogrifier Presets Menu
     self.layout.separator()
     col = self.layout.column(align=True)
@@ -222,33 +230,38 @@ def draw_settings_general(self, context):
 
 
     # Export Settings
-    self.layout.separator()
+    # self.layout.separator()
     # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="Export:", icon='EXPORT')
     
     # col.label(text="Models:", icon='OUTLINER_OB_MESH')
     col.prop(settings, "directory_output_location")
-    if settings.directory_output_location == "Custom":
-        col.prop(settings, "directory_output_custom")
-        if settings.directory_output_custom:
-            col.prop(settings, "use_subdirectories")
-            if settings.use_subdirectories:
-                col.prop(settings, "copy_item_dir_contents")
-    col.prop(settings, "model_quantity")
+    if settings.ui_toggle == "Advanced":
+        if settings.directory_output_location == "Custom":
+            col.prop(settings, "directory_output_custom")
+            if settings.directory_output_custom:
+                col.prop(settings, "use_subdirectories")
+                if settings.use_subdirectories:
+                    col.prop(settings, "copy_item_dir_contents")
+            col = self.layout.column(align=True)
+    
+    # Quantity
+    if settings.ui_toggle == "Advanced":
+        col.prop(settings, "model_quantity")
 
     # Align menu items to the right.
     self.layout.use_property_split = True
-
+    col = self.layout.column(align=True)
     if settings.model_quantity == "2 Formats":
         # File Format 1
         col = self.layout.column(align=True)
-        col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
+        # col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_1')
 
         if settings.export_file_1 == 'DAE':
             col.prop(settings, 'dae_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'ABC':
             col.prop(settings, 'abc_preset_enum')
             col.prop(settings, 'frame_start')
@@ -258,37 +271,39 @@ def draw_settings_general(self, context):
             col.prop(settings, 'usd_preset_enum')
         elif settings.export_file_1 == 'OBJ':
             col.prop(settings, 'obj_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'PLY':
             col.prop(settings, 'ply_ascii')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'STL':
             col.prop(settings, 'stl_ascii')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'FBX':
             col.prop(settings, 'fbx_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'glTF':
             col.prop(settings, 'gltf_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'X3D':
             col.prop(settings, 'x3d_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         
         # Set scale
-        col = self.layout.column(align=True)
-        col.prop(settings, 'export_file_1_scale')
-        # self.layout.separator()
+        if settings.ui_toggle == "Advanced":
+            # col = self.layout.column(align=True)
+            col.prop(settings, 'export_file_1_scale')
+            # self.layout.separator()
 
         # File Format 2
         col = self.layout.column(align=True)
-        col.label(text="Format 2:", icon='OUTLINER_OB_MESH')
+        col = self.layout.column(align=True)
+        # col.label(text="Format 2:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_2')
         # col.prop(settings, 'mode')
 
         if settings.export_file_2 == 'DAE':
             col.prop(settings, 'dae_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_2 == 'ABC':
             col.prop(settings, 'abc_preset_enum')
             col.prop(settings, 'frame_start')
@@ -298,38 +313,39 @@ def draw_settings_general(self, context):
             col.prop(settings, 'usd_preset_enum')
         elif settings.export_file_2 == 'OBJ':
             col.prop(settings, 'obj_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_2 == 'PLY':
             col.prop(settings, 'ply_ascii')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_2 == 'STL':
             col.prop(settings, 'stl_ascii')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_2 == 'FBX':
             col.prop(settings, 'fbx_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_2 == 'glTF':
             col.prop(settings, 'gltf_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_2 == 'X3D':
             col.prop(settings, 'x3d_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         
         # Set scale
-        col = self.layout.column(align=True)
-        col.prop(settings, 'export_file_2_scale')
+        if settings.ui_toggle == "Advanced":
+            # col = self.layout.column(align=True)
+            col.prop(settings, 'export_file_2_scale')
 
 
     elif settings.model_quantity == "1 Format":
         # File Format 1
         col = self.layout.column(align=True)
-        col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
+        # col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_1')
         # col.prop(settings, 'mode')
 
         if settings.export_file_1 == 'DAE':
             col.prop(settings, 'dae_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'ABC':
             col.prop(settings, 'abc_preset_enum')
             col.prop(settings, 'frame_start')
@@ -339,27 +355,28 @@ def draw_settings_general(self, context):
             col.prop(settings, 'usd_preset_enum')
         elif settings.export_file_1 == 'OBJ':
             col.prop(settings, 'obj_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'PLY':
             col.prop(settings, 'ply_ascii')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'STL':
             col.prop(settings, 'stl_ascii')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'FBX':
             col.prop(settings, 'fbx_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'glTF':
             col.prop(settings, 'gltf_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'X3D':
             col.prop(settings, 'x3d_preset_enum')
-            self.layout.prop(settings, 'apply_mods')
+            # col.prop(settings, 'apply_mods')
         
         # Set scale
-        col = self.layout.column(align=True)
-        col.prop(settings, 'export_file_1_scale')
-        # self.layout.sepaqrator()
+        if settings.ui_toggle == "Advanced":
+            # col = self.layout.column(align=True)
+            col.prop(settings, 'export_file_1_scale')
+            # self.layout.separator()
         
     # else:
     #     self.layout.separator()
@@ -369,11 +386,11 @@ def draw_settings_general(self, context):
 
     # Name Settings
     col.label(text="Names:", icon='SORTALPHA')
-    col = self.layout.column(align=True)
     col.prop(settings, 'prefix')
     col.prop(settings, 'suffix')
-    col = self.layout.column(align=True)
-    col.prop(settings, 'set_data_names')
+    if settings.ui_toggle == "Advanced":
+        col = self.layout.column(align=True)
+        col.prop(settings, 'set_data_names')
 
 
 # Texture Settings
@@ -389,63 +406,66 @@ def draw_settings_textures(self, context):
     col.prop(settings, 'use_textures')
 
     if settings.use_textures:
-        col.prop(settings, 'regex_textures')
-        col.prop(settings, 'keep_modified_textures')
-        self.layout.use_property_split = True
-        col = self.layout.column(align=True)
-        col.prop(settings, 'textures_source')
-        if settings.textures_source == "Custom":
-            col.prop(settings, 'textures_custom_dir')
-            col.prop(settings, 'copy_textures_custom_dir')
-            if settings.copy_textures_custom_dir:
-                col.prop(settings, 'replace_textures')
-
-        # col = self.layout.column(align=True)
-        col.prop(settings, 'texture_resolution')
-
-        if settings.texture_resolution != "Default":
-            # Align menu items to the left.
-            self.layout.use_property_split = False
-
-            grid = self.layout.grid_flow(columns=3, align=True)
-            grid.prop(settings, 'texture_resolution_include')
-        
-            # Align menu items to the right.
+        if settings.ui_toggle == "Advanced":
+            col.prop(settings, 'regex_textures')
+            col.prop(settings, 'keep_modified_textures')
             self.layout.use_property_split = True
             col = self.layout.column(align=True)
-
-        col.prop(settings, 'image_format')
-        lossy_compression_support = ("JPEG", "WEBP")
-        if settings.image_format != "Default":
-            if settings.image_format in lossy_compression_support:
-                col.prop(settings, 'image_quality')
-            # Align menu items to the left.
-            self.layout.use_property_split = False
-
-            grid = self.layout.grid_flow(columns=3, align=True)
-            grid.prop(settings, 'image_format_include')
+        col.prop(settings, 'textures_source')
+        if settings.ui_toggle == "Advanced":
+            if settings.textures_source == "Custom":
+                col.prop(settings, 'textures_custom_dir')
+                col.prop(settings, 'copy_textures_custom_dir')
+                if settings.copy_textures_custom_dir:
+                    col.prop(settings, 'replace_textures')
         
+        if settings.ui_toggle == "Advanced":
+            # col = self.layout.column(align=True)
+            col.prop(settings, 'texture_resolution')
 
-    self.layout.use_property_split = True
-    col = self.layout.column(align=True)
-    col.label(text="UVs:", icon='UV')
-    col.prop(settings, 'rename_uvs')
-    if settings.rename_uvs:
-        col.prop(settings, 'rename_uvs_name')
+            if settings.texture_resolution != "Default":
+                # Align menu items to the left.
+                self.layout.use_property_split = False
+
+                grid = self.layout.grid_flow(columns=3, align=True)
+                grid.prop(settings, 'texture_resolution_include')
+            
+                # Align menu items to the right.
+                self.layout.use_property_split = True
+                col = self.layout.column(align=True)
+
+            col.prop(settings, 'image_format')
+            lossy_compression_support = ("JPEG", "WEBP")
+            if settings.image_format != "Default":
+                if settings.image_format in lossy_compression_support:
+                    col.prop(settings, 'image_quality')
+                # Align menu items to the left.
+                self.layout.use_property_split = False
+
+                grid = self.layout.grid_flow(columns=3, align=True)
+                grid.prop(settings, 'image_format_include')
+        
+    if settings.ui_toggle == "Advanced":
+        self.layout.use_property_split = True
         col = self.layout.column(align=True)
-    col.prop(settings, 'export_uv_layout')
-    if settings.export_uv_layout:
-        col.prop(settings, 'modified_uvs')
-        col.prop(settings, 'uv_export_location')
-        if settings.uv_export_location == "Custom":
-            col.prop(settings, 'uv_directory_custom')
-        col.prop(settings, 'uv_combination')
-        col.prop(settings, 'uv_resolution')
-        col.prop(settings, 'uv_format')
-        if settings.uv_format in lossy_compression_support:
-            col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
-        col.prop(settings, 'uv_fill_opacity')
-        self.layout.separator()
+        col.label(text="UVs:", icon='UV')
+        col.prop(settings, 'rename_uvs')
+        if settings.rename_uvs:
+            col.prop(settings, 'rename_uvs_name')
+            col = self.layout.column(align=True)
+        col.prop(settings, 'export_uv_layout')
+        if settings.export_uv_layout:
+            col.prop(settings, 'modified_uvs')
+            col.prop(settings, 'uv_export_location')
+            if settings.uv_export_location == "Custom":
+                col.prop(settings, 'uv_directory_custom')
+            col.prop(settings, 'uv_combination')
+            col.prop(settings, 'uv_resolution')
+            col.prop(settings, 'uv_format')
+            if settings.uv_format in lossy_compression_support:
+                col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
+            col.prop(settings, 'uv_fill_opacity')
+            self.layout.separator()
             
 
 def draw_settings_transforms(self, context):
@@ -456,38 +476,39 @@ def draw_settings_transforms(self, context):
 
     # Transformation options.
     self.layout.use_property_split = True
-    col = self.layout.column(align=True)
-    col.label(text="Transformations:", icon='CON_PIVOT')
-    col.prop(settings, 'set_transforms')
-    if settings.set_transforms:
-        self.layout.use_property_split = False
-        grid = self.layout.grid_flow(columns=3, align=True)
-        grid.prop(settings, 'set_transforms_filter')
-        col = self.layout.column(align=True)
-        
-        if 'Location' in settings.set_transforms_filter:
-            col.prop(settings, 'set_location')
-        if 'Rotation' in settings.set_transforms_filter:
-            col.prop(settings, 'set_rotation')
-        if 'Scale' in settings.set_transforms_filter:
-            col.prop(settings, 'set_scale')
+    # col = self.layout.column(align=True)
+    if settings.ui_toggle == "Advanced":
+        col.label(text="Transformations:", icon='CON_PIVOT')
+        col.prop(settings, 'set_transforms')
+        if settings.set_transforms:
+            self.layout.use_property_split = False
+            grid = self.layout.grid_flow(columns=3, align=True)
+            grid.prop(settings, 'set_transforms_filter')
+            col = self.layout.column(align=True)
+            
+            if 'Location' in settings.set_transforms_filter:
+                col.prop(settings, 'set_location')
+            if 'Rotation' in settings.set_transforms_filter:
+                col.prop(settings, 'set_rotation')
+            if 'Scale' in settings.set_transforms_filter:
+                col.prop(settings, 'set_scale')
     
+            self.layout.use_property_split = True
+            col = self.layout.column(align=True)
+
+        col.prop(settings, 'apply_transforms')
+        if settings.apply_transforms:
+            self.layout.use_property_split = False
+            grid = self.layout.grid_flow(columns=3, align=True)
+            grid.prop(settings, 'apply_transforms_filter')
+            # col = self.layout.column(align=True)
+        # col = self.layout.column(align=True)
+
+        # Set animation options.
         self.layout.use_property_split = True
         col = self.layout.column(align=True)
-
-    col.prop(settings, 'apply_transforms')
-    if settings.apply_transforms:
-        self.layout.use_property_split = False
-        grid = self.layout.grid_flow(columns=3, align=True)
-        grid.prop(settings, 'apply_transforms_filter')
-        # col = self.layout.column(align=True)
-    # col = self.layout.column(align=True)
-
-    # Set animation options.
-    self.layout.use_property_split = True
-    col = self.layout.column(align=True)
-    col.label(text="Animations:", icon='ANIM')
-    col.prop(settings, 'delete_animations')
+        col.label(text="Animations:", icon='ANIM')
+        col.prop(settings, 'delete_animations')
 
     # Set scene unit options.
     # self.layout.use_property_split = True
@@ -508,30 +529,31 @@ def draw_settings_optimize_files(self, context):
     self.layout.use_property_decorate = False
     col = self.layout.column(align=True)
 
-    self.layout.use_property_split = True
-    col = self.layout.column(align=True)
+    # self.layout.use_property_split = True
+    # col = self.layout.column(align=True)
     col.label(text="Auto-Optimize:", icon='TRIA_DOWN_BAR')
     col.prop(settings, 'auto_resize_files')
     # Align menu items to the left.
     self.layout.use_property_split = False
-    col = self.layout.column(align=True)
-    if settings.auto_resize_files != "None":
-        col.prop(settings, 'file_size_maximum')
-        grid = self.layout.grid_flow(columns=1, align=True)
-        grid.prop(settings, 'file_size_methods')
-        if 'Resize Textures' in settings.file_size_methods:
-            self.layout.use_property_split = True
-            col = self.layout.column(align=True)
-            col.prop(settings, 'resize_textures_limit')
-        if 'Reformat Textures' in settings.file_size_methods:
-            self.layout.use_property_split = True
-            col = self.layout.column(align=True)
-            col.prop(settings, 'reformat_normal_maps')
-        if 'Decimate Meshes' in settings.file_size_methods:
-            self.layout.use_property_split = True
-            col = self.layout.column(align=True)
-            col.prop(settings, 'decimate_limit')
-        # self.layout.separator()
+    if settings.ui_toggle == "Advanced":
+        col = self.layout.column(align=True)
+        if settings.auto_resize_files != "None":
+            col.prop(settings, 'file_size_maximum')
+            grid = self.layout.grid_flow(columns=1, align=True)
+            grid.prop(settings, 'file_size_methods')
+            if 'Resize Textures' in settings.file_size_methods:
+                self.layout.use_property_split = True
+                col = self.layout.column(align=True)
+                col.prop(settings, 'resize_textures_limit')
+            if 'Reformat Textures' in settings.file_size_methods:
+                self.layout.use_property_split = True
+                col = self.layout.column(align=True)
+                col.prop(settings, 'reformat_normal_maps')
+            if 'Decimate Meshes' in settings.file_size_methods:
+                self.layout.use_property_split = True
+                col = self.layout.column(align=True)
+                col.prop(settings, 'decimate_limit')
+            # self.layout.separator()
 
 # Archive options
 def draw_settings_archive(self, context):
@@ -542,11 +564,12 @@ def draw_settings_archive(self, context):
 
     # Align menu items to the Right.
     self.layout.use_property_split = True
-    col = self.layout.column(align=True)
+    # col = self.layout.column(align=True)
     col.label(text="Archive:", icon='ASSET_MANAGER')
     col.prop(settings, 'save_preview_image')
     col.prop(settings, 'save_blend')
-    col.prop(settings, 'save_conversion_log')
+    if settings.ui_toggle == "Advanced":
+        col.prop(settings, 'save_conversion_log')
 
 
 # Draws the button and popover dropdown button used in the
@@ -1342,6 +1365,16 @@ class TRANSMOGRIFY(Operator):
 
 # Groups together all the addon settings that are saved in each .blend file
 class TransmogrifierSettings(PropertyGroup):
+    # UI Setting
+    ui_toggle: EnumProperty(
+        name="UI",
+        items=[
+            ('Simple', "Simple", "Show only basic conversion options", 1),
+            ('Advanced', "Advanced", "Show all conversion options", 2),
+        ],
+        description="Toggle simple or advanced user interface options",
+        default='Simple', 
+    )
     # Import Settings
     directory: StringProperty(
         name="Directory",
@@ -1496,7 +1529,7 @@ class TransmogrifierSettings(PropertyGroup):
     # Option to export models to subdirectories in custom directory
     use_subdirectories: BoolProperty(
         name="Subdirectories",
-        description="Export models to their own subdirectories within the parent output custom directory",
+        description="Export models to their own subdirectories within the given directory",
         default=False,
     )
     # Option to include only models or also copy original folder contents to custom directory
@@ -1967,7 +2000,7 @@ class TransmogrifierSettings(PropertyGroup):
         )
     # Export Settings 1:
     export_file_1: EnumProperty(
-        name="Format",
+        name="Format 1",
         description="Which file format to export to",
         items=[
             ("DAE", "Collada (.dae)", "", 1),
@@ -1995,7 +2028,7 @@ class TransmogrifierSettings(PropertyGroup):
     )
     # Export Settings 2:
     export_file_2: EnumProperty(
-        name="Format",
+        name="Format 2",
         description="Which file format to export to",
         items=[
             ("DAE", "Collada (.dae)", "", 1),
