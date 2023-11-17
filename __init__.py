@@ -176,7 +176,7 @@ def draw_settings_general(self, context):
     row.scale_y = 1.5
 
     # UI settings
-    self.layout.separator()
+    # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="User Interface:", icon='WORKSPACE')
     self.layout.use_property_split = False
@@ -184,7 +184,7 @@ def draw_settings_general(self, context):
     grid.prop(settings, 'ui_toggle', expand=True)
 
     # Transmogrifier Presets Menu
-    self.layout.separator()
+    # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="Workflow:", icon='DRIVER')
     layout = self.layout
@@ -197,7 +197,7 @@ def draw_settings_general(self, context):
 
     # Import Settings
     self.layout.use_property_split = True
-    self.layout.separator()
+    # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="Import:", icon='IMPORT')
     # Directory input
@@ -456,6 +456,7 @@ def draw_settings_textures(self, context):
         col.prop(settings, 'export_uv_layout')
         if settings.export_uv_layout:
             col.prop(settings, 'modified_uvs')
+            col = self.layout.column(align=True)
             col.prop(settings, 'uv_export_location')
             if settings.uv_export_location == "Custom":
                 col.prop(settings, 'uv_directory_custom')
@@ -465,7 +466,7 @@ def draw_settings_textures(self, context):
             if settings.uv_format in lossy_compression_support:
                 col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
             col.prop(settings, 'uv_fill_opacity')
-            self.layout.separator()
+            # self.layout.separator()
             
 
 def draw_settings_transforms(self, context):
@@ -533,27 +534,20 @@ def draw_settings_optimize_files(self, context):
     # col = self.layout.column(align=True)
     col.label(text="Auto-Optimize:", icon='TRIA_DOWN_BAR')
     col.prop(settings, 'auto_resize_files')
-    # Align menu items to the left.
-    self.layout.use_property_split = False
+    self.layout.use_property_split = True
     if settings.ui_toggle == "Advanced":
-        col = self.layout.column(align=True)
         if settings.auto_resize_files != "None":
             col.prop(settings, 'file_size_maximum')
             grid = self.layout.grid_flow(columns=1, align=True)
             grid.prop(settings, 'file_size_methods')
+            col = self.layout.column(align=True)
             if 'Resize Textures' in settings.file_size_methods:
-                self.layout.use_property_split = True
-                col = self.layout.column(align=True)
                 col.prop(settings, 'resize_textures_limit')
             if 'Reformat Textures' in settings.file_size_methods:
-                self.layout.use_property_split = True
-                col = self.layout.column(align=True)
                 col.prop(settings, 'reformat_normal_maps')
             if 'Decimate Meshes' in settings.file_size_methods:
-                self.layout.use_property_split = True
-                col = self.layout.column(align=True)
                 col.prop(settings, 'decimate_limit')
-            # self.layout.separator()
+                
 
 # Archive options
 def draw_settings_archive(self, context):
@@ -1916,18 +1910,18 @@ class TransmogrifierSettings(PropertyGroup):
     # Option to set file size maximum.
     auto_resize_files: EnumProperty(
         name="Files Included",
-        description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size. Only takes the first file format into account",
+        description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size. If exporting 2 formats at once, it only takes the first file format into account",
         items=[
-            ("All", "All", "Convert all specified files in the given directory even if some previously exported files are already below the target maximum", 1),
-            ("Only Above Max", "Only Above Max", "Only convert such specified files in the given directory that are still above the target maximum. Ignore the rest already below the target maximum", 2),
-            ("None", "None", "Don't auto-resize any exported files", 3),
+            ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target maximum", 1),
+            ("Only Above Max", "Only Above Max", "Only auto-optimize exported files are still above the threshold. Ignore previously exported files that are already below the target maximum", 2),
+            ("None", "None", "Don't auto-optimize any exported files", 3),
         ],
         default="All",
     )
     # File size maximum target.
     file_size_maximum: FloatProperty(
-        name="Max. File Size (MB)", 
-        description="Set the target maximum to which Transmogrifier should attempt to lower the file size (Megabytes)",
+        name="Limit (MB)", 
+        description="Set the threshold below which Transmogrifier should attempt to reduce the file size (Megabytes)",
         default=15.0,
         soft_min=0.0,
         soft_max=1000.0,
@@ -1935,7 +1929,7 @@ class TransmogrifierSettings(PropertyGroup):
     )
     # Filter file size reduction methods.
     file_size_methods: EnumProperty(
-        name="File Size Methods",
+        name="Methods",
         options={'ENUM_FLAG'},
         items=[
             ('Draco-Compress', "Draco-Compress", "(Only for GLB export). Try Draco-compression to lower the exported file size.", 'FULLSCREEN_EXIT', 1),
@@ -1952,7 +1946,7 @@ class TransmogrifierSettings(PropertyGroup):
     )
     # Limit resolution that auto resize files should not go below.
     resize_textures_limit: EnumProperty(
-        name="Min. Resolution",
+        name="Resize Limit",
         description="Set minimum image texture resolution for auto file size not to go below. Images will not be upscaled",
         items=[
             ("8192", "8192", "Square aspect ratio", 1),
@@ -1973,7 +1967,7 @@ class TransmogrifierSettings(PropertyGroup):
         )
     # Limit how many time a mesh can be decimated during auto resize files.
     decimate_limit: IntProperty(
-        name="Decimate Max.", 
+        name="Decimate Limit", 
         description="Limit the number of times an item can be decimated. Items will be decimated by 50% each time",
         default=3,
         soft_min=0,
