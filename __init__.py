@@ -253,40 +253,32 @@ def draw_settings_general(self, context):
     # Align menu items to the right.
     self.layout.use_property_split = True
     col = self.layout.column(align=True)
-    if settings.model_quantity == "2 Formats":
-        # File Format 1
-        col = self.layout.column(align=True)
+
+    # File Format 1
+    col = self.layout.column(align=True)
+    if settings.model_quantity != "No Formats":
         # col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_1')
 
         if settings.export_file_1 == 'DAE':
             col.prop(settings, 'dae_preset_enum')
-            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'ABC':
             col.prop(settings, 'abc_preset_enum')
-            col.prop(settings, 'frame_start')
-            col.prop(settings, 'frame_end')
         elif settings.export_file_1 == 'USD':
             col.prop(settings, 'usd_extension')
             col.prop(settings, 'usd_preset_enum')
         elif settings.export_file_1 == 'OBJ':
             col.prop(settings, 'obj_preset_enum')
-            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'PLY':
             col.prop(settings, 'ply_ascii')
-            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'STL':
             col.prop(settings, 'stl_ascii')
-            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'FBX':
             col.prop(settings, 'fbx_preset_enum')
-            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'glTF':
             col.prop(settings, 'gltf_preset_enum')
-            # col.prop(settings, 'apply_mods')
         elif settings.export_file_1 == 'X3D':
             col.prop(settings, 'x3d_preset_enum')
-            # col.prop(settings, 'apply_mods')
         
         # Set scale
         if settings.ui_toggle == "Advanced":
@@ -295,94 +287,38 @@ def draw_settings_general(self, context):
             # self.layout.separator()
 
         # File Format 2
+        if settings.model_quantity == "2 Formats":
+            col = self.layout.column(align=True)
+            col = self.layout.column(align=True)
+            col.prop(settings, 'export_file_2')
+
+            if settings.export_file_2 == 'DAE':
+                col.prop(settings, 'dae_preset_enum')
+            elif settings.export_file_2 == 'ABC':
+                col.prop(settings, 'abc_preset_enum')
+            elif settings.export_file_2 == 'USD':
+                col.prop(settings, 'usd_extension')
+                col.prop(settings, 'usd_preset_enum')
+            elif settings.export_file_2 == 'OBJ':
+                col.prop(settings, 'obj_preset_enum')
+            elif settings.export_file_2 == 'PLY':
+                col.prop(settings, 'ply_ascii')
+            elif settings.export_file_2 == 'STL':
+                col.prop(settings, 'stl_ascii')
+            elif settings.export_file_2 == 'FBX':
+                col.prop(settings, 'fbx_preset_enum')
+            elif settings.export_file_2 == 'glTF':
+                col.prop(settings, 'gltf_preset_enum')
+            elif settings.export_file_2 == 'X3D':
+                col.prop(settings, 'x3d_preset_enum')
+            
+            # Set scale
+            if settings.ui_toggle == "Advanced":
+                # col = self.layout.column(align=True)
+                col.prop(settings, 'export_file_2_scale')
+
+
         col = self.layout.column(align=True)
-        col = self.layout.column(align=True)
-        # col.label(text="Format 2:", icon='OUTLINER_OB_MESH')
-        col.prop(settings, 'export_file_2')
-        # col.prop(settings, 'mode')
-
-        if settings.export_file_2 == 'DAE':
-            col.prop(settings, 'dae_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_2 == 'ABC':
-            col.prop(settings, 'abc_preset_enum')
-            col.prop(settings, 'frame_start')
-            col.prop(settings, 'frame_end')
-        elif settings.export_file_2 == 'USD':
-            col.prop(settings, 'usd_extension')
-            col.prop(settings, 'usd_preset_enum')
-        elif settings.export_file_2 == 'OBJ':
-            col.prop(settings, 'obj_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_2 == 'PLY':
-            col.prop(settings, 'ply_ascii')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_2 == 'STL':
-            col.prop(settings, 'stl_ascii')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_2 == 'FBX':
-            col.prop(settings, 'fbx_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_2 == 'glTF':
-            col.prop(settings, 'gltf_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_2 == 'X3D':
-            col.prop(settings, 'x3d_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        
-        # Set scale
-        if settings.ui_toggle == "Advanced":
-            # col = self.layout.column(align=True)
-            col.prop(settings, 'export_file_2_scale')
-
-
-    elif settings.model_quantity == "1 Format":
-        # File Format 1
-        col = self.layout.column(align=True)
-        # col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
-        col.prop(settings, 'export_file_1')
-        # col.prop(settings, 'mode')
-
-        if settings.export_file_1 == 'DAE':
-            col.prop(settings, 'dae_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_1 == 'ABC':
-            col.prop(settings, 'abc_preset_enum')
-            col.prop(settings, 'frame_start')
-            col.prop(settings, 'frame_end')
-        elif settings.export_file_1 == 'USD':
-            col.prop(settings, 'usd_extension')
-            col.prop(settings, 'usd_preset_enum')
-        elif settings.export_file_1 == 'OBJ':
-            col.prop(settings, 'obj_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_1 == 'PLY':
-            col.prop(settings, 'ply_ascii')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_1 == 'STL':
-            col.prop(settings, 'stl_ascii')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_1 == 'FBX':
-            col.prop(settings, 'fbx_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_1 == 'glTF':
-            col.prop(settings, 'gltf_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        elif settings.export_file_1 == 'X3D':
-            col.prop(settings, 'x3d_preset_enum')
-            # col.prop(settings, 'apply_mods')
-        
-        # Set scale
-        if settings.ui_toggle == "Advanced":
-            # col = self.layout.column(align=True)
-            col.prop(settings, 'export_file_1_scale')
-            # self.layout.separator()
-        
-    # else:
-    #     self.layout.separator()
-
-
-    col = self.layout.column(align=True)
 
     # Name Settings
     col.label(text="Names:", icon='SORTALPHA')
@@ -958,8 +894,6 @@ class TRANSMOGRIFY(Operator):
         elif settings.import_file == "ABC":
             options = load_operator_preset(
                 'wm.alembic_import', settings.import_abc_preset)
-            # options["start"] = settings.frame_start
-            # options["end"] = settings.frame_end
             # By default, alembic_export operator runs in the background, this messes up batch
             # export though. alembic_export has an "as_background_job" arg that can be set to
             # false to disable it, but its marked deprecated, saying that if you EXECUTE the
@@ -973,14 +907,12 @@ class TRANSMOGRIFY(Operator):
         elif settings.import_file == "USD":
             options = load_operator_preset(
                 'wm.usd_import', settings.import_usd_preset)
-            #bpy.ops.wm.usd_import(**options)
             import_file_command = "bpy.ops.wm.usd_import(**"
 
 
         elif settings.import_file == "OBJ":
             options = load_operator_preset(
                 'wm.obj_import', settings.import_obj_preset)
-            #bpy.ops.wm.obj_import(**options)
             import_file_command = "bpy.ops.wm.obj_import(**"
             
 
@@ -988,14 +920,10 @@ class TRANSMOGRIFY(Operator):
             options = {
                 'filepath': '',
             }
-            # bpy.ops.import_mesh.ply(
-            #     filepath="import_file", use_ascii=settings.ply_ascii, use_selection=True, use_mesh_modifiers=settings.apply_mods)
             import_file_command = "bpy.ops.import_mesh.ply(**"
             
 
         elif settings.import_file == "STL":
-            # bpy.ops.import_mesh.stl(
-            #     filepath="import_file", ascii=settings.stl_ascii, use_selection=True, use_mesh_modifiers=settings.apply_mods)
             options = {
                 'filepath': '',
             }
@@ -1012,14 +940,12 @@ class TRANSMOGRIFY(Operator):
             options = {
                 'filepath': '',
             }
-            #bpy.ops.import_scene.gltf(**options)
             import_file_command = "bpy.ops.import_scene.gltf(**"
             
 
         elif settings.import_file == "X3D":
             options = load_operator_preset(
                 'import_scene.x3d', settings.import_x3d_preset)
-            #bpy.ops.import_scene.x3d(**options)
             import_file_command = "bpy.ops.import_scene.x3d(**"
 
 
@@ -1049,7 +975,6 @@ class TRANSMOGRIFY(Operator):
                 'wm.collada_export', settings.dae_preset)
             options["filepath"] = "export_file_1"
             options["selected"] = True
-            options["apply_modifiers"] = settings.apply_mods
             #bpy.ops.wm.collada_export(**options)
             export_file_1_command = "bpy.ops.wm.collada_export(**"
             
@@ -1059,8 +984,6 @@ class TRANSMOGRIFY(Operator):
                 'wm.alembic_export', settings.abc_preset)
             options["filepath"] = "export_file_1"
             options["selected"] = True
-            options["start"] = settings.frame_start
-            options["end"] = settings.frame_end
             # By default, alembic_export operator runs in the background, this messes up batch
             # export though. alembic_export has an "as_background_job" arg that can be set to
             # false to disable it, but its marked deprecated, saying that if you EXECUTE the
@@ -1103,7 +1026,6 @@ class TRANSMOGRIFY(Operator):
                 'wm.obj_export', settings.obj_preset)
             options["filepath"] = "export_file_1"
             options["export_selected_objects"] = True
-            options["apply_modifiers"] = settings.apply_mods
             #bpy.ops.wm.obj_export(**options)
             export_file_1_command = "bpy.ops.wm.obj_export(**"
             
@@ -1113,7 +1035,7 @@ class TRANSMOGRIFY(Operator):
                 'filepath': '',
             }
             # bpy.ops.export_mesh.ply(
-            #     filepath="export_file_1", use_ascii=settings.ply_ascii, use_selection=True, use_mesh_modifiers=settings.apply_mods)
+            #     filepath="export_file_1", use_ascii=settings.ply_ascii, use_selection=True)
             export_file_1_command = "bpy.ops.export_mesh.ply(**"
             
 
@@ -1122,7 +1044,7 @@ class TRANSMOGRIFY(Operator):
                 'filepath': '',
             }
             # bpy.ops.export_mesh.stl(
-            #     filepath="export_file_1", ascii=settings.stl_ascii, use_selection=True, use_mesh_modifiers=settings.apply_mods)
+            #     filepath="export_file_1", ascii=settings.stl_ascii, use_selection=True)
             export_file_1_command = "bpy.ops.export_mesh.stl(**"
 
 
@@ -1131,7 +1053,6 @@ class TRANSMOGRIFY(Operator):
                 'export_scene.fbx', settings.fbx_preset)
             options["filepath"] = "export_file_1"
             options["use_selection"] = True
-            options["use_mesh_modifiers"] = settings.apply_mods
             #bpy.ops.export_scene.fbx(**options)
             export_file_1_command = "bpy.ops.export_scene.fbx(**"
 
@@ -1141,7 +1062,6 @@ class TRANSMOGRIFY(Operator):
                 'export_scene.gltf', settings.gltf_preset)
             options["filepath"] = "export_file_1"
             options["use_selection"] = True
-            options["export_apply"] = settings.apply_mods
             #bpy.ops.export_scene.gltf(**options)
             export_file_1_command = "bpy.ops.export_scene.gltf(**"
             
@@ -1151,7 +1071,6 @@ class TRANSMOGRIFY(Operator):
                 'export_scene.x3d', settings.x3d_preset)
             options["filepath"] = "export_file_1"
             options["use_selection"] = True
-            options["use_mesh_modifiers"] = settings.apply_mods
             #bpy.ops.export_scene.x3d(**options)
             export_file_1_command = "bpy.ops.export_scene.x3d(**"
 
@@ -1187,7 +1106,6 @@ class TRANSMOGRIFY(Operator):
                 'wm.collada_export', settings.dae_preset)
             options["filepath"] = "export_file_2"
             options["selected"] = True
-            options["apply_modifiers"] = settings.apply_mods
             #bpy.ops.wm.collada_export(**options)
             export_file_2_command = "bpy.ops.wm.collada_export(**"
             
@@ -1197,8 +1115,6 @@ class TRANSMOGRIFY(Operator):
                 'wm.alembic_export', settings.abc_preset)
             options["filepath"] = "export_file_2"
             options["selected"] = True
-            options["start"] = settings.frame_start
-            options["end"] = settings.frame_end
             # By default, alembic_export operator runs in the background, this messes up batch
             # export though. alembic_export has an "as_background_job" arg that can be set to
             # false to disable it, but its marked deprecated, saying that if you EXECUTE the
@@ -1241,7 +1157,6 @@ class TRANSMOGRIFY(Operator):
                 'wm.obj_export', settings.obj_preset)
             options["filepath"] = "export_file_2"
             options["export_selected_objects"] = True
-            options["apply_modifiers"] = settings.apply_mods
             #bpy.ops.wm.obj_export(**options)
             export_file_2_command = "bpy.ops.wm.obj_export(**"
             
@@ -1251,7 +1166,7 @@ class TRANSMOGRIFY(Operator):
                 'filepath': '',
             }
             # bpy.ops.export_mesh.ply(
-            #     filepath="export_file_2", use_ascii=settings.ply_ascii, use_selection=True, use_mesh_modifiers=settings.apply_mods)
+            #     filepath="export_file_2", use_ascii=settings.ply_ascii, use_selection=True)
             export_file_2_command = "bpy.ops.export_mesh.ply(**"
             
 
@@ -1260,7 +1175,7 @@ class TRANSMOGRIFY(Operator):
                 'filepath': '',
             }
             # bpy.ops.export_mesh.stl(
-            #     filepath="export_file_2", ascii=settings.stl_ascii, use_selection=True, use_mesh_modifiers=settings.apply_mods)
+            #     filepath="export_file_2", ascii=settings.stl_ascii, use_selection=True)
             export_file_2_command = "bpy.ops.export_mesh.stl(**"
 
 
@@ -1269,7 +1184,6 @@ class TRANSMOGRIFY(Operator):
                 'export_scene.fbx', settings.fbx_preset)
             options["filepath"] = "export_file_2"
             options["use_selection"] = True
-            options["use_mesh_modifiers"] = settings.apply_mods
             #bpy.ops.export_scene.fbx(**options)
             export_file_2_command = "bpy.ops.export_scene.fbx(**"
 
@@ -1279,7 +1193,6 @@ class TRANSMOGRIFY(Operator):
                 'export_scene.gltf', settings.gltf_preset)
             options["filepath"] = "export_file_2"
             options["use_selection"] = True
-            options["export_apply"] = settings.apply_mods
             #bpy.ops.export_scene.gltf(**options)
             export_file_2_command = "bpy.ops.export_scene.gltf(**"
             
@@ -1289,7 +1202,6 @@ class TRANSMOGRIFY(Operator):
                 'export_scene.x3d', settings.x3d_preset)
             options["filepath"] = "export_file_2"
             options["use_selection"] = True
-            options["use_mesh_modifiers"] = settings.apply_mods
             #bpy.ops.export_scene.x3d(**options)
             export_file_2_command = "bpy.ops.export_scene.x3d(**"
        
@@ -2130,24 +2042,6 @@ class TransmogrifierSettings(PropertyGroup):
         get=lambda self: get_preset_index('export_scene.x3d', self.x3d_preset),
         set=lambda self, value: setattr(
             self, 'x3d_preset', preset_enum_items_refs['export_scene.x3d'][value][0]),
-    )
-
-    apply_mods: BoolProperty(
-        name="Apply Modifiers",
-        description="Should the modifiers by applied onto the exported mesh?\nCan't export Shape Keys with this on",
-        default=True,
-    )
-    frame_start: IntProperty(
-        name="Frame Start",
-        min=0,
-        description="First frame to export",
-        default = 1,
-    )
-    frame_end: IntProperty(
-        name="Frame End",
-        min=0,
-        description="Last frame to export",
-        default = 1,
     )
 
 
