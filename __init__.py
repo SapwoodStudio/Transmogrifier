@@ -890,7 +890,6 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.wm.collada_import(**options)
             import_file_command = "bpy.ops.wm.collada_import(**"
             
-            
         elif settings.import_file == "ABC":
             options = load_operator_preset(
                 'wm.alembic_import', settings.import_abc_preset)
@@ -903,52 +902,56 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **options)
             import_file_command = "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **"
 
-
         elif settings.import_file == "USD":
             options = load_operator_preset(
                 'wm.usd_import', settings.import_usd_preset)
             import_file_command = "bpy.ops.wm.usd_import(**"
-
 
         elif settings.import_file == "OBJ":
             options = load_operator_preset(
                 'wm.obj_import', settings.import_obj_preset)
             import_file_command = "bpy.ops.wm.obj_import(**"
             
-
         elif settings.import_file == "PLY":
             options = {
                 'filepath': '',
             }
             import_file_command = "bpy.ops.import_mesh.ply(**"
             
-
         elif settings.import_file == "STL":
             options = {
                 'filepath': '',
             }
             import_file_command = "bpy.ops.import_mesh.stl(**"
 
-
         elif settings.import_file == "FBX":
             options = load_operator_preset(
                 'import_scene.fbx', settings.import_fbx_preset)
             import_file_command = "bpy.ops.import_scene.fbx(**"
-
 
         elif settings.import_file == "glTF":
             options = {
                 'filepath': '',
             }
             import_file_command = "bpy.ops.import_scene.gltf(**"
-            
 
         elif settings.import_file == "X3D":
             options = load_operator_preset(
                 'import_scene.x3d', settings.import_x3d_preset)
             import_file_command = "bpy.ops.import_scene.x3d(**"
 
-
+        elif settings.import_file == "BLEND":
+            options = {
+                "filepath": "",
+                "directory": "\\Object\\",
+                "autoselect": True,
+                "active_collection": True,
+                "instance_collections": False,
+                "instance_object_data": True,
+                "set_fake": False,
+                "use_recursive": True
+            }
+            import_file_command = "bpy.ops.wm.append(**"
         
         # Set import variables to write to JSON
         
@@ -960,12 +963,9 @@ class TRANSMOGRIFY(Operator):
         else:
             import_file_ext = "." + settings.import_file.lower()
         
-        
         # Set import file options
         import_file_options = options
 
-
-        
 
 
         # Determine options and export command for Export File Format 1
@@ -977,7 +977,6 @@ class TRANSMOGRIFY(Operator):
             options["selected"] = True
             #bpy.ops.wm.collada_export(**options)
             export_file_1_command = "bpy.ops.wm.collada_export(**"
-            
             
         elif settings.export_file_1 == "ABC":
             options = load_operator_preset(
@@ -993,7 +992,6 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **options)
             export_file_1_command = "bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **"
 
-
         elif settings.export_file_1 == "USD":
             options = load_operator_preset(
                 'wm.usd_export', settings.usd_preset)
@@ -1001,7 +999,6 @@ class TRANSMOGRIFY(Operator):
             options["selected_objects_only"] = True
             #bpy.ops.wm.usd_export(**options)
             export_file_1_command = "bpy.ops.wm.usd_export(**"
-
 
         elif settings.export_file_1 == "SVG":
             options = {
@@ -1011,7 +1008,6 @@ class TRANSMOGRIFY(Operator):
             #     filepath="export_file_1", selected_object_type='SELECTED')
             export_file_1_command = "bpy.ops.wm.gpencil_export_svg(**"
 
-
         elif settings.export_file_1 == "PDF":
             options = {
                 'filepath': '',
@@ -1020,7 +1016,6 @@ class TRANSMOGRIFY(Operator):
             #     filepath="export_file_1", selected_object_type='SELECTED')
             export_file_1_command = "bpy.ops.wm.gpencil_export_pdf(**"
 
-
         elif settings.export_file_1 == "OBJ":
             options = load_operator_preset(
                 'wm.obj_export', settings.obj_preset)
@@ -1028,7 +1023,6 @@ class TRANSMOGRIFY(Operator):
             options["export_selected_objects"] = True
             #bpy.ops.wm.obj_export(**options)
             export_file_1_command = "bpy.ops.wm.obj_export(**"
-            
 
         elif settings.export_file_1 == "PLY":
             options = {
@@ -1037,7 +1031,6 @@ class TRANSMOGRIFY(Operator):
             # bpy.ops.export_mesh.ply(
             #     filepath="export_file_1", use_ascii=settings.ply_ascii, use_selection=True)
             export_file_1_command = "bpy.ops.export_mesh.ply(**"
-            
 
         elif settings.export_file_1 == "STL":
             options = {
@@ -1047,7 +1040,6 @@ class TRANSMOGRIFY(Operator):
             #     filepath="export_file_1", ascii=settings.stl_ascii, use_selection=True)
             export_file_1_command = "bpy.ops.export_mesh.stl(**"
 
-
         elif settings.export_file_1 == "FBX":
             options = load_operator_preset(
                 'export_scene.fbx', settings.fbx_preset)
@@ -1056,15 +1048,13 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.export_scene.fbx(**options)
             export_file_1_command = "bpy.ops.export_scene.fbx(**"
 
-
         elif settings.export_file_1 == "glTF":
             options = load_operator_preset(
                 'export_scene.gltf', settings.gltf_preset)
             options["filepath"] = "export_file_1"
             options["use_selection"] = True
             #bpy.ops.export_scene.gltf(**options)
-            export_file_1_command = "bpy.ops.export_scene.gltf(**"
-            
+            export_file_1_command = "bpy.ops.export_scene.gltf(**" 
 
         elif settings.export_file_1 == "X3D":
             options = load_operator_preset(
@@ -1074,7 +1064,14 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.export_scene.x3d(**options)
             export_file_1_command = "bpy.ops.export_scene.x3d(**"
 
-
+        elif settings.export_file_1 == "BLEND":
+            options = {
+                "filepath": "",
+                "compress": False,
+                "relative_remap": True,
+                "copy": False
+            }
+            export_file_1_command = "bpy.ops.wm.save_as_mainfile(**"
 
         # Set export variables to write to JSON
         
@@ -1097,8 +1094,6 @@ class TRANSMOGRIFY(Operator):
 
 
 
-        
-
         # Determine options and import command for Export File Format 2
 
         if settings.export_file_2 == "DAE":
@@ -1108,7 +1103,6 @@ class TRANSMOGRIFY(Operator):
             options["selected"] = True
             #bpy.ops.wm.collada_export(**options)
             export_file_2_command = "bpy.ops.wm.collada_export(**"
-            
             
         elif settings.export_file_2 == "ABC":
             options = load_operator_preset(
@@ -1124,7 +1118,6 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **options)
             export_file_2_command = "bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **"
 
-
         elif settings.export_file_2 == "USD":
             options = load_operator_preset(
                 'wm.usd_export', settings.usd_preset)
@@ -1132,7 +1125,6 @@ class TRANSMOGRIFY(Operator):
             options["selected_objects_only"] = True
             #bpy.ops.wm.usd_export(**options)
             export_file_2_command = "bpy.ops.wm.usd_export(**"
-
 
         elif settings.export_file_2 == "SVG":
             options = {
@@ -1142,7 +1134,6 @@ class TRANSMOGRIFY(Operator):
             #     filepath="export_file_2", selected_object_type='SELECTED')
             export_file_2_command = "bpy.ops.wm.gpencil_export_svg(**"
 
-
         elif settings.export_file_2 == "PDF":
             options = {
                 'filepath': '',
@@ -1151,7 +1142,6 @@ class TRANSMOGRIFY(Operator):
             #     filepath="export_file_2", selected_object_type='SELECTED')
             export_file_2_command = "bpy.ops.wm.gpencil_export_pdf(**"
 
-
         elif settings.export_file_2 == "OBJ":
             options = load_operator_preset(
                 'wm.obj_export', settings.obj_preset)
@@ -1159,7 +1149,6 @@ class TRANSMOGRIFY(Operator):
             options["export_selected_objects"] = True
             #bpy.ops.wm.obj_export(**options)
             export_file_2_command = "bpy.ops.wm.obj_export(**"
-            
 
         elif settings.export_file_2 == "PLY":
             options = {
@@ -1167,8 +1156,7 @@ class TRANSMOGRIFY(Operator):
             }
             # bpy.ops.export_mesh.ply(
             #     filepath="export_file_2", use_ascii=settings.ply_ascii, use_selection=True)
-            export_file_2_command = "bpy.ops.export_mesh.ply(**"
-            
+            export_file_2_command = "bpy.ops.export_mesh.ply(**"      
 
         elif settings.export_file_2 == "STL":
             options = {
@@ -1178,7 +1166,6 @@ class TRANSMOGRIFY(Operator):
             #     filepath="export_file_2", ascii=settings.stl_ascii, use_selection=True)
             export_file_2_command = "bpy.ops.export_mesh.stl(**"
 
-
         elif settings.export_file_2 == "FBX":
             options = load_operator_preset(
                 'export_scene.fbx', settings.fbx_preset)
@@ -1187,7 +1174,6 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.export_scene.fbx(**options)
             export_file_2_command = "bpy.ops.export_scene.fbx(**"
 
-
         elif settings.export_file_2 == "glTF":
             options = load_operator_preset(
                 'export_scene.gltf', settings.gltf_preset)
@@ -1195,7 +1181,6 @@ class TRANSMOGRIFY(Operator):
             options["use_selection"] = True
             #bpy.ops.export_scene.gltf(**options)
             export_file_2_command = "bpy.ops.export_scene.gltf(**"
-            
 
         elif settings.export_file_2 == "X3D":
             options = load_operator_preset(
@@ -1205,7 +1190,14 @@ class TRANSMOGRIFY(Operator):
             #bpy.ops.export_scene.x3d(**options)
             export_file_2_command = "bpy.ops.export_scene.x3d(**"
        
-
+        elif settings.export_file_2 == "BLEND":
+            options = {
+                "filepath": "",
+                "compress": False,
+                "relative_remap": True,
+                "copy": False
+            }
+            export_file_2_command = "bpy.ops.wm.save_as_mainfile(**"
 
         # Set export file 2 extension
         if settings.export_file_2 == "glTF":
@@ -1293,14 +1285,15 @@ class TransmogrifierSettings(PropertyGroup):
         description="Which file format to import",
         items=[
             ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 9),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 2),
-            ("OBJ", "Wavefront (.obj)", "", 7),
-            ("PLY", "Stanford (.ply)", "", 3),
-            ("STL", "STL (.stl)", "", 4),
-            ("FBX", "FBX (.fbx)", "", 5),
-            ("glTF", "glTF (.glb/.gltf)", "", 6),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 8),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10)
         ],
         default="FBX",
     )
@@ -1910,16 +1903,15 @@ class TransmogrifierSettings(PropertyGroup):
         description="Which file format to export to",
         items=[
             ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 9),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 2),
-            # ("SVG", "Grease Pencil as SVG (.svg)", "", 10),
-            # ("PDF", "Grease Pencil as PDF (.pdf)", "", 11),
-            ("OBJ", "Wavefront (.obj)", "", 7),
-            ("PLY", "Stanford (.ply)", "", 3),
-            ("STL", "STL (.stl)", "", 4),
-            ("FBX", "FBX (.fbx)", "", 5),
-            ("glTF", "glTF (.glb/.gltf)", "", 6),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 8),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="glTF",
     )
@@ -1938,16 +1930,15 @@ class TransmogrifierSettings(PropertyGroup):
         description="Which file format to export to",
         items=[
             ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 9),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 2),
-            # ("SVG", "Grease Pencil as SVG (.svg)", "", 10),
-            # ("PDF", "Grease Pencil as PDF (.pdf)", "", 11),
-            ("OBJ", "Wavefront (.obj)", "", 7),
-            ("PLY", "Stanford (.ply)", "", 3),
-            ("STL", "STL (.stl)", "", 4),
-            ("FBX", "FBX (.fbx)", "", 5),
-            ("glTF", "glTF (.glb/.gltf)", "", 6),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 8),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="USD",
     )

@@ -189,10 +189,32 @@ def clean_data_block_except_custom(block, custom_data):
         logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
 
 
+# Append a blend file's objects to Converter.blend.
+def append_blend(import_file_command, import_file_options, import_file):
+    try:
+        with bpy.data.libraries.load(import_file, link=False) as (data_from, data_to):  # Link all objects.
+            data_to.objects = [object for object in data_from.objects]
+        
+        for object in data_to.objects: # Link all objects to current scene.
+            if object is not None:
+                bpy.context.collection.objects.link(object)
+
+        print("------------------------  APPENDED BLEND FILE: " + str(Path(import_file).name) + "  ------------------------")
+        logging.info("APPENDED BLEND FILE: " + str(Path(import_file).name))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPEND BLEND FILE: " + str(Path(import_file).name))
+        
+
 # Import file of a format type supplied by the user.
 def import_file_function(import_file_command, import_file_options, import_file):
     try:
         import_file_options["filepath"] = import_file  # Set filepath to the location of the model to be imported
+        
+        if import_file_command == "bpy.ops.wm.append(**":  # Select "Objects" Library to append from current .blend file.
+            append_blend(import_file_command, import_file_options, import_file)
+            return
+
         import_file_command = str(import_file_command) + str(import_file_options) + ")"  # Concatenate the import command with the import options dictionary
         print(import_file_command)
         logging.info(import_file_command)
@@ -2648,10 +2670,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
-
-        # If User elected not to save a .blend file, delete any existing .blend.
-        if not save_blend and Path(blend).is_file():
-            Path.unlink(blend)
 
         # Save preview image.
         if save_preview_image:
