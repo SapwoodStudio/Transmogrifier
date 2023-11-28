@@ -279,6 +279,8 @@ def draw_settings_general(self, context):
             col.prop(settings, 'gltf_preset_enum')
         elif settings.export_file_1 == 'X3D':
             col.prop(settings, 'x3d_preset_enum')
+        elif settings.export_file_1 == "BLEND":
+            col.prop(settings, 'pack_resources')
         
         # Set scale
         if settings.ui_toggle == "Advanced":
@@ -311,6 +313,8 @@ def draw_settings_general(self, context):
                 col.prop(settings, 'gltf_preset_enum')
             elif settings.export_file_2 == 'X3D':
                 col.prop(settings, 'x3d_preset_enum')
+            elif settings.export_file_2 == "BLEND":
+                col.prop(settings, 'pack_resources')
             
             # Set scale
             if settings.ui_toggle == "Advanced":
@@ -2034,6 +2038,13 @@ class TransmogrifierSettings(PropertyGroup):
         set=lambda self, value: setattr(
             self, 'x3d_preset', preset_enum_items_refs['export_scene.x3d'][value][0]),
     )
+    # Pack resources into .blend.
+    pack_resources: BoolProperty(
+        name="Pack Resources",
+        description="Pack all used external files into this .blend",
+        default=True,
+        )
+    
 
 
 def register():

@@ -1951,6 +1951,18 @@ def set_scene_units(unit_system, length_unit):
         logging.exception("COULD NOT SET SCENE UNITS")
 		
 
+# Pack textures into .blend before saving the file.
+def pack_resources_into_blend():
+    try:
+        bpy.ops.file.pack_all()
+
+        print("------------------------  PACKED RESOURCES INTO BLEND  ------------------------")
+        logging.info("PACKED RESOURCES INTO BLEND")
+
+    except Exception as Argument:
+            logging.exception("COULD NOT PACK RESOURCES INTO BLEND")
+
+
 # Export a model.
 def export_a_model(export_file_scale, export_file_command, export_file_options, export_file):
     try:
@@ -1967,6 +1979,8 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
         export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the import command with the import options dictionary
         print(export_file_command)
         logging.info(export_file_command)
+        if Path(export_file).suffix == ".blend" and pack_resources:  # Pack textures into .blend before saving the file if exporting a .blend.
+            pack_resources_into_blend()
         exec(export_file_command)  # Run export_file_command, which is stored as a string and won't run otherwise.
 
         # Reset scale
