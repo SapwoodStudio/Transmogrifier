@@ -1169,7 +1169,7 @@ def reformat_images(image_format, image_quality, image_format_include):
             # Include only the images specified by the User.
             for pbr_tag in image_format_include:
                 if pbr_tag in image.name:
-                    image_path = bpy.path.abspath(image.filepath)
+                    image_path = str(Path.resolve(Path(bpy.path.abspath(image.filepath))))
 
                     # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
                     image.name = Path(image_path).name
@@ -1177,7 +1177,7 @@ def reformat_images(image_format, image_quality, image_format_include):
                     # Change image extension and pathing.
                     image_ext = "." + image.name.split(".")[-1].lower()
                     image_ext_new = ext_dict[image_format]
-                    image_path_new = bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new))
+                    image_path_new = str(Path.resolve(Path(bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new)))))
                     
                     # Don't reformat image if converting between identical formats.
                     if image_ext == image_ext_new:
@@ -1196,7 +1196,7 @@ def reformat_images(image_format, image_quality, image_format_include):
 
                     # Repath the image textures to the new format.
                     image.name = image_name_new
-                    bpy.data.images[image.name].filepath = bpy.path.abspath(image_path_new)
+                    bpy.data.images[image.name].filepath = image_path_new
 
                     # Ensure alpha modes and color spaces are set appropriately for EXR format.
                     if image_format == "OPEN_EXR":
@@ -2580,6 +2580,25 @@ def determine_uv_directory(textures_dir):
         logging.exception("COULD NOT DETERMINE UV DIRECTORY")
 
 
+# Determine whether to keep modified or copied textures after the conversion is over for a given item.
+def determine_keep_modified_textures(item_dir, export_file_1, export_file_2, textures_dir, textures_temp_dir):
+    try:
+        if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
+            if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
+                print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
+                logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
+            else:
+                delete_textures_temp(textures_temp_dir)
+        elif textures_source == "Custom" and not copy_textures_custom_dir:  # For Custom textures source scenario.
+            remove_copy_textures_custom_dir(item_dir, textures_dir)
+
+        print("------------------------  DETERMINED WHETHER TO KEEP MODIFIED TEXTURES  ------------------------")
+        logging.info("DETERMINED WHETHER TO KEEP MODIFIED TEXTURES")
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT DETERMINE WHETHER TO KEEP MODIFIED TEXTURES")
+
+
 # Determine how to export UV layouts.
 def determine_export_uv_layout(item, textures_dir):
     try:
@@ -2653,11 +2672,8 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if use_textures:
             apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
         elif not use_textures:
-            # Clear all users of all materials.
-            clear_materials_users()
-            
-            # Brute force-remove all materials and images.
-            clean_data_block(bpy.data.materials)
+            clear_materials_users()  # Clear all users of all materials.
+            clean_data_block(bpy.data.materials)  # Brute force-remove all materials and images.
             clean_data_block(bpy.data.images)
             
         # Set scene units.
@@ -2689,13 +2705,11 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if save_preview_image:
             render_preview_image(preview_image)        
 
-        # Modified or copied textures can now be delete after the conversion is over.
+        # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
-            if not keep_modified_textures and textures_source != "Custom" and Path(textures_temp_dir).exists():
-                delete_textures_temp(textures_temp_dir)
-            if textures_source == "Custom" and not copy_textures_custom_dir:
-                remove_copy_textures_custom_dir(item_dir, textures_dir)
+            determine_keep_modified_textures(item_dir, export_file_1, export_file_2, textures_dir, textures_temp_dir)
 
+        # Export UV Layout(s).
         if export_uv_layout:
             determine_export_uv_layout(item, textures_dir)
 
