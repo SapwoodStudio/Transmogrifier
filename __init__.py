@@ -281,6 +281,8 @@ def draw_settings_general(self, context):
             col.prop(settings, 'x3d_preset_enum')
         elif settings.export_file_1 == "BLEND":
             col.prop(settings, 'pack_resources')
+            if not settings.pack_resources:
+                col.prop(settings, 'make_paths_relative')
         
         # Set scale
         if settings.ui_toggle == "Advanced":
@@ -315,6 +317,8 @@ def draw_settings_general(self, context):
                 col.prop(settings, 'x3d_preset_enum')
             elif settings.export_file_2 == "BLEND":
                 col.prop(settings, 'pack_resources')
+                if not settings.pack_resources:
+                    col.prop(settings, 'make_paths_relative')
             
             # Set scale
             if settings.ui_toggle == "Advanced":
@@ -2042,6 +2046,12 @@ class TransmogrifierSettings(PropertyGroup):
     pack_resources: BoolProperty(
         name="Pack Resources",
         description="Pack all used external files into this .blend",
+        default=True,
+        )
+    # Pack resources into .blend.
+    make_paths_relative: BoolProperty(
+        name="Relative Paths",
+        description="Use relative paths for textures",
         default=True,
         )
     

@@ -1979,8 +1979,11 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
         export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the import command with the import options dictionary
         print(export_file_command)
         logging.info(export_file_command)
-        if Path(export_file).suffix == ".blend" and pack_resources:  # Pack textures into .blend before saving the file if exporting a .blend.
-            pack_resources_into_blend()
+        if Path(export_file).suffix == ".blend":
+            if pack_resources:  # Pack textures into .blend before saving the file if exporting a .blend.
+                pack_resources_into_blend()
+            elif not pack_resources and make_paths_relative:
+                bpy.ops.file.make_paths_relative()
         exec(export_file_command)  # Run export_file_command, which is stored as a string and won't run otherwise.
 
         # Reset scale
