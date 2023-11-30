@@ -2328,6 +2328,11 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             assign_materials(item)
 
         elif textures_source == "Packed":
+            if Path(import_file).suffix == ".blend":
+                print("Using packed/linked textures in .blend for conversion")
+                logging.info("Using packed/linked textures in .blend for conversion")
+                return
+
             print("Using imported textures for conversion")
             logging.info("Using imported textures for conversion")
             
@@ -2584,10 +2589,13 @@ def determine_uv_directory(textures_dir):
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
-def determine_keep_modified_textures(item_dir, export_file_1, export_file_2, textures_dir, textures_temp_dir):
+def determine_keep_modified_textures(item_dir, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
     try:
         if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
-            if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
+            if Path(import_file).suffix == ".blend" and Path(textures_temp_dir).exists():  # If importing a .blend, don't delete modified textures if that directory exists (because it is assumed the .blend links to it/is not using packed textures).
+                print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
+                logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
+            elif not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
                 print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
                 logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
             else:
@@ -2710,7 +2718,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
-            determine_keep_modified_textures(item_dir, export_file_1, export_file_2, textures_dir, textures_temp_dir)
+            determine_keep_modified_textures(item_dir, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
 
         # Export UV Layout(s).
         if export_uv_layout:
