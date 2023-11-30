@@ -98,6 +98,29 @@ def enable_addons():
         logging.exception("COULD NOT ENABLE ADDONS")
 
 
+# Override context perform certain context-dependent Blender operators.
+def override_context(area_type, region_type):
+    try:
+        win = bpy.context.window
+        scr = win.screen
+        areas  = [area for area in scr.areas if area.type == area_type]
+        regions = [region for region in areas[0].regions if region.type == region_type]
+
+        override = {
+            'window': win,
+            'screen': scr,
+            'area': areas[0],
+            'region': regions[0],
+        }
+
+        print("------------------------  OVERRODE CONTEXT  ------------------------")
+        logging.info("OVERRODE CONTEXT")
+        return override
+
+    except Exception as Argument:
+        logging.exception("COULD NOT OVERRIDE CONTEXT")
+
+
 # Temporarily change interface theme to force a white background in Material Preview viewport mode for rendering Preview images.
 def set_theme_light(blender_dir, blender_version):
     try:
@@ -855,17 +878,10 @@ def add_principled_setup(material, textures_temp_dir, textures):
             
             win = bpy.context.window
             scr = win.screen
-            areas  = [area for area in scr.areas if area.type == 'NODE_EDITOR']
+            areas = [area for area in scr.areas if area.type == 'NODE_EDITOR']
             areas[0].spaces.active.node_tree = material.node_tree
-            regions = [region for region in areas[0].regions if region.type == 'WINDOW']
-
-            override = {
-                'window': win,
-                'screen': scr,
-                'area': areas[0],
-                'region': regions[0],
-            }
             
+            override = override_context('NODE_EDITOR', 'WINDOW')
             with bpy.context.temp_override(**override):
                 bpy.ops.node.nw_add_textures_for_principled(
                     filepath=filepath,
@@ -1267,18 +1283,7 @@ def render_preview_image(preview_image):
         space.overlay.show_overlays = False
 
         # Override context to 3D Viewport again, but in a different way to allow view_all and render.opengl to work.
-        win = bpy.context.window
-        scr = win.screen
-        areas  = [area for area in scr.areas if area.type == 'VIEW_3D']
-        regions = [region for region in areas[0].regions if region.type == 'WINDOW']
-
-        override = {
-            'window': win,
-            'screen': scr,
-            'area': areas[0],
-            'region': regions[0],
-        }
-
+        override = override_context('VIEW_3D', 'WINDOW')
         with bpy.context.temp_override(**override):
             # Frame all objects into viewport so objects are neither too small nor too large in the render. 
             # They tend to be a bit small, but it's better than not at all for the time being.
@@ -1313,12 +1318,14 @@ def save_blend_file(blend):
         # Preserve unused materials & textures by setting fake user(s).
         use_fake_user()
         
-        bpy.ops.wm.save_as_mainfile(filepath=str(blend))
+        # Make paths relative if elected.
+        if make_paths_relative:
+            bpy.ops.file.make_paths_relative()
 
-        # Delete Blender "save version" backup file (also known as a .blend1 file).
-        blend1 = Path(str(blend) + "1")
-        if Path(blend1).is_file():
-            Path.unlink(blend1)
+        # Save the file.
+        bpy.ops.wm.save_as_mainfile(
+            filepath=str(blend), 
+        )
 
         print("------------------------  SAVED BLEND FILE: " + str(Path(blend).name) + "  ------------------------")
         logging.info("SAVED BLEND FILE: " + str(Path(blend).name))
@@ -1960,7 +1967,7 @@ def pack_resources_into_blend():
         logging.info("PACKED RESOURCES INTO BLEND")
 
     except Exception as Argument:
-            logging.exception("COULD NOT PACK RESOURCES INTO BLEND")
+        logging.exception("COULD NOT PACK RESOURCES INTO BLEND")
 
 
 # Export a model.
@@ -1984,6 +1991,10 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
                 pack_resources_into_blend()
             elif not pack_resources and make_paths_relative:
                 bpy.ops.file.make_paths_relative()
+            override = override_context('VIEW_3D', 'WINDOW') # Frame object(s) in the viewport before saving.
+            with bpy.context.temp_override(**override):
+                bpy.ops.view3d.view_selected(use_all_regions=False)    
+            
         exec(export_file_command)  # Run export_file_command, which is stored as a string and won't run otherwise.
 
         # Reset scale
@@ -2588,14 +2599,34 @@ def determine_uv_directory(textures_dir):
         logging.exception("COULD NOT DETERMINE UV DIRECTORY")
 
 
+# Rename textures_temp_dir and repath images inside the .blend.
+def rename_textures_dir_and_repath_blend(blend, path_old, path_new):
+    try:
+        if Path(path_new).exists():
+            shutil.rmtree(path_new)  # Remove directory if previously renamed.
+
+        path_old.rename(path_new)  # Rename the directory.
+
+        for image in bpy.data.images:  # Repath the textures.
+            bpy.data.images[image.name].filepath = str(path_new / image.name)
+        
+        print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
+        logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
+        
+        save_blend_file(blend)  # Save the .blend.
+
+    except Exception as Argument:
+        logging.exception("COULD NOT RENAME MODIFIED TEXTURES DIRECTORY OR REPATH BLEND")
+
+
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
-def determine_keep_modified_textures(item_dir, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
+def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
     try:
         if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
-            if Path(import_file).suffix == ".blend" and Path(textures_temp_dir).exists():  # If importing a .blend, don't delete modified textures if that directory exists (because it is assumed the .blend links to it/is not using packed textures).
-                print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
-                logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
-            elif not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
+            if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
+                path_old = textures_temp_dir
+                path_new = item_dir / (textures_temp_dir.name + "_blend")
+                rename_textures_dir_and_repath_blend(blend, path_old, path_new)  # Repath the textures.
                 print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
                 logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
             else:
@@ -2718,7 +2749,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
-            determine_keep_modified_textures(item_dir, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
+            determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
 
         # Export UV Layout(s).
         if export_uv_layout:
