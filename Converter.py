@@ -2432,6 +2432,13 @@ def apply_textures_external(item_dir, item, import_file, textures_dir, textures_
         if Path(import_file).suffix == ".blend" and use_linked_blend_textures:  # Skip apply textures to objects if they're already set up in the imported .blend file.
             print("Using external textures already linked to .blend for conversion")
             logging.info("Using external textures already linked to .blend for conversion")
+
+            # Pack linked textures into .blend since they may be sourced from many different directories.
+            pack_resources_into_blend()
+
+            # Pretend that these textures were "Packed" all along.
+            apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+
             return
 
         # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
