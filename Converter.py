@@ -2303,142 +2303,188 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
         logging.exception("COULD NOT AUTO-RESIZE EXPORTED FILES")
 
 
-# Determine where textures should be sourced, then texture the model.
-def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
+# Modify textures if requested.
+def determine_modify_textures():
+    try:
+        if texture_resolution != "Default":
+            resize_textures(texture_resolution, texture_resolution_include)
+        if image_format != "Default":
+            reformat_images(image_format, image_quality, image_format_include)
+
+        print("------------------------  DETERMINED WHETHER TO MODIFY TEXTURES  ------------------------")
+        logging.info("DETERMINED WHETHER TO MODIFY TEXTURES")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT DETERMINE WHETHER TO MODIFY TEXTURES")
+
+
+# Apply "Custom" textures to objects.
+def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
     try:
         # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
-        if regex_textures and textures_source != "Packed":
+        if regex_textures:
             regex_transparent_objects()
         
-        # Determine from where to import textures.
-        if textures_source == "External":
-            print("Using external textures for conversion")
-            logging.info("Using external textures for conversion")
+        # Clear all users of all materials.
+        clear_materials_users()
+
+        # Copy original custom textures to item directory.
+        copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
+        
+        # Reassign item as "Custom_Textures"
+        item = "Custom_Textures"
+
+        if conversion_count == 0:
+            create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
             
-            # Clear all users of all materials.
-            clear_materials_users()
-            
-            # Brute force-remove all materials and images.
+            # Remove existing materials and textures from Converter.blend file only once.
             clean_data_block(bpy.data.materials)
             clean_data_block(bpy.data.images)
-
-            # Check if a "textures" directory exists.
-            textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
-            if textures_dir_check != "":
-                textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
-
-            create_textures_temp(item_dir, textures_dir, textures_temp_dir)
+            
+            # Only regex textures and create materials once.
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
             create_materials(item, textures_temp_dir)
+            
             # Modify textures if requested.
-            if texture_resolution != "Default":
-                resize_textures(texture_resolution, texture_resolution_include)
-            if image_format != "Default":
-                reformat_images(image_format, image_quality, image_format_include)
-            assign_materials(item)
+            determine_modify_textures()
+                
+            # Get custom materials and textures not to be deleted during conversion.
+            global custom_materials
+            global custom_textures
+            custom_materials = [Path(material.name).stem for material in bpy.data.materials]
+            custom_textures = [Path(texture.name).stem for texture in bpy.data.images]  # Ignore image format extension
 
+            # Preserve material(s) and texture(s).
+            use_fake_user()
+        
+        elif conversion_count > 0:
+            clean_data_block_except_custom(bpy.data.materials, custom_materials)
+            clean_data_block_except_custom(bpy.data.images, custom_textures)
+            
+            # Preserve material(s) and texture(s).
+            use_fake_user()
+
+        assign_materials(item)
+
+        print("------------------------  APPLIED CUSTOM TEXTURES TO OBJECTS  ------------------------")
+        logging.info("APPLIED CUSTOM TEXTURES TO OBJECTS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPLY CUSTOM TEXTURES TO OBJECTS")
+
+
+# Apply "Packed" textures to objects.
+def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
+    try:
+        # Find and rename transparent materials that have mispellings of transparency with regex keys. 
+        regex_transparent_materials()
+
+        # Purge orphaned opaque image textures if they are duplicates, rather than shared/instanced data blocks.
+        purge_orphans()
+
+        # Make sure image textures have their material's prefix before unpacking to avoid any duplicate texture names if they were all lower-cased.
+        rename_textures_packed(textures_temp_dir)
+
+        # Delete any existing textures_temp_dir before unpacking.
+        delete_textures_temp(textures_temp_dir)
+
+        # Unpack textures before modifying them.
+        unpack_textures(textures_temp_dir, blend)
+
+        # Modify textures if requested.
+        if import_file_ext != ".glb":
+            determine_modify_textures()
+
+        # Only separate image textures if imported file is a GLB.
+        elif import_file_ext == ".glb":
+            # Get a dictionary of which textures are assigned to which materials.
+            mapped_textures = map_textures_to_materials()
+            
+            # Set textures_temp_dir to location of unpacked images.
+            textures_temp_dir = Path(textures_temp_dir, "textures")
+
+            # Separate the combined maps.
+            separate_gltf_maps(textures_temp_dir)
+
+            # Remove existing images from Converter.blend file.
+            clean_data_block(bpy.data.images)
+            
+            # Delete all nodes for all materials except Principled BSDF's and Material Outputs.
+            remove_nodes_except_shaders()
+
+            # Reimport unpacked & separated textures to their original materials.
+            reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
+            
+            # Modify textures if requested.
+            determine_modify_textures()
+                
+        print("------------------------  APPLIED PACKED TEXTURES TO OBJECTS  ------------------------")
+        logging.info("APPLIED PACKED TEXTURES TO OBJECTS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPLY PACKED TEXTURES TO OBJECTS")
+
+
+# Apply "External" textures to objects.
+def apply_textures_external(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
+    try:    
+        if Path(import_file).suffix == ".blend" and use_linked_blend_textures:  # Skip apply textures to objects if they're already set up in the imported .blend file.
+            print("Using external textures already linked to .blend for conversion")
+            logging.info("Using external textures already linked to .blend for conversion")
+            return
+
+        # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
+        if regex_textures:
+            regex_transparent_objects()
+
+        # Clear all users of all materials.
+        clear_materials_users()
+        
+        # Brute force-remove all materials and images.
+        clean_data_block(bpy.data.materials)
+        clean_data_block(bpy.data.images)
+
+        # Check if a "textures" directory exists.
+        textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
+        if textures_dir_check != "":
+            textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
+        
+        # Create temporary textures directory.
+        create_textures_temp(item_dir, textures_dir, textures_temp_dir)
+
+        # Regex textures if requested.
+        if regex_textures:
+            regex_textures_external(textures_temp_dir)
+
+        # Create materials.
+        create_materials(item, textures_temp_dir)
+
+        # Modify textures if requested.
+        determine_modify_textures()
+
+        # Assign materials to objects.
+        assign_materials(item)
+
+        print("------------------------  APPLIED EXTERNAL TEXTURES TO OBJECTS  ------------------------")
+        logging.info("APPLIED EXTERNAL TEXTURES TO OBJECTS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPLY EXTERNAL TEXTURES TO OBJECTS")
+
+
+# Determine where textures should be sourced, then texture the model.
+def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
+    try:
+        if textures_source == "External":
+            apply_textures_external(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+            
         elif textures_source == "Packed":
-            print("Using imported textures for conversion")
-            logging.info("Using imported textures for conversion")
+            apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
             
-            # Find and rename transparent materials that have mispellings of transparency with regex keys. 
-            regex_transparent_materials()
-
-            # Purge orphaned opaque image textures if they are duplicates, rather than shared/instanced data blocks.
-            purge_orphans()
-
-            # Make sure image textures have their material's prefix before unpacking to avoid any duplicate texture names if they were all lower-cased.
-            rename_textures_packed(textures_temp_dir)
-
-            # Delete any existing textures_temp_dir before unpacking.
-            delete_textures_temp(textures_temp_dir)
-
-            # Unpack textures before modifying them.
-            unpack_textures(textures_temp_dir, blend)
-
-            # Modify textures if requested.
-            if import_file_ext != ".glb":
-                if texture_resolution != "Default":
-                    resize_textures(texture_resolution, texture_resolution_include)
-                if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include)
-
-            # Only separate image textures if imported file is a GLB.
-            elif import_file_ext == ".glb":
-                # Get a dictionary of which textures are assigned to which materials.
-                mapped_textures = map_textures_to_materials()
-                
-                # Set textures_temp_dir to location of unpacked images.
-                textures_temp_dir = Path(textures_temp_dir, "textures")
-
-                # Separate the combined maps.
-                separate_gltf_maps(textures_temp_dir)
-
-                # Remove existing images from Converter.blend file.
-                clean_data_block(bpy.data.images)
-                
-                # Delete all nodes for all materials except Principled BSDF's and Material Outputs.
-                remove_nodes_except_shaders()
-
-                # Reimport unpacked & separated textures to their original materials.
-                reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
-                
-                # Modify textures if requested.
-                if texture_resolution != "Default":
-                    resize_textures(texture_resolution, texture_resolution_include)
-                if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include)
-
         elif textures_source == "Custom":
-            print("Using custom textures for conversion")
-            logging.info("Using custom textures for conversion")
+            apply_textures_custom(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
             
-            # Clear all users of all materials.
-            clear_materials_users()
-
-            # Copy original custom textures to item directory.
-            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
-            
-            # Reassign item as "Custom_Textures"
-            item = "Custom_Textures"
-
-            if conversion_count == 0:
-                create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
-                
-                # Remove existing materials and textures from Converter.blend file only once.
-                clean_data_block(bpy.data.materials)
-                clean_data_block(bpy.data.images)
-                
-                # Only regex textures and create materials once.
-                if regex_textures:
-                    regex_textures_external(textures_temp_dir)
-                create_materials(item, textures_temp_dir)
-                
-                # Modify textures if requested.
-                if texture_resolution != "Default":
-                    resize_textures(texture_resolution, texture_resolution_include)
-                if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include)
-                    
-                # Get custom materials and textures not to be deleted during conversion.
-                global custom_materials
-                global custom_textures
-                custom_materials = [Path(material.name).stem for material in bpy.data.materials]
-                custom_textures = [Path(texture.name).stem for texture in bpy.data.images]  # Ignore image format extension
-
-                # Preserve material(s) and texture(s).
-                use_fake_user()
-            
-            elif conversion_count > 0:
-                clean_data_block_except_custom(bpy.data.materials, custom_materials)
-                clean_data_block_except_custom(bpy.data.images, custom_textures)
-                
-                # Preserve material(s) and texture(s).
-                use_fake_user()
-
-            assign_materials(item)
-
         print("------------------------  APPLIED TEXTURES TO OBJECTS  ------------------------")
         logging.info("APPLIED TEXTURES TO OBJECTS")
 

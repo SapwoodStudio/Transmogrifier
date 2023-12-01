@@ -357,6 +357,9 @@ def draw_settings_textures(self, context):
             col = self.layout.column(align=True)
         col.prop(settings, 'textures_source')
         if settings.ui_toggle == "Advanced":
+            if settings.import_file == "BLEND" and settings.textures_source == "External":
+                col.prop(settings, 'use_linked_blend_textures')
+                col = self.layout.column(align=True)
             if settings.textures_source == "Custom":
                 col.prop(settings, 'textures_custom_dir')
                 col.prop(settings, 'copy_textures_custom_dir')
@@ -1480,6 +1483,11 @@ class TransmogrifierSettings(PropertyGroup):
         description="Use regex to correct misspellings and inconsistencies in texture PBR names. This helps to guarantee their detection and import by Transmogrifier",
         default=True,
     )
+    keep_modified_textures: BoolProperty(
+        name="Keep Modified Textures", 
+        description="Don't delete the textures directory used to modify image textures by regex and resolution and/or format",
+        default=False,
+    )
     textures_source: EnumProperty(
         name="Source", 
         description="Set the source of textures to be used",
@@ -1506,9 +1514,9 @@ class TransmogrifierSettings(PropertyGroup):
         description="Replace any existing textures folders with textures from custom directory",
         default=False,
     )
-    keep_modified_textures: BoolProperty(
-        name="Keep Modified Textures", 
-        description="Don't delete the textures directory used to modify image textures by regex and resolution and/or format",
+    use_linked_blend_textures: BoolProperty(
+        name="Linked to .blend", 
+        description="Use textures already linked to .blend file",
         default=False,
     )
     texture_resolution: EnumProperty(
