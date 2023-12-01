@@ -2339,11 +2339,6 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
             assign_materials(item)
 
         elif textures_source == "Packed":
-            if Path(import_file).suffix == ".blend":
-                print("Using packed/linked textures in .blend for conversion")
-                logging.info("Using packed/linked textures in .blend for conversion")
-                return
-
             print("Using imported textures for conversion")
             logging.info("Using imported textures for conversion")
             
