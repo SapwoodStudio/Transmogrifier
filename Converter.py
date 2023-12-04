@@ -1344,9 +1344,6 @@ def unpack_textures(textures_temp_dir, blend):
             shutil.rmtree(textures_temp_dir)
             Path.mkdir(textures_temp_dir)
 
-        # Repath blend location to inside textures_temp_dir
-        blend = Path(textures_temp_dir, Path(blend).name)
-
         # Save blend inside textures_temp_dir
         save_blend_file(blend)
         
@@ -1767,6 +1764,28 @@ def rename_textures_packed(textures_temp_dir):
     except Exception as Argument:
         logging.exception("COULD NOT RENAME PACKED TEXTURES")
 		
+
+# Rename unpacked textures to match image names, since images packed into .blend have original texture filepaths
+# and names baked into their data, which is what is used when unpacking textures.
+def rename_textures_unpacked(textures_temp_dir):
+    try:
+        for image in bpy.data.images:
+            path_old = Path.resolve(Path(bpy.path.abspath(image.filepath)))
+            path_new = path_old.parent / image.name
+
+            if Path(path_new).exists():
+                Path.unlink(path_new)
+            
+            path_old.rename(path_new)
+
+            image.filepath = str(path_new)
+
+        print("------------------------  RENAMED UNPACKED TEXTURES  ------------------------")
+        logging.info("RENAMED UNPACKED TEXTURES")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT RENAME UNPACKED TEXTURES")
+
 
 # For packed textures, reimport textures to respective existing materials after they have been unpacked and separated.
 def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
@@ -2377,6 +2396,9 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
 # Apply "Packed" textures to objects.
 def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
     try:
+        # Repath blend location to inside textures_temp_dir
+        blend = Path(textures_temp_dir, Path(blend).name)
+
         # Find and rename transparent materials that have mispellings of transparency with regex keys. 
         regex_transparent_materials()
 
@@ -2391,6 +2413,11 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
 
         # Unpack textures before modifying them.
         unpack_textures(textures_temp_dir, blend)
+
+        # Rename unpacked textures to match image name, since images packed into .blend use names from 
+        #  original texture filepath baked into their data instead of the image name.
+        if import_file_ext == ".blend":
+            rename_textures_unpacked(textures_temp_dir)
 
         # Modify textures if requested.
         if import_file_ext != ".glb":
