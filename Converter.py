@@ -98,6 +98,29 @@ def enable_addons():
         logging.exception("COULD NOT ENABLE ADDONS")
 
 
+# Override context perform certain context-dependent Blender operators.
+def override_context(area_type, region_type):
+    try:
+        win = bpy.context.window
+        scr = win.screen
+        areas  = [area for area in scr.areas if area.type == area_type]
+        regions = [region for region in areas[0].regions if region.type == region_type]
+
+        override = {
+            'window': win,
+            'screen': scr,
+            'area': areas[0],
+            'region': regions[0],
+        }
+
+        print("------------------------  OVERRODE CONTEXT  ------------------------")
+        logging.info("OVERRODE CONTEXT")
+        return override
+
+    except Exception as Argument:
+        logging.exception("COULD NOT OVERRIDE CONTEXT")
+
+
 # Temporarily change interface theme to force a white background in Material Preview viewport mode for rendering Preview images.
 def set_theme_light(blender_dir, blender_version):
     try:
@@ -189,10 +212,32 @@ def clean_data_block_except_custom(block, custom_data):
         logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
 
 
+# Append a blend file's objects to Converter.blend.
+def append_blend(import_file_command, import_file_options, import_file):
+    try:
+        with bpy.data.libraries.load(import_file, link=False) as (data_from, data_to):  # Link all objects.
+            data_to.objects = [object for object in data_from.objects]
+        
+        for object in data_to.objects: # Link all objects to current scene.
+            if object is not None:
+                bpy.context.collection.objects.link(object)
+
+        print("------------------------  APPENDED BLEND FILE: " + str(Path(import_file).name) + "  ------------------------")
+        logging.info("APPENDED BLEND FILE: " + str(Path(import_file).name))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPEND BLEND FILE: " + str(Path(import_file).name))
+        
+
 # Import file of a format type supplied by the user.
 def import_file_function(import_file_command, import_file_options, import_file):
     try:
         import_file_options["filepath"] = import_file  # Set filepath to the location of the model to be imported
+        
+        if import_file_command == "bpy.ops.wm.append(**":  # Select "Objects" Library to append from current .blend file.
+            append_blend(import_file_command, import_file_options, import_file)
+            return
+
         import_file_command = str(import_file_command) + str(import_file_options) + ")"  # Concatenate the import command with the import options dictionary
         print(import_file_command)
         logging.info(import_file_command)
@@ -816,6 +861,13 @@ def add_principled_setup(material, textures_temp_dir, textures):
 
         files = []
 
+        win = bpy.context.window
+        scr = win.screen
+        areas = [area for area in scr.areas if area.type == 'NODE_EDITOR']
+        areas[0].spaces.active.node_tree = material.node_tree
+        
+        override = override_context('NODE_EDITOR', 'WINDOW')
+        
         for texture in textures:
             if texture == '.DS_Store':
                 continue
@@ -830,19 +882,6 @@ def add_principled_setup(material, textures_temp_dir, textures):
             filepath = str(textures_temp_dir) + '/'
             directory = str(textures_temp_dir) + '/'
             relative_path = True
-            
-            win = bpy.context.window
-            scr = win.screen
-            areas  = [area for area in scr.areas if area.type == 'NODE_EDITOR']
-            areas[0].spaces.active.node_tree = material.node_tree
-            regions = [region for region in areas[0].regions if region.type == 'WINDOW']
-
-            override = {
-                'window': win,
-                'screen': scr,
-                'area': areas[0],
-                'region': regions[0],
-            }
             
             with bpy.context.temp_override(**override):
                 bpy.ops.node.nw_add_textures_for_principled(
@@ -1147,7 +1186,7 @@ def reformat_images(image_format, image_quality, image_format_include):
             # Include only the images specified by the User.
             for pbr_tag in image_format_include:
                 if pbr_tag in image.name:
-                    image_path = bpy.path.abspath(image.filepath)
+                    image_path = str(Path.resolve(Path(bpy.path.abspath(image.filepath))))
 
                     # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
                     image.name = Path(image_path).name
@@ -1155,7 +1194,7 @@ def reformat_images(image_format, image_quality, image_format_include):
                     # Change image extension and pathing.
                     image_ext = "." + image.name.split(".")[-1].lower()
                     image_ext_new = ext_dict[image_format]
-                    image_path_new = bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new))
+                    image_path_new = str(Path.resolve(Path(bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new)))))
                     
                     # Don't reformat image if converting between identical formats.
                     if image_ext == image_ext_new:
@@ -1174,7 +1213,7 @@ def reformat_images(image_format, image_quality, image_format_include):
 
                     # Repath the image textures to the new format.
                     image.name = image_name_new
-                    bpy.data.images[image.name].filepath = bpy.path.abspath(image_path_new)
+                    bpy.data.images[image.name].filepath = image_path_new
 
                     # Ensure alpha modes and color spaces are set appropriately for EXR format.
                     if image_format == "OPEN_EXR":
@@ -1245,18 +1284,7 @@ def render_preview_image(preview_image):
         space.overlay.show_overlays = False
 
         # Override context to 3D Viewport again, but in a different way to allow view_all and render.opengl to work.
-        win = bpy.context.window
-        scr = win.screen
-        areas  = [area for area in scr.areas if area.type == 'VIEW_3D']
-        regions = [region for region in areas[0].regions if region.type == 'WINDOW']
-
-        override = {
-            'window': win,
-            'screen': scr,
-            'area': areas[0],
-            'region': regions[0],
-        }
-
+        override = override_context('VIEW_3D', 'WINDOW')
         with bpy.context.temp_override(**override):
             # Frame all objects into viewport so objects are neither too small nor too large in the render. 
             # They tend to be a bit small, but it's better than not at all for the time being.
@@ -1291,12 +1319,14 @@ def save_blend_file(blend):
         # Preserve unused materials & textures by setting fake user(s).
         use_fake_user()
         
-        bpy.ops.wm.save_as_mainfile(filepath=str(blend))
+        # Make paths relative if elected.
+        if make_paths_relative:
+            bpy.ops.file.make_paths_relative()
 
-        # Delete Blender "save version" backup file (also known as a .blend1 file).
-        blend1 = Path(str(blend) + "1")
-        if Path(blend1).is_file():
-            Path.unlink(blend1)
+        # Save the file.
+        bpy.ops.wm.save_as_mainfile(
+            filepath=str(blend), 
+        )
 
         print("------------------------  SAVED BLEND FILE: " + str(Path(blend).name) + "  ------------------------")
         logging.info("SAVED BLEND FILE: " + str(Path(blend).name))
@@ -1314,9 +1344,6 @@ def unpack_textures(textures_temp_dir, blend):
         elif Path(textures_temp_dir).exists():
             shutil.rmtree(textures_temp_dir)
             Path.mkdir(textures_temp_dir)
-
-        # Repath blend location to inside textures_temp_dir
-        blend = Path(textures_temp_dir, Path(blend).name)
 
         # Save blend inside textures_temp_dir
         save_blend_file(blend)
@@ -1739,6 +1766,28 @@ def rename_textures_packed(textures_temp_dir):
         logging.exception("COULD NOT RENAME PACKED TEXTURES")
 		
 
+# Rename unpacked textures to match image names, since images packed into .blend have original texture filepaths
+# and names baked into their data, which is what is used when unpacking textures.
+def rename_textures_unpacked(textures_temp_dir):
+    try:
+        for image in bpy.data.images:
+            path_old = Path.resolve(Path(bpy.path.abspath(image.filepath)))
+            path_new = path_old.parent / image.name
+
+            path_old.rename(path_new)
+
+            image.filepath = str(path_new)
+
+            print("Renamed " + str(path_old.name) + " to " + str(path_new.name))
+            logging.info("Renamed " + str(path_old.name) + " to " + str(path_new.name))
+
+        print("------------------------  RENAMED UNPACKED TEXTURES  ------------------------")
+        logging.info("RENAMED UNPACKED TEXTURES")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT RENAME UNPACKED TEXTURES")
+
+
 # For packed textures, reimport textures to respective existing materials after they have been unpacked and separated.
 def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
     try:
@@ -1929,6 +1978,18 @@ def set_scene_units(unit_system, length_unit):
         logging.exception("COULD NOT SET SCENE UNITS")
 		
 
+# Pack textures into .blend before saving the file.
+def pack_resources_into_blend():
+    try:
+        bpy.ops.file.pack_all()
+
+        print("------------------------  PACKED RESOURCES INTO BLEND  ------------------------")
+        logging.info("PACKED RESOURCES INTO BLEND")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT PACK RESOURCES INTO BLEND")
+
+
 # Export a model.
 def export_a_model(export_file_scale, export_file_command, export_file_options, export_file):
     try:
@@ -1945,6 +2006,15 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
         export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the import command with the import options dictionary
         print(export_file_command)
         logging.info(export_file_command)
+        if Path(export_file).suffix == ".blend":
+            if pack_resources:  # Pack textures into .blend before saving the file if exporting a .blend.
+                pack_resources_into_blend()
+            elif not pack_resources and make_paths_relative:
+                bpy.ops.file.make_paths_relative()
+            override = override_context('VIEW_3D', 'WINDOW') # Frame object(s) in the viewport before saving.
+            with bpy.context.temp_override(**override):
+                bpy.ops.view3d.view_selected(use_all_regions=False)    
+            
         exec(export_file_command)  # Run export_file_command, which is stored as a string and won't run otherwise.
 
         # Reset scale
@@ -2253,142 +2323,203 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
         logging.exception("COULD NOT AUTO-RESIZE EXPORTED FILES")
 
 
-# Determine where textures should be sourced, then texture the model.
-def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
+# Modify textures if requested.
+def determine_modify_textures():
+    try:
+        if texture_resolution != "Default":
+            resize_textures(texture_resolution, texture_resolution_include)
+        if image_format != "Default":
+            reformat_images(image_format, image_quality, image_format_include)
+
+        print("------------------------  DETERMINED WHETHER TO MODIFY TEXTURES  ------------------------")
+        logging.info("DETERMINED WHETHER TO MODIFY TEXTURES")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT DETERMINE WHETHER TO MODIFY TEXTURES")
+
+
+# Apply "Custom" textures to objects.
+def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
     try:
         # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
-        if regex_textures and textures_source != "Packed":
+        if regex_textures:
             regex_transparent_objects()
         
-        # Determine from where to import textures.
-        if textures_source == "External":
-            print("Using external textures for conversion")
-            logging.info("Using external textures for conversion")
+        # Clear all users of all materials.
+        clear_materials_users()
+
+        # Copy original custom textures to item directory.
+        copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
+        
+        # Reassign item as "Custom_Textures"
+        item = "Custom_Textures"
+
+        if conversion_count == 0:
+            create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
             
-            # Clear all users of all materials.
-            clear_materials_users()
-            
-            # Brute force-remove all materials and images.
+            # Remove existing materials and textures from Converter.blend file only once.
             clean_data_block(bpy.data.materials)
             clean_data_block(bpy.data.images)
-
-            # Check if a "textures" directory exists.
-            textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
-            if textures_dir_check != "":
-                textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
-
-            create_textures_temp(item_dir, textures_dir, textures_temp_dir)
+            
+            # Only regex textures and create materials once.
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
             create_materials(item, textures_temp_dir)
+            
             # Modify textures if requested.
-            if texture_resolution != "Default":
-                resize_textures(texture_resolution, texture_resolution_include)
-            if image_format != "Default":
-                reformat_images(image_format, image_quality, image_format_include)
-            assign_materials(item)
+            determine_modify_textures()
+                
+            # Get custom materials and textures not to be deleted during conversion.
+            global custom_materials
+            global custom_textures
+            custom_materials = [Path(material.name).stem for material in bpy.data.materials]
+            custom_textures = [Path(texture.name).stem for texture in bpy.data.images]  # Ignore image format extension
 
+            # Preserve material(s) and texture(s).
+            use_fake_user()
+        
+        elif conversion_count > 0:
+            clean_data_block_except_custom(bpy.data.materials, custom_materials)
+            clean_data_block_except_custom(bpy.data.images, custom_textures)
+            
+            # Preserve material(s) and texture(s).
+            use_fake_user()
+
+        assign_materials(item)
+
+        print("------------------------  APPLIED CUSTOM TEXTURES TO OBJECTS  ------------------------")
+        logging.info("APPLIED CUSTOM TEXTURES TO OBJECTS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPLY CUSTOM TEXTURES TO OBJECTS")
+
+
+# Apply "Packed" textures to objects.
+def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
+    try:
+        # Repath blend location to inside textures_temp_dir
+        blend = Path(textures_temp_dir, Path(blend).name)
+
+        # Find and rename transparent materials that have mispellings of transparency with regex keys. 
+        regex_transparent_materials()
+
+        # Purge orphaned opaque image textures if they are duplicates, rather than shared/instanced data blocks.
+        purge_orphans()
+
+        # Make sure image textures have their material's prefix before unpacking to avoid any duplicate texture names if they were all lower-cased.
+        rename_textures_packed(textures_temp_dir)
+
+        # Delete any existing textures_temp_dir before unpacking.
+        delete_textures_temp(textures_temp_dir)
+
+        # Unpack textures before modifying them.
+        unpack_textures(textures_temp_dir, blend)
+
+        # Rename unpacked textures to match image name, since images packed into .blend use names from 
+        #  original texture filepath baked into their data instead of the image name.
+        if import_file_ext == ".blend":
+            rename_textures_unpacked(textures_temp_dir)
+
+        # Modify textures if requested.
+        if import_file_ext != ".glb":
+            determine_modify_textures()
+
+        # Only separate image textures if imported file is a GLB.
+        elif import_file_ext == ".glb":
+            # Get a dictionary of which textures are assigned to which materials.
+            mapped_textures = map_textures_to_materials()
+            
+            # Set textures_temp_dir to location of unpacked images.
+            textures_temp_dir = Path(textures_temp_dir, "textures")
+
+            # Separate the combined maps.
+            separate_gltf_maps(textures_temp_dir)
+
+            # Remove existing images from Converter.blend file.
+            clean_data_block(bpy.data.images)
+            
+            # Delete all nodes for all materials except Principled BSDF's and Material Outputs.
+            remove_nodes_except_shaders()
+
+            # Reimport unpacked & separated textures to their original materials.
+            reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
+            
+            # Modify textures if requested.
+            determine_modify_textures()
+                
+        print("------------------------  APPLIED PACKED TEXTURES TO OBJECTS  ------------------------")
+        logging.info("APPLIED PACKED TEXTURES TO OBJECTS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPLY PACKED TEXTURES TO OBJECTS")
+
+
+# Apply "External" textures to objects.
+def apply_textures_external(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
+    try:    
+        if Path(import_file).suffix == ".blend" and use_linked_blend_textures:  # Skip apply textures to objects if they're already set up in the imported .blend file.
+            print("Using external textures already linked to .blend for conversion")
+            logging.info("Using external textures already linked to .blend for conversion")
+
+            # Pack linked textures into .blend since they may be sourced from many different directories.
+            pack_resources_into_blend()
+
+            # Pretend that these textures were "Packed" all along.
+            apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+
+            return
+
+        # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
+        if regex_textures:
+            regex_transparent_objects()
+
+        # Clear all users of all materials.
+        clear_materials_users()
+        
+        # Brute force-remove all materials and images.
+        clean_data_block(bpy.data.materials)
+        clean_data_block(bpy.data.images)
+
+        # Check if a "textures" directory exists.
+        textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
+        if textures_dir_check != "":
+            textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
+        
+        # Create temporary textures directory.
+        create_textures_temp(item_dir, textures_dir, textures_temp_dir)
+
+        # Regex textures if requested.
+        if regex_textures:
+            regex_textures_external(textures_temp_dir)
+
+        # Create materials.
+        create_materials(item, textures_temp_dir)
+
+        # Modify textures if requested.
+        determine_modify_textures()
+
+        # Assign materials to objects.
+        assign_materials(item)
+
+        print("------------------------  APPLIED EXTERNAL TEXTURES TO OBJECTS  ------------------------")
+        logging.info("APPLIED EXTERNAL TEXTURES TO OBJECTS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT APPLY EXTERNAL TEXTURES TO OBJECTS")
+
+
+# Determine where textures should be sourced, then texture the model.
+def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
+    try:
+        if textures_source == "External":
+            apply_textures_external(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+            
         elif textures_source == "Packed":
-            print("Using imported textures for conversion")
-            logging.info("Using imported textures for conversion")
+            apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
             
-            # Find and rename transparent materials that have mispellings of transparency with regex keys. 
-            regex_transparent_materials()
-
-            # Purge orphaned opaque image textures if they are duplicates, rather than shared/instanced data blocks.
-            purge_orphans()
-
-            # Make sure image textures have their material's prefix before unpacking to avoid any duplicate texture names if they were all lower-cased.
-            rename_textures_packed(textures_temp_dir)
-
-            # Delete any existing textures_temp_dir before unpacking.
-            delete_textures_temp(textures_temp_dir)
-
-            # Unpack textures before modifying them.
-            unpack_textures(textures_temp_dir, blend)
-
-            # Modify textures if requested.
-            if import_file_ext != ".glb":
-                if texture_resolution != "Default":
-                    resize_textures(texture_resolution, texture_resolution_include)
-                if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include)
-
-            # Only separate image textures if imported file is a GLB.
-            elif import_file_ext == ".glb":
-                # Get a dictionary of which textures are assigned to which materials.
-                mapped_textures = map_textures_to_materials()
-                
-                # Set textures_temp_dir to location of unpacked images.
-                textures_temp_dir = Path(textures_temp_dir, "textures")
-
-                # Separate the combined maps.
-                separate_gltf_maps(textures_temp_dir)
-
-                # Remove existing images from Converter.blend file.
-                clean_data_block(bpy.data.images)
-                
-                # Delete all nodes for all materials except Principled BSDF's and Material Outputs.
-                remove_nodes_except_shaders()
-
-                # Reimport unpacked & separated textures to their original materials.
-                reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
-                
-                # Modify textures if requested.
-                if texture_resolution != "Default":
-                    resize_textures(texture_resolution, texture_resolution_include)
-                if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include)
-
         elif textures_source == "Custom":
-            print("Using custom textures for conversion")
-            logging.info("Using custom textures for conversion")
+            apply_textures_custom(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
             
-            # Clear all users of all materials.
-            clear_materials_users()
-
-            # Copy original custom textures to item directory.
-            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
-            
-            # Reassign item as "Custom_Textures"
-            item = "Custom_Textures"
-
-            if conversion_count == 0:
-                create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
-                
-                # Remove existing materials and textures from Converter.blend file only once.
-                clean_data_block(bpy.data.materials)
-                clean_data_block(bpy.data.images)
-                
-                # Only regex textures and create materials once.
-                if regex_textures:
-                    regex_textures_external(textures_temp_dir)
-                create_materials(item, textures_temp_dir)
-                
-                # Modify textures if requested.
-                if texture_resolution != "Default":
-                    resize_textures(texture_resolution, texture_resolution_include)
-                if image_format != "Default":
-                    reformat_images(image_format, image_quality, image_format_include)
-                    
-                # Get custom materials and textures not to be deleted during conversion.
-                global custom_materials
-                global custom_textures
-                custom_materials = [Path(material.name).stem for material in bpy.data.materials]
-                custom_textures = [Path(texture.name).stem for texture in bpy.data.images]  # Ignore image format extension
-
-                # Preserve material(s) and texture(s).
-                use_fake_user()
-            
-            elif conversion_count > 0:
-                clean_data_block_except_custom(bpy.data.materials, custom_materials)
-                clean_data_block_except_custom(bpy.data.images, custom_textures)
-                
-                # Preserve material(s) and texture(s).
-                use_fake_user()
-
-            assign_materials(item)
-
         print("------------------------  APPLIED TEXTURES TO OBJECTS  ------------------------")
         logging.info("APPLIED TEXTURES TO OBJECTS")
 
@@ -2544,6 +2675,48 @@ def determine_uv_directory(textures_dir):
         logging.exception("COULD NOT DETERMINE UV DIRECTORY")
 
 
+# Rename textures_temp_dir and repath images inside the .blend.
+def rename_textures_dir_and_repath_blend(blend, path_old, path_new):
+    try:
+        if Path(path_new).exists():
+            shutil.rmtree(path_new)  # Remove directory if previously renamed.
+
+        path_old.rename(path_new)  # Rename the directory.
+
+        for image in bpy.data.images:  # Repath the textures.
+            bpy.data.images[image.name].filepath = str(path_new / image.name)
+        
+        print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
+        logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
+        
+        save_blend_file(blend)  # Save the .blend.
+
+    except Exception as Argument:
+        logging.exception("COULD NOT RENAME MODIFIED TEXTURES DIRECTORY OR REPATH BLEND")
+
+
+# Determine whether to keep modified or copied textures after the conversion is over for a given item.
+def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
+    try:
+        if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
+            if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
+                path_old = textures_temp_dir
+                path_new = item_dir / (textures_temp_dir.name + "_blend")
+                rename_textures_dir_and_repath_blend(blend, path_old, path_new)  # Repath the textures.
+                print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
+                logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
+            else:
+                delete_textures_temp(textures_temp_dir)
+        elif textures_source == "Custom" and not copy_textures_custom_dir:  # For Custom textures source scenario.
+            remove_copy_textures_custom_dir(item_dir, textures_dir)
+
+        print("------------------------  DETERMINED WHETHER TO KEEP MODIFIED TEXTURES  ------------------------")
+        logging.info("DETERMINED WHETHER TO KEEP MODIFIED TEXTURES")
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT DETERMINE WHETHER TO KEEP MODIFIED TEXTURES")
+
+
 # Determine how to export UV layouts.
 def determine_export_uv_layout(item, textures_dir):
     try:
@@ -2617,11 +2790,8 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if use_textures:
             apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
         elif not use_textures:
-            # Clear all users of all materials.
-            clear_materials_users()
-            
-            # Brute force-remove all materials and images.
-            clean_data_block(bpy.data.materials)
+            clear_materials_users()  # Clear all users of all materials.
+            clean_data_block(bpy.data.materials)  # Brute force-remove all materials and images.
             clean_data_block(bpy.data.images)
             
         # Set scene units.
@@ -2649,21 +2819,15 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
-        # If User elected not to save a .blend file, delete any existing .blend.
-        if not save_blend and Path(blend).is_file():
-            Path.unlink(blend)
-
         # Save preview image.
         if save_preview_image:
             render_preview_image(preview_image)        
 
-        # Modified or copied textures can now be delete after the conversion is over.
+        # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
-            if not keep_modified_textures and textures_source != "Custom" and Path(textures_temp_dir).exists():
-                delete_textures_temp(textures_temp_dir)
-            if textures_source == "Custom" and not copy_textures_custom_dir:
-                remove_copy_textures_custom_dir(item_dir, textures_dir)
+            determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
 
+        # Export UV Layout(s).
         if export_uv_layout:
             determine_export_uv_layout(item, textures_dir)
 
