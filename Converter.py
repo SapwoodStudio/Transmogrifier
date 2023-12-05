@@ -861,6 +861,13 @@ def add_principled_setup(material, textures_temp_dir, textures):
 
         files = []
 
+        win = bpy.context.window
+        scr = win.screen
+        areas = [area for area in scr.areas if area.type == 'NODE_EDITOR']
+        areas[0].spaces.active.node_tree = material.node_tree
+        
+        override = override_context('NODE_EDITOR', 'WINDOW')
+        
         for texture in textures:
             if texture == '.DS_Store':
                 continue
@@ -876,12 +883,6 @@ def add_principled_setup(material, textures_temp_dir, textures):
             directory = str(textures_temp_dir) + '/'
             relative_path = True
             
-            win = bpy.context.window
-            scr = win.screen
-            areas = [area for area in scr.areas if area.type == 'NODE_EDITOR']
-            areas[0].spaces.active.node_tree = material.node_tree
-            
-            override = override_context('NODE_EDITOR', 'WINDOW')
             with bpy.context.temp_override(**override):
                 bpy.ops.node.nw_add_textures_for_principled(
                     filepath=filepath,
@@ -1773,12 +1774,12 @@ def rename_textures_unpacked(textures_temp_dir):
             path_old = Path.resolve(Path(bpy.path.abspath(image.filepath)))
             path_new = path_old.parent / image.name
 
-            if Path(path_new).exists():
-                Path.unlink(path_new)
-            
             path_old.rename(path_new)
 
             image.filepath = str(path_new)
+
+            print("Renamed " + str(path_old.name) + " to " + str(path_new.name))
+            logging.info("Renamed " + str(path_old.name) + " to " + str(path_new.name))
 
         print("------------------------  RENAMED UNPACKED TEXTURES  ------------------------")
         logging.info("RENAMED UNPACKED TEXTURES")
