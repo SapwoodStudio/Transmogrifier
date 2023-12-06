@@ -511,6 +511,16 @@ def draw_settings_archive(self, context):
     col.prop(settings, 'save_blend')
     if settings.ui_toggle == "Advanced":
         col.prop(settings, 'save_conversion_log')
+        col.prop(settings, 'archive_assets')
+        if settings.archive_assets:
+            grid = self.layout.grid_flow(columns=1, align=True)
+            grid.prop(settings, 'mark_assets')
+            col = self.layout.column(align=True)
+            col.prop(settings, 'asset_license')
+            col.prop(settings, 'asset_copyright')
+            col.prop(settings, 'asset_author')
+            
+
 
 
 # Draws the button and popover dropdown button used in the
@@ -1274,6 +1284,19 @@ class TRANSMOGRIFY(Operator):
 
 # Groups together all the addon settings that are saved in each .blend file
 class TransmogrifierSettings(PropertyGroup):
+    # Preset Settings:
+    # Option to select Transmogrifier presets
+    transmogrifier_preset: StringProperty(default='FBX_to_GLB')
+    transmogrifier_preset_enum: EnumProperty(
+        name="", options={'SKIP_SAVE'},
+        description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
+        items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
+        get=lambda self: get_transmogrifier_preset_index(
+            'transmogrifier', self.transmogrifier_preset),
+        set=lambda self, value: setattr(
+            self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
+        update=refresh_ui
+    )
     # UI Setting
     ui_toggle: EnumProperty(
         name="UI",
@@ -1403,22 +1426,157 @@ class TransmogrifierSettings(PropertyGroup):
     )
 
 
+    # Export Settings:
+    export_file_1: EnumProperty(
+        name="Format 1",
+        description="Which file format to export to",
+        items=[
+            ("DAE", "Collada (.dae)", "", 1),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10),
+        ],
+        default="glTF",
+    )
+    # File 1 scale.
+    export_file_1_scale: FloatProperty(
+        name="Scale", 
+        description="Set the scale of the model before exporting",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=500,
+    )
+    # Export Settings 2:
+    export_file_2: EnumProperty(
+        name="Format 2",
+        description="Which file format to export to",
+        items=[
+            ("DAE", "Collada (.dae)", "", 1),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10),
+        ],
+        default="USD",
+    )
+    # File 2 scale.
+    export_file_2_scale: FloatProperty(
+        name="Scale", 
+        description="Set the scale of the model before exporting",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=500,
+    )
+    # Export format specific options:
+    usd_extension: EnumProperty(
+        name="Extension",
+        items=[
+            (".usd", "Plain (.usd)",
+             "Can be either binary or ASCII\nIn Blender this exports to binary", 1),
+            (".usdc", "Binary Crate (default) (.usdc)",
+             "Binary, fast, hard to edit", 2),
+            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
+            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
+        ],
+        default=".usdz",
+    )
+    ply_ascii: BoolProperty(name="ASCII Format", default=False)
+    stl_ascii: BoolProperty(name="ASCII Format", default=False)
 
-    # Preset Settings:
-    # Option to select Transmogrifier presets
-    transmogrifier_preset: StringProperty(default='FBX_to_GLB')
-    transmogrifier_preset_enum: EnumProperty(
-        name="", options={'SKIP_SAVE'},
-        description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
-        items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
-        get=lambda self: get_transmogrifier_preset_index(
-            'transmogrifier', self.transmogrifier_preset),
+    # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
+    abc_preset: StringProperty(default='NO_PRESET')
+    abc_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Alembic (.abc))",
+        items=lambda self, context: get_operator_presets('wm.alembic_export'),
+        get=lambda self: get_preset_index(
+            'wm.alembic_export', self.abc_preset),
         set=lambda self, value: setattr(
-            self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
-        update=refresh_ui
+            self, 'abc_preset', preset_enum_items_refs['wm.alembic_export'][value][0]),
+    )
+    dae_preset: StringProperty(default='NO_PRESET')
+    dae_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Collada (.dae))",
+        items=lambda self, context: get_operator_presets('wm.collada_export'),
+        get=lambda self: get_preset_index(
+            'wm.collada_export', self.dae_preset),
+        set=lambda self, value: setattr(
+            self, 'dae_preset', preset_enum_items_refs['wm.collada_export'][value][0]),
+    )
+    usd_preset: StringProperty(default='USDZ_Preset_Example')
+    usd_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
+        items=lambda self, context: get_operator_presets('wm.usd_export'),
+        get=lambda self: get_preset_index('wm.usd_export', self.usd_preset),
+        set=lambda self, value: setattr(
+            self, 'usd_preset', preset_enum_items_refs['wm.usd_export'][value][0]),
+    )
+    obj_preset: StringProperty(default='NO_PRESET')
+    obj_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Wavefront (.obj))",
+        items=lambda self, context: get_operator_presets('wm.obj_export'),
+        get=lambda self: get_preset_index('wm.obj_export', self.obj_preset),
+        set=lambda self, value: setattr(
+            self, 'obj_preset', preset_enum_items_refs['wm.obj_export'][value][0]),
+    )
+    fbx_preset: StringProperty(default='NO_PRESET')
+    fbx_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > FBX (.fbx))",
+        items=lambda self, context: get_operator_presets('export_scene.fbx'),
+        get=lambda self: get_preset_index('export_scene.fbx', self.fbx_preset),
+        set=lambda self, value: setattr(
+            self, 'fbx_preset', preset_enum_items_refs['export_scene.fbx'][value][0]),
+    )
+    gltf_preset: StringProperty(default='GLB_Preset_Example')
+    gltf_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > glTF (.glb/.gltf))",
+        items=lambda self, context: get_operator_presets('export_scene.gltf'),
+        get=lambda self: get_preset_index(
+            'export_scene.gltf', self.gltf_preset),
+        set=lambda self, value: setattr(
+            self, 'gltf_preset', preset_enum_items_refs['export_scene.gltf'][value][0]),
+    )
+    x3d_preset: StringProperty(default='NO_PRESET')
+    x3d_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > X3D Extensible 3D (.x3d))",
+        items=lambda self, context: get_operator_presets('export_scene.x3d'),
+        get=lambda self: get_preset_index('export_scene.x3d', self.x3d_preset),
+        set=lambda self, value: setattr(
+            self, 'x3d_preset', preset_enum_items_refs['export_scene.x3d'][value][0]),
     )
 
-    # Export Settings:
+
+    # Pack resources into .blend.
+    pack_resources: BoolProperty(
+        name="Pack Resources",
+        description="Pack all used external files into this .blend",
+        default=True,
+        )
+    # Pack resources into .blend.
+    make_paths_relative: BoolProperty(
+        name="Relative Paths",
+        description="Use relative paths for textures",
+        default=True,
+        )
     # Option for to where models should be exported.
     directory_output_location: EnumProperty(
         name="Location(s)",
@@ -1913,155 +2071,39 @@ class TransmogrifierSettings(PropertyGroup):
         description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
         default=False,
         )
-    # Export Settings 1:
-    export_file_1: EnumProperty(
-        name="Format 1",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="glTF",
-    )
-    # File 1 scale.
-    export_file_1_scale: FloatProperty(
-        name="Scale", 
-        description="Set the scale of the model before exporting",
-        default=1.0,
-        soft_min=0.0,
-        soft_max=10000.0,
-        step=500,
-    )
-    # Export Settings 2:
-    export_file_2: EnumProperty(
-        name="Format 2",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="USD",
-    )
-    # File 2 scale.
-    export_file_2_scale: FloatProperty(
-        name="Scale", 
-        description="Set the scale of the model before exporting",
-        default=1.0,
-        soft_min=0.0,
-        soft_max=10000.0,
-        step=500,
-    )
-    # Export format specific options:
-    usd_extension: EnumProperty(
-        name="Extension",
-        items=[
-            (".usd", "Plain (.usd)",
-             "Can be either binary or ASCII\nIn Blender this exports to binary", 1),
-            (".usdc", "Binary Crate (default) (.usdc)",
-             "Binary, fast, hard to edit", 2),
-            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
-            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
-        ],
-        default=".usdz",
-    )
-    ply_ascii: BoolProperty(name="ASCII Format", default=False)
-    stl_ascii: BoolProperty(name="ASCII Format", default=False)
-
-    # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
-    abc_preset: StringProperty(default='NO_PRESET')
-    abc_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Alembic (.abc))",
-        items=lambda self, context: get_operator_presets('wm.alembic_export'),
-        get=lambda self: get_preset_index(
-            'wm.alembic_export', self.abc_preset),
-        set=lambda self, value: setattr(
-            self, 'abc_preset', preset_enum_items_refs['wm.alembic_export'][value][0]),
-    )
-    dae_preset: StringProperty(default='NO_PRESET')
-    dae_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Collada (.dae))",
-        items=lambda self, context: get_operator_presets('wm.collada_export'),
-        get=lambda self: get_preset_index(
-            'wm.collada_export', self.dae_preset),
-        set=lambda self, value: setattr(
-            self, 'dae_preset', preset_enum_items_refs['wm.collada_export'][value][0]),
-    )
-    usd_preset: StringProperty(default='USDZ_Preset_Example')
-    usd_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
-        items=lambda self, context: get_operator_presets('wm.usd_export'),
-        get=lambda self: get_preset_index('wm.usd_export', self.usd_preset),
-        set=lambda self, value: setattr(
-            self, 'usd_preset', preset_enum_items_refs['wm.usd_export'][value][0]),
-    )
-    obj_preset: StringProperty(default='NO_PRESET')
-    obj_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Wavefront (.obj))",
-        items=lambda self, context: get_operator_presets('wm.obj_export'),
-        get=lambda self: get_preset_index('wm.obj_export', self.obj_preset),
-        set=lambda self, value: setattr(
-            self, 'obj_preset', preset_enum_items_refs['wm.obj_export'][value][0]),
-    )
-    fbx_preset: StringProperty(default='NO_PRESET')
-    fbx_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > FBX (.fbx))",
-        items=lambda self, context: get_operator_presets('export_scene.fbx'),
-        get=lambda self: get_preset_index('export_scene.fbx', self.fbx_preset),
-        set=lambda self, value: setattr(
-            self, 'fbx_preset', preset_enum_items_refs['export_scene.fbx'][value][0]),
-    )
-    gltf_preset: StringProperty(default='GLB_Preset_Example')
-    gltf_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > glTF (.glb/.gltf))",
-        items=lambda self, context: get_operator_presets('export_scene.gltf'),
-        get=lambda self: get_preset_index(
-            'export_scene.gltf', self.gltf_preset),
-        set=lambda self, value: setattr(
-            self, 'gltf_preset', preset_enum_items_refs['export_scene.gltf'][value][0]),
-    )
-    x3d_preset: StringProperty(default='NO_PRESET')
-    x3d_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > X3D Extensible 3D (.x3d))",
-        items=lambda self, context: get_operator_presets('export_scene.x3d'),
-        get=lambda self: get_preset_index('export_scene.x3d', self.x3d_preset),
-        set=lambda self, value: setattr(
-            self, 'x3d_preset', preset_enum_items_refs['export_scene.x3d'][value][0]),
-    )
-    # Pack resources into .blend.
-    pack_resources: BoolProperty(
-        name="Pack Resources",
-        description="Pack all used external files into this .blend",
+    # Mark data blocks as assets.
+    archive_assets: BoolProperty(
+        name="Archive Assets",
+        description="Archive specified assets to Asset Library",
         default=True,
         )
-    # Pack resources into .blend.
-    make_paths_relative: BoolProperty(
-        name="Relative Paths",
-        description="Use relative paths for textures",
-        default=True,
-        )
+    # Mark asset data filter.
+    mark_assets: EnumProperty(
+        name="Mark Assets",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Collection', "Collection", "Place all objects into a collection and mark it as asset.", "OUTLINER_COLLECTION", 1),
+            ('Objects', "Objects", "Mark individual objects as assets.", "OBJECT_DATA", 2),
+            ('Materials', "Materials", "Mark individual materials as assets.", "MATERIAL", 4),
+            ('Actions', "Actions", "Mark individual actions (animations) as assets.", "ACTION", 16),
+        ],
+        description="Select asset types to archive",
+        default={
+            'Collection'
+        },
+    )
+    asset_license: StringProperty(
+        name="License",
+        description="The type of license this asset is distributed under. An empty license name does not necessarily indicate that this is free of licensing terms. Contact the author if any clarification is needed",
+    )
+    asset_copyright: StringProperty(
+        name="Copyright",
+        description="Copyright notice for this asset. An empty copyright notice does not necessarily indicate that this is copyright-free. Contact the author if any clarification is needed",
+    )
+    asset_author: StringProperty(
+        name="Author",
+        description="Name of the creator of the asset",
+    )
     
 
 
