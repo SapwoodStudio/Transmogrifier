@@ -152,32 +152,6 @@ def use_fake_user():
         logging.exception("COULD NOT USE FAKE USER FOR TEXTURES & MATERIALS")
 
 
-# Recursively delete orphaned data blocks.
-def purge_orphans():
-    try:
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
-
-        print("------------------------  PURGED ORPHANED DATA BLOCKS RECURSIVELY  ------------------------")
-        logging.info("PURGED ORPHANED DATA BLOCKS RECURSIVELY")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT PURGE ORPHANED DATA BLOCKS RECURSIVELY")
-		
-
-# Enable addon dependencies and clear the scene
-def scene_setup():
-    try:
-        bpy.ops.object.select_all(action='SELECT')
-        bpy.ops.object.delete(use_global=False)
-        purge_orphans()
-
-        print("------------------------  SET UP SCENE  ------------------------")
-        logging.info("SET UP SCENE")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT SET UP SCENE")
-		
-
 # Sometimes purge orphans won't delete data blocks (e.g. images) even though they have no users. This will force the deletion of any data blocks within a specified bpy.data.[data type]
 def clean_data_block(block):
     try:
@@ -211,6 +185,54 @@ def clean_data_block_except_custom(block, custom_data):
     except Exception as Argument:
         logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
 
+
+# Add new collection with name = prefix + item + suffix.
+def add_collection(item):
+    try:
+        # Add new collection.
+        collection_name = prefix + item + suffix
+        collection = bpy.data.collections.new(collection_name)
+
+        # Add collection to scene collection.
+        bpy.context.scene.collection.children.link(collection)
+
+        # Make collection active so imported file contents are put inside/linked to the collection.
+        layer_collection = bpy.context.view_layer.layer_collection.children[collection.name]
+        bpy.context.view_layer.active_layer_collection = layer_collection
+
+        print("------------------------  ADDED NEW COLLECTION: " + collection.name + "  ------------------------")
+        logging.info("ADDED NEW COLLECTION: " + collection.name)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT ADD NEW COLLECTION: " + collection.name)
+
+
+# Recursively delete orphaned data blocks.
+def purge_orphans():
+    try:
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
+        print("------------------------  PURGED ORPHANED DATA BLOCKS RECURSIVELY  ------------------------")
+        logging.info("PURGED ORPHANED DATA BLOCKS RECURSIVELY")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT PURGE ORPHANED DATA BLOCKS RECURSIVELY")
+		
+
+# Enable addon dependencies and clear the scene
+def setup_scene(item):
+    try:
+        clean_data_block(bpy.data.objects)
+        clean_data_block(bpy.data.collections)
+        purge_orphans()
+        add_collection(item)
+
+        print("------------------------  SET UP SCENE  ------------------------")
+        logging.info("SET UP SCENE")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SET UP SCENE")
+		
 
 # Append a blend file's objects to Converter.blend.
 def append_blend(import_file_command, import_file_options, import_file):
@@ -2754,6 +2776,49 @@ def determine_export_uv_layout(item, textures_dir):
         logging.exception("COULD NOT DETERMINE HOW TO EXPORT UV LAYOUT(S)")
 
 
+# Generate preview image for asset browser.
+def generate_preview(asset):
+    try:
+        with bpy.context.temp_override(id=asset):
+            bpy.ops.ed.lib_id_generate_preview()
+
+        print("------------------------  GENERATED ASSET PREVIEW FOR " + asset.name + "  ------------------------")
+        logging.info("GENERATED ASSET PREVIEW FOR " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT GENERATED ASSET PREVIEW FOR " + asset.name)
+
+
+# Mark assets.
+def mark_assets(item):
+    try:
+        if "Collection" in asset_data_filter:
+            collection_name = prefix + item + suffix
+            collection = bpy.data.collections[collection_name]
+            collection.asset_mark()
+            generate_preview(collection)
+
+        if "Objects" in asset_data_filter:
+            for object in bpy.data.objects:
+                object.asset_mark()
+                generate_preview(object)
+        
+        # Materials
+
+
+        # Add metadata
+            # License
+            # Copyright
+            # Author
+            # Tags
+
+        print("------------------------  MARKED ASSETS  ------------------------")
+        logging.info("MARKED ASSETS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MARK ASSETS")
+
+
 # Convert the file for every file found inside the given directory.
 def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count):
     try:
@@ -2765,7 +2830,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         logging.info("-------------------------------------------------------------------")
         
         # Set up scene.
-        scene_setup()
+        setup_scene(item)
 
         # Brute force-remove all materials and images.
         if textures_source != "Custom":
@@ -2805,9 +2870,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if rename_uvs:
             rename_UV_maps()
         
-        # Save .blend file.
-        if save_blend:
-            save_blend_file(blend)
+        # # Save .blend file.
+        # if save_blend:
+        #     save_blend_file(blend)
 
         # Select all objects in the scene before exporting, including empty objects.
         select_all()
@@ -2818,6 +2883,10 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+        if archive_assets:
+            mark_assets(item)
+            save_blend_file(blend)
 
         # Save preview image.
         if save_preview_image:

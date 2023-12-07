@@ -514,11 +514,12 @@ def draw_settings_archive(self, context):
         col.prop(settings, 'archive_assets')
         if settings.archive_assets:
             grid = self.layout.grid_flow(columns=1, align=True)
-            grid.prop(settings, 'mark_assets')
+            grid.prop(settings, 'asset_data_filter')
             col = self.layout.column(align=True)
             col.prop(settings, 'asset_license')
             col.prop(settings, 'asset_copyright')
             col.prop(settings, 'asset_author')
+            col.prop(settings, 'asset_tags')
             
 
 
@@ -2078,14 +2079,13 @@ class TransmogrifierSettings(PropertyGroup):
         default=True,
         )
     # Mark asset data filter.
-    mark_assets: EnumProperty(
+    asset_data_filter: EnumProperty(
         name="Mark Assets",
         options={'ENUM_FLAG'},
         items=[
             ('Collection', "Collection", "Place all objects into a collection and mark it as asset.", "OUTLINER_COLLECTION", 1),
             ('Objects', "Objects", "Mark individual objects as assets.", "OBJECT_DATA", 2),
-            ('Materials', "Materials", "Mark individual materials as assets.", "MATERIAL", 4),
-            ('Actions', "Actions", "Mark individual actions (animations) as assets.", "ACTION", 16),
+            ('Materials', "Materials", "Mark individual materials as assets.", "MATERIAL", 4)
         ],
         description="Select asset types to archive",
         default={
@@ -2103,6 +2103,10 @@ class TransmogrifierSettings(PropertyGroup):
     asset_author: StringProperty(
         name="Author",
         description="Name of the creator of the asset",
+    )
+    asset_tags: StringProperty(
+        name="Tags",
+        description="Add new keyword tags to assets. Separate tags with a space",
     )
     
 
