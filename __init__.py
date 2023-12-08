@@ -516,6 +516,7 @@ def draw_settings_archive(self, context):
             grid = self.layout.grid_flow(columns=1, align=True)
             grid.prop(settings, 'asset_data_filter')
             col = self.layout.column(align=True)
+            col.prop(settings, 'asset_description')
             col.prop(settings, 'asset_license')
             col.prop(settings, 'asset_copyright')
             col.prop(settings, 'asset_author')
@@ -2085,12 +2086,17 @@ class TransmogrifierSettings(PropertyGroup):
         items=[
             ('Collection', "Collection", "Place all objects into a collection and mark it as asset.", "OUTLINER_COLLECTION", 1),
             ('Objects', "Objects", "Mark individual objects as assets.", "OBJECT_DATA", 2),
-            ('Materials', "Materials", "Mark individual materials as assets.", "MATERIAL", 4)
+            ('Materials', "Materials", "Mark individual materials as assets.", "MATERIAL", 4),
+            ('Actions', "Actions", "Mark individual actions (animations) as assets.", "ACTION", 16)
         ],
         description="Select asset types to archive",
         default={
             'Collection'
         },
+    )
+    asset_description: StringProperty(
+        name="Description",
+        description="A description of the asset to be displayed for the user",
     )
     asset_license: StringProperty(
         name="License",

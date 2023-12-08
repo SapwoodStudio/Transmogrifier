@@ -543,33 +543,32 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
 
 # Split image texture name into components to be regexed in find_replace_pbr_tag function.
 # The following code is adapted from Blender 3.5, Node Wrangler 3.43, __util.py__, Line 7
-def split_into_components(texture):
+def split_into_components(string):
     try:
         """
         Split filename into components
         'WallTexture_diff_2k.002.jpg' -> ['WallTexture', 'diff', '2k', '002', 'jpg']
         """
-        # Get original texture name for printout.
-        texture_original = texture
+        # Get original string name for printout.
+        string_original = string
 
-        # Remove file path
-        texture = Path(texture).name
+        # Remove file path.
+        string = Path(string).name
         
-        # Replace common separators with SPACE
-        separators = ["_", ".", "-", "__", "--", "#"]
+        # Replace common separators with SPACE.
+        separators = ["_", ",", ".", "-", "__", "--", "#"]
         for sep in separators:
-            texture = texture.replace(sep, " ")
+            string = string.replace(sep, " ")
 
-        components = texture.split(" ")
+        components = string.split(" ")
         
-        print("------------------------  SPLIT INTO COMPONENTS: " + str(Path(texture_original).name) + " to " + str(components) + "  ------------------------")
-        logging.info("SPLIT INTO COMPONENTS: " + str(Path(texture_original).name) + " to " + str(components))
+        print("------------------------  SPLIT INTO COMPONENTS: " + str(Path(string_original).name) + " to " + str(components) + "  ------------------------")
+        logging.info("SPLIT INTO COMPONENTS: " + str(Path(string_original).name) + " to " + str(components))
 
         return components
 
-
     except Exception as Argument:
-        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(Path(texture_original).name))
+        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(Path(string_original).name))
 		
 
 # Regex, i.e. find and replace messy/misspelled PBR tag with clean PBR tag in a given image texture's name supplied by the regex_textures_external function.
@@ -1429,8 +1428,8 @@ def rename_objects_by_material_prefixes():
         objects = bpy.context.selected_objects
         for object in objects:
             if object.active_material:
-                material_name_prefix = split_into_components(texture = object.active_material.name)[0]
-                object_name_prefix = split_into_components(texture = object.name)[0]
+                material_name_prefix = split_into_components(object.active_material.name)[0]
+                object_name_prefix = split_into_components(object.name)[0]
                 original_object_name = object.name
                 if material_name_prefix != object_name_prefix:
                     object.name = material_name_prefix + "_" + object.name
@@ -2782,35 +2781,88 @@ def generate_preview(asset):
         with bpy.context.temp_override(id=asset):
             bpy.ops.ed.lib_id_generate_preview()
 
-        print("------------------------  GENERATED ASSET PREVIEW FOR " + asset.name + "  ------------------------")
-        logging.info("GENERATED ASSET PREVIEW FOR " + asset.name)
+        print("------------------------  Generated Asset Preview: " + asset.name + "  ------------------------")
+        logging.info("Generated Asset Preview: " + asset.name)
 
     except Exception as Argument:
-        logging.exception("COULD NOT GENERATED ASSET PREVIEW FOR " + asset.name)
+        logging.exception("Could not generate Asset Preview: " + asset.name)
 
 
-# Mark assets.
+# Add tag to asset.
+def add_asset_tag(asset, tag):
+    try:
+        asset.asset_data.tags.new(tag)
+
+        print("------------------------  Added tag: " + tag + "  ------------------------")
+        logging.info("Added tag: " + tag)
+
+    except Exception as Argument:
+        logging.exception("Could not add tag: " + tag)
+
+
+# Add tags to asset.
+def add_asset_tags(asset):
+    try:
+        tags = split_into_components(asset_tags)
+        for tag in tags:
+            add_asset_tag(asset, tag)
+
+        print("------------------------  Added Tags to Asset: " + asset.name + "  ------------------------")
+        logging.info("Added Tags to Asset: " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("Could not Add Tags to Asset: " + asset.name)
+
+
+# Add metadata to asset.
+def add_asset_metadata(asset):
+    try:
+        asset.asset_data.description = asset_description
+        asset.asset_data.license = asset_license
+        asset.asset_data.copyright = asset_copyright
+        asset.asset_data.author = asset_author
+        add_asset_tags(asset)
+
+        print("------------------------  Added Metadata to Asset: " + asset.name + "  ------------------------")
+        logging.info("Added Metadata to Asset: " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("Added Metadata to Asset: " + asset.name)
+
+
+# Mark asset.
+def mark_asset(asset):
+    try:
+        asset.asset_mark()
+        add_asset_metadata(asset)
+        generate_preview(asset)
+
+        print("------------------------  Marked Asset: " + asset.name + "  ------------------------")
+        logging.info("Marked Asset: " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("Could not Mark Asset: " + asset.name)
+
+
+# Mark assets in asset data filter.
 def mark_assets(item):
     try:
         if "Collection" in asset_data_filter:
             collection_name = prefix + item + suffix
             collection = bpy.data.collections[collection_name]
-            collection.asset_mark()
-            generate_preview(collection)
+            mark_asset(collection)
 
         if "Objects" in asset_data_filter:
             for object in bpy.data.objects:
-                object.asset_mark()
-                generate_preview(object)
+                mark_asset(object)
         
-        # Materials
+        if "Materials" in asset_data_filter:
+            for material in bpy.data.materials:
+                mark_asset(material)
 
-
-        # Add metadata
-            # License
-            # Copyright
-            # Author
-            # Tags
+        if "Actions" in asset_data_filter:
+            for action in bpy.data.actions:
+                mark_asset(action)
 
         print("------------------------  MARKED ASSETS  ------------------------")
         logging.info("MARKED ASSETS")
