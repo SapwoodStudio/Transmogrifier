@@ -2719,15 +2719,14 @@ def rename_textures_dir_and_repath_blend(blend, path_old, path_new):
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
 def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
     try:
+        if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets):  # If saving a .blend, don't delete the textures upon which the model inside depends.
+            path_old = textures_temp_dir
+            path_new = item_dir / (textures_temp_dir.name + "_blend")
+            rename_textures_dir_and_repath_blend(blend, path_old, path_new)  # Repath the textures.
+            print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
+            logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
         if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
-            if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
-                path_old = textures_temp_dir
-                path_new = item_dir / (textures_temp_dir.name + "_blend")
-                rename_textures_dir_and_repath_blend(blend, path_old, path_new)  # Repath the textures.
-                print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
-                logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
-            else:
-                delete_textures_temp(textures_temp_dir)
+            delete_textures_temp(textures_temp_dir)
         elif textures_source == "Custom" and not copy_textures_custom_dir:  # For Custom textures source scenario.
             remove_copy_textures_custom_dir(item_dir, textures_dir)
 
