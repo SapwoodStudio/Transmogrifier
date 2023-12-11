@@ -19,6 +19,8 @@ import re
 import logging
 from bpy.app.handlers import persistent
 from itertools import chain
+import time
+import numpy as np
 
 
 # Read Converter_Variables.json file where the user variables are stored.
@@ -2774,17 +2776,69 @@ def determine_export_uv_layout(item, textures_dir):
         logging.exception("COULD NOT DETERMINE HOW TO EXPORT UV LAYOUT(S)")
 
 
+# Determine whether asset preview has finished generating.
+# Source: https://projects.blender.org/blender/blender/issues/93893#issuecomment-168540
+def preview_finished(asset):
+    try:
+        arr = np.zeros((asset.preview.image_size[0] * asset.preview.image_size[1]) * 4, dtype=np.float32)
+        asset.preview.image_pixels_float.foreach_get(arr)
+        if np.all((arr == 0)):
+            return False
+        return True
+
+    except Exception as Argument:
+        logging.exception("Could not determine if asset preview finished.")
+
+
 # Generate preview image for asset browser.
 def generate_preview(asset):
     try:
         with bpy.context.temp_override(id=asset):
             bpy.ops.ed.lib_id_generate_preview()
+        
+        while True:
+            if preview_finished(asset):
+                break
+            time.sleep(0.1)
 
         print("------------------------  Generated Asset Preview: " + asset.name + "  ------------------------")
         logging.info("Generated Asset Preview: " + asset.name)
 
     except Exception as Argument:
         logging.exception("Could not generate Asset Preview: " + asset.name)
+
+
+# Determine whether the asset can have a preview image generated for it.
+# Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
+# asset_browser_utilities/module/preview/tool.py, Line 11
+def can_preview_be_generated(asset):
+    try:
+        if isinstance(
+            asset,
+            (
+                bpy.types.Action,
+                bpy.types.Brush,
+                bpy.types.Collection,
+                bpy.types.ShaderNodeTree,
+                bpy.types.Light,
+                bpy.types.Material,
+                bpy.types.Screen,
+                bpy.types.Texture,
+                bpy.types.World,
+            ),
+        ):
+            return True
+        elif isinstance(asset, bpy.types.Object):
+            if asset.type in ("MESH", "FONT", "LIGHT", "GREASEPENCIL", "SURFACE", "META"):
+                if asset.type == "MESH" and len(asset.data.polygons) == 0:
+                    return False
+                return True
+        elif isinstance(asset, bpy.types.Image):
+            return bool(asset.pixels)
+        return False
+
+    except Exception as Argument:
+        logging.exception("Could not determine whether asset preview could be generated for: " + asset.name)
 
 
 # Add tag to asset.
@@ -2834,7 +2888,8 @@ def mark_asset(asset):
     try:
         asset.asset_mark()
         add_asset_metadata(asset)
-        generate_preview(asset)
+        if can_preview_be_generated(asset):
+            generate_preview(asset)
 
         print("------------------------  Marked Asset: " + asset.name + "  ------------------------")
         logging.info("Marked Asset: " + asset.name)
