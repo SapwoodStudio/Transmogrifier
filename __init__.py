@@ -149,6 +149,34 @@ def get_transmogrifier_preset_index(operator, preset_name):
             return p
     return 0
 
+
+
+# A dictionary of one key with a value of a list of asset libraries.
+asset_library_enum_items_refs = {"asset_libraries": []}
+
+# Get asset libraries and return a list of them.  Add them as the value to the dictionary.
+def get_asset_libraries():
+    libraries_list = [('NO_LIBRARY', "(no library)", "Don't move .blend files containing assets to a library.\nInstead, save .blend files adjacent converted items.", 0)]
+    prefs = bpy.context.preferences
+    filepaths = prefs.filepaths
+    asset_libraries = filepaths.asset_libraries
+    for asset_library in asset_libraries:
+        library_name = asset_library.name
+        libraries_list.append((library_name, library_name, ""))
+
+    asset_library_enum_items_refs["asset_libraries"] = libraries_list
+
+    return libraries_list
+
+# Get index of selected asset library in asset_library_enum property based on its position in the dictionary value list.
+def get_asset_library_index(library_name):
+    for l in range(len(asset_library_enum_items_refs["asset_libraries"])):
+        if asset_library_enum_items_refs["asset_libraries"][l][0] == library_name:
+            return l
+    return 0
+
+
+
 # Refresh UI when a Transmogrifier preset is selected by running REFRESHUI operator.
 def refresh_ui(self, context):
     eval('bpy.ops.refreshui.transmogrifier()')
@@ -513,6 +541,7 @@ def draw_settings_archive(self, context):
         col.prop(settings, 'save_conversion_log')
         col.prop(settings, 'archive_assets')
         if settings.archive_assets:
+            col.prop(settings, 'asset_library_enum')
             grid = self.layout.grid_flow(columns=1, align=True)
             grid.prop(settings, 'asset_data_filter')
             col = self.layout.column(align=True)
@@ -1268,7 +1297,6 @@ class TRANSMOGRIFY(Operator):
         write_json(variables_dict, json_file)
 
         # Run Converter.py
-        # subprocess.call(start_converter_file, creationflags=subprocess.CREATE_NEW_CONSOLE) # Use for troubleshooting purposes
         subprocess.call(
             [
                 blender_dir,
@@ -1293,10 +1321,8 @@ class TransmogrifierSettings(PropertyGroup):
         name="", options={'SKIP_SAVE'},
         description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
         items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
-        get=lambda self: get_transmogrifier_preset_index(
-            'transmogrifier', self.transmogrifier_preset),
-        set=lambda self, value: setattr(
-            self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
+        get=lambda self: get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
+        set=lambda self, value: setattr(self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
         update=refresh_ui
     )
     # UI Setting
@@ -2079,6 +2105,14 @@ class TransmogrifierSettings(PropertyGroup):
         description="Archive specified assets to Asset Library",
         default=True,
         )
+    asset_library: StringProperty(default='(no library)')
+    asset_library_enum: EnumProperty(
+        name="Asset Library", options={'SKIP_SAVE'},
+        description="Archive converted assets to selected library",
+        items=lambda self, context: get_asset_libraries(),
+        get=lambda self: get_asset_library_index(self.asset_library),
+        set=lambda self, value: setattr(self, 'asset_library', asset_library_enum_items_refs["asset_libraries"][value][0]),
+    )
     # Mark asset data filter.
     asset_data_filter: EnumProperty(
         name="Mark Assets",
