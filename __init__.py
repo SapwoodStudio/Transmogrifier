@@ -157,9 +157,7 @@ asset_library_enum_items_refs = {"asset_libraries": []}
 # Get asset libraries and return a list of them.  Add them as the value to the dictionary.
 def get_asset_libraries():
     libraries_list = [('NO_LIBRARY', "(no library)", "Don't move .blend files containing assets to a library.\nInstead, save .blend files adjacent converted items.", 0)]
-    prefs = bpy.context.preferences
-    filepaths = prefs.filepaths
-    asset_libraries = filepaths.asset_libraries
+    asset_libraries = bpy.context.preferences.filepaths.asset_libraries
     for asset_library in asset_libraries:
         library_name = asset_library.name
         libraries_list.append((library_name, library_name, ""))
@@ -174,6 +172,43 @@ def get_asset_library_index(library_name):
         if asset_library_enum_items_refs["asset_libraries"][l][0] == library_name:
             return l
     return 0
+
+
+
+# A dictionary of one key with a value of a list of asset catalogs.
+asset_catalog_enum_items_refs = {"asset_catalogs": []}
+
+# Get asset catalogs and return a list of them.  Add them as the value to the dictionary.
+def get_asset_catalogs():
+    catalogs_list = [('NO_CATALOG', "(no catalog)", "Don't assign assets to a catalog.", 0)]
+    settings = bpy.context.scene.transmogrifier
+    asset_libraries = bpy.context.preferences.filepaths.asset_libraries
+    library_name = settings.asset_library
+    library_path = [library.path for library in asset_libraries if library.name == library_name]
+    if library_path:  # If the list is not empty, then it found a library path.
+        library_path = Path(library_path[0])
+        catalog_file = library_path / "blender_assets.cats.txt"
+        if catalog_file.is_file():  # Check if catalog file exists
+            with catalog_file.open() as f:
+                for line in f.readlines():
+                    if line.startswith(("#", "VERSION", "\n")):
+                        continue
+                    # Each line contains : 'uuid:catalog_tree:catalog_name' + eol ('\n')
+                    uuid = line.split(":")[0]
+                    catalog_name = line.split(":")[2].split("\n")[0]
+                    catalogs_list.append((uuid, catalog_name, ""))
+
+    asset_catalog_enum_items_refs["asset_catalogs"] = catalogs_list
+
+    return catalogs_list
+
+# Get index of selected asset catalog in asset_catalog_enum property based on its position in the dictionary value list.
+def get_asset_catalog_index(catalog_name):
+    for l in range(len(asset_catalog_enum_items_refs["asset_catalogs"])):
+        if asset_catalog_enum_items_refs["asset_catalogs"][l][0] == catalog_name:
+            return l
+    return 0
+
 
 
 
@@ -542,6 +577,7 @@ def draw_settings_archive(self, context):
         col.prop(settings, 'archive_assets')
         if settings.archive_assets:
             col.prop(settings, 'asset_library_enum')
+            col.prop(settings, 'asset_catalog_enum')
             grid = self.layout.grid_flow(columns=1, align=True)
             grid.prop(settings, 'asset_data_filter')
             col = self.layout.column(align=True)
@@ -2112,6 +2148,14 @@ class TransmogrifierSettings(PropertyGroup):
         items=lambda self, context: get_asset_libraries(),
         get=lambda self: get_asset_library_index(self.asset_library),
         set=lambda self, value: setattr(self, 'asset_library', asset_library_enum_items_refs["asset_libraries"][value][0]),
+    )
+    asset_catalog: StringProperty(default='(no library)')
+    asset_catalog_enum: EnumProperty(
+        name="Catalog", options={'SKIP_SAVE'},
+        description="Assign converted assets to selected catalog",
+        items=lambda self, context: get_asset_catalogs(),
+        get=lambda self: get_asset_catalog_index(self.asset_catalog),
+        set=lambda self, value: setattr(self, 'asset_catalog', asset_catalog_enum_items_refs["asset_catalogs"][value][0]),
     )
     # Mark asset data filter.
     asset_data_filter: EnumProperty(
