@@ -2870,6 +2870,8 @@ def add_asset_tags(asset):
 # Add metadata to asset.
 def add_asset_metadata(asset):
     try:
+        if asset_library != "NO_LIBRARY" and asset_catalog != "NO_CATALOG":
+            asset.asset_data.catalog_id = asset_catalog
         asset.asset_data.description = asset_description
         asset.asset_data.license = asset_license
         asset.asset_data.copyright = asset_copyright
@@ -2923,6 +2925,27 @@ def mark_assets(item):
 
     except Exception as Argument:
         logging.exception("COULD NOT MARK ASSETS")
+
+
+# Archive assets to Asset Library by marking, tagging, and cataloging.
+def archive_assets_to_library(item, blend):
+    try:
+        mark_assets(item)
+        save_blend_file(blend)
+        
+        # Move .blend file and textures to selected Asset Library.
+        if asset_library != "NO_LIBRARY":
+            asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
+            move_file(asset_library_path, blend)
+            if use_textures and not pack_resources:
+                blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+                move_file(asset_library_path, blend_textures)
+
+        print("------------------------  ARCHIVED ASSETS TO LIBRARY: " + asset_library + "  ------------------------")
+        logging.info("ARCHIVED ASSETS TO LIBRARY: " + asset_library)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT ARCHIVE ASSETS TO LIBRARY: " + asset_library)
 
 
 # Convert the file for every file found inside the given directory.
@@ -2990,10 +3013,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
-        if archive_assets:
-            mark_assets(item)
-            save_blend_file(blend)
-
         # Save preview image.
         if save_preview_image:
             render_preview_image(preview_image)        
@@ -3005,6 +3024,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Export UV Layout(s).
         if export_uv_layout:
             determine_export_uv_layout(item, textures_dir)
+        
+        if archive_assets:
+            archive_assets_to_library(item, blend)
 
         print("-------------------------------------------------------------------")
         print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
@@ -3073,7 +3095,7 @@ def move_file(directory, file_source):
                 shutil.rmtree(file_destination)
             shutil.move(file_source, file_destination)
 
-        # Check if "file" is a file
+        # Check if "file" is a file.
         if not Path(file_source).is_dir():
             if Path(file_destination).is_file():
             # Remove any existing destination file

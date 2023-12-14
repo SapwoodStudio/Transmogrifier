@@ -2149,7 +2149,7 @@ class TransmogrifierSettings(PropertyGroup):
         get=lambda self: get_asset_library_index(self.asset_library),
         set=lambda self, value: setattr(self, 'asset_library', asset_library_enum_items_refs["asset_libraries"][value][0]),
     )
-    asset_catalog: StringProperty(default='(no library)')
+    asset_catalog: StringProperty(default='(no catalog)')
     asset_catalog_enum: EnumProperty(
         name="Catalog", options={'SKIP_SAVE'},
         description="Assign converted assets to selected catalog",
