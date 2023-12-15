@@ -576,6 +576,7 @@ def draw_settings_archive(self, context):
         col.prop(settings, 'save_conversion_log')
         col.prop(settings, 'archive_assets')
         if settings.archive_assets:
+            col.prop(settings, 'pack_resources')
             col.prop(settings, 'asset_library_enum')
             col.prop(settings, 'asset_catalog_enum')
             grid = self.layout.grid_flow(columns=1, align=True)

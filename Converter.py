@@ -1341,15 +1341,29 @@ def save_blend_file(blend):
 
         # Preserve unused materials & textures by setting fake user(s).
         use_fake_user()
-        
-        # Make paths relative if elected.
-        if make_paths_relative:
+
+        # Pack textures into .blend before saving the file if exporting a .blend.
+        if pack_resources:
+            bpy.ops.file.pack_all()
+
+        # Make paths relative if not packing and if elected.
+        elif not pack_resources and make_paths_relative:
             bpy.ops.file.make_paths_relative()
+
+        # Frame object(s) in the viewport before saving.
+        override = override_context('VIEW_3D', 'WINDOW')
+        with bpy.context.temp_override(**override):
+            bpy.ops.view3d.view_selected(use_all_regions=False)
 
         # Save the file.
         bpy.ops.wm.save_as_mainfile(
             filepath=str(blend), 
         )
+
+        # Delete Blender "save version" backup file (also known as a "blend1" file).
+        blend1 = Path(str(blend) + "1")
+        if Path(blend1).is_file():
+            Path.unlink(blend1)
 
         print("------------------------  SAVED BLEND FILE: " + str(Path(blend).name) + "  ------------------------")
         logging.info("SAVED BLEND FILE: " + str(Path(blend).name))
@@ -1380,6 +1394,7 @@ def unpack_textures(textures_temp_dir, blend):
     except Exception as Argument:
         logging.exception("COULD NOT UNPACK TEXTURES")
 		
+
 # Returns a dictionary of which textures are assigned to which materials.
 def map_textures_to_materials():
     try:
@@ -2001,18 +2016,6 @@ def set_scene_units(unit_system, length_unit):
         logging.exception("COULD NOT SET SCENE UNITS")
 		
 
-# Pack textures into .blend before saving the file.
-def pack_resources_into_blend():
-    try:
-        bpy.ops.file.pack_all()
-
-        print("------------------------  PACKED RESOURCES INTO BLEND  ------------------------")
-        logging.info("PACKED RESOURCES INTO BLEND")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT PACK RESOURCES INTO BLEND")
-
-
 # Export a model.
 def export_a_model(export_file_scale, export_file_command, export_file_options, export_file):
     try:
@@ -2025,20 +2028,16 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
             apply_transformations(apply_transforms_filter)
         
         # Export the model.
-        export_file_options["filepath"] = export_file  # Set filepath to the location of the model to be imported
-        export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the import command with the import options dictionary
-        print(export_file_command)
-        logging.info(export_file_command)
+        export_file_options["filepath"] = export_file  # Set filepath to the location of the model to be exported.
+        export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the export command with the export options dictionary.
+
+        # Run export_file_command, which is stored as a string and won't run otherwise.
         if Path(export_file).suffix == ".blend":
-            if pack_resources:  # Pack textures into .blend before saving the file if exporting a .blend.
-                pack_resources_into_blend()
-            elif not pack_resources and make_paths_relative:
-                bpy.ops.file.make_paths_relative()
-            override = override_context('VIEW_3D', 'WINDOW') # Frame object(s) in the viewport before saving.
-            with bpy.context.temp_override(**override):
-                bpy.ops.view3d.view_selected(use_all_regions=False)    
-            
-        exec(export_file_command)  # Run export_file_command, which is stored as a string and won't run otherwise.
+            save_blend_file(Path(export_file))  # Use save_blend_file function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
+        else:
+            exec(export_file_command)
+            print(export_file_command)
+            logging.info(export_file_command)
 
         # Reset scale
         export_file_scale = 1 / export_file_scale
@@ -2485,7 +2484,7 @@ def apply_textures_external(item_dir, item, import_file, textures_dir, textures_
             logging.info("Using external textures already linked to .blend for conversion")
 
             # Pack linked textures into .blend since they may be sourced from many different directories.
-            pack_resources_into_blend()
+            bpy.ops.file.pack_all()
 
             # Pretend that these textures were "Packed" all along.
             apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
@@ -2933,13 +2932,14 @@ def archive_assets_to_library(item, blend):
         mark_assets(item)
         save_blend_file(blend)
         
-        # Move .blend file and textures to selected Asset Library.
+        # Move/Copy .blend file and textures to selected Asset Library.
         if asset_library != "NO_LIBRARY":
             asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
-            move_file(asset_library_path, blend)
+            asset_dir = make_directory(asset_library_path, blend.stem)
+            move_file(asset_dir, blend)
             if use_textures and not pack_resources:
                 blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
-                move_file(asset_library_path, blend_textures)
+                move_file(asset_dir, blend_textures)
 
         print("------------------------  ARCHIVED ASSETS TO LIBRARY: " + asset_library + "  ------------------------")
         logging.info("ARCHIVED ASSETS TO LIBRARY: " + asset_library)
@@ -3082,6 +3082,23 @@ def list_exports(export_file_1, export_file_2):
 
     except Exception as Argument:
         logging.exception("COULD NOT LIST EXPORTS")
+
+
+# Create a new directory in a given directory.
+def make_directory(destination, name):
+    try:
+        new_dir = destination / name  # destination needs to be a Path.
+        if destination.exists():
+            if not new_dir.exists():
+                Path.mkdir(new_dir)
+
+        print("------------------------  MADE DIRECTORY  ------------------------")
+        logging.info("MADE DIRECTORY")
+
+        return new_dir
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MADE DIRECTORY")
 
 
 # Move file from source to destination
