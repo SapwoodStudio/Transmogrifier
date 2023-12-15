@@ -1346,6 +1346,10 @@ def save_blend_file(blend):
         if pack_resources:
             bpy.ops.file.pack_all()
 
+            # Delete blend_textures_temp since it is no longer needed.
+            blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+            delete_textures_temp(blend_textures)
+
         # Make paths relative if not packing and if elected.
         elif not pack_resources and make_paths_relative:
             bpy.ops.file.make_paths_relative()
@@ -2698,13 +2702,8 @@ def determine_uv_directory(textures_dir):
 
 
 # Rename textures_temp_dir and repath images inside the .blend.
-def rename_textures_dir_and_repath_blend(blend, path_old, path_new):
+def repath_blend_textures(blend, path_new):
     try:
-        if Path(path_new).exists():
-            shutil.rmtree(path_new)  # Remove directory if previously renamed.
-
-        path_old.rename(path_new)  # Rename the directory.
-
         for image in bpy.data.images:  # Repath the textures.
             bpy.data.images[image.name].filepath = str(path_new / image.name)
         
@@ -2720,10 +2719,12 @@ def rename_textures_dir_and_repath_blend(blend, path_old, path_new):
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
 def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
     try:
-        if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets):  # If saving a .blend, don't delete the textures upon which the model inside depends.
-            path_old = textures_temp_dir
-            path_new = item_dir / (textures_temp_dir.name + "_blend")
-            rename_textures_dir_and_repath_blend(blend, path_old, path_new)  # Repath the textures.
+        if Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets:  # If saving a .blend, don't delete the textures upon which the model inside depends.
+            blend_textures = item_dir / (textures_temp_dir.name + "_blend")
+            if blend_textures.exists():
+                shutil.rmtree(blend_textures)
+            shutil.copytree(textures_temp_dir, blend_textures)
+            repath_blend_textures(blend, blend_textures)  # Repath the textures.
             print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
             logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
         if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
