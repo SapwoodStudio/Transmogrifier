@@ -582,6 +582,18 @@ def draw_settings_archive(self, context):
             grid = self.layout.grid_flow(columns=1, align=True)
             grid.prop(settings, 'asset_data_filter')
             col = self.layout.column(align=True)
+            if "Objects" in settings.asset_data_filter:
+                # Align menu items to the left.
+                self.layout.use_property_split = False
+
+                col.label(text="Object Types:")
+                grid = self.layout.grid_flow(columns=3, align=True)
+                grid.prop(settings, 'asset_object_types_filter')
+            
+                # Align menu items to the right.
+                self.layout.use_property_split = True
+                col = self.layout.column(align=True)
+
             col.prop(settings, 'asset_description')
             col.prop(settings, 'asset_license')
             col.prop(settings, 'asset_copyright')
@@ -2171,6 +2183,34 @@ class TransmogrifierSettings(PropertyGroup):
         description="Select asset types to archive",
         default={
             'Collection'
+        },
+    )
+    asset_object_types_filter: EnumProperty(
+        name="Object Types",
+        options={'ENUM_FLAG'},
+        items=[
+            ('MESH', "Mesh", "", 1),
+            ('CURVE', "Curve", "", 2),
+            ('SURFACE', "Surface", "", 4),
+            ('META', "Metaball", "", 8),
+            ('FONT', "Text", "", 16),
+            ('GPENCIL', "Grease Pencil", "", 32),
+            ('ARMATURE', "Armature", "", 64),
+            ('EMPTY', "Empty", "", 128),
+            ('LIGHT', "Lamp", "", 256),
+            ('CAMERA', "Camera", "", 512),
+        ],
+        description="Which object types to mark as assets.\nNot all will be able to have preview images generated",
+        default={
+            'MESH', 
+            'CURVE', 
+            'SURFACE', 
+            'META', 
+            'FONT', 
+            'GPENCIL', 
+            'ARMATURE', 
+            'LIGHT', 
+            'CAMERA', 
         },
     )
     asset_description: StringProperty(

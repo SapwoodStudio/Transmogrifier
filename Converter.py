@@ -2910,6 +2910,8 @@ def mark_assets(item):
 
         if "Objects" in asset_data_filter:
             for object in bpy.data.objects:
+                if not object.type in asset_object_types_filter:  # Mark only certain selected object types as assets.
+                    continue
                 mark_asset(object)
         
         if "Materials" in asset_data_filter:
