@@ -583,17 +583,17 @@ def draw_settings_archive(self, context):
             grid.prop(settings, 'asset_data_filter')
             col = self.layout.column(align=True)
             if "Objects" in settings.asset_data_filter:
-                # Align menu items to the left.
-                self.layout.use_property_split = False
-
+                self.layout.use_property_split = False  # Align menu items to the left.
                 col.label(text="Object Types:")
                 grid = self.layout.grid_flow(columns=3, align=True)
                 grid.prop(settings, 'asset_object_types_filter')
-            
-                # Align menu items to the right.
-                self.layout.use_property_split = True
+                self.layout.use_property_split = True  # Align menu items to the right.
                 col = self.layout.column(align=True)
 
+            if "Materials" in settings.asset_data_filter:
+                col.prop(settings, 'asset_materials_merge_duplicates')
+                col = self.layout.column(align=True)
+            
             col.prop(settings, 'asset_description')
             col.prop(settings, 'asset_license')
             col.prop(settings, 'asset_copyright')
@@ -2212,6 +2212,11 @@ class TransmogrifierSettings(PropertyGroup):
             'LIGHT', 
             'CAMERA', 
         },
+    )
+    asset_materials_merge_duplicates: BoolProperty(
+        name="Merge Materials",
+        description="Merge duplicate materials that already exist in the selected asset library",
+        default=True,
     )
     asset_description: StringProperty(
         name="Description",

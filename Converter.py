@@ -1287,10 +1287,6 @@ def render_preview_image(preview_image):
             use_curves=False, 
         )
 
-        # Set render path
-        sce = bpy.context.scene.name
-        bpy.data.scenes[sce].render.filepath = str(preview_image)
-
         # Override context to 3D Viewport
         area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
         space = next(space for space in area.spaces if space.type == 'VIEW_3D')
@@ -1312,9 +1308,11 @@ def render_preview_image(preview_image):
             # Frame all objects into viewport so objects are neither too small nor too large in the render. 
             # They tend to be a bit small, but it's better than not at all for the time being.
             bpy.ops.view3d.view_selected(use_all_regions=False)
-
-            # Render image through viewport and save the image to location provided above.
-            bpy.ops.render.opengl(write_still=True)
+        
+        # Render image through viewport and save the image.
+        bpy.ops.render.opengl(write_still=False)
+        render = bpy.data.images['Render Result']
+        render.save_render(filepath=str(preview_image))
 
         print("------------------------  RENDERED PREVIEW IMAGE THUMBNAIL  ------------------------")
         logging.info("RENDERED PREVIEW IMAGE THUMBNAIL")
@@ -2702,10 +2700,12 @@ def determine_uv_directory(textures_dir):
 
 
 # Rename textures_temp_dir and repath images inside the .blend.
-def repath_blend_textures(blend, path_new):
+def repath_blend_textures(blend, path_old, path_new):
     try:
         for image in bpy.data.images:  # Repath the textures.
-            bpy.data.images[image.name].filepath = str(path_new / image.name)
+            image_filepath = bpy.data.images[image.name].filepath
+            image_filepath_new = image_filepath.replace(path_old.name, path_new.name)
+            bpy.data.images[image.name].filepath = image_filepath_new
         
         print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
         logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
@@ -2724,7 +2724,7 @@ def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1
             if blend_textures.exists():
                 shutil.rmtree(blend_textures)
             shutil.copytree(textures_temp_dir, blend_textures)
-            repath_blend_textures(blend, blend_textures)  # Repath the textures.
+            repath_blend_textures(blend, textures_temp_dir, blend_textures)  # Repath the textures.
             print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
             logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
         if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
@@ -3016,10 +3016,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
-        # Save preview image.
-        if save_preview_image:
-            render_preview_image(preview_image)        
-
         # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
             determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
@@ -3030,6 +3026,10 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         
         if archive_assets:
             archive_assets_to_library(item, blend)
+
+        # Save preview image.
+        if save_preview_image:
+            render_preview_image(preview_image)  
 
         print("-------------------------------------------------------------------")
         print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
