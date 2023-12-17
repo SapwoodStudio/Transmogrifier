@@ -251,7 +251,7 @@ def append_blend(import_file_command, import_file_options, import_file):
 
     except Exception as Argument:
         logging.exception("COULD NOT APPEND BLEND FILE: " + str(Path(import_file).name))
-        
+
 
 # Import file of a format type supplied by the user.
 def import_file_function(import_file_command, import_file_options, import_file):
@@ -272,7 +272,31 @@ def import_file_function(import_file_command, import_file_options, import_file):
 
     except Exception as Argument:
         logging.exception("COULD NOT IMPORT FILE: " + str(Path(import_file).name))
-		
+		  
+
+# Move all objects and collections to item collection.
+def move_objects_and_collections_to_item_collection(item):
+    try:
+        item_collection = bpy.data.collections[prefix + item + suffix]
+        collections_to_move = [collection for collection in bpy.context.scene.collection.children if collection != item_collection]  # Get a list of additional collections in the scene.
+        objects_to_move = [object for object in bpy.context.scene.collection.objects]  # Get a list of objects that exist directly in the default Scene Collection.
+
+        if collections_to_move:
+            for collection in collections_to_move:
+                bpy.context.scene.collection.children.unlink(collection)
+                item_collection.children.link(collection)
+
+        if objects_to_move:
+            for object in objects_to_move:
+                bpy.context.scene.collection.objects.unlink(object)
+                item_collection.objects.link(object)
+            
+        print("------------------------  SET UP SCENE  ------------------------")
+        logging.info("SET UP SCENE")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SET UP SCENE")
+
 
 # Remove all animation data from imported objects. Sometimes 3DS Max exports objects with keyframes that cause scaling/transform issues in a GLB and USDZ.
 def clear_animation_data():
@@ -1375,20 +1399,30 @@ def save_blend_file(blend):
 		
 
 # Save.blend file and unpack images to textures_temp whenever packed images are used for conversion and are to be resized and/or reformatted.
-def unpack_textures(textures_temp_dir, blend):
+def unpack_textures(item_dir, textures_temp_dir, blend):
     try:
-        # Create textures_temp_dir
-        if not Path(textures_temp_dir).exists():
-            Path.mkdir(textures_temp_dir)
-        elif Path(textures_temp_dir).exists():
-            shutil.rmtree(textures_temp_dir)
-            Path.mkdir(textures_temp_dir)
+        # Check if a textures_dir exists already
+        textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
+        if textures_dir_check != "":
+            textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
+            textures_original = textures_dir.parent / (textures_dir.name + "_original") 
+            textures_dir.rename(textures_original)
 
-        # Save blend inside textures_temp_dir
+        # Save blend file.
         save_blend_file(blend)
         
         # Unpack images
         bpy.ops.file.unpack_all(method='WRITE_LOCAL')
+        textures_dir_unpack = Path(item_dir) / "textures"
+        
+        # Create textures_temp_dir
+        if Path(textures_temp_dir).exists():
+            shutil.rmtree(textures_temp_dir)
+        textures_dir_unpack.rename(textures_temp_dir)
+
+        # Return textures_original to textures if there was a textures directory to begin with.
+        if textures_dir_check != "":
+            textures_original.rename(textures_dir)
 
         print("------------------------  UNPACKED TEXTURES  ------------------------")
         logging.info("UNPACKED TEXTURES")
@@ -1604,7 +1638,7 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                             rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output)
                 
                 # Finally, remove the original combined image.
-                image_path = Path(bpy.path.abspath(image.filepath))
+                image_path = textures_temp_dir / Path(bpy.path.abspath(image.filepath)).name
                 if image_path.exists():
                     Path.unlink(image_path)
                 else:
@@ -2418,12 +2452,26 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
         logging.exception("COULD NOT APPLY CUSTOM TEXTURES TO OBJECTS")
 
 
+# Rename textures_temp_dir and repath images inside the .blend.
+def repath_blend_textures(blend, path_old, path_new):
+    try:
+        for image in bpy.data.images:  # Repath the textures.
+            image_filepath = bpy.data.images[image.name].filepath
+            image_filepath_new = image_filepath.replace(path_old.name, path_new.name)
+            bpy.data.images[image.name].filepath = image_filepath_new
+        
+        print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
+        logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
+        
+        save_blend_file(blend)  # Save the .blend.
+
+    except Exception as Argument:
+        logging.exception("COULD NOT RENAME MODIFIED TEXTURES DIRECTORY OR REPATH BLEND")
+
+
 # Apply "Packed" textures to objects.
 def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
     try:
-        # Repath blend location to inside textures_temp_dir
-        blend = Path(textures_temp_dir, Path(blend).name)
-
         # Find and rename transparent materials that have mispellings of transparency with regex keys. 
         regex_transparent_materials()
 
@@ -2437,7 +2485,7 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
         delete_textures_temp(textures_temp_dir)
 
         # Unpack textures before modifying them.
-        unpack_textures(textures_temp_dir, blend)
+        unpack_textures(item_dir, textures_temp_dir, blend)
 
         # Rename unpacked textures to match image name, since images packed into .blend use names from 
         #  original texture filepath baked into their data instead of the image name.
@@ -2452,9 +2500,6 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
         elif import_file_ext == ".glb":
             # Get a dictionary of which textures are assigned to which materials.
             mapped_textures = map_textures_to_materials()
-            
-            # Set textures_temp_dir to location of unpacked images.
-            textures_temp_dir = Path(textures_temp_dir, "textures")
 
             # Separate the combined maps.
             separate_gltf_maps(textures_temp_dir)
@@ -2697,23 +2742,6 @@ def determine_uv_directory(textures_dir):
     
     except Exception as Argument:
         logging.exception("COULD NOT DETERMINE UV DIRECTORY")
-
-
-# Rename textures_temp_dir and repath images inside the .blend.
-def repath_blend_textures(blend, path_old, path_new):
-    try:
-        for image in bpy.data.images:  # Repath the textures.
-            image_filepath = bpy.data.images[image.name].filepath
-            image_filepath_new = image_filepath.replace(path_old.name, path_new.name)
-            bpy.data.images[image.name].filepath = image_filepath_new
-        
-        print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
-        logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
-        
-        save_blend_file(blend)  # Save the .blend.
-
-    except Exception as Argument:
-        logging.exception("COULD NOT RENAME MODIFIED TEXTURES DIRECTORY OR REPATH BLEND")
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
@@ -2971,6 +2999,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # Import the file.
         import_file_function(import_file_command, import_file_options, import_file)
+
+        # Move all objects and collections to item collection.
+        move_objects_and_collections_to_item_collection(item)
 
         # Delete animations.
         if delete_animations:
