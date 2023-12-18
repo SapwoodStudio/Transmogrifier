@@ -571,7 +571,6 @@ def draw_settings_archive(self, context):
     # col = self.layout.column(align=True)
     col.label(text="Archive:", icon='ASSET_MANAGER')
     col.prop(settings, 'save_preview_image')
-    col.prop(settings, 'save_blend')
     if settings.ui_toggle == "Advanced":
         col.prop(settings, 'save_conversion_log')
         col.prop(settings, 'archive_assets')
@@ -591,7 +590,7 @@ def draw_settings_archive(self, context):
                 col = self.layout.column(align=True)
 
             if "Materials" in settings.asset_data_filter:
-                col.prop(settings, 'asset_materials_merge_duplicates')
+                col.prop(settings, 'asset_materials_ignore_duplicates')
                 col = self.layout.column(align=True)
             
             col.prop(settings, 'asset_description')
@@ -2136,12 +2135,6 @@ class TransmogrifierSettings(PropertyGroup):
         description="Save preview image thumbnails for every model",
         default=True,
         )
-    # Save .blend file.
-    save_blend: BoolProperty(
-        name="Save .blend",
-        description="Save a Blender file for every model. This can help troubleshoot conversion errors",
-        default=False,
-        )
     # Save conversion log.
     save_conversion_log: BoolProperty(
         name="Save Log",
@@ -2213,9 +2206,9 @@ class TransmogrifierSettings(PropertyGroup):
             'CAMERA', 
         },
     )
-    asset_materials_merge_duplicates: BoolProperty(
-        name="Merge Materials",
-        description="Merge duplicate materials that already exist in the selected asset library",
+    asset_materials_ignore_duplicates: BoolProperty(
+        name="Ignore Duplicate Materials",
+        description="Ignore duplicate materials that already exist in the selected asset library",
         default=True,
     )
     asset_description: StringProperty(
