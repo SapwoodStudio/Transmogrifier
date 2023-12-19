@@ -568,38 +568,54 @@ def draw_settings_archive(self, context):
 
     # Align menu items to the Right.
     self.layout.use_property_split = True
-    # col = self.layout.column(align=True)
     col.label(text="Archive:", icon='ASSET_MANAGER')
-    col.prop(settings, 'save_preview_image')
+
     if settings.ui_toggle == "Advanced":
-        col.prop(settings, 'save_conversion_log')
         col.prop(settings, 'archive_assets')
         if settings.archive_assets:
             col.prop(settings, 'pack_resources')
             col.prop(settings, 'asset_library_enum')
             col.prop(settings, 'asset_catalog_enum')
-            grid = self.layout.grid_flow(columns=1, align=True)
+
+            self.layout.use_property_split = False
+            col.label(text="Mark Assets:")
+            grid = self.layout.grid_flow(columns=6, align=True)
             grid.prop(settings, 'asset_data_filter')
             col = self.layout.column(align=True)
+            
+            col.prop(settings, 'assets_ignore_duplicates')
+            if settings.assets_ignore_duplicates:
+                grid = self.layout.grid_flow(columns=6, align=True)
+                grid.prop(settings, 'assets_ignore_duplicates_filter')
+            col = self.layout.column(align=True)
+                        
+            self.layout.use_property_split = False
+            if "Collections" in settings.asset_data_filter:
+                col.label(text="Collections:")
+                col.prop(settings, 'add_master_collection')
+                col = self.layout.column(align=True)
+
             if "Objects" in settings.asset_data_filter:
-                self.layout.use_property_split = False  # Align menu items to the left.
                 col.label(text="Object Types:")
                 grid = self.layout.grid_flow(columns=3, align=True)
                 grid.prop(settings, 'asset_object_types_filter')
                 self.layout.use_property_split = True  # Align menu items to the right.
                 col = self.layout.column(align=True)
-
-            if "Materials" in settings.asset_data_filter:
-                col.prop(settings, 'asset_materials_ignore_duplicates')
-                col = self.layout.column(align=True)
             
+            self.layout.use_property_split = False
+
+
+            self.layout.use_property_split = True
+            col = self.layout.column(align=True)
             col.prop(settings, 'asset_description')
             col.prop(settings, 'asset_license')
             col.prop(settings, 'asset_copyright')
             col.prop(settings, 'asset_author')
             col.prop(settings, 'asset_tags')
-            
-
+            col = self.layout.column(align=True)
+    
+    col.prop(settings, 'save_preview_image')            
+    col.prop(settings, 'save_conversion_log')
 
 
 # Draws the button and popover dropdown button used in the
@@ -2129,18 +2145,6 @@ class TransmogrifierSettings(PropertyGroup):
         soft_max=10,
         step=1,
     )
-    # Save preview image.
-    save_preview_image: BoolProperty(
-        name="Render Preview",
-        description="Save preview image thumbnails for every model",
-        default=True,
-        )
-    # Save conversion log.
-    save_conversion_log: BoolProperty(
-        name="Save Log",
-        description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
-        default=False,
-        )
     # Mark data blocks as assets.
     archive_assets: BoolProperty(
         name="Archive Assets",
@@ -2168,16 +2172,50 @@ class TransmogrifierSettings(PropertyGroup):
         name="Mark Assets",
         options={'ENUM_FLAG'},
         items=[
-            ('Collection', "Collection", "Place all objects into a collection and mark it as asset.", "OUTLINER_COLLECTION", 1),
-            ('Objects', "Objects", "Mark individual objects as assets.", "OBJECT_DATA", 2),
-            ('Materials', "Materials", "Mark individual materials as assets.", "MATERIAL", 4),
-            ('Actions', "Actions", "Mark individual actions (animations) as assets.", "ACTION", 16)
+            ('Actions', "", "Mark individual actions (animations) as assets.", "ACTION", 1),
+            ('Collections', "", "Mark individual collections as assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Mark individual materials as assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Mark individual node trees as assets.", "NODETREE", 8),
+            ('Objects', "", "Mark individual objects as assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Mark individual worlds as assets.", "WORLD", 32),
         ],
         description="Select asset types to archive",
         default={
-            'Collection'
+            'Collections',
+            "Materials",
         },
     )
+    assets_ignore_duplicates: BoolProperty(
+        name="Ignore Duplicates",
+        description="Ignore duplicate assets that already exist in the selected asset library",
+        default=True,
+    )
+    assets_ignore_duplicates_filter: EnumProperty(
+        name="Ignore Duplicates Filter",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Actions', "", "Ignore duplicate actions. Actions with the same as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
+            ('Collections', "", "Ignore duplicate collections. Collections with the same as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Ignore duplicate materials. Materials with the same as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Ignore duplicate node trees. Node Trees with the same as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
+            ('Objects', "", "Ignore duplicate objects. Objects with the same as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Ignore duplicate worlds. Worlds with the same as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
+        ],
+        description="Filter which asset types to ignore when an asset\nof that type already exists in the selected asset library",
+        default={
+            'Actions',
+            'Collections',
+            "Materials",
+            'Node_Groups',
+            'Objects',
+            'Worlds',
+        },
+    )
+    add_master_collection: BoolProperty(
+        name="Use Master Collection",
+        description="Place all objects into a collection and mark it as an asset.\nThis will happen by default when importing any file other than a .blend",
+        default=True,
+        )
     asset_object_types_filter: EnumProperty(
         name="Object Types",
         options={'ENUM_FLAG'},
@@ -2193,7 +2231,7 @@ class TransmogrifierSettings(PropertyGroup):
             ('LIGHT', "Lamp", "", 256),
             ('CAMERA', "Camera", "", 512),
         ],
-        description="Which object types to mark as assets.\nNot all will be able to have preview images generated",
+        description="Filter which object types to mark as assets.\nNot all will be able to have preview images generated",
         default={
             'MESH', 
             'CURVE', 
@@ -2205,11 +2243,6 @@ class TransmogrifierSettings(PropertyGroup):
             'LIGHT', 
             'CAMERA', 
         },
-    )
-    asset_materials_ignore_duplicates: BoolProperty(
-        name="Ignore Duplicate Materials",
-        description="Ignore duplicate materials that already exist in the selected asset library",
-        default=True,
     )
     asset_description: StringProperty(
         name="Description",
@@ -2230,6 +2263,18 @@ class TransmogrifierSettings(PropertyGroup):
     asset_tags: StringProperty(
         name="Tags",
         description="Add new keyword tags to assets. Separate tags with a space",
+    )
+    # Save preview image.
+    save_preview_image: BoolProperty(
+        name="Render Preview",
+        description="Save preview image thumbnails for every model",
+        default=True,
+    )
+    # Save conversion log.
+    save_conversion_log: BoolProperty(
+        name="Save Log",
+        description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
+        default=False,
     )
     
 

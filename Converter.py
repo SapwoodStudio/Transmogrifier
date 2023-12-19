@@ -2932,10 +2932,14 @@ def mark_asset(asset):
 
 
 # Get a list of asset names that exist in a given asset library.
-def get_assets_in_library(library_name, data_block_name):
+def get_assets_in_library(library_name):
     try:
         if library_name == "NO_LIBRARY":
-            return []  # Return an empty list if User did not select an asset library
+            return {}  # Return an empty dictionary if User did not select an asset library.
+
+        keys = assets_ignore_duplicates_filter  # Keys are the asset types for which duplicates should be ignored.
+        values = [[] for key in keys]  # Placeholder lists to be filled later.
+        assets_in_library = dict(zip(keys, values))  # Create an empty dictionary to fill.
 
         asset_libraries = bpy.context.preferences.filepaths.asset_libraries
         library_name = "Test_Asset_Library"
@@ -2943,16 +2947,15 @@ def get_assets_in_library(library_name, data_block_name):
         library_path = Path(asset_library.path)
         blend_files = [fp for fp in library_path.glob("**/*.blend") if fp.is_file()]
         print(f"Checking the contents of library '{library_name}' :")
-        assets_in_library = []
         for blend_file in blend_files:
             with bpy.data.libraries.load(str(blend_file), assets_only=True) as (file_contents, _):
-                assets_in_library += (eval("file_contents." + data_block_name))  # Add assets of given data block to list.
+                for key in keys:
+                    assets = eval("file_contents." + key.lower())
+                    assets_in_library[key] += assets  # Add assets of given data block to their associated list in the dictionary.
         
-        assets_in_library = list(set(assets_in_library))  # Merge any duplicate names that are already in the library.
-
         print("------------------------  Got Assets in Library (" + library_name + "): " + str(assets_in_library) + "  ------------------------")
         logging.info("Got Assets in Library (" + library_name + "): " + str(assets_in_library))
-
+        
         return assets_in_library
 
     except Exception as Argument:
@@ -2962,6 +2965,8 @@ def get_assets_in_library(library_name, data_block_name):
 # Mark assets in asset data filter.
 def mark_assets(item):
     try:
+        assets_in_library = get_assets_in_library(asset_library)  # Get a dictionary of assets in the selected asset library.
+
         if "Collection" in asset_data_filter:
             collection_name = prefix + item + suffix
             collection = bpy.data.collections[collection_name]
@@ -2974,12 +2979,11 @@ def mark_assets(item):
                 mark_asset(object)
         
         if "Materials" in asset_data_filter:
-            existing_material_assets = get_assets_in_library(asset_library, "materials")
             for material in bpy.data.materials:
-                if asset_materials_ignore_duplicates and asset_library != "NO_LIBRARY" and material.name in existing_material_assets:
-                    print(material.name + " is already an asset in library: " + asset_library + ". Skipping marking as asset.")
-                    logging.info(material.name + " is already an asset in library: " + asset_library + ". Skipping marking as asset.")
-                    continue  # Skip marking duplicate materials as assets.
+                # if asset_materials_ignore_duplicates and asset_library != "NO_LIBRARY" and material.name in existing_material_assets:
+                #     print(material.name + " is already an asset in library: " + asset_library + ". Skipping marking as asset.")
+                #     logging.info(material.name + " is already an asset in library: " + asset_library + ". Skipping marking as asset.")
+                #     continue  # Skip marking duplicate materials as assets.
                 mark_asset(material)
 
         if "Actions" in asset_data_filter:
