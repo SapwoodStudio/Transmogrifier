@@ -2917,8 +2917,13 @@ def add_asset_metadata(asset):
 
 
 # Mark asset.
-def mark_asset(asset):
+def mark_asset(asset, asset_type, assets_in_library):
     try:
+        if assets_ignore_duplicates and asset_type in assets_ignore_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
+            print(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
+            logging.info(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
+            return
+        
         asset.asset_mark()
         add_asset_metadata(asset)
         if can_preview_be_generated(asset):
@@ -2931,18 +2936,17 @@ def mark_asset(asset):
         logging.exception("Could not Mark Asset: " + asset.name)
 
 
-# Get a list of asset names that exist in a given asset library.
+# Get a dictionary of asset names by data-block type that exist in a given asset library.
 def get_assets_in_library(library_name):
     try:
-        if library_name == "NO_LIBRARY":
-            return {}  # Return an empty dictionary if User did not select an asset library.
-
         keys = assets_ignore_duplicates_filter  # Keys are the asset types for which duplicates should be ignored.
         values = [[] for key in keys]  # Placeholder lists to be filled later.
-        assets_in_library = dict(zip(keys, values))  # Create an empty dictionary to fill.
+        assets_in_library = dict(zip(keys, values))  # Create an template dictionary to fill.
+        
+        if library_name == "NO_LIBRARY":
+            return assets_in_library  # Return a dictionary with empty values if User did not select an asset library.
 
         asset_libraries = bpy.context.preferences.filepaths.asset_libraries
-        library_name = "Test_Asset_Library"
         asset_library = asset_libraries.data.asset_libraries[library_name]
         library_path = Path(asset_library.path)
         blend_files = [fp for fp in library_path.glob("**/*.blend") if fp.is_file()]
@@ -2967,28 +2971,34 @@ def mark_assets(item):
     try:
         assets_in_library = get_assets_in_library(asset_library)  # Get a dictionary of assets in the selected asset library.
 
-        if "Collection" in asset_data_filter:
-            collection_name = prefix + item + suffix
-            collection = bpy.data.collections[collection_name]
-            mark_asset(collection)
+        if "Actions" in asset_types_to_mark:
+            for action in bpy.data.actions:
+                mark_asset(action, "Actions", assets_in_library)
+        
+        if "Collections" in asset_types_to_mark:
+            master_collection_name = prefix + item + suffix
+            for collection in bpy.data.collections:
+                if mark_only_master_collection and collection.name != master_collection_name:
+                    continue
+                mark_asset(collection, "Collections", assets_in_library)
+                
+        if "Materials" in asset_types_to_mark:
+            for material in bpy.data.materials:
+                mark_asset(material, "Materials", assets_in_library)
 
-        if "Objects" in asset_data_filter:
+        if "Node_Groups" in asset_types_to_mark:
+            for node_group in bpy.data.node_groups:
+                mark_asset(node_group, "Node_Groups", assets_in_library)
+    
+        if "Objects" in asset_types_to_mark:
             for object in bpy.data.objects:
                 if not object.type in asset_object_types_filter:  # Mark only certain selected object types as assets.
                     continue
-                mark_asset(object)
-        
-        if "Materials" in asset_data_filter:
-            for material in bpy.data.materials:
-                # if asset_materials_ignore_duplicates and asset_library != "NO_LIBRARY" and material.name in existing_material_assets:
-                #     print(material.name + " is already an asset in library: " + asset_library + ". Skipping marking as asset.")
-                #     logging.info(material.name + " is already an asset in library: " + asset_library + ". Skipping marking as asset.")
-                #     continue  # Skip marking duplicate materials as assets.
-                mark_asset(material)
+                mark_asset(object, "Objects", assets_in_library)
 
-        if "Actions" in asset_data_filter:
-            for action in bpy.data.actions:
-                mark_asset(action)
+        if "Worlds" in asset_types_to_mark:
+            for world in bpy.data.worlds:
+                mark_asset(world, "Worlds", assets_in_library)
 
         print("------------------------  MARKED ASSETS  ------------------------")
         logging.info("MARKED ASSETS")

@@ -580,7 +580,7 @@ def draw_settings_archive(self, context):
             self.layout.use_property_split = False
             col.label(text="Mark Assets:")
             grid = self.layout.grid_flow(columns=6, align=True)
-            grid.prop(settings, 'asset_data_filter')
+            grid.prop(settings, 'asset_types_to_mark')
             col = self.layout.column(align=True)
             
             col.prop(settings, 'assets_ignore_duplicates')
@@ -590,12 +590,12 @@ def draw_settings_archive(self, context):
             col = self.layout.column(align=True)
                         
             self.layout.use_property_split = False
-            if "Collections" in settings.asset_data_filter:
+            if "Collections" in settings.asset_types_to_mark and settings.import_file == "BLEND":
                 col.label(text="Collections:")
-                col.prop(settings, 'add_master_collection')
+                col.prop(settings, 'mark_only_master_collection')
                 col = self.layout.column(align=True)
 
-            if "Objects" in settings.asset_data_filter:
+            if "Objects" in settings.asset_types_to_mark:
                 col.label(text="Object Types:")
                 grid = self.layout.grid_flow(columns=3, align=True)
                 grid.prop(settings, 'asset_object_types_filter')
@@ -2168,7 +2168,7 @@ class TransmogrifierSettings(PropertyGroup):
         set=lambda self, value: setattr(self, 'asset_catalog', asset_catalog_enum_items_refs["asset_catalogs"][value][0]),
     )
     # Mark asset data filter.
-    asset_data_filter: EnumProperty(
+    asset_types_to_mark: EnumProperty(
         name="Mark Assets",
         options={'ENUM_FLAG'},
         items=[
@@ -2211,9 +2211,9 @@ class TransmogrifierSettings(PropertyGroup):
             'Worlds',
         },
     )
-    add_master_collection: BoolProperty(
-        name="Use Master Collection",
-        description="Place all objects into a collection and mark it as an asset.\nThis will happen by default when importing any file other than a .blend",
+    mark_only_master_collection: BoolProperty(
+        name="Mark Only Master",
+        description="Mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
         default=True,
         )
     asset_object_types_filter: EnumProperty(
