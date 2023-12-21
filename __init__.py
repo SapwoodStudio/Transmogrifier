@@ -573,10 +573,6 @@ def draw_settings_archive(self, context):
     if settings.ui_toggle == "Advanced":
         col.prop(settings, 'archive_assets')
         if settings.archive_assets:
-            col.prop(settings, 'pack_resources')
-            col.prop(settings, 'asset_library_enum')
-            col.prop(settings, 'asset_catalog_enum')
-
             self.layout.use_property_split = False
             col.label(text="Mark Assets:")
             grid = self.layout.grid_flow(columns=6, align=True)
@@ -601,18 +597,23 @@ def draw_settings_archive(self, context):
                 grid.prop(settings, 'asset_object_types_filter')
                 self.layout.use_property_split = True  # Align menu items to the right.
                 col = self.layout.column(align=True)
-            
-            self.layout.use_property_split = False
-
 
             self.layout.use_property_split = True
+        
             col = self.layout.column(align=True)
-            col.prop(settings, 'asset_description')
-            col.prop(settings, 'asset_license')
-            col.prop(settings, 'asset_copyright')
-            col.prop(settings, 'asset_author')
-            col.prop(settings, 'asset_tags')
-            col = self.layout.column(align=True)
+            col.prop(settings, 'asset_library_enum')
+            col.prop(settings, 'asset_catalog_enum')
+            if settings.asset_library != "NO_LIBRARY":
+                col.prop(settings, 'asset_blend_location')
+            col.prop(settings, 'pack_resources')
+            col.prop(settings, 'asset_add_metadata')
+            if settings.asset_add_metadata:
+                col.prop(settings, 'asset_description')
+                col.prop(settings, 'asset_license')
+                col.prop(settings, 'asset_copyright')
+                col.prop(settings, 'asset_author')
+                col.prop(settings, 'asset_tags')
+                col = self.layout.column(align=True)
     
     col.prop(settings, 'save_preview_image')            
     col.prop(settings, 'save_conversion_log')
@@ -2151,22 +2152,6 @@ class TransmogrifierSettings(PropertyGroup):
         description="Archive specified assets to Asset Library",
         default=True,
         )
-    asset_library: StringProperty(default='(no library)')
-    asset_library_enum: EnumProperty(
-        name="Asset Library", options={'SKIP_SAVE'},
-        description="Archive converted assets to selected library",
-        items=lambda self, context: get_asset_libraries(),
-        get=lambda self: get_asset_library_index(self.asset_library),
-        set=lambda self, value: setattr(self, 'asset_library', asset_library_enum_items_refs["asset_libraries"][value][0]),
-    )
-    asset_catalog: StringProperty(default='(no catalog)')
-    asset_catalog_enum: EnumProperty(
-        name="Catalog", options={'SKIP_SAVE'},
-        description="Assign converted assets to selected catalog",
-        items=lambda self, context: get_asset_catalogs(),
-        get=lambda self: get_asset_catalog_index(self.asset_catalog),
-        set=lambda self, value: setattr(self, 'asset_catalog', asset_catalog_enum_items_refs["asset_catalogs"][value][0]),
-    )
     # Mark asset data filter.
     asset_types_to_mark: EnumProperty(
         name="Mark Assets",
@@ -2187,7 +2172,7 @@ class TransmogrifierSettings(PropertyGroup):
     )
     assets_ignore_duplicates: BoolProperty(
         name="Ignore Duplicates",
-        description="Ignore duplicate assets that already exist in the selected asset library",
+        description="Ignore duplicate assets that already exist in the selected asset library.\n(i.e. Don't mark duplicates as assets)",
         default=True,
     )
     assets_ignore_duplicates_filter: EnumProperty(
@@ -2215,7 +2200,7 @@ class TransmogrifierSettings(PropertyGroup):
         name="Mark Only Master",
         description="Mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
         default=True,
-        )
+    )
     asset_object_types_filter: EnumProperty(
         name="Object Types",
         options={'ENUM_FLAG'},
@@ -2243,6 +2228,37 @@ class TransmogrifierSettings(PropertyGroup):
             'LIGHT', 
             'CAMERA', 
         },
+    )
+    asset_library: StringProperty(default='(no library)')
+    asset_library_enum: EnumProperty(
+        name="Asset Library", options={'SKIP_SAVE'},
+        description="Archive converted assets to selected library",
+        items=lambda self, context: get_asset_libraries(),
+        get=lambda self: get_asset_library_index(self.asset_library),
+        set=lambda self, value: setattr(self, 'asset_library', asset_library_enum_items_refs["asset_libraries"][value][0]),
+    )
+    asset_catalog: StringProperty(default='(no catalog)')
+    asset_catalog_enum: EnumProperty(
+        name="Catalog", options={'SKIP_SAVE'},
+        description="Assign converted assets to selected catalog",
+        items=lambda self, context: get_asset_catalogs(),
+        get=lambda self: get_asset_catalog_index(self.asset_catalog),
+        set=lambda self, value: setattr(self, 'asset_catalog', asset_catalog_enum_items_refs["asset_catalogs"][value][0]),
+    )
+    asset_blend_location: EnumProperty(
+        name="Blend Location",
+        description="Set where the blend files containing assets will be stored",
+        items=[
+            ("Move", "Move to Library", "Move blend files and associated textures to selected asset library.", 1),
+            ("Copy", "Copy to Library", "Copy blend files and associated textures to selected asset library.", 2),
+            ("None", "Don't Move/Copy", "Don't move or copy blend files and associated textures to selected asset library.\n(Select this option when Transmogrifying inside an asset library directory.)", 3),
+        ],
+        default="Move",
+    )
+    asset_add_metadata: BoolProperty(
+        name="Add Metadata",
+        description="Add metadata to converted items",
+        default=True,
     )
     asset_description: StringProperty(
         name="Description",

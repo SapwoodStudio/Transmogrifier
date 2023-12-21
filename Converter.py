@@ -2887,6 +2887,9 @@ def add_asset_tag(asset, tag):
 # Add tags to asset.
 def add_asset_tags(asset):
     try:
+        if asset_tags == "":  # Don't add a blank tag.
+            return
+
         tags = split_into_components(asset_tags)
         for tag in tags:
             add_asset_tag(asset, tag)
@@ -2899,10 +2902,8 @@ def add_asset_tags(asset):
 
 
 # Add metadata to asset.
-def add_asset_metadata(asset):
+def add_metadata_to_asset(asset):
     try:
-        if asset_library != "NO_LIBRARY" and asset_catalog != "NO_CATALOG":
-            asset.asset_data.catalog_id = asset_catalog
         asset.asset_data.description = asset_description
         asset.asset_data.license = asset_license
         asset.asset_data.copyright = asset_copyright
@@ -2924,10 +2925,16 @@ def mark_asset(asset, asset_type, assets_in_library):
             logging.info(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
             return
         
-        asset.asset_mark()
-        add_asset_metadata(asset)
+        asset.asset_mark()  # Mark asset.
+
+        if asset_library != "NO_LIBRARY" and asset_catalog != "NO_CATALOG":
+            asset.asset_data.catalog_id = asset_catalog  # Assign to catalog.
+
+        if asset_add_metadata:
+            add_metadata_to_asset(asset)  # Add metadata.
+
         if can_preview_be_generated(asset):
-            generate_preview(asset)
+            generate_preview(asset)  # Generate preview.
 
         print("------------------------  Marked Asset: " + asset.name + "  ------------------------")
         logging.info("Marked Asset: " + asset.name)
@@ -3007,20 +3014,41 @@ def mark_assets(item):
         logging.exception("COULD NOT MARK ASSETS")
 
 
+# Move/Copy .blend file and textures to selected Asset Library.
+def move_copy_blend_to_asset_library(item, blend):
+    try:
+        if asset_library != "NO_LIBRARY":
+            asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
+            
+            if asset_blend_location == "None":
+                return
+
+            asset_dir = make_directory(asset_library_path, blend.stem)
+            blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+            
+            if asset_blend_location == "Move":
+                move_file(asset_dir, blend)
+                if use_textures and not pack_resources:
+                    move_file(asset_dir, blend_textures)
+            
+            elif asset_blend_location == "Copy":
+                copy_file(asset_dir, blend)
+                if use_textures and not pack_resources:
+                    copy_file(asset_dir, blend_textures)
+
+        print("------------------------  Set Location for asset Blend file and textures   ------------------------")
+        logging.info("Set Location for asset Blend file and textures")
+
+    except Exception as Argument:
+        logging.exception("Could not Set Location for asset Blend file and textures")
+
+
 # Archive assets to Asset Library by marking, tagging, and cataloging.
 def archive_assets_to_library(item, blend):
     try:
         mark_assets(item)
         save_blend_file(blend)
-        
-        # Move/Copy .blend file and textures to selected Asset Library.
-        if asset_library != "NO_LIBRARY":
-            asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
-            asset_dir = make_directory(asset_library_path, blend.stem)
-            move_file(asset_dir, blend)
-            if use_textures and not pack_resources:
-                blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
-                move_file(asset_dir, blend_textures)
+        move_copy_blend_to_asset_library(item, blend)
 
         print("------------------------  ARCHIVED ASSETS TO LIBRARY: " + asset_library + "  ------------------------")
         logging.info("ARCHIVED ASSETS TO LIBRARY: " + asset_library)
@@ -3185,25 +3213,48 @@ def make_directory(destination, name):
         logging.exception("COULD NOT MADE DIRECTORY")
 
 
-# Move file from source to destination
+# Copy file from source to destination.
+def copy_file(directory, file_source):
+    try:
+        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
+        
+        if Path(file_source).is_dir():  # Check if "file" is a directory.
+            if Path(file_destination).exists():
+                shutil.rmtree(file_destination)  # Remove any existing destination directory.
+            shutil.copytree(file_source, file_destination)  # Copy the directory.
+
+        elif Path(file_source).is_file():  # Check if "file" is a file.
+            if Path(file_destination).is_file():
+                Path.unlink(file_destination)  # Remove any existing destination file.
+            shutil.copy(file_source, file_destination)  # Copy the file.
+
+        else:
+            return  # Return nothing if source file doesn't exist.
+
+        print("Copied " + str(Path(file_source).name) + " to " + str(directory))
+        logging.info("Copied " + str(Path(file_source).name) + " to " + str(directory))
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT COPY FILE")
+
+
+# Move file from source to destination.
 def move_file(directory, file_source):
     try:
-        # Set destination based on custom output directory
-        file_destination = Path(directory, Path(file_source).name)
-        # Check if "file" is a directory.
-        if Path(file_source).is_dir():
+        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
+        
+        if Path(file_source).is_dir():  # Check if "file" is a directory.
             if Path(file_destination).exists():
-                shutil.rmtree(file_destination)
-            shutil.move(file_source, file_destination)
+                shutil.rmtree(file_destination)  # Remove any existing destination directory.
+            shutil.move(file_source, file_destination)  # Move the directory.
 
-        # Check if "file" is a file.
-        if not Path(file_source).is_dir():
+        elif Path(file_source).is_file():  # Check if "file" is a file.
             if Path(file_destination).is_file():
-            # Remove any existing destination file
-                Path.unlink(file_destination)
-            # Move file, if source exists
-            if Path(file_source).is_file():
-                shutil.move(file_source, file_destination)
+                Path.unlink(file_destination)  # Remove any existing destination file.
+            shutil.move(file_source, file_destination)  # Move the file.
+
+        else:
+            return  # Return nothing if source file doesn't exist.
                 
         print("Moved " + str(Path(file_source).name) + " to " + str(directory))
         logging.info("Moved " + str(Path(file_source).name) + " to " + str(directory))
