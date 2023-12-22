@@ -1295,56 +1295,6 @@ def reformat_images(image_format, image_quality, image_format_include):
         logging.exception("COULD NOT REFORMAT IMAGES")
 		    
 
-# Render a preview image of the scene for archiving.
-def render_preview_image(preview_image):
-    try:
-        # Set color management to sRGB Filmic JPEG.
-        set_color_management(
-            image_format='JPEG', 
-            image_quality=90,
-            display_device='sRGB', 
-            view_transform='Filmic', 
-            look='None', 
-            exposure=0, 
-            gamma=1, 
-            sequencer='sRGB', 
-            use_curves=False, 
-        )
-
-        # Override context to 3D Viewport
-        area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
-        space = next(space for space in area.spaces if space.type == 'VIEW_3D')
-
-        # Change 3D Viewport shading settings
-        space.shading.type = 'MATERIAL'
-        
-        # In case the User did not copy neutral.hdr from addon directory to Blender Preferences directory, pass and just use default hdr.
-        try:
-            space.shading.studio_light = 'neutral.hdr'
-        except:
-            pass
-        space.shading.studiolight_background_alpha = 0
-        space.overlay.show_overlays = False
-
-        # Override context to 3D Viewport again, but in a different way to allow view_all and render.opengl to work.
-        override = override_context('VIEW_3D', 'WINDOW')
-        with bpy.context.temp_override(**override):
-            # Frame all objects into viewport so objects are neither too small nor too large in the render. 
-            # They tend to be a bit small, but it's better than not at all for the time being.
-            bpy.ops.view3d.view_selected(use_all_regions=False)
-        
-        # Render image through viewport and save the image.
-        bpy.ops.render.opengl(write_still=False)
-        render = bpy.data.images['Render Result']
-        render.save_render(filepath=str(preview_image))
-
-        print("------------------------  RENDERED PREVIEW IMAGE THUMBNAIL  ------------------------")
-        logging.info("RENDERED PREVIEW IMAGE THUMBNAIL")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT RENDER PREVIEW IMAGE THUMBNAIL")
-		
-
 # Save a .blend file preserving all materials created even if some are not assigned to any objects.
 def save_blend_file(blend):
     try:
@@ -2917,8 +2867,60 @@ def add_metadata_to_asset(asset):
         logging.exception("Added Metadata to Asset: " + asset.name)
 
 
+# Create an image in bpy.data.images
+# Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
+# module/preview/tool.py, Line 38
+def create_image(name, width, height, alpha=True):
+    try:
+        image = bpy.data.images.new(
+            name=name, 
+            width=width, 
+            height=height, 
+            alpha=alpha
+        )
+        return image
+
+    except Exception as Argument:
+        logging.exception("Could not create image: " + str(name))
+
+
+# Extract generated asset preview to disk.
+# Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
+# asset_browser_utilities/module/preview/operator/extract.py, Line 29
+def extract_preview_to_disk(asset, asset_type, blend):
+    try:
+        folder = Path(blend).parent
+        asset_preview = asset.preview
+        
+        if asset_preview is not None and asset_type in asset_extract_previews_filter:
+            image_name = "Preview_" + asset.name + "_" + asset_type
+            image = create_image(image_name, asset_preview.image_size[0], asset_preview.image_size[1])
+            image.file_format = "PNG"
+            for char in ("/", "\\", ":", "|", '"', "!", "?", "<", ">", "*"):
+                if char in image.name:
+                    image.name = image.name.replace(char, "_")
+            image.filepath = str(folder / (image.name + ".png"))
+            
+            try:
+                image.pixels.foreach_set(asset_preview.image_pixels_float)
+            except TypeError:
+                logging.exception("Could not Extract Asset Preview: " + image_name)
+            else:
+                image.save()
+                print("------------------------  Extracted Asset Preview: " + image_name + "  ------------------------")
+                logging.info("Extracted Asset Preview: " + image_name)
+
+            bpy.data.images.remove(image)
+        
+        else:
+            return False
+
+    except Exception as Argument:
+        logging.exception("Could not Extract Asset Preview: " + image_name)
+
+
 # Mark asset.
-def mark_asset(asset, asset_type, assets_in_library):
+def mark_asset(asset, asset_type, assets_in_library, blend):
     try:
         if assets_ignore_duplicates and asset_type in assets_ignore_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
             print(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
@@ -2935,6 +2937,9 @@ def mark_asset(asset, asset_type, assets_in_library):
 
         if can_preview_be_generated(asset):
             generate_preview(asset)  # Generate preview.
+
+        if asset_extract_previews:
+            extract_preview_to_disk(asset, asset_type, blend)  # Extract preview.
 
         print("------------------------  Marked Asset: " + asset.name + "  ------------------------")
         logging.info("Marked Asset: " + asset.name)
@@ -2974,38 +2979,38 @@ def get_assets_in_library(library_name):
 
 
 # Mark assets in asset data filter.
-def mark_assets(item):
+def mark_assets(item, blend):
     try:
         assets_in_library = get_assets_in_library(asset_library)  # Get a dictionary of assets in the selected asset library.
 
         if "Actions" in asset_types_to_mark:
             for action in bpy.data.actions:
-                mark_asset(action, "Actions", assets_in_library)
+                mark_asset(action, "Actions", assets_in_library, blend)
         
         if "Collections" in asset_types_to_mark:
             master_collection_name = prefix + item + suffix
             for collection in bpy.data.collections:
                 if mark_only_master_collection and collection.name != master_collection_name:
                     continue
-                mark_asset(collection, "Collections", assets_in_library)
+                mark_asset(collection, "Collections", assets_in_library, blend)
                 
         if "Materials" in asset_types_to_mark:
             for material in bpy.data.materials:
-                mark_asset(material, "Materials", assets_in_library)
+                mark_asset(material, "Materials", assets_in_library, blend)
 
         if "Node_Groups" in asset_types_to_mark:
             for node_group in bpy.data.node_groups:
-                mark_asset(node_group, "Node_Groups", assets_in_library)
+                mark_asset(node_group, "Node_Groups", assets_in_library, blend)
     
         if "Objects" in asset_types_to_mark:
             for object in bpy.data.objects:
                 if not object.type in asset_object_types_filter:  # Mark only certain selected object types as assets.
                     continue
-                mark_asset(object, "Objects", assets_in_library)
+                mark_asset(object, "Objects", assets_in_library, blend)
 
         if "Worlds" in asset_types_to_mark:
             for world in bpy.data.worlds:
-                mark_asset(world, "Worlds", assets_in_library)
+                mark_asset(world, "Worlds", assets_in_library, blend)
 
         print("------------------------  MARKED ASSETS  ------------------------")
         logging.info("MARKED ASSETS")
@@ -3014,39 +3019,40 @@ def mark_assets(item):
         logging.exception("COULD NOT MARK ASSETS")
 
 
-# Move/Copy .blend file and textures to selected Asset Library.
+# Move/Copy blend file and textures to selected Asset Library.
 def move_copy_blend_to_asset_library(item, blend):
     try:
         if asset_library != "NO_LIBRARY":
             asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
             
-            if asset_blend_location == "None":
+            if asset_blend_location == "None":  # Return early if User elected to leave blend adjacent to each converted item.
                 return
 
             asset_dir = make_directory(asset_library_path, blend.stem)
             blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+            blend_and_associated_files = [blend, blend_textures]
+            asset_previews = [file for file in blend.parent.iterdir() if file.name.startswith("Preview_") and file.suffix == ".png"]  # Get a list of extracted asset previews.
             
-            if asset_blend_location == "Move":
-                move_file(asset_dir, blend)
-                if use_textures and not pack_resources:
-                    move_file(asset_dir, blend_textures)
-            
-            elif asset_blend_location == "Copy":
-                copy_file(asset_dir, blend)
-                if use_textures and not pack_resources:
-                    copy_file(asset_dir, blend_textures)
+            for asset_preview in asset_previews:
+                blend_and_associated_files.append(asset_preview)  # Append asset previews to list of files to be copied/moved.
 
-        print("------------------------  Set Location for asset Blend file and textures   ------------------------")
-        logging.info("Set Location for asset Blend file and textures")
+            for file in blend_and_associated_files:
+                if asset_blend_location == "Move":
+                    move_file(asset_dir, file)
+                elif asset_blend_location == "Copy":
+                    copy_file(asset_dir, file)
+
+        print("------------------------  Moved/Copied Blend and Associated Files to Asset Library   ------------------------")
+        logging.info("Moved/Copied Blend and Associated Files to Asset Library")
 
     except Exception as Argument:
-        logging.exception("Could not Set Location for asset Blend file and textures")
+        logging.exception("Could not Move/Copy Blend and Associated Files to Asset Library")
 
 
 # Archive assets to Asset Library by marking, tagging, and cataloging.
 def archive_assets_to_library(item, blend):
     try:
-        mark_assets(item)
+        mark_assets(item, blend)
         save_blend_file(blend)
         move_copy_blend_to_asset_library(item, blend)
 
@@ -3135,10 +3141,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         
         if archive_assets:
             archive_assets_to_library(item, blend)
-
-        # Save preview image.
-        if save_preview_image:
-            render_preview_image(preview_image)  
 
         print("-------------------------------------------------------------------")
         print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
@@ -3278,9 +3280,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             file_list.append(textures_dir)
         if save_blend:
             file_list.append(blend)
-        if save_preview_image:
-            file_list.append(preview_image)
-        
+
         # Scenario 1: No subdirectories
         if not use_subdirectories:
             # Delete any pre-existing textures_temp folders in the custom directory.

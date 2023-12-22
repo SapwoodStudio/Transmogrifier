@@ -569,9 +569,10 @@ def draw_settings_archive(self, context):
     # Align menu items to the Right.
     self.layout.use_property_split = True
     col.label(text="Archive:", icon='ASSET_MANAGER')
+    col.prop(settings, 'save_conversion_log')
+    col.prop(settings, 'archive_assets')
 
     if settings.ui_toggle == "Advanced":
-        col.prop(settings, 'archive_assets')
         if settings.archive_assets:
             self.layout.use_property_split = False
             col.label(text="Mark Assets:")
@@ -583,7 +584,13 @@ def draw_settings_archive(self, context):
             if settings.assets_ignore_duplicates:
                 grid = self.layout.grid_flow(columns=6, align=True)
                 grid.prop(settings, 'assets_ignore_duplicates_filter')
-            col = self.layout.column(align=True)
+                col = self.layout.column(align=True)
+
+            col.prop(settings, 'asset_extract_previews')
+            if settings.asset_extract_previews:
+                grid = self.layout.grid_flow(columns=6, align=True)
+                grid.prop(settings, 'asset_extract_previews_filter')
+                col = self.layout.column(align=True)
                         
             self.layout.use_property_split = False
             if "Collections" in settings.asset_types_to_mark and settings.import_file == "BLEND":
@@ -614,9 +621,6 @@ def draw_settings_archive(self, context):
                 col.prop(settings, 'asset_author')
                 col.prop(settings, 'asset_tags')
                 col = self.layout.column(align=True)
-    
-    col.prop(settings, 'save_preview_image')            
-    col.prop(settings, 'save_conversion_log')
 
 
 # Draws the button and popover dropdown button used in the
@@ -2146,6 +2150,12 @@ class TransmogrifierSettings(PropertyGroup):
         soft_max=10,
         step=1,
     )
+    # Save conversion log.
+    save_conversion_log: BoolProperty(
+        name="Save Log",
+        description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
+        default=False,
+    )
     # Mark data blocks as assets.
     archive_assets: BoolProperty(
         name="Archive Assets",
@@ -2280,17 +2290,27 @@ class TransmogrifierSettings(PropertyGroup):
         name="Tags",
         description="Add new keyword tags to assets. Separate tags with a space",
     )
-    # Save preview image.
-    save_preview_image: BoolProperty(
-        name="Render Preview",
-        description="Save preview image thumbnails for every model",
+    asset_extract_previews: BoolProperty(
+        name="Extract Previews to Disk",
+        description="Extract preview image thumbnail for every asset marked and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
         default=True,
     )
-    # Save conversion log.
-    save_conversion_log: BoolProperty(
-        name="Save Log",
-        description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
-        default=False,
+    asset_extract_previews_filter: EnumProperty(
+        name="Extract Previews Filter",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Actions', "", "Extract previews of Actions assets.", "ACTION", 1),
+            ('Collections', "", "Extract previews of Collections assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Extract previews of Materials assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Extract previews of Node_Groups assets.", "NODETREE", 8),
+            ('Objects', "", "Extract previews of Objects assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Extract previews of Worlds assets.", "WORLD", 32),
+        ],
+        description="Filter asset types from which to extract image previews to disk.",
+        default={
+            'Collections',
+            'Objects',
+        },
     )
     
 
