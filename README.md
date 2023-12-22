@@ -266,3 +266,4 @@ Transmogrifier used code from the following repositories in the following ways. 
 - Some additional code snippets have been adapted into Transmogrifier from the following repositories (search for their names in [Converter.py](https://github.com/SapwoodStudio/Transmogrifier/blob/main/Converter.py) to view the specific adaptations):
   - [Simple Renaming Panel](https://github.com/Weisl/simple_renaming_panel/)
   - [Node Wrangler](https://docs.blender.org/manual/en/latest/addons/node/node_wrangler.html)
+  - [asset_browser_utilities](https://github.com/Gorgious56/asset_browser_utilities)

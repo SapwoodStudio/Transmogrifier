@@ -149,6 +149,69 @@ def get_transmogrifier_preset_index(operator, preset_name):
             return p
     return 0
 
+
+
+# A dictionary of one key with a value of a list of asset libraries.
+asset_library_enum_items_refs = {"asset_libraries": []}
+
+# Get asset libraries and return a list of them.  Add them as the value to the dictionary.
+def get_asset_libraries():
+    libraries_list = [('NO_LIBRARY', "(no library)", "Don't move .blend files containing assets to a library.\nInstead, save .blend files adjacent converted items.", 0)]
+    asset_libraries = bpy.context.preferences.filepaths.asset_libraries
+    for asset_library in asset_libraries:
+        library_name = asset_library.name
+        libraries_list.append((library_name, library_name, ""))
+
+    asset_library_enum_items_refs["asset_libraries"] = libraries_list
+
+    return libraries_list
+
+# Get index of selected asset library in asset_library_enum property based on its position in the dictionary value list.
+def get_asset_library_index(library_name):
+    for l in range(len(asset_library_enum_items_refs["asset_libraries"])):
+        if asset_library_enum_items_refs["asset_libraries"][l][0] == library_name:
+            return l
+    return 0
+
+
+
+# A dictionary of one key with a value of a list of asset catalogs.
+asset_catalog_enum_items_refs = {"asset_catalogs": []}
+
+# Get asset catalogs and return a list of them.  Add them as the value to the dictionary.
+def get_asset_catalogs():
+    catalogs_list = [('NO_CATALOG', "(no catalog)", "Don't assign assets to a catalog.", 0)]
+    settings = bpy.context.scene.transmogrifier
+    asset_libraries = bpy.context.preferences.filepaths.asset_libraries
+    library_name = settings.asset_library
+    library_path = [library.path for library in asset_libraries if library.name == library_name]
+    if library_path:  # If the list is not empty, then it found a library path.
+        library_path = Path(library_path[0])
+        catalog_file = library_path / "blender_assets.cats.txt"
+        if catalog_file.is_file():  # Check if catalog file exists
+            with catalog_file.open() as f:
+                for line in f.readlines():
+                    if line.startswith(("#", "VERSION", "\n")):
+                        continue
+                    # Each line contains : 'uuid:catalog_tree:catalog_name' + eol ('\n')
+                    uuid = line.split(":")[0]
+                    catalog_name = line.split(":")[2].split("\n")[0]
+                    catalogs_list.append((uuid, catalog_name, ""))
+
+    asset_catalog_enum_items_refs["asset_catalogs"] = catalogs_list
+
+    return catalogs_list
+
+# Get index of selected asset catalog in asset_catalog_enum property based on its position in the dictionary value list.
+def get_asset_catalog_index(catalog_name):
+    for l in range(len(asset_catalog_enum_items_refs["asset_catalogs"])):
+        if asset_catalog_enum_items_refs["asset_catalogs"][l][0] == catalog_name:
+            return l
+    return 0
+
+
+
+
 # Refresh UI when a Transmogrifier preset is selected by running REFRESHUI operator.
 def refresh_ui(self, context):
     eval('bpy.ops.refreshui.transmogrifier()')
@@ -505,12 +568,59 @@ def draw_settings_archive(self, context):
 
     # Align menu items to the Right.
     self.layout.use_property_split = True
-    # col = self.layout.column(align=True)
     col.label(text="Archive:", icon='ASSET_MANAGER')
-    col.prop(settings, 'save_preview_image')
-    col.prop(settings, 'save_blend')
+    col.prop(settings, 'save_conversion_log')
+    col.prop(settings, 'archive_assets')
+
     if settings.ui_toggle == "Advanced":
-        col.prop(settings, 'save_conversion_log')
+        if settings.archive_assets:
+            self.layout.use_property_split = False
+            col.label(text="Mark Assets:")
+            grid = self.layout.grid_flow(columns=6, align=True)
+            grid.prop(settings, 'asset_types_to_mark')
+            col = self.layout.column(align=True)
+            
+            col.prop(settings, 'assets_ignore_duplicates')
+            if settings.assets_ignore_duplicates:
+                grid = self.layout.grid_flow(columns=6, align=True)
+                grid.prop(settings, 'assets_ignore_duplicates_filter')
+                col = self.layout.column(align=True)
+
+            col.prop(settings, 'asset_extract_previews')
+            if settings.asset_extract_previews:
+                grid = self.layout.grid_flow(columns=6, align=True)
+                grid.prop(settings, 'asset_extract_previews_filter')
+                col = self.layout.column(align=True)
+                        
+            self.layout.use_property_split = False
+            if "Collections" in settings.asset_types_to_mark and settings.import_file == "BLEND":
+                col.label(text="Collections:")
+                col.prop(settings, 'mark_only_master_collection')
+                col = self.layout.column(align=True)
+
+            if "Objects" in settings.asset_types_to_mark:
+                col.label(text="Object Types:")
+                grid = self.layout.grid_flow(columns=3, align=True)
+                grid.prop(settings, 'asset_object_types_filter')
+                self.layout.use_property_split = True  # Align menu items to the right.
+                col = self.layout.column(align=True)
+
+            self.layout.use_property_split = True
+        
+            col = self.layout.column(align=True)
+            col.prop(settings, 'asset_library_enum')
+            col.prop(settings, 'asset_catalog_enum')
+            if settings.asset_library != "NO_LIBRARY":
+                col.prop(settings, 'asset_blend_location')
+            col.prop(settings, 'pack_resources')
+            col.prop(settings, 'asset_add_metadata')
+            if settings.asset_add_metadata:
+                col.prop(settings, 'asset_description')
+                col.prop(settings, 'asset_license')
+                col.prop(settings, 'asset_copyright')
+                col.prop(settings, 'asset_author')
+                col.prop(settings, 'asset_tags')
+                col = self.layout.column(align=True)
 
 
 # Draws the button and popover dropdown button used in the
@@ -1256,7 +1366,6 @@ class TRANSMOGRIFY(Operator):
         write_json(variables_dict, json_file)
 
         # Run Converter.py
-        # subprocess.call(start_converter_file, creationflags=subprocess.CREATE_NEW_CONSOLE) # Use for troubleshooting purposes
         subprocess.call(
             [
                 blender_dir,
@@ -1274,6 +1383,17 @@ class TRANSMOGRIFY(Operator):
 
 # Groups together all the addon settings that are saved in each .blend file
 class TransmogrifierSettings(PropertyGroup):
+    # Preset Settings:
+    # Option to select Transmogrifier presets
+    transmogrifier_preset: StringProperty(default='FBX_to_GLB')
+    transmogrifier_preset_enum: EnumProperty(
+        name="", options={'SKIP_SAVE'},
+        description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
+        items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
+        get=lambda self: get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
+        set=lambda self, value: setattr(self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
+        update=refresh_ui
+    )
     # UI Setting
     ui_toggle: EnumProperty(
         name="UI",
@@ -1403,22 +1523,157 @@ class TransmogrifierSettings(PropertyGroup):
     )
 
 
+    # Export Settings:
+    export_file_1: EnumProperty(
+        name="Format 1",
+        description="Which file format to export to",
+        items=[
+            ("DAE", "Collada (.dae)", "", 1),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10),
+        ],
+        default="glTF",
+    )
+    # File 1 scale.
+    export_file_1_scale: FloatProperty(
+        name="Scale", 
+        description="Set the scale of the model before exporting",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=500,
+    )
+    # Export Settings 2:
+    export_file_2: EnumProperty(
+        name="Format 2",
+        description="Which file format to export to",
+        items=[
+            ("DAE", "Collada (.dae)", "", 1),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10),
+        ],
+        default="USD",
+    )
+    # File 2 scale.
+    export_file_2_scale: FloatProperty(
+        name="Scale", 
+        description="Set the scale of the model before exporting",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=500,
+    )
+    # Export format specific options:
+    usd_extension: EnumProperty(
+        name="Extension",
+        items=[
+            (".usd", "Plain (.usd)",
+             "Can be either binary or ASCII\nIn Blender this exports to binary", 1),
+            (".usdc", "Binary Crate (default) (.usdc)",
+             "Binary, fast, hard to edit", 2),
+            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
+            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
+        ],
+        default=".usdz",
+    )
+    ply_ascii: BoolProperty(name="ASCII Format", default=False)
+    stl_ascii: BoolProperty(name="ASCII Format", default=False)
 
-    # Preset Settings:
-    # Option to select Transmogrifier presets
-    transmogrifier_preset: StringProperty(default='FBX_to_GLB')
-    transmogrifier_preset_enum: EnumProperty(
-        name="", options={'SKIP_SAVE'},
-        description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
-        items=lambda self, context: get_transmogrifier_presets('transmogrifier'),
-        get=lambda self: get_transmogrifier_preset_index(
-            'transmogrifier', self.transmogrifier_preset),
+    # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
+    abc_preset: StringProperty(default='NO_PRESET')
+    abc_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Alembic (.abc))",
+        items=lambda self, context: get_operator_presets('wm.alembic_export'),
+        get=lambda self: get_preset_index(
+            'wm.alembic_export', self.abc_preset),
         set=lambda self, value: setattr(
-            self, 'transmogrifier_preset', transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
-        update=refresh_ui
+            self, 'abc_preset', preset_enum_items_refs['wm.alembic_export'][value][0]),
+    )
+    dae_preset: StringProperty(default='NO_PRESET')
+    dae_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Collada (.dae))",
+        items=lambda self, context: get_operator_presets('wm.collada_export'),
+        get=lambda self: get_preset_index(
+            'wm.collada_export', self.dae_preset),
+        set=lambda self, value: setattr(
+            self, 'dae_preset', preset_enum_items_refs['wm.collada_export'][value][0]),
+    )
+    usd_preset: StringProperty(default='USDZ_Preset_Example')
+    usd_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
+        items=lambda self, context: get_operator_presets('wm.usd_export'),
+        get=lambda self: get_preset_index('wm.usd_export', self.usd_preset),
+        set=lambda self, value: setattr(
+            self, 'usd_preset', preset_enum_items_refs['wm.usd_export'][value][0]),
+    )
+    obj_preset: StringProperty(default='NO_PRESET')
+    obj_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Wavefront (.obj))",
+        items=lambda self, context: get_operator_presets('wm.obj_export'),
+        get=lambda self: get_preset_index('wm.obj_export', self.obj_preset),
+        set=lambda self, value: setattr(
+            self, 'obj_preset', preset_enum_items_refs['wm.obj_export'][value][0]),
+    )
+    fbx_preset: StringProperty(default='NO_PRESET')
+    fbx_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > FBX (.fbx))",
+        items=lambda self, context: get_operator_presets('export_scene.fbx'),
+        get=lambda self: get_preset_index('export_scene.fbx', self.fbx_preset),
+        set=lambda self, value: setattr(
+            self, 'fbx_preset', preset_enum_items_refs['export_scene.fbx'][value][0]),
+    )
+    gltf_preset: StringProperty(default='GLB_Preset_Example')
+    gltf_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > glTF (.glb/.gltf))",
+        items=lambda self, context: get_operator_presets('export_scene.gltf'),
+        get=lambda self: get_preset_index(
+            'export_scene.gltf', self.gltf_preset),
+        set=lambda self, value: setattr(
+            self, 'gltf_preset', preset_enum_items_refs['export_scene.gltf'][value][0]),
+    )
+    x3d_preset: StringProperty(default='NO_PRESET')
+    x3d_preset_enum: EnumProperty(
+        name="Preset", options={'SKIP_SAVE'},
+        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > X3D Extensible 3D (.x3d))",
+        items=lambda self, context: get_operator_presets('export_scene.x3d'),
+        get=lambda self: get_preset_index('export_scene.x3d', self.x3d_preset),
+        set=lambda self, value: setattr(
+            self, 'x3d_preset', preset_enum_items_refs['export_scene.x3d'][value][0]),
     )
 
-    # Export Settings:
+
+    # Pack resources into .blend.
+    pack_resources: BoolProperty(
+        name="Pack Resources",
+        description="Pack all used external files into this .blend",
+        default=True,
+        )
+    # Pack resources into .blend.
+    make_paths_relative: BoolProperty(
+        name="Relative Paths",
+        description="Use relative paths for textures",
+        default=True,
+        )
     # Option for to where models should be exported.
     directory_output_location: EnumProperty(
         name="Location(s)",
@@ -1895,173 +2150,168 @@ class TransmogrifierSettings(PropertyGroup):
         soft_max=10,
         step=1,
     )
-    # Save preview image.
-    save_preview_image: BoolProperty(
-        name="Render Preview",
-        description="Save preview image thumbnails for every model",
-        default=True,
-        )
-    # Save .blend file.
-    save_blend: BoolProperty(
-        name="Save .blend",
-        description="Save a Blender file for every model. This can help troubleshoot conversion errors",
-        default=False,
-        )
     # Save conversion log.
     save_conversion_log: BoolProperty(
         name="Save Log",
         description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
         default=False,
-        )
-    # Export Settings 1:
-    export_file_1: EnumProperty(
-        name="Format 1",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="glTF",
     )
-    # File 1 scale.
-    export_file_1_scale: FloatProperty(
-        name="Scale", 
-        description="Set the scale of the model before exporting",
-        default=1.0,
-        soft_min=0.0,
-        soft_max=10000.0,
-        step=500,
-    )
-    # Export Settings 2:
-    export_file_2: EnumProperty(
-        name="Format 2",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="USD",
-    )
-    # File 2 scale.
-    export_file_2_scale: FloatProperty(
-        name="Scale", 
-        description="Set the scale of the model before exporting",
-        default=1.0,
-        soft_min=0.0,
-        soft_max=10000.0,
-        step=500,
-    )
-    # Export format specific options:
-    usd_extension: EnumProperty(
-        name="Extension",
-        items=[
-            (".usd", "Plain (.usd)",
-             "Can be either binary or ASCII\nIn Blender this exports to binary", 1),
-            (".usdc", "Binary Crate (default) (.usdc)",
-             "Binary, fast, hard to edit", 2),
-            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
-            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
-        ],
-        default=".usdz",
-    )
-    ply_ascii: BoolProperty(name="ASCII Format", default=False)
-    stl_ascii: BoolProperty(name="ASCII Format", default=False)
-
-    # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
-    abc_preset: StringProperty(default='NO_PRESET')
-    abc_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Alembic (.abc))",
-        items=lambda self, context: get_operator_presets('wm.alembic_export'),
-        get=lambda self: get_preset_index(
-            'wm.alembic_export', self.abc_preset),
-        set=lambda self, value: setattr(
-            self, 'abc_preset', preset_enum_items_refs['wm.alembic_export'][value][0]),
-    )
-    dae_preset: StringProperty(default='NO_PRESET')
-    dae_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Collada (.dae))",
-        items=lambda self, context: get_operator_presets('wm.collada_export'),
-        get=lambda self: get_preset_index(
-            'wm.collada_export', self.dae_preset),
-        set=lambda self, value: setattr(
-            self, 'dae_preset', preset_enum_items_refs['wm.collada_export'][value][0]),
-    )
-    usd_preset: StringProperty(default='USDZ_Preset_Example')
-    usd_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
-        items=lambda self, context: get_operator_presets('wm.usd_export'),
-        get=lambda self: get_preset_index('wm.usd_export', self.usd_preset),
-        set=lambda self, value: setattr(
-            self, 'usd_preset', preset_enum_items_refs['wm.usd_export'][value][0]),
-    )
-    obj_preset: StringProperty(default='NO_PRESET')
-    obj_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Wavefront (.obj))",
-        items=lambda self, context: get_operator_presets('wm.obj_export'),
-        get=lambda self: get_preset_index('wm.obj_export', self.obj_preset),
-        set=lambda self, value: setattr(
-            self, 'obj_preset', preset_enum_items_refs['wm.obj_export'][value][0]),
-    )
-    fbx_preset: StringProperty(default='NO_PRESET')
-    fbx_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > FBX (.fbx))",
-        items=lambda self, context: get_operator_presets('export_scene.fbx'),
-        get=lambda self: get_preset_index('export_scene.fbx', self.fbx_preset),
-        set=lambda self, value: setattr(
-            self, 'fbx_preset', preset_enum_items_refs['export_scene.fbx'][value][0]),
-    )
-    gltf_preset: StringProperty(default='GLB_Preset_Example')
-    gltf_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > glTF (.glb/.gltf))",
-        items=lambda self, context: get_operator_presets('export_scene.gltf'),
-        get=lambda self: get_preset_index(
-            'export_scene.gltf', self.gltf_preset),
-        set=lambda self, value: setattr(
-            self, 'gltf_preset', preset_enum_items_refs['export_scene.gltf'][value][0]),
-    )
-    x3d_preset: StringProperty(default='NO_PRESET')
-    x3d_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > X3D Extensible 3D (.x3d))",
-        items=lambda self, context: get_operator_presets('export_scene.x3d'),
-        get=lambda self: get_preset_index('export_scene.x3d', self.x3d_preset),
-        set=lambda self, value: setattr(
-            self, 'x3d_preset', preset_enum_items_refs['export_scene.x3d'][value][0]),
-    )
-    # Pack resources into .blend.
-    pack_resources: BoolProperty(
-        name="Pack Resources",
-        description="Pack all used external files into this .blend",
+    # Mark data blocks as assets.
+    archive_assets: BoolProperty(
+        name="Archive Assets",
+        description="Archive specified assets to Asset Library",
         default=True,
         )
-    # Pack resources into .blend.
-    make_paths_relative: BoolProperty(
-        name="Relative Paths",
-        description="Use relative paths for textures",
+    # Mark asset data filter.
+    asset_types_to_mark: EnumProperty(
+        name="Mark Assets",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Actions', "", "Mark individual actions (animations) as assets.", "ACTION", 1),
+            ('Collections', "", "Mark individual collections as assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Mark individual materials as assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Mark individual node trees as assets.", "NODETREE", 8),
+            ('Objects', "", "Mark individual objects as assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Mark individual worlds as assets.", "WORLD", 32),
+        ],
+        description="Select asset types to archive",
+        default={
+            'Collections',
+            "Materials",
+        },
+    )
+    assets_ignore_duplicates: BoolProperty(
+        name="Ignore Duplicates",
+        description="Ignore duplicate assets that already exist in the selected asset library.\n(i.e. Don't mark duplicates as assets)",
         default=True,
-        )
+    )
+    assets_ignore_duplicates_filter: EnumProperty(
+        name="Ignore Duplicates Filter",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Actions', "", "Ignore duplicate actions. Actions with the same as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
+            ('Collections', "", "Ignore duplicate collections. Collections with the same as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Ignore duplicate materials. Materials with the same as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Ignore duplicate node trees. Node Trees with the same as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
+            ('Objects', "", "Ignore duplicate objects. Objects with the same as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Ignore duplicate worlds. Worlds with the same as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
+        ],
+        description="Filter which asset types to ignore when an asset\nof that type already exists in the selected asset library",
+        default={
+            'Actions',
+            'Collections',
+            "Materials",
+            'Node_Groups',
+            'Objects',
+            'Worlds',
+        },
+    )
+    mark_only_master_collection: BoolProperty(
+        name="Mark Only Master",
+        description="Mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
+        default=True,
+    )
+    asset_object_types_filter: EnumProperty(
+        name="Object Types",
+        options={'ENUM_FLAG'},
+        items=[
+            ('MESH', "Mesh", "", 1),
+            ('CURVE', "Curve", "", 2),
+            ('SURFACE', "Surface", "", 4),
+            ('META', "Metaball", "", 8),
+            ('FONT', "Text", "", 16),
+            ('GPENCIL', "Grease Pencil", "", 32),
+            ('ARMATURE', "Armature", "", 64),
+            ('EMPTY', "Empty", "", 128),
+            ('LIGHT', "Lamp", "", 256),
+            ('CAMERA', "Camera", "", 512),
+        ],
+        description="Filter which object types to mark as assets.\nNot all will be able to have preview images generated",
+        default={
+            'MESH', 
+            'CURVE', 
+            'SURFACE', 
+            'META', 
+            'FONT', 
+            'GPENCIL', 
+            'ARMATURE', 
+            'LIGHT', 
+            'CAMERA', 
+        },
+    )
+    asset_library: StringProperty(default='(no library)')
+    asset_library_enum: EnumProperty(
+        name="Asset Library", options={'SKIP_SAVE'},
+        description="Archive converted assets to selected library",
+        items=lambda self, context: get_asset_libraries(),
+        get=lambda self: get_asset_library_index(self.asset_library),
+        set=lambda self, value: setattr(self, 'asset_library', asset_library_enum_items_refs["asset_libraries"][value][0]),
+    )
+    asset_catalog: StringProperty(default='(no catalog)')
+    asset_catalog_enum: EnumProperty(
+        name="Catalog", options={'SKIP_SAVE'},
+        description="Assign converted assets to selected catalog",
+        items=lambda self, context: get_asset_catalogs(),
+        get=lambda self: get_asset_catalog_index(self.asset_catalog),
+        set=lambda self, value: setattr(self, 'asset_catalog', asset_catalog_enum_items_refs["asset_catalogs"][value][0]),
+    )
+    asset_blend_location: EnumProperty(
+        name="Blend Location",
+        description="Set where the blend files containing assets will be stored",
+        items=[
+            ("Move", "Move to Library", "Move blend files and associated textures to selected asset library.", 1),
+            ("Copy", "Copy to Library", "Copy blend files and associated textures to selected asset library.", 2),
+            ("None", "Don't Move/Copy", "Don't move or copy blend files and associated textures to selected asset library.\n(Select this option when Transmogrifying inside an asset library directory.)", 3),
+        ],
+        default="Move",
+    )
+    asset_add_metadata: BoolProperty(
+        name="Add Metadata",
+        description="Add metadata to converted items",
+        default=True,
+    )
+    asset_description: StringProperty(
+        name="Description",
+        description="A description of the asset to be displayed for the user",
+    )
+    asset_license: StringProperty(
+        name="License",
+        description="The type of license this asset is distributed under. An empty license name does not necessarily indicate that this is free of licensing terms. Contact the author if any clarification is needed",
+    )
+    asset_copyright: StringProperty(
+        name="Copyright",
+        description="Copyright notice for this asset. An empty copyright notice does not necessarily indicate that this is copyright-free. Contact the author if any clarification is needed",
+    )
+    asset_author: StringProperty(
+        name="Author",
+        description="Name of the creator of the asset",
+    )
+    asset_tags: StringProperty(
+        name="Tags",
+        description="Add new keyword tags to assets. Separate tags with a space",
+    )
+    asset_extract_previews: BoolProperty(
+        name="Extract Previews to Disk",
+        description="Extract preview image thumbnail for every asset marked and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
+        default=True,
+    )
+    asset_extract_previews_filter: EnumProperty(
+        name="Extract Previews Filter",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Actions', "", "Extract previews of Actions assets.", "ACTION", 1),
+            ('Collections', "", "Extract previews of Collections assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Extract previews of Materials assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Extract previews of Node_Groups assets.", "NODETREE", 8),
+            ('Objects', "", "Extract previews of Objects assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Extract previews of Worlds assets.", "WORLD", 32),
+        ],
+        description="Filter asset types from which to extract image previews to disk.",
+        default={
+            'Collections',
+            'Objects',
+        },
+    )
     
 
 

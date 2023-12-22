@@ -19,6 +19,8 @@ import re
 import logging
 from bpy.app.handlers import persistent
 from itertools import chain
+import time
+import numpy as np
 
 
 # Read Converter_Variables.json file where the user variables are stored.
@@ -152,32 +154,6 @@ def use_fake_user():
         logging.exception("COULD NOT USE FAKE USER FOR TEXTURES & MATERIALS")
 
 
-# Recursively delete orphaned data blocks.
-def purge_orphans():
-    try:
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
-
-        print("------------------------  PURGED ORPHANED DATA BLOCKS RECURSIVELY  ------------------------")
-        logging.info("PURGED ORPHANED DATA BLOCKS RECURSIVELY")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT PURGE ORPHANED DATA BLOCKS RECURSIVELY")
-		
-
-# Enable addon dependencies and clear the scene
-def scene_setup():
-    try:
-        bpy.ops.object.select_all(action='SELECT')
-        bpy.ops.object.delete(use_global=False)
-        purge_orphans()
-
-        print("------------------------  SET UP SCENE  ------------------------")
-        logging.info("SET UP SCENE")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT SET UP SCENE")
-		
-
 # Sometimes purge orphans won't delete data blocks (e.g. images) even though they have no users. This will force the deletion of any data blocks within a specified bpy.data.[data type]
 def clean_data_block(block):
     try:
@@ -212,6 +188,54 @@ def clean_data_block_except_custom(block, custom_data):
         logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
 
 
+# Add new collection with name = prefix + item + suffix.
+def add_collection(item):
+    try:
+        # Add new collection.
+        collection_name = prefix + item + suffix
+        collection = bpy.data.collections.new(collection_name)
+
+        # Add collection to scene collection.
+        bpy.context.scene.collection.children.link(collection)
+
+        # Make collection active so imported file contents are put inside/linked to the collection.
+        layer_collection = bpy.context.view_layer.layer_collection.children[collection.name]
+        bpy.context.view_layer.active_layer_collection = layer_collection
+
+        print("------------------------  ADDED NEW COLLECTION: " + collection.name + "  ------------------------")
+        logging.info("ADDED NEW COLLECTION: " + collection.name)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT ADD NEW COLLECTION: " + collection.name)
+
+
+# Recursively delete orphaned data blocks.
+def purge_orphans():
+    try:
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
+        print("------------------------  PURGED ORPHANED DATA BLOCKS RECURSIVELY  ------------------------")
+        logging.info("PURGED ORPHANED DATA BLOCKS RECURSIVELY")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT PURGE ORPHANED DATA BLOCKS RECURSIVELY")
+		
+
+# Enable addon dependencies and clear the scene
+def setup_scene(item):
+    try:
+        clean_data_block(bpy.data.objects)
+        clean_data_block(bpy.data.collections)
+        purge_orphans()
+        add_collection(item)
+
+        print("------------------------  SET UP SCENE  ------------------------")
+        logging.info("SET UP SCENE")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SET UP SCENE")
+		
+
 # Append a blend file's objects to Converter.blend.
 def append_blend(import_file_command, import_file_options, import_file):
     try:
@@ -227,7 +251,7 @@ def append_blend(import_file_command, import_file_options, import_file):
 
     except Exception as Argument:
         logging.exception("COULD NOT APPEND BLEND FILE: " + str(Path(import_file).name))
-        
+
 
 # Import file of a format type supplied by the user.
 def import_file_function(import_file_command, import_file_options, import_file):
@@ -248,7 +272,31 @@ def import_file_function(import_file_command, import_file_options, import_file):
 
     except Exception as Argument:
         logging.exception("COULD NOT IMPORT FILE: " + str(Path(import_file).name))
-		
+		  
+
+# Move all objects and collections to item collection.
+def move_objects_and_collections_to_item_collection(item):
+    try:
+        item_collection = bpy.data.collections[prefix + item + suffix]
+        collections_to_move = [collection for collection in bpy.context.scene.collection.children if collection != item_collection]  # Get a list of additional collections in the scene.
+        objects_to_move = [object for object in bpy.context.scene.collection.objects]  # Get a list of objects that exist directly in the default Scene Collection.
+
+        if collections_to_move:
+            for collection in collections_to_move:
+                bpy.context.scene.collection.children.unlink(collection)
+                item_collection.children.link(collection)
+
+        if objects_to_move:
+            for object in objects_to_move:
+                bpy.context.scene.collection.objects.unlink(object)
+                item_collection.objects.link(object)
+            
+        print("------------------------  SET UP SCENE  ------------------------")
+        logging.info("SET UP SCENE")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT SET UP SCENE")
+
 
 # Remove all animation data from imported objects. Sometimes 3DS Max exports objects with keyframes that cause scaling/transform issues in a GLB and USDZ.
 def clear_animation_data():
@@ -521,33 +569,32 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
 
 # Split image texture name into components to be regexed in find_replace_pbr_tag function.
 # The following code is adapted from Blender 3.5, Node Wrangler 3.43, __util.py__, Line 7
-def split_into_components(texture):
+def split_into_components(string):
     try:
         """
         Split filename into components
         'WallTexture_diff_2k.002.jpg' -> ['WallTexture', 'diff', '2k', '002', 'jpg']
         """
-        # Get original texture name for printout.
-        texture_original = texture
+        # Get original string name for printout.
+        string_original = string
 
-        # Remove file path
-        texture = Path(texture).name
+        # Remove file path.
+        string = Path(string).name
         
-        # Replace common separators with SPACE
-        separators = ["_", ".", "-", "__", "--", "#"]
+        # Replace common separators with SPACE.
+        separators = ["_", ",", ".", "-", "__", "--", "#"]
         for sep in separators:
-            texture = texture.replace(sep, " ")
+            string = string.replace(sep, " ")
 
-        components = texture.split(" ")
+        components = string.split(" ")
         
-        print("------------------------  SPLIT INTO COMPONENTS: " + str(Path(texture_original).name) + " to " + str(components) + "  ------------------------")
-        logging.info("SPLIT INTO COMPONENTS: " + str(Path(texture_original).name) + " to " + str(components))
+        print("------------------------  SPLIT INTO COMPONENTS: " + str(Path(string_original).name) + " to " + str(components) + "  ------------------------")
+        logging.info("SPLIT INTO COMPONENTS: " + str(Path(string_original).name) + " to " + str(components))
 
         return components
 
-
     except Exception as Argument:
-        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(Path(texture_original).name))
+        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(Path(string_original).name))
 		
 
 # Regex, i.e. find and replace messy/misspelled PBR tag with clean PBR tag in a given image texture's name supplied by the regex_textures_external function.
@@ -1248,58 +1295,6 @@ def reformat_images(image_format, image_quality, image_format_include):
         logging.exception("COULD NOT REFORMAT IMAGES")
 		    
 
-# Render a preview image of the scene for archiving.
-def render_preview_image(preview_image):
-    try:
-        # Set color management to sRGB Filmic JPEG.
-        set_color_management(
-            image_format='JPEG', 
-            image_quality=90,
-            display_device='sRGB', 
-            view_transform='Filmic', 
-            look='None', 
-            exposure=0, 
-            gamma=1, 
-            sequencer='sRGB', 
-            use_curves=False, 
-        )
-
-        # Set render path
-        sce = bpy.context.scene.name
-        bpy.data.scenes[sce].render.filepath = str(preview_image)
-
-        # Override context to 3D Viewport
-        area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
-        space = next(space for space in area.spaces if space.type == 'VIEW_3D')
-
-        # Change 3D Viewport shading settings
-        space.shading.type = 'MATERIAL'
-        
-        # In case the User did not copy neutral.hdr from addon directory to Blender Preferences directory, pass and just use default hdr.
-        try:
-            space.shading.studio_light = 'neutral.hdr'
-        except:
-            pass
-        space.shading.studiolight_background_alpha = 0
-        space.overlay.show_overlays = False
-
-        # Override context to 3D Viewport again, but in a different way to allow view_all and render.opengl to work.
-        override = override_context('VIEW_3D', 'WINDOW')
-        with bpy.context.temp_override(**override):
-            # Frame all objects into viewport so objects are neither too small nor too large in the render. 
-            # They tend to be a bit small, but it's better than not at all for the time being.
-            bpy.ops.view3d.view_selected(use_all_regions=False)
-
-            # Render image through viewport and save the image to location provided above.
-            bpy.ops.render.opengl(write_still=True)
-
-        print("------------------------  RENDERED PREVIEW IMAGE THUMBNAIL  ------------------------")
-        logging.info("RENDERED PREVIEW IMAGE THUMBNAIL")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT RENDER PREVIEW IMAGE THUMBNAIL")
-		
-
 # Save a .blend file preserving all materials created even if some are not assigned to any objects.
 def save_blend_file(blend):
     try:
@@ -1318,15 +1313,33 @@ def save_blend_file(blend):
 
         # Preserve unused materials & textures by setting fake user(s).
         use_fake_user()
-        
-        # Make paths relative if elected.
-        if make_paths_relative:
+
+        # Pack textures into .blend before saving the file if exporting a .blend.
+        if pack_resources:
+            bpy.ops.file.pack_all()
+
+            # Delete blend_textures_temp since it is no longer needed.
+            blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+            delete_textures_temp(blend_textures)
+
+        # Make paths relative if not packing and if elected.
+        elif not pack_resources and make_paths_relative:
             bpy.ops.file.make_paths_relative()
+
+        # Frame object(s) in the viewport before saving.
+        override = override_context('VIEW_3D', 'WINDOW')
+        with bpy.context.temp_override(**override):
+            bpy.ops.view3d.view_selected(use_all_regions=False)
 
         # Save the file.
         bpy.ops.wm.save_as_mainfile(
             filepath=str(blend), 
         )
+
+        # Delete Blender "save version" backup file (also known as a "blend1" file).
+        blend1 = Path(str(blend) + "1")
+        if Path(blend1).is_file():
+            Path.unlink(blend1)
 
         print("------------------------  SAVED BLEND FILE: " + str(Path(blend).name) + "  ------------------------")
         logging.info("SAVED BLEND FILE: " + str(Path(blend).name))
@@ -1336,20 +1349,30 @@ def save_blend_file(blend):
 		
 
 # Save.blend file and unpack images to textures_temp whenever packed images are used for conversion and are to be resized and/or reformatted.
-def unpack_textures(textures_temp_dir, blend):
+def unpack_textures(item_dir, textures_temp_dir, blend):
     try:
-        # Create textures_temp_dir
-        if not Path(textures_temp_dir).exists():
-            Path.mkdir(textures_temp_dir)
-        elif Path(textures_temp_dir).exists():
-            shutil.rmtree(textures_temp_dir)
-            Path.mkdir(textures_temp_dir)
+        # Check if a textures_dir exists already
+        textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
+        if textures_dir_check != "":
+            textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
+            textures_original = textures_dir.parent / (textures_dir.name + "_original") 
+            textures_dir.rename(textures_original)
 
-        # Save blend inside textures_temp_dir
+        # Save blend file.
         save_blend_file(blend)
         
         # Unpack images
         bpy.ops.file.unpack_all(method='WRITE_LOCAL')
+        textures_dir_unpack = Path(item_dir) / "textures"
+        
+        # Create textures_temp_dir
+        if Path(textures_temp_dir).exists():
+            shutil.rmtree(textures_temp_dir)
+        textures_dir_unpack.rename(textures_temp_dir)
+
+        # Return textures_original to textures if there was a textures directory to begin with.
+        if textures_dir_check != "":
+            textures_original.rename(textures_dir)
 
         print("------------------------  UNPACKED TEXTURES  ------------------------")
         logging.info("UNPACKED TEXTURES")
@@ -1357,6 +1380,7 @@ def unpack_textures(textures_temp_dir, blend):
     except Exception as Argument:
         logging.exception("COULD NOT UNPACK TEXTURES")
 		
+
 # Returns a dictionary of which textures are assigned to which materials.
 def map_textures_to_materials():
     try:
@@ -1407,8 +1431,8 @@ def rename_objects_by_material_prefixes():
         objects = bpy.context.selected_objects
         for object in objects:
             if object.active_material:
-                material_name_prefix = split_into_components(texture = object.active_material.name)[0]
-                object_name_prefix = split_into_components(texture = object.name)[0]
+                material_name_prefix = split_into_components(object.active_material.name)[0]
+                object_name_prefix = split_into_components(object.name)[0]
                 original_object_name = object.name
                 if material_name_prefix != object_name_prefix:
                     object.name = material_name_prefix + "_" + object.name
@@ -1564,7 +1588,7 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                             rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, tag_3, textures_temp_dir, output)
                 
                 # Finally, remove the original combined image.
-                image_path = Path(bpy.path.abspath(image.filepath))
+                image_path = textures_temp_dir / Path(bpy.path.abspath(image.filepath)).name
                 if image_path.exists():
                     Path.unlink(image_path)
                 else:
@@ -1978,18 +2002,6 @@ def set_scene_units(unit_system, length_unit):
         logging.exception("COULD NOT SET SCENE UNITS")
 		
 
-# Pack textures into .blend before saving the file.
-def pack_resources_into_blend():
-    try:
-        bpy.ops.file.pack_all()
-
-        print("------------------------  PACKED RESOURCES INTO BLEND  ------------------------")
-        logging.info("PACKED RESOURCES INTO BLEND")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT PACK RESOURCES INTO BLEND")
-
-
 # Export a model.
 def export_a_model(export_file_scale, export_file_command, export_file_options, export_file):
     try:
@@ -2002,20 +2014,16 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
             apply_transformations(apply_transforms_filter)
         
         # Export the model.
-        export_file_options["filepath"] = export_file  # Set filepath to the location of the model to be imported
-        export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the import command with the import options dictionary
-        print(export_file_command)
-        logging.info(export_file_command)
+        export_file_options["filepath"] = export_file  # Set filepath to the location of the model to be exported.
+        export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the export command with the export options dictionary.
+
+        # Run export_file_command, which is stored as a string and won't run otherwise.
         if Path(export_file).suffix == ".blend":
-            if pack_resources:  # Pack textures into .blend before saving the file if exporting a .blend.
-                pack_resources_into_blend()
-            elif not pack_resources and make_paths_relative:
-                bpy.ops.file.make_paths_relative()
-            override = override_context('VIEW_3D', 'WINDOW') # Frame object(s) in the viewport before saving.
-            with bpy.context.temp_override(**override):
-                bpy.ops.view3d.view_selected(use_all_regions=False)    
-            
-        exec(export_file_command)  # Run export_file_command, which is stored as a string and won't run otherwise.
+            save_blend_file(Path(export_file))  # Use save_blend_file function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
+        else:
+            exec(export_file_command)
+            print(export_file_command)
+            logging.info(export_file_command)
 
         # Reset scale
         export_file_scale = 1 / export_file_scale
@@ -2394,12 +2402,26 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
         logging.exception("COULD NOT APPLY CUSTOM TEXTURES TO OBJECTS")
 
 
+# Rename textures_temp_dir and repath images inside the .blend.
+def repath_blend_textures(blend, path_old, path_new):
+    try:
+        for image in bpy.data.images:  # Repath the textures.
+            image_filepath = bpy.data.images[image.name].filepath
+            image_filepath_new = image_filepath.replace(path_old.name, path_new.name)
+            bpy.data.images[image.name].filepath = image_filepath_new
+        
+        print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
+        logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
+        
+        save_blend_file(blend)  # Save the .blend.
+
+    except Exception as Argument:
+        logging.exception("COULD NOT RENAME MODIFIED TEXTURES DIRECTORY OR REPATH BLEND")
+
+
 # Apply "Packed" textures to objects.
 def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
     try:
-        # Repath blend location to inside textures_temp_dir
-        blend = Path(textures_temp_dir, Path(blend).name)
-
         # Find and rename transparent materials that have mispellings of transparency with regex keys. 
         regex_transparent_materials()
 
@@ -2413,7 +2435,7 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
         delete_textures_temp(textures_temp_dir)
 
         # Unpack textures before modifying them.
-        unpack_textures(textures_temp_dir, blend)
+        unpack_textures(item_dir, textures_temp_dir, blend)
 
         # Rename unpacked textures to match image name, since images packed into .blend use names from 
         #  original texture filepath baked into their data instead of the image name.
@@ -2428,9 +2450,6 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
         elif import_file_ext == ".glb":
             # Get a dictionary of which textures are assigned to which materials.
             mapped_textures = map_textures_to_materials()
-            
-            # Set textures_temp_dir to location of unpacked images.
-            textures_temp_dir = Path(textures_temp_dir, "textures")
 
             # Separate the combined maps.
             separate_gltf_maps(textures_temp_dir)
@@ -2446,6 +2465,9 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
             
             # Modify textures if requested.
             determine_modify_textures()
+        
+        # Delete saved .blend that was used for unpacking textures.
+        Path.unlink(blend)
                 
         print("------------------------  APPLIED PACKED TEXTURES TO OBJECTS  ------------------------")
         logging.info("APPLIED PACKED TEXTURES TO OBJECTS")
@@ -2462,7 +2484,7 @@ def apply_textures_external(item_dir, item, import_file, textures_dir, textures_
             logging.info("Using external textures already linked to .blend for conversion")
 
             # Pack linked textures into .blend since they may be sourced from many different directories.
-            pack_resources_into_blend()
+            bpy.ops.file.pack_all()
 
             # Pretend that these textures were "Packed" all along.
             apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
@@ -2675,38 +2697,19 @@ def determine_uv_directory(textures_dir):
         logging.exception("COULD NOT DETERMINE UV DIRECTORY")
 
 
-# Rename textures_temp_dir and repath images inside the .blend.
-def rename_textures_dir_and_repath_blend(blend, path_old, path_new):
-    try:
-        if Path(path_new).exists():
-            shutil.rmtree(path_new)  # Remove directory if previously renamed.
-
-        path_old.rename(path_new)  # Rename the directory.
-
-        for image in bpy.data.images:  # Repath the textures.
-            bpy.data.images[image.name].filepath = str(path_new / image.name)
-        
-        print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
-        logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
-        
-        save_blend_file(blend)  # Save the .blend.
-
-    except Exception as Argument:
-        logging.exception("COULD NOT RENAME MODIFIED TEXTURES DIRECTORY OR REPATH BLEND")
-
-
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
 def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
     try:
+        if Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets:  # If saving a .blend, don't delete the textures upon which the model inside depends.
+            blend_textures = item_dir / (textures_temp_dir.name + "_blend")
+            if blend_textures.exists():
+                shutil.rmtree(blend_textures)
+            shutil.copytree(textures_temp_dir, blend_textures)
+            repath_blend_textures(blend, textures_temp_dir, blend_textures)  # Repath the textures.
+            print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
+            logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
         if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
-            if not pack_resources and (Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend"):  # If saving a .blend, don't delete the textures upon which the model inside depends.
-                path_old = textures_temp_dir
-                path_new = item_dir / (textures_temp_dir.name + "_blend")
-                rename_textures_dir_and_repath_blend(blend, path_old, path_new)  # Repath the textures.
-                print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
-                logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
-            else:
-                delete_textures_temp(textures_temp_dir)
+            delete_textures_temp(textures_temp_dir)
         elif textures_source == "Custom" and not copy_textures_custom_dir:  # For Custom textures source scenario.
             remove_copy_textures_custom_dir(item_dir, textures_dir)
 
@@ -2754,6 +2757,312 @@ def determine_export_uv_layout(item, textures_dir):
         logging.exception("COULD NOT DETERMINE HOW TO EXPORT UV LAYOUT(S)")
 
 
+# Determine whether asset preview has finished generating.
+# Source: https://projects.blender.org/blender/blender/issues/93893#issuecomment-168540
+def preview_finished(asset):
+    try:
+        arr = np.zeros((asset.preview.image_size[0] * asset.preview.image_size[1]) * 4, dtype=np.float32)
+        asset.preview.image_pixels_float.foreach_get(arr)
+        if np.all((arr == 0)):
+            return False
+        return True
+
+    except Exception as Argument:
+        logging.exception("Could not determine if asset preview finished.")
+
+
+# Generate preview image for asset browser.
+def generate_preview(asset):
+    try:
+        with bpy.context.temp_override(id=asset):
+            bpy.ops.ed.lib_id_generate_preview()
+        
+        while True:
+            if preview_finished(asset):
+                break
+            time.sleep(0.1)
+
+        print("------------------------  Generated Asset Preview: " + asset.name + "  ------------------------")
+        logging.info("Generated Asset Preview: " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("Could not generate Asset Preview: " + asset.name)
+
+
+# Determine whether the asset can have a preview image generated for it.
+# Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
+# asset_browser_utilities/module/preview/tool.py, Line 11
+def can_preview_be_generated(asset):
+    try:
+        if isinstance(
+            asset,
+            (
+                bpy.types.Action,
+                bpy.types.Brush,
+                bpy.types.Collection,
+                bpy.types.ShaderNodeTree,
+                bpy.types.Light,
+                bpy.types.Material,
+                bpy.types.Screen,
+                bpy.types.Texture,
+                bpy.types.World,
+            ),
+        ):
+            return True
+        elif isinstance(asset, bpy.types.Object):
+            if asset.type in ("MESH", "FONT", "LIGHT", "GREASEPENCIL", "SURFACE", "META"):
+                if asset.type == "MESH" and len(asset.data.polygons) == 0:
+                    return False
+                return True
+        elif isinstance(asset, bpy.types.Image):
+            return bool(asset.pixels)
+        return False
+
+    except Exception as Argument:
+        logging.exception("Could not determine whether asset preview could be generated for: " + asset.name)
+
+
+# Add tag to asset.
+def add_asset_tag(asset, tag):
+    try:
+        asset.asset_data.tags.new(tag)
+
+        print("------------------------  Added tag: " + tag + "  ------------------------")
+        logging.info("Added tag: " + tag)
+
+    except Exception as Argument:
+        logging.exception("Could not add tag: " + tag)
+
+
+# Add tags to asset.
+def add_asset_tags(asset):
+    try:
+        if asset_tags == "":  # Don't add a blank tag.
+            return
+
+        tags = split_into_components(asset_tags)
+        for tag in tags:
+            add_asset_tag(asset, tag)
+
+        print("------------------------  Added Tags to Asset: " + asset.name + "  ------------------------")
+        logging.info("Added Tags to Asset: " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("Could not Add Tags to Asset: " + asset.name)
+
+
+# Add metadata to asset.
+def add_metadata_to_asset(asset):
+    try:
+        asset.asset_data.description = asset_description
+        asset.asset_data.license = asset_license
+        asset.asset_data.copyright = asset_copyright
+        asset.asset_data.author = asset_author
+        add_asset_tags(asset)
+
+        print("------------------------  Added Metadata to Asset: " + asset.name + "  ------------------------")
+        logging.info("Added Metadata to Asset: " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("Added Metadata to Asset: " + asset.name)
+
+
+# Create an image in bpy.data.images
+# Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
+# module/preview/tool.py, Line 38
+def create_image(name, width, height, alpha=True):
+    try:
+        image = bpy.data.images.new(
+            name=name, 
+            width=width, 
+            height=height, 
+            alpha=alpha
+        )
+        return image
+
+    except Exception as Argument:
+        logging.exception("Could not create image: " + str(name))
+
+
+# Extract generated asset preview to disk.
+# Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
+# asset_browser_utilities/module/preview/operator/extract.py, Line 29
+def extract_preview_to_disk(asset, asset_type, blend):
+    try:
+        folder = Path(blend).parent
+        asset_preview = asset.preview
+        
+        if asset_preview is not None and asset_type in asset_extract_previews_filter:
+            image_name = "Preview_" + asset.name + "_" + asset_type
+            image = create_image(image_name, asset_preview.image_size[0], asset_preview.image_size[1])
+            image.file_format = "PNG"
+            for char in ("/", "\\", ":", "|", '"', "!", "?", "<", ">", "*"):
+                if char in image.name:
+                    image.name = image.name.replace(char, "_")
+            image.filepath = str(folder / (image.name + ".png"))
+            
+            try:
+                image.pixels.foreach_set(asset_preview.image_pixels_float)
+            except TypeError:
+                logging.exception("Could not Extract Asset Preview: " + image_name)
+            else:
+                image.save()
+                print("------------------------  Extracted Asset Preview: " + image_name + "  ------------------------")
+                logging.info("Extracted Asset Preview: " + image_name)
+
+            bpy.data.images.remove(image)
+        
+        else:
+            return False
+
+    except Exception as Argument:
+        logging.exception("Could not Extract Asset Preview: " + image_name)
+
+
+# Mark asset.
+def mark_asset(asset, asset_type, assets_in_library, blend):
+    try:
+        if assets_ignore_duplicates and asset_type in assets_ignore_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
+            print(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
+            logging.info(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
+            return
+        
+        asset.asset_mark()  # Mark asset.
+
+        if asset_library != "NO_LIBRARY" and asset_catalog != "NO_CATALOG":
+            asset.asset_data.catalog_id = asset_catalog  # Assign to catalog.
+
+        if asset_add_metadata:
+            add_metadata_to_asset(asset)  # Add metadata.
+
+        if can_preview_be_generated(asset):
+            generate_preview(asset)  # Generate preview.
+
+        if asset_extract_previews:
+            extract_preview_to_disk(asset, asset_type, blend)  # Extract preview.
+
+        print("------------------------  Marked Asset: " + asset.name + "  ------------------------")
+        logging.info("Marked Asset: " + asset.name)
+
+    except Exception as Argument:
+        logging.exception("Could not Mark Asset: " + asset.name)
+
+
+# Get a dictionary of asset names by data-block type that exist in a given asset library.
+def get_assets_in_library(library_name):
+    try:
+        keys = assets_ignore_duplicates_filter  # Keys are the asset types for which duplicates should be ignored.
+        values = [[] for key in keys]  # Placeholder lists to be filled later.
+        assets_in_library = dict(zip(keys, values))  # Create an template dictionary to fill.
+        
+        if library_name == "NO_LIBRARY":
+            return assets_in_library  # Return a dictionary with empty values if User did not select an asset library.
+
+        asset_libraries = bpy.context.preferences.filepaths.asset_libraries
+        asset_library = asset_libraries.data.asset_libraries[library_name]
+        library_path = Path(asset_library.path)
+        blend_files = [fp for fp in library_path.glob("**/*.blend") if fp.is_file()]
+        print(f"Checking the contents of library '{library_name}' :")
+        for blend_file in blend_files:
+            with bpy.data.libraries.load(str(blend_file), assets_only=True) as (file_contents, _):
+                for key in keys:
+                    assets = eval("file_contents." + key.lower())
+                    assets_in_library[key] += assets  # Add assets of given data block to their associated list in the dictionary.
+        
+        print("------------------------  Got Assets in Library (" + library_name + "): " + str(assets_in_library) + "  ------------------------")
+        logging.info("Got Assets in Library (" + library_name + "): " + str(assets_in_library))
+        
+        return assets_in_library
+
+    except Exception as Argument:
+        logging.exception("Could not get Assets in Library (" + library_name + "): " + str(assets_in_library))
+
+
+# Mark assets in asset data filter.
+def mark_assets(item, blend):
+    try:
+        assets_in_library = get_assets_in_library(asset_library)  # Get a dictionary of assets in the selected asset library.
+
+        if "Actions" in asset_types_to_mark:
+            for action in bpy.data.actions:
+                mark_asset(action, "Actions", assets_in_library, blend)
+        
+        if "Collections" in asset_types_to_mark:
+            master_collection_name = prefix + item + suffix
+            for collection in bpy.data.collections:
+                if mark_only_master_collection and collection.name != master_collection_name:
+                    continue
+                mark_asset(collection, "Collections", assets_in_library, blend)
+                
+        if "Materials" in asset_types_to_mark:
+            for material in bpy.data.materials:
+                mark_asset(material, "Materials", assets_in_library, blend)
+
+        if "Node_Groups" in asset_types_to_mark:
+            for node_group in bpy.data.node_groups:
+                mark_asset(node_group, "Node_Groups", assets_in_library, blend)
+    
+        if "Objects" in asset_types_to_mark:
+            for object in bpy.data.objects:
+                if not object.type in asset_object_types_filter:  # Mark only certain selected object types as assets.
+                    continue
+                mark_asset(object, "Objects", assets_in_library, blend)
+
+        if "Worlds" in asset_types_to_mark:
+            for world in bpy.data.worlds:
+                mark_asset(world, "Worlds", assets_in_library, blend)
+
+        print("------------------------  MARKED ASSETS  ------------------------")
+        logging.info("MARKED ASSETS")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MARK ASSETS")
+
+
+# Move/Copy blend file and textures to selected Asset Library.
+def move_copy_blend_to_asset_library(item, blend):
+    try:
+        if asset_library != "NO_LIBRARY":
+            asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
+            
+            if asset_blend_location == "None":  # Return early if User elected to leave blend adjacent to each converted item.
+                return
+
+            asset_dir = make_directory(asset_library_path, blend.stem)
+            blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+            blend_and_associated_files = [blend, blend_textures]
+            asset_previews = [file for file in blend.parent.iterdir() if file.name.startswith("Preview_") and file.suffix == ".png"]  # Get a list of extracted asset previews.
+            
+            for asset_preview in asset_previews:
+                blend_and_associated_files.append(asset_preview)  # Append asset previews to list of files to be copied/moved.
+
+            for file in blend_and_associated_files:
+                if asset_blend_location == "Move":
+                    move_file(asset_dir, file)
+                elif asset_blend_location == "Copy":
+                    copy_file(asset_dir, file)
+
+        print("------------------------  Moved/Copied Blend and Associated Files to Asset Library   ------------------------")
+        logging.info("Moved/Copied Blend and Associated Files to Asset Library")
+
+    except Exception as Argument:
+        logging.exception("Could not Move/Copy Blend and Associated Files to Asset Library")
+
+
+# Archive assets to Asset Library by marking, tagging, and cataloging.
+def archive_assets_to_library(item, blend):
+    try:
+        mark_assets(item, blend)
+        save_blend_file(blend)
+        move_copy_blend_to_asset_library(item, blend)
+
+        print("------------------------  ARCHIVED ASSETS TO LIBRARY: " + asset_library + "  ------------------------")
+        logging.info("ARCHIVED ASSETS TO LIBRARY: " + asset_library)
+
+    except Exception as Argument:
+        logging.exception("COULD NOT ARCHIVE ASSETS TO LIBRARY: " + asset_library)
+
+
 # Convert the file for every file found inside the given directory.
 def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count):
     try:
@@ -2765,7 +3074,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         logging.info("-------------------------------------------------------------------")
         
         # Set up scene.
-        scene_setup()
+        setup_scene(item)
 
         # Brute force-remove all materials and images.
         if textures_source != "Custom":
@@ -2774,6 +3083,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
         # Import the file.
         import_file_function(import_file_command, import_file_options, import_file)
+
+        # Move all objects and collections to item collection.
+        move_objects_and_collections_to_item_collection(item)
 
         # Delete animations.
         if delete_animations:
@@ -2805,9 +3117,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if rename_uvs:
             rename_UV_maps()
         
-        # Save .blend file.
-        if save_blend:
-            save_blend_file(blend)
+        # # Save .blend file.
+        # if save_blend:
+        #     save_blend_file(blend)
 
         # Select all objects in the scene before exporting, including empty objects.
         select_all()
@@ -2819,10 +3131,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
-        # Save preview image.
-        if save_preview_image:
-            render_preview_image(preview_image)        
-
         # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
             determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
@@ -2830,6 +3138,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Export UV Layout(s).
         if export_uv_layout:
             determine_export_uv_layout(item, textures_dir)
+        
+        if archive_assets:
+            archive_assets_to_library(item, blend)
 
         print("-------------------------------------------------------------------")
         print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
@@ -2887,25 +3198,65 @@ def list_exports(export_file_1, export_file_2):
         logging.exception("COULD NOT LIST EXPORTS")
 
 
-# Move file from source to destination
+# Create a new directory in a given directory.
+def make_directory(destination, name):
+    try:
+        new_dir = destination / name  # destination needs to be a Path.
+        if destination.exists():
+            if not new_dir.exists():
+                Path.mkdir(new_dir)
+
+        print("------------------------  MADE DIRECTORY  ------------------------")
+        logging.info("MADE DIRECTORY")
+
+        return new_dir
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MADE DIRECTORY")
+
+
+# Copy file from source to destination.
+def copy_file(directory, file_source):
+    try:
+        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
+        
+        if Path(file_source).is_dir():  # Check if "file" is a directory.
+            if Path(file_destination).exists():
+                shutil.rmtree(file_destination)  # Remove any existing destination directory.
+            shutil.copytree(file_source, file_destination)  # Copy the directory.
+
+        elif Path(file_source).is_file():  # Check if "file" is a file.
+            if Path(file_destination).is_file():
+                Path.unlink(file_destination)  # Remove any existing destination file.
+            shutil.copy(file_source, file_destination)  # Copy the file.
+
+        else:
+            return  # Return nothing if source file doesn't exist.
+
+        print("Copied " + str(Path(file_source).name) + " to " + str(directory))
+        logging.info("Copied " + str(Path(file_source).name) + " to " + str(directory))
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT COPY FILE")
+
+
+# Move file from source to destination.
 def move_file(directory, file_source):
     try:
-        # Set destination based on custom output directory
-        file_destination = Path(directory, Path(file_source).name)
-        # Check if "file" is a directory.
-        if Path(file_source).is_dir():
+        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
+        
+        if Path(file_source).is_dir():  # Check if "file" is a directory.
             if Path(file_destination).exists():
-                shutil.rmtree(file_destination)
-            shutil.move(file_source, file_destination)
+                shutil.rmtree(file_destination)  # Remove any existing destination directory.
+            shutil.move(file_source, file_destination)  # Move the directory.
 
-        # Check if "file" is a file
-        if not Path(file_source).is_dir():
+        elif Path(file_source).is_file():  # Check if "file" is a file.
             if Path(file_destination).is_file():
-            # Remove any existing destination file
-                Path.unlink(file_destination)
-            # Move file, if source exists
-            if Path(file_source).is_file():
-                shutil.move(file_source, file_destination)
+                Path.unlink(file_destination)  # Remove any existing destination file.
+            shutil.move(file_source, file_destination)  # Move the file.
+
+        else:
+            return  # Return nothing if source file doesn't exist.
                 
         print("Moved " + str(Path(file_source).name) + " to " + str(directory))
         logging.info("Moved " + str(Path(file_source).name) + " to " + str(directory))
@@ -2929,9 +3280,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             file_list.append(textures_dir)
         if save_blend:
             file_list.append(blend)
-        if save_preview_image:
-            file_list.append(preview_image)
-        
+
         # Scenario 1: No subdirectories
         if not use_subdirectories:
             # Delete any pre-existing textures_temp folders in the custom directory.
