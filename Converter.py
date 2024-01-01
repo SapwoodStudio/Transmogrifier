@@ -906,15 +906,15 @@ def add_principled_setup(material, textures_temp_dir, textures):
         print("Textures for " + str(material.name) + ": " + str(textures))
         logging.info("Textures for " + str(material.name) + ": " + str(textures))
 
-        files = []
-
+        # Get context.
         win = bpy.context.window
         scr = win.screen
         areas = [area for area in scr.areas if area.type == 'NODE_EDITOR']
         areas[0].spaces.active.node_tree = material.node_tree
-        
         override = override_context('NODE_EDITOR', 'WINDOW')
         
+        # Get textures to import.
+        files = []
         for texture in textures:
             if texture == '.DS_Store':
                 continue
@@ -926,17 +926,18 @@ def add_principled_setup(material, textures_temp_dir, textures):
                 }
             )
             
-            filepath = str(textures_temp_dir) + '/'
-            directory = str(textures_temp_dir) + '/'
-            relative_path = True
-            
-            with bpy.context.temp_override(**override):
-                bpy.ops.node.nw_add_textures_for_principled(
-                    filepath=filepath,
-                    directory=directory,
-                    files=files,
-                    relative_path=relative_path
-                )
+        filepath = str(textures_temp_dir) + '/'
+        directory = str(textures_temp_dir) + '/'
+        relative_path = True
+        
+        # Add principled setup.
+        with bpy.context.temp_override(**override):
+            bpy.ops.node.nw_add_textures_for_principled(
+                filepath=filepath,
+                directory=directory,
+                files=files,
+                relative_path=relative_path
+            )
         
         print("------------------------  Added Principled Setup for " + str(material.name) + "  ------------------------")
         logging.info("Added Principled Setup for " + str(material.name))
