@@ -3117,10 +3117,6 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         # Rename UV maps if requested by User.
         if rename_uvs:
             rename_UV_maps()
-        
-        # # Save .blend file.
-        # if save_blend:
-        #     save_blend_file(blend)
 
         # Select all objects in the scene before exporting, including empty objects.
         select_all()
@@ -3267,65 +3263,55 @@ def move_file(directory, file_source):
 
 
 # Move and or copy files from item directory to custom directory specified by the User.
-def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image):
+def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents):
     try:
-        # Make the custom directory if it doesn't exist
-        if not Path(directory_output_custom).exists():
-            Path.mkdir(directory_output_custom)
+        destination = Path(directory_output_custom)
         
-        # File list of items to move
-        file_list = [export_file_1]
-        if model_quantity == "2 Formats":
-            file_list.append(export_file_2)
-        if copy_textures_custom_dir:
-            file_list.append(textures_dir)
-        if save_blend:
-            file_list.append(blend)
+        # Make the custom directory if it doesn't exist.
+        make_directory(destination.parent, destination.name)
 
-        # Scenario 1: No subdirectories
-        if not use_subdirectories:
-            # Delete any pre-existing textures_temp folders in the custom directory.
-            textures_temp_custom = Path(directory_output_custom, Path(textures_temp_dir).name)
-            if Path(textures_temp_custom).exists():
-                shutil.rmtree(textures_temp_custom)
-                
-            # Move files
-            for file in file_list:
-                move_file(directory = directory_output_custom, file_source = file)
+        # Move all created/exported files and directories resulting from the conversion.
+        files_to_move = [file for file in Path.iterdir(item_dir) if file not in original_contents]
         
+        # Always move these files.
+        files_to_move.append(export_file_1)
+        if model_quantity == "2 Formats":  # Include additional exported file if converting to two formats at once.
+            files_to_move.append(export_file_2)
+        if copy_textures_custom_dir:  # If custom textures scenario and User elected to copy textures to model folders, then include the textures_dir in files_to_move.
+            files_to_move.append(textures_dir)
+        if keep_modified_textures:  # Include temporary texures directory.
+            files_to_move.append(textures_temp_dir)
+        if export_uv_layout:  # Include UVs in UV directory or individual images adjacent to the imported model.
+            if uv_export_location == "UV":
+                files_to_move.append(Path(item_dir) / "UV")
+            elif uv_export_location == "Adjacents":
+                uvs = [file for file in Path.iterdir(item_dir) if "UV" in file.name]
+                for uv in uvs:
+                    files_to_move.append(uv)
+        if archive_assets and asset_library == "NO_LIBRARY":  # Include assets.
+            files_to_move.append(blend)
+            if not pack_resources:  # Include blend textures if not packing resources.
+                blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+                files_to_move.append(blend_textures)
+            if asset_extract_previews:  # Include asset preview(s).
+                previews = [files_to_move.append(file) for file in Path.iterdir(item_dir) if "Preview" in file.name and file.suffix == ".png"]
+
+        # Change destination to subdirectory by item name if elected.
         if use_subdirectories:
-            # Scenario 2: Subdirectories, no copy original item directory
-            item_dir_custom = Path(directory_output_custom, prefix + item + suffix)
+            # Change destination to item subdirectory.
+            destination = Path(destination, prefix + item + suffix)
             
-            # Always start fresh by removing existing custom item directories.
-            if Path(item_dir_custom).exists():
-                shutil.rmtree(item_dir_custom)
-            Path.mkdir(item_dir_custom)
+            # Make item subdirectory.
+            make_directory(destination.parent, destination.name)
             
-            # Move files
-            for file in file_list:
-                move_file(directory = item_dir_custom, file_source = file)
-            
-            # Scenario 3: Subdirectories, copy original item directory
-            if use_subdirectories and copy_item_dir_contents:
-                # Copy leftover/original subfolders and files
-                for file in Path.iterdir(item_dir):
-                    # Copy subfolders
-                    if Path(item_dir, file.name).is_dir():
-                        file_custom = Path(item_dir_custom, file.name)
-                        file = Path(item_dir, file.name)
-                        if Path(file_custom).exists():
-                            shutil.rmtree(file_custom)
-                        shutil.copytree(file, file_custom)
-                        print("Copied " + str(file.name) + " to " + str(item_dir_custom))
-                        logging.info("Copied " + str(file.name) + " to " + str(item_dir_custom))
-                    # Copy files
-                    else:
-                        file_custom = Path(item_dir_custom, file.name)
-                        file = Path(item_dir, file.name)
-                        shutil.copy(file, file_custom)
-                        print("Copied " + str(Path(file.name).name) + " to " + str(item_dir_custom))
-                        logging.info("Copied " + str(Path(file.name).name) + " to " + str(item_dir_custom))
+            # Copy original subfolders and files.
+            if copy_item_dir_contents and original_contents:  # Don't bother trying to copy original files if none exist.
+                for file in original_contents: 
+                    copy_file(destination, file)  # Copy original files to custom item subdirectory.
+                        
+        # Move files.
+        for file in files_to_move:
+            move_file(destination, file)
         
         print("------------------------  MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY  ------------------------")
         logging.info("MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY")
@@ -3337,6 +3323,9 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
 # Determine whether to import a model before converting in order to save time.
 def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list):
     try:
+        # Get original contents inside the item directory.  Will be used later if exporting models to a custom output directory.
+        original_contents = [file for file in Path.iterdir(item_dir)]
+
         # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
         if auto_resize_files == "Only Above Max":
             # Get current file size (in MB) in order to determine whether to import the current item at all.
@@ -3366,7 +3355,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 conversion_count += 1
                 # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
                 if directory_output_location == "Custom":
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents)
                 return conversion_list, conversion_count
             
             # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
@@ -3388,7 +3377,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 conversion_count += 1
                 # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
                 if directory_output_location == "Custom":
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents)
                 return conversion_list, conversion_count
 
         # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
@@ -3404,7 +3393,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             conversion_count += 1
             # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
             if directory_output_location == "Custom":
-                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image)
+                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents)
             return conversion_list, conversion_count
 
         print("------------------------  DETERMINED CONVERSION FOR " + str(item) + "  ------------------------")
@@ -3435,9 +3424,6 @@ def batch_converter():
         # Enable addons
         enable_addons()
 
-        # Temporarily change interface theme to force a white background in Material Preview viewport mode for rendering Preview images.
-        #set_theme_light(blender_dir, blender_version)
-
         # Run converter in every subdirectory that contains a model of the specified file type.
         for subdir, dirs, files in os.walk(directory):
             for file in files:
@@ -3460,9 +3446,6 @@ def batch_converter():
 
                 else:
                     continue
-        
-        # Reset interface theme dark after rendering all Preview images.
-        #set_theme_dark(blender_dir, blender_version)
         
         # If using custom textures, delete temporary textures directory only after all items have been converted.
         if use_textures and textures_source == "Custom" and not keep_modified_textures:
