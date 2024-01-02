@@ -1330,7 +1330,7 @@ def save_blend_file(blend):
         # Frame object(s) in the viewport before saving.
         override = override_context('VIEW_3D', 'WINDOW')
         with bpy.context.temp_override(**override):
-            bpy.ops.view3d.view_selected(use_all_regions=False)
+            bpy.ops.view3d.view_all(center=False)
 
         # Save the file.
         bpy.ops.wm.save_as_mainfile(
