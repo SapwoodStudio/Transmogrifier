@@ -100,6 +100,56 @@ def enable_addons():
         logging.exception("COULD NOT ENABLE ADDONS")
 
 
+# Copy file from source to destination.
+def copy_file(directory, file_source):
+    try:
+        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
+        
+        if Path(file_source).is_dir():  # Check if "file" is a directory.
+            if Path(file_destination).exists():
+                shutil.rmtree(file_destination)  # Remove any existing destination directory.
+            shutil.copytree(file_source, file_destination)  # Copy the directory.
+
+        elif Path(file_source).is_file():  # Check if "file" is a file.
+            if Path(file_destination).is_file():
+                Path.unlink(file_destination)  # Remove any existing destination file.
+            shutil.copy(file_source, file_destination)  # Copy the file.
+
+        else:
+            return  # Return nothing if source file doesn't exist.
+
+        print("Copied " + str(Path(file_source).name) + " to " + str(directory))
+        logging.info("Copied " + str(Path(file_source).name) + " to " + str(directory))
+    
+    except Exception as Argument:
+        logging.exception("COULD NOT COPY FILE")
+
+
+# Move file from source to destination.
+def move_file(directory, file_source):
+    try:
+        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
+        
+        if Path(file_source).is_dir():  # Check if "file" is a directory.
+            if Path(file_destination).exists():
+                shutil.rmtree(file_destination)  # Remove any existing destination directory.
+            shutil.move(file_source, file_destination)  # Move the directory.
+
+        elif Path(file_source).is_file():  # Check if "file" is a file.
+            if Path(file_destination).is_file():
+                Path.unlink(file_destination)  # Remove any existing destination file.
+            shutil.move(file_source, file_destination)  # Move the file.
+
+        else:
+            return  # Return nothing if source file doesn't exist.
+                
+        print("Moved " + str(Path(file_source).name) + " to " + str(directory))
+        logging.info("Moved " + str(Path(file_source).name) + " to " + str(directory))
+
+    except Exception as Argument:
+        logging.exception("COULD NOT MOVE FILE")
+
+
 # Override context perform certain context-dependent Blender operators.
 def override_context(area_type, region_type):
     try:
@@ -168,26 +218,6 @@ def clean_data_block(block):
         logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
 		
 
-# Sometimes purge orphans won't delete data blocks (e.g. images) even though they have no users. This will force the deletion of any data blocks within a specified bpy.data.[data type]
-def clean_data_block_except_custom(block, custom_data):
-    try:
-        # iterate over every entry in the data block
-        for data in block:
-            if Path(data.name).stem in custom_data:
-                print("Preserved custom data block: " + data.name)
-                logging.info("Preserved custom data block: " + data.name)
-                continue
-            print("Removed data block: " + data.name)
-            logging.info("Removed data block: " + data.name)
-            block.remove(data)
-
-        print("------------------------  CLEANED DATA BLOCK: " + str(block).upper() + "  ------------------------")
-        logging.info("CLEANED DATA BLOCK: " + str(block).upper())
-
-    except Exception as Argument:
-        logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
-
-
 # Add new collection with name = prefix + item + suffix.
 def add_collection(item):
     try:
@@ -237,20 +267,20 @@ def setup_scene(item):
 		
 
 # Append a blend file's objects to Converter.blend.
-def append_blend(import_file_command, import_file_options, import_file):
+def append_blend_objects(import_file_command, import_file_options, import_file):
     try:
-        with bpy.data.libraries.load(import_file, link=False) as (data_from, data_to):  # Link all objects.
+        with bpy.data.libraries.load(import_file, link=False) as (data_from, data_to):  # Append all objects.
             data_to.objects = [object for object in data_from.objects]
         
         for object in data_to.objects: # Link all objects to current scene.
             if object is not None:
                 bpy.context.collection.objects.link(object)
 
-        print("------------------------  APPENDED BLEND FILE: " + str(Path(import_file).name) + "  ------------------------")
-        logging.info("APPENDED BLEND FILE: " + str(Path(import_file).name))
+        print("------------------------  APPENDED BLEND FILE OBJECTS: " + str(Path(import_file).name) + "  ------------------------")
+        logging.info("APPENDED BLEND FILE OBJECTS: " + str(Path(import_file).name))
 
     except Exception as Argument:
-        logging.exception("COULD NOT APPEND BLEND FILE: " + str(Path(import_file).name))
+        logging.exception("COULD NOT APPEND BLEND FILE OBJECTS: " + str(Path(import_file).name))
 
 
 # Import file of a format type supplied by the user.
@@ -259,7 +289,7 @@ def import_file_function(import_file_command, import_file_options, import_file):
         import_file_options["filepath"] = import_file  # Set filepath to the location of the model to be imported
         
         if import_file_command == "bpy.ops.wm.append(**":  # Select "Objects" Library to append from current .blend file.
-            append_blend(import_file_command, import_file_options, import_file)
+            append_blend_objects(import_file_command, import_file_options, import_file)
             return
 
         import_file_command = str(import_file_command) + str(import_file_options) + ")"  # Concatenate the import command with the import options dictionary
@@ -419,7 +449,7 @@ def select_by_material(material):
         logging.exception("COULD NOT SELECT OBJECTS WITH MATERIAL: " + str(material.name))
 		
 
-# Copy textures from custom directory and apply to all models in directory.
+# Copy textures from custom directory to item directory.
 def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures):
     try:
         if Path(textures_custom_dir).exists():
@@ -2357,45 +2387,49 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
         # Clear all users of all materials.
         clear_materials_users()
 
-        # Copy original custom textures to item directory.
-        copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
-        
-        # Reassign item as "Custom_Textures"
-        item = "Custom_Textures"
+        # Remove existing materials and textures from Converter.blend file only once.
+        clean_data_block(bpy.data.materials)
+        clean_data_block(bpy.data.images)
 
         if conversion_count == 0:
+            # Create a temporary textures directory beside the custom textures directory.
             create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
             
-            # Remove existing materials and textures from Converter.blend file only once.
-            clean_data_block(bpy.data.materials)
-            clean_data_block(bpy.data.images)
-            
-            # Only regex textures and create materials once.
+            # Regex external custom textures.
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
+
+            # Create materials.
             create_materials(item, textures_temp_dir)
             
             # Modify textures if requested.
             determine_modify_textures()
-                
-            # Get custom materials and textures not to be deleted during conversion.
-            global custom_materials
-            global custom_textures
-            custom_materials = [Path(material.name).stem for material in bpy.data.materials]
-            custom_textures = [Path(texture.name).stem for texture in bpy.data.images]  # Ignore image format extension
 
-            # Preserve material(s) and texture(s).
-            use_fake_user()
-        
-        elif conversion_count > 0:
-            clean_data_block_except_custom(bpy.data.materials, custom_materials)
-            clean_data_block_except_custom(bpy.data.images, custom_textures)
-            
-            # Preserve material(s) and texture(s).
-            use_fake_user()
+            # Remove existing materials and textures again.
+            clean_data_block(bpy.data.materials)
+            clean_data_block(bpy.data.images)
 
+        # Copy textures_temp from custom textures directory to item directory.
+        copy_file(item_dir, textures_temp_dir)
+
+        # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
+        textures_temp_dir = item_dir / textures_temp_dir.name
+        textures_temp_dir_renamed = item_dir / ("textures_" + blend.stem)
+        if Path(textures_temp_dir_renamed).exists():  # Remove the local copy of temporary textures directory if it already exists from a prior conversion.
+            shutil.rmtree(textures_temp_dir_renamed)
+        Path(textures_temp_dir).rename(textures_temp_dir_renamed)
+        textures_temp_dir = textures_temp_dir_renamed
+
+        # Create materials.
+        create_materials(item, textures_temp_dir)
+
+        # Assign materials to objects.
         assign_materials(item)
 
+        # Copy original custom textures to item directory if elected.
+        if copy_textures_custom_dir:
+            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
+        
         print("------------------------  APPLIED CUSTOM TEXTURES TO OBJECTS  ------------------------")
         logging.info("APPLIED CUSTOM TEXTURES TO OBJECTS")
 
@@ -2701,17 +2735,31 @@ def determine_uv_directory(textures_dir):
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
 def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir):
     try:
-        if Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets:  # If saving a .blend, don't delete the textures upon which the model inside depends.
+        # If saving a .blend, don't delete the textures upon which the model inside depends.
+        if Path(export_file_1).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets:
+
+            # Correct the textures temporary directory location for Custom textures scenario.
+            if textures_source == "Custom":
+                textures_temp_dir = item_dir / ("textures_" + blend.stem)
+            
+            # Copy temporary textures directory as a blend_textures directory.
             blend_textures = item_dir / (textures_temp_dir.name + "_blend")
             if blend_textures.exists():
                 shutil.rmtree(blend_textures)
             shutil.copytree(textures_temp_dir, blend_textures)
+            
+            # Repath the textures to blend_textures.
             repath_blend_textures(blend, textures_temp_dir, blend_textures)  # Repath the textures.
             print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
             logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
-        if not keep_modified_textures and textures_source != "Custom":  # For External and Packed textures source scenarios.
+        
+        # Delete temporary textures directory (local copy for Custom textures scenario) if elected.
+        if not keep_modified_textures:
+            textures_temp_dir = item_dir / ("textures_" + blend.stem)
             delete_textures_temp(textures_temp_dir)
-        elif textures_source == "Custom" and not copy_textures_custom_dir:  # For Custom textures source scenario.
+        
+        # Delete local copy of textures directory for Custom textures scenario if elected.
+        elif textures_source == "Custom" and not copy_textures_custom_dir:
             remove_copy_textures_custom_dir(item_dir, textures_dir)
 
         print("------------------------  DETERMINED WHETHER TO KEEP MODIFIED TEXTURES  ------------------------")
@@ -2956,7 +3004,7 @@ def get_assets_in_library(library_name):
         values = [[] for key in keys]  # Placeholder lists to be filled later.
         assets_in_library = dict(zip(keys, values))  # Create an template dictionary to fill.
         
-        if library_name == "NO_LIBRARY":
+        if library_name == "NO_LIBRARY" or library_name == "(no library)":
             return assets_in_library  # Return a dictionary with empty values if User did not select an asset library.
 
         asset_libraries = bpy.context.preferences.filepaths.asset_libraries
@@ -3023,7 +3071,7 @@ def mark_assets(item, blend):
 # Move/Copy blend file and textures to selected Asset Library.
 def move_copy_blend_to_asset_library(item, blend):
     try:
-        if asset_library != "NO_LIBRARY":
+        if asset_library != "NO_LIBRARY" and asset_library != "(no library)":
             asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
             
             if asset_blend_location == "None":  # Return early if User elected to leave blend adjacent to each converted item.
@@ -3212,56 +3260,6 @@ def make_directory(destination, name):
         logging.exception("COULD NOT MADE DIRECTORY")
 
 
-# Copy file from source to destination.
-def copy_file(directory, file_source):
-    try:
-        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
-        
-        if Path(file_source).is_dir():  # Check if "file" is a directory.
-            if Path(file_destination).exists():
-                shutil.rmtree(file_destination)  # Remove any existing destination directory.
-            shutil.copytree(file_source, file_destination)  # Copy the directory.
-
-        elif Path(file_source).is_file():  # Check if "file" is a file.
-            if Path(file_destination).is_file():
-                Path.unlink(file_destination)  # Remove any existing destination file.
-            shutil.copy(file_source, file_destination)  # Copy the file.
-
-        else:
-            return  # Return nothing if source file doesn't exist.
-
-        print("Copied " + str(Path(file_source).name) + " to " + str(directory))
-        logging.info("Copied " + str(Path(file_source).name) + " to " + str(directory))
-    
-    except Exception as Argument:
-        logging.exception("COULD NOT COPY FILE")
-
-
-# Move file from source to destination.
-def move_file(directory, file_source):
-    try:
-        file_destination = Path(directory, Path(file_source).name)  # Set destination path.
-        
-        if Path(file_source).is_dir():  # Check if "file" is a directory.
-            if Path(file_destination).exists():
-                shutil.rmtree(file_destination)  # Remove any existing destination directory.
-            shutil.move(file_source, file_destination)  # Move the directory.
-
-        elif Path(file_source).is_file():  # Check if "file" is a file.
-            if Path(file_destination).is_file():
-                Path.unlink(file_destination)  # Remove any existing destination file.
-            shutil.move(file_source, file_destination)  # Move the file.
-
-        else:
-            return  # Return nothing if source file doesn't exist.
-                
-        print("Moved " + str(Path(file_source).name) + " to " + str(directory))
-        logging.info("Moved " + str(Path(file_source).name) + " to " + str(directory))
-
-    except Exception as Argument:
-        logging.exception("COULD NOT MOVE FILE")
-
-
 # Move and or copy files from item directory to custom directory specified by the User.
 def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents):
     try:
@@ -3280,6 +3278,8 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         if copy_textures_custom_dir:  # If custom textures scenario and User elected to copy textures to model folders, then include the textures_dir in files_to_move.
             files_to_move.append(textures_dir)
         if keep_modified_textures:  # Include temporary texures directory.
+            if textures_source == "Custom":
+                textures_temp_dir = item_dir / ("textures_" + blend.stem)  # Make sure only the local copy of textures_temp_dir for custom textures gets moved.
             files_to_move.append(textures_temp_dir)
         if export_uv_layout:  # Include UVs in UV directory or individual images adjacent to the imported model.
             if uv_export_location == "UV":
