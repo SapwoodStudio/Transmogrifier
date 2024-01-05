@@ -3113,7 +3113,7 @@ def archive_assets_to_library(item, blend):
 
 
 # Convert the file for every file found inside the given directory.
-def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count):
+def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count):
     try:
         print("-------------------------------------------------------------------")
         print("------------------------  CONVERTER START: " + str(Path(import_file).name) + "  ------------------------")
@@ -3261,7 +3261,7 @@ def make_directory(destination, name):
 
 
 # Move and or copy files from item directory to custom directory specified by the User.
-def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents):
+def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, original_contents):
     try:
         destination = Path(directory_output_custom)
         
@@ -3321,7 +3321,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         
 
 # Determine whether to import a model before converting in order to save time.
-def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list):
+def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list):
     try:
         # Get original contents inside the item directory.  Will be used later if exporting models to a custom output directory.
         original_contents = [file for file in Path.iterdir(item_dir)]
@@ -3347,7 +3347,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count)
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -3355,7 +3355,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 conversion_count += 1
                 # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
                 if directory_output_location == "Custom":
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents)
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, original_contents)
                 return conversion_list, conversion_count
             
             # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
@@ -3369,7 +3369,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 print("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count)
+                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -3377,7 +3377,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 conversion_count += 1
                 # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
                 if directory_output_location == "Custom":
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents)
+                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, original_contents)
                 return conversion_list, conversion_count
 
         # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
@@ -3385,7 +3385,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             print("Initiating converter for " + str(item) + ".")
             logging.info("Initiating converter for " + str(item) + ".")
             # Run the converter on the item that was found.
-            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count)
+            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
             # Increment conversion counter and add converted item(s) to list.
             exports_list = list_exports(export_file_1, export_file_2)
             # Add export(s) to conversion list.
@@ -3393,7 +3393,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             conversion_count += 1
             # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
             if directory_output_location == "Custom":
-                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, original_contents)
+                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, original_contents)
             return conversion_list, conversion_count
 
         print("------------------------  DETERMINED CONVERSION FOR " + str(item) + "  ------------------------")
@@ -3439,10 +3439,9 @@ def batch_converter():
                     export_file_1 = str(Path(subdir, prefix + item + suffix + export_file_1_ext))
                     export_file_2 = str(Path(subdir, prefix + item + suffix + export_file_2_ext))
                     blend = Path(subdir, prefix + item + suffix + ".blend")
-                    preview_image = Path(subdir, prefix + item + suffix + '_Preview.jpg')
 
                     # Determine which models to import, then convert the ones that are eligible for import.
-                    conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, preview_image, conversion_count, conversion_list)
+                    conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list)
 
                 else:
                     continue
