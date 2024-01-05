@@ -621,6 +621,9 @@ def draw_settings_archive(self, context):
                 col.prop(settings, 'asset_author')
                 col.prop(settings, 'asset_tags')
                 col = self.layout.column(align=True)
+    
+    if not settings.archive_assets:
+        col.prop(settings, 'asset_extract_previews')
 
 
 # Draws the button and popover dropdown button used in the
@@ -2291,7 +2294,7 @@ class TransmogrifierSettings(PropertyGroup):
         description="Add new keyword tags to assets. Separate tags with a space",
     )
     asset_extract_previews: BoolProperty(
-        name="Extract Previews to Disk",
+        name="Save Previews to Disk",
         description="Extract preview image thumbnail for every asset marked and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
         default=True,
     )

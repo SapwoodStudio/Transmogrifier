@@ -3184,8 +3184,16 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if export_uv_layout:
             determine_export_uv_layout(item, textures_dir)
         
+        # Archive assets to library.
         if archive_assets:
             archive_assets_to_library(item, blend)
+
+        # Save only single preview image of collections if desired when not archiving assets to library.
+        if not archive_assets and asset_extract_previews:
+            asset_extract_previews_filter = ["Collections"]
+            asset_types_to_mark = ["Collections"]
+            mark_assets(item, blend)
+
 
         print("-------------------------------------------------------------------")
         print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
