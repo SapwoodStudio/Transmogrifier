@@ -1826,8 +1826,8 @@ def rename_textures_packed(textures_temp_dir):
 def rename_textures_unpacked(textures_temp_dir):
     try:
         for image in bpy.data.images:
-            path_old = Path.resolve(Path(bpy.path.abspath(image.filepath)))
-            path_new = path_old.parent / image.name
+            path_old = Path(textures_temp_dir) / Path.resolve(Path(bpy.path.abspath(image.filepath))).name
+            path_new = Path(textures_temp_dir) / image.name
 
             path_old.rename(path_new)
 
