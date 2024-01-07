@@ -746,21 +746,19 @@ class POPOVER_PT_transmogrify(Panel):
 
 # Copy import/export/transmogrifier presets and studiolights shipped with Transmogrifier to relevant Blender Preferences directories.
 class COPY_ASSETS(Operator):
-    """Copy an HDRI and example presets shipped with Transmogrifier to User Preferences"""
+    """Copy example presets shipped with Transmogrifier to User Preferences"""
     bl_idname = "copyassets.transmogrifier"
     bl_label = "Copy Assets to Preferences"
 
     def execute(self, context):
         # Define paths.
         assets_dir = Path(__file__).parent / "assets"
-        hdr_dir_src = assets_dir / "datafiles" / "studiolights"
-        hdr_dir_dest = bpy.utils.user_resource('DATAFILES', path="studiolights")
         presets_dir_src = assets_dir / "presets" / "operator"
         presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets/operator")
 
         # Make list of source paths and destination paths (parents).
-        dir_src_list = [hdr_dir_src, presets_dir_src]
-        dir_dest_list = [hdr_dir_dest, presets_dir_dest]
+        dir_src_list = [presets_dir_src]
+        dir_dest_list = [presets_dir_dest]
         
         # Loop through list of source paths and copy files to parent- (or operator) specific destinations. Overwrite original files to ensure they get updated with each release.
         for dir_src in dir_src_list:
