@@ -293,20 +293,17 @@ def draw_settings_general(self, context):
 
 
     # Export Settings
-    # self.layout.separator()
-    # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="Export:", icon='EXPORT')
-    
-    # col.label(text="Models:", icon='OUTLINER_OB_MESH')
+
     col.prop(settings, "directory_output_location")
-    if settings.ui_toggle == "Advanced":
-        if settings.directory_output_location == "Custom":
-            col.prop(settings, "directory_output_custom")
-            if settings.directory_output_custom:
-                col.prop(settings, "use_subdirectories")
-                if settings.use_subdirectories:
-                    col.prop(settings, "copy_item_dir_contents")
+    if settings.directory_output_location == "Custom":
+        col.prop(settings, "directory_output_custom")
+        if settings.directory_output_custom:
+            col.prop(settings, "use_subdirectories")
+        if settings.ui_toggle == "Advanced":
+            if settings.use_subdirectories:
+                col.prop(settings, "copy_item_dir_contents")
             col = self.layout.column(align=True)
     
     # Quantity
@@ -320,7 +317,6 @@ def draw_settings_general(self, context):
     # File Format 1
     col = self.layout.column(align=True)
     if settings.model_quantity != "No Formats":
-        # col.label(text="Format 1:", icon='OUTLINER_OB_MESH')
         col.prop(settings, 'export_file_1')
 
         if settings.export_file_1 == 'DAE':
@@ -423,11 +419,13 @@ def draw_settings_textures(self, context):
             if settings.import_file == "BLEND" and settings.textures_source == "External":
                 col.prop(settings, 'use_linked_blend_textures')
                 col = self.layout.column(align=True)
-            if settings.textures_source == "Custom":
-                col.prop(settings, 'textures_custom_dir')
+        if settings.textures_source == "Custom":
+            col.prop(settings, 'textures_custom_dir')
+            if settings.ui_toggle == "Advanced":
                 col.prop(settings, 'copy_textures_custom_dir')
                 if settings.copy_textures_custom_dir:
                     col.prop(settings, 'replace_textures')
+                col = self.layout.column(align=True)
         
         if settings.ui_toggle == "Advanced":
             # col = self.layout.column(align=True)
