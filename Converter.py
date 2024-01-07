@@ -173,24 +173,6 @@ def override_context(area_type, region_type):
         logging.exception("COULD NOT OVERRIDE CONTEXT")
 
 
-# Temporarily change interface theme to force a white background in Material Preview viewport mode for rendering Preview images.
-def set_theme_light(blender_dir, blender_version):
-    try:
-        theme_white = Path(blender_dir).parent.resolve() / blender_version / "scripts" / "addons" / "presets" / "interface_theme" / "White.xml"
-        
-        # White theme
-        bpy.ops.script.execute_preset(
-            filepath=theme_white, 
-            menu_idname="USERPREF_MT_interface_theme_presets"
-        )
-
-        print("------------------------  SET THEME TO BLENDER LIGHT  ------------------------")
-        logging.info("SET THEME TO BLENDER LIGHT")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT SET THEME TO BLENDER LIGHT")
-
-
 # Preserve unused materials & textures by setting fake user(s).
 def use_fake_user():
     try:
@@ -558,7 +540,7 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
                 logging.info("Textures directory is empty. Looking for textures in parent directory...")
                 Path.mkdir(textures_temp_dir)
                 image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-                image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+                image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.startswith("Preview_")]  # Make a list of all potential texture candidates except for the preview images.
                 if not image_list:  # i.e. if image_list is empty
                     print("No potential image textures found in " + str(item_dir))
                     logging.info("No potential image textures found in " + str(item_dir))
@@ -578,7 +560,7 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         else: 
             Path.mkdir(textures_temp_dir)
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
-            image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.endswith("_Preview.jpg")]  # Make a list of all potential texture candidates except for the Preview Image.
+            image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.startswith("Preview_")]  # Make a list of all potential texture candidates except for the preview images.
             if not image_list:  # i.e. if image_list is empty
                 print("No potential image textures found in " + str(item_dir))
                 logging.info("No potential image textures found in " + str(item_dir))
@@ -2109,25 +2091,6 @@ def delete_textures_temp(textures_temp_dir):
 
     except Exception as Argument:
         logging.exception("COULD NOT DELETE TEMPORARY TEXTURES DIRECTORY")
-		
-
-# Reset interface theme dark after rendering all Preview images.
-def set_theme_dark(blender_dir, blender_version):
-    try:
-        # Reset interface theme to dark theme.
-        theme_dark = Path(Path(blender_dir).parent.resolve(), blender_version, "scripts", "presets", "interface_theme", "Blender_Dark.xml")
-        
-        # Default dark theme.
-        bpy.ops.script.execute_preset(
-            filepath=theme_dark, 
-            menu_idname="USERPREF_MT_interface_theme_presets"
-        )
-
-        print("------------------------  SET BLENDER THEME DARK  ------------------------")
-        logging.info("SET BLENDER THEME DARK")
-
-    except Exception as Argument:
-        logging.exception("COULD NOT SET BLENDER THEME DARK")
 		
 
 # Get file size of export_file_1
