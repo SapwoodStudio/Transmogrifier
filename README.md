@@ -21,7 +21,7 @@ A Blender addon for batch converting 3D files and associated textures into other
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/6d30d803-9290-4b96-95c0-f130d1565291" height="350">
 
 
-4. (_Optional_) Copy example workflow/import/export presets and a studiolight, "[neutral.hdr](https://github.com/google/model-viewer/blob/master/packages/shared-assets/environments/neutral.hdr)", to local Blender preferences directory. The studiolight is used for rendering preview image thumbnails of converted models.
+4. (_Optional_) Copy example workflow/import/export presets to local Blender preferences directory.
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/fef58e7c-4f17-4d6c-b299-6b589618a558" height="350">
 
 
@@ -79,6 +79,12 @@ _Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativeco
 ## FEATURES ✨
 Transmogrifier includes a robust set of tools for non-destructively converting 3D files and associated textures into other formats.
 
+### User Interface
+Toggle between a simple and advanced Transmogrifier user interface.
+
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/f2189142-ecd1-4f21-9ab8-c248366701cf" width="350">
+
+
 ### Workflow
 Create custom Transmogrifier presets (aka "Workflows) for quickly switching between different conversion scenarios. Click the plus button "+" to create a Workflow from all of the current Transmogrifier settings, giving it a custom name. Workflows are stored as "operator presets" in Blender preferences directory. To remove a workflow, select it from the menu, then click the minus button "-". 
 
@@ -97,8 +103,9 @@ Create custom Transmogrifier presets (aka "Workflows) for quickly switching betw
 - DAE
 - ABC
 - USD/USDA/USDC/USDZ
+- BLEND
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/b9cd086a-a5d4-47c0-ab5e-ba5a372cc5e3" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/f62105a2-753b-4941-8b85-0e8dfdae1995" width="350">
 
 
 ### Import/Export Presets
@@ -155,8 +162,8 @@ There are three naming conventions that must be followed in order for textures t
 2. **Per item, if only 1 texture set is present, object names don't matter except for Rule 1.** For "External" and "Custom" texture sources and for models with only one texture set present, the first rule doesn't matter because it is assumed that that texture set should be applied to all the objects in the scene. 
 - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/4393055d-da1f-4787-a704-56ac2827df1e" width="700">
 
-3. **Per item, if >1 texture set is present, object and textures set names do matter: object prefixes must match texture set prefixes.** For "External" and "Custom" texture source and for models with more than one texture set present, a naming convention must be followed for Transmogrifier to correctly import and assign multiple texture sets to the proper objects. Simply ensure that the the **first word** before an underscore or another separator in the textures' and objects' names is 1) **distinct** between texture sets and 2) **consistent** between i.) each PBR image in each texture set and ii.) between the texture sets and the objects to which those textures should be applied (See image below). As such, having multiple materials assigned to different meshes within an object does not work. For "Packed" textures, Transmogrifier automatically synchronizes prefixes by inserting the exising materials' prefixes as prefixes to the names of their corresponding image textures and objects to which those materials are assigned. 
-- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/5eddbac0-9eb0-4aa9-b28d-f660b681b76f" width="700">
+3. **Per item, if >1 texture set is present and textures source is either "External" or "Custom", object and textures set names do matter: an object's name must include its corresponding texture set name somewhere in the object's name.** For models with more than one texture set present, a **texture set** naming convention must also be followed for Transmogrifier to correctly import and assign multiple texture sets to the proper objects. Simply ensure that the the **first word** before an underscore or another separator in the textures' names is 1) **distinct** between texture sets and 2) **consistent** between i.) each PBR image in each texture set and ii.) between the texture sets and the objects to which those textures should be applied (See image below). As such, having multiple materials assigned to different meshes within an object is not possible. For "Packed" textures source, Transmogrifier automatically keeps associated materials, textures, and objects synchronized. 
+- <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/7ec4a257-442b-4e0c-8aaf-60e152d4e9fe" width="700">
 
 
 #### Resolution:
@@ -253,10 +260,38 @@ Methods:
 
 
 ### Archive
-Save a .blend and/or render an image preivew thumbnail with Material Preview viewport shading for every imported file. Save a log of the conversion process to troubleshoot errors or simply to get a list of the output files and their file sizes.
+Mark assets, add metadata, store asset Blend files in a library and catalog, and extract asset previews as PNGs. Save a log of the conversion process to troubleshoot errors or simply to get a list of the output files and their file sizes.
 
-<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/e59911c7-2835-4072-a16e-2ddabd614d45" width="350">
+<img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/23f21a0f-4f87-4000-9cba-13ad0ca3dbee" width="350">
 
+#### Archive Assets
+- **Mark Assets**
+  - Actions
+  - Collections
+  - Materials
+  - Node Trees
+  - Objects
+  - Worlds
+- **Ignore Duplicate Assets**. Transmogrifier will avoid marking assets that already exist in the selected asset library per asset-type.
+- **Save Previews to Disk**. Extract generated asset previews as PNGs beside the Blend containing assets.  Cannot save previews for asset types that have not been marked.
+- **Asset Library**. Select an asset library to 1) get catalogs and 2) move/copy the Blend containing assets to that library.
+  - Asset Libraries must first be created/set up via Blender Preferences and Blender must be restarted before Transmogrifying.
+  - <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/ee83d391-a9eb-46dc-a18d-9558a24d7abc" width="350">
+
+- **Catalog**. Select from the available catalogs in a given asset library.
+  - Asset Catalogs must first be created/set up in the usual manner (e.g. From a current Blender session - marking assets, creating categories in the current file, saving the Blend with inside the asset library directory. If the Blend is deleted, asset categories will still be preserved).
+- **Blend Location**
+  - Move to Library
+  - Copy to Library
+  - Don't Move/Copy. Useful when Transmogrifying inside of an asset library.
+- **Pack Resources**. Pack textures and other linked data into asset Blend. If unchecked, the asset Blend will reference textures from an adjacent textures folder.
+- **Add Metadata**. The input metadata will be applied to all items converted.
+  - Description
+  - License
+  - Copyright
+  - Author
+  - Tags.  Separate multiple tags with a space. (e.g. "grunge worn ancient")
+  
 
 ## CREDITS 🙏
 Many thanks to the [people](https://www.blender.org/about/people/) who develop Blender, without whom this addon would have no foundation to exist!
