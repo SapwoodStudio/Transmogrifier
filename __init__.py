@@ -22,10 +22,10 @@ import subprocess
 bl_info = {
     "name": "Transmogrifier",
     "author": "Sapwood Studio",
-    "version": (1, 4, 0),
+    "version": (1, 5, 0),
     "blender": (3, 6),
     "category": "Import-Export",
-    "location": "Set in preferences below. Default: Top Bar (After File, Edit, ...Help)",
+    "location": "Set in preferences below. Default: 3D Viewport Side Panel (Transmogrifier Tab)",
     "description": "Batch converts 3D files and associated textures into other formats.",
     "doc_url": "github.com/SapwoodStudio/Transmogrifier",
     "tracker_url": "github.com/sapwoodstudio/Transmogrifier/issues",
