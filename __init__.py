@@ -2091,7 +2091,7 @@ class TransmogrifierSettings(PropertyGroup):
             ("Only Above Max", "Only Above Max", "Only auto-optimize exported files are still above the threshold. Ignore previously exported files that are already below the target maximum", 2),
             ("None", "None", "Don't auto-optimize any exported files", 3),
         ],
-        default="All",
+        default="None",
     )
     # File size maximum target.
     file_size_maximum: FloatProperty(
@@ -2159,7 +2159,7 @@ class TransmogrifierSettings(PropertyGroup):
     archive_assets: BoolProperty(
         name="Archive Assets",
         description="Archive specified assets to Asset Library",
-        default=True,
+        default=False,
         )
     # Mark asset data filter.
     asset_types_to_mark: EnumProperty(
@@ -2179,11 +2179,13 @@ class TransmogrifierSettings(PropertyGroup):
             "Materials",
         },
     )
+    # Ignore duplicate assets.
     assets_ignore_duplicates: BoolProperty(
         name="Ignore Duplicates",
         description="Ignore duplicate assets that already exist in the selected asset library.\n(i.e. Don't mark duplicates as assets)",
         default=True,
     )
+    # Filter asset types to ignore duplicates.
     assets_ignore_duplicates_filter: EnumProperty(
         name="Ignore Duplicates Filter",
         options={'ENUM_FLAG'},
@@ -2205,11 +2207,13 @@ class TransmogrifierSettings(PropertyGroup):
             'Worlds',
         },
     )
+    # Only mark master collection as asset when importing a Blend (if Collections are to be marked as assets).
     mark_only_master_collection: BoolProperty(
         name="Mark Only Master",
         description="Mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
         default=True,
     )
+    # Filter object types when marking objects as assets.
     asset_object_types_filter: EnumProperty(
         name="Object Types",
         options={'ENUM_FLAG'},
@@ -2238,6 +2242,7 @@ class TransmogrifierSettings(PropertyGroup):
             'CAMERA', 
         },
     )
+    # Asset Library.
     asset_library: StringProperty(default='(no library)')
     asset_library_enum: EnumProperty(
         name="Asset Library", options={'SKIP_SAVE'},
@@ -2246,6 +2251,7 @@ class TransmogrifierSettings(PropertyGroup):
         get=lambda self: get_asset_library_index(self.asset_library),
         set=lambda self, value: setattr(self, 'asset_library', asset_library_enum_items_refs["asset_libraries"][value][0]),
     )
+    # Asset Catalog.
     asset_catalog: StringProperty(default='(no catalog)')
     asset_catalog_enum: EnumProperty(
         name="Catalog", options={'SKIP_SAVE'},
@@ -2254,6 +2260,7 @@ class TransmogrifierSettings(PropertyGroup):
         get=lambda self: get_asset_catalog_index(self.asset_catalog),
         set=lambda self, value: setattr(self, 'asset_catalog', asset_catalog_enum_items_refs["asset_catalogs"][value][0]),
     )
+    # Set location of Blend containing assets.
     asset_blend_location: EnumProperty(
         name="Blend Location",
         description="Set where the blend files containing assets will be stored",
@@ -2264,36 +2271,44 @@ class TransmogrifierSettings(PropertyGroup):
         ],
         default="Move",
     )
+    # Add metadata to assets.
     asset_add_metadata: BoolProperty(
         name="Add Metadata",
         description="Add metadata to converted items",
         default=True,
     )
+    # Metadata: Description
     asset_description: StringProperty(
         name="Description",
         description="A description of the asset to be displayed for the user",
     )
+    # Metadata: License
     asset_license: StringProperty(
         name="License",
         description="The type of license this asset is distributed under. An empty license name does not necessarily indicate that this is free of licensing terms. Contact the author if any clarification is needed",
     )
+    # Metadata: Copyright
     asset_copyright: StringProperty(
         name="Copyright",
         description="Copyright notice for this asset. An empty copyright notice does not necessarily indicate that this is copyright-free. Contact the author if any clarification is needed",
     )
+    # Metadata: Author
     asset_author: StringProperty(
         name="Author",
         description="Name of the creator of the asset",
     )
+    # Metadata: Tags
     asset_tags: StringProperty(
         name="Tags",
         description="Add new keyword tags to assets. Separate tags with a space",
     )
+    # Extract asset preview images to disk.
     asset_extract_previews: BoolProperty(
         name="Save Previews to Disk",
         description="Extract preview image thumbnail for every asset marked and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
-        default=True,
+        default=False,
     )
+    # Filter asset previews to extract.
     asset_extract_previews_filter: EnumProperty(
         name="Extract Previews Filter",
         options={'ENUM_FLAG'},
