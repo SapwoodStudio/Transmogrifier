@@ -849,9 +849,9 @@ def create_materials(item, textures_temp_dir):
                         basecolor_count += 1
                 # If there is more than one BaseColor image, assume that there are multiple texture sets.
                 if basecolor_count > 1:
-                    print(f"Detected {basecolor_count} texture sets")
-                    logging.info(f"Detected {basecolor_count} texture sets")
                     texture_sets = list(set([image.split('_')[0] for image in textures_list]))
+                    print(f"Detected {basecolor_count} texture sets: {texture_sets}")
+                    logging.info(f"Detected {basecolor_count} texture sets: {texture_sets}")
                     for texture_set in texture_sets:
                         textures = [texture for texture in textures_list if texture.startswith(texture_set)]
                         create_a_material(item=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
@@ -873,9 +873,9 @@ def create_materials(item, textures_temp_dir):
                     basecolor_count += 1
             # If there is more than one BaseColor image, assume that there are multiple texture sets.
             if basecolor_count > 1:
-                print(f"Detected {basecolor_count} texture sets")
-                logging.info(f"Detected {basecolor_count} texture sets")
                 texture_sets = list(set([image.split('_')[0] for image in textures_list]))
+                print(f"Detected {basecolor_count} texture sets: {texture_sets}")
+                logging.info(f"Detected {basecolor_count} texture sets: {texture_sets}")
                 for texture_set in texture_sets:
                     textures = [texture for texture in textures_list if texture.startswith(texture_set)]
                     create_a_material(item=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
@@ -1256,8 +1256,8 @@ def reformat_images(image_format, image_quality, image_format_include):
                     
                     # Don't reformat image if converting between identical formats.
                     if image_ext == image_ext_new:
-                        print(f"{image.name} is already formatted as {image_format}. Skipping conversion.")
-                        logging.info(f"{image.name} is already formatted as {image_format}. Skipping conversion.")
+                        print(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({image_format})")
+                        logging.info(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({image_format})")
                         continue
 
                     # Change image name.
@@ -1293,8 +1293,8 @@ def reformat_images(image_format, image_quality, image_format_include):
                             print(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
                             logging.info(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
 
-                    print(f"{image_name} was reformatted as {image_format}")
-                    logging.info(f"{image_name} was reformatted as {image_format}")
+                    print(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {image_format}")
+                    logging.info(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {image_format}")
 
                 else:
                     continue
@@ -1447,11 +1447,11 @@ def rename_objects_by_material_prefixes():
                 original_object_name = object.name
                 if material_name_prefix != object_name_prefix:
                     object.name = f"{material_name_prefix}_{object.name}"
-                    print(f"{original_object_name} now shares the prefix of its currently assigned material, {object.active_material.name}. New object name: {object.name}")
-                    logging.info(f"{original_object_name} now shares the prefix of its currently assigned material, {object.active_material.name}. New object name: {object.name}")
+                    print(f"Renamed object with prefix of linked material ({object.active_material.name}): {original_object_name} --> {object.name}")
+                    logging.info(f"Renamed object with prefix of linked material ({object.active_material.name}): {original_object_name} --> {object.name}")
                 else:
-                    print(f"{original_object_name} already shares the same prefix as its currently assigned material, {object.active_material.name}. Skipped renaming.")
-                    logging.info(f"{original_object_name} already shares the same prefix as its currently assigned material, {object.active_material.name}. Skipped renaming.")
+                    print(f"Skipped Rename object: Object already shares prefix of linked material ({object.active_material.name}): {object.name}")
+                    logging.info(f"Skipped Rename object: Object already shares prefix of linked material ({object.active_material.name}): {object.name}")
 
         print("Renamed objects by material prefixes")
         logging.info("Renamed objects by material prefixes")
@@ -1682,11 +1682,11 @@ def separate_gltf_maps(textures_temp_dir):
         compositing_node_tree.nodes[file_output_ORM_node_name].mute = True
         compositing_node_tree.nodes[file_output_BO_node_name].mute = True
 
-        print("Separated gltf 'orm' and 'bo' image texture maps")
-        logging.info("Separated gltf 'orm' and 'bo' image texture maps")
+        print("Separated glTF 'ORM' and 'BO' image texture maps")
+        logging.info("Separated glTF 'ORM' and 'BO' image texture maps")
 
     except Exception as Argument:
-        logging.exception("Could not separate gltf 'orm' and 'bo' image texture maps")
+        logging.exception("Could not separate glTF 'ORM' and 'BO' image texture maps")
 
 
 # If there is more than one material imported with the GLB but there exists at least one objects with two or more material slots, 
@@ -1765,8 +1765,8 @@ def rename_textures_packed(textures_temp_dir):
                         new_image_name = new_image_name.replace(transparent_tag, "")
                     node.image.name = new_image_name
                     
-                    print(f"{image_name} now shares its material's prefix of {material.name}. New texture name: {new_image_name}")
-                    logging.info(f"{image_name} now shares its material's prefix of {material.name}. New texture name: {new_image_name}")
+                    print(f"Renamed texture with prefix of associated material ({material.name}): {image_name} --> {new_image_name}")
+                    logging.info(f"Renamed texture with prefix of associated material ({material.name}): {image_name} --> {new_image_name}")
             
             except AttributeError:
                 print("Image texture node does not contain an image")
@@ -1893,8 +1893,8 @@ def rename_UV_maps():
                 new_name = uvmap.name
                 uv_index += 1
 
-                print(f"Renamed UV map for object {obj.name} from {old_name} to {new_name}")
-                logging.info(f"Renamed UV map for object {obj.name} from {old_name} to {new_name}")
+                print(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
+                logging.info(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
             
             # Now go back to the first UV map and rename. If this was done first and another UV channel existed with that name, then the first UV channel would be named
             # like "UV_Map.001" which is not desirable and may contain a character compatible with USD format or Maya (i.e. ".").
@@ -1902,8 +1902,8 @@ def rename_UV_maps():
             obj.data.uv_layers[0].name = str(rename_uvs_name)
             new_name = obj.data.uv_layers[0].name
 
-            print(f"Renamed UV map for object {obj.name} from {old_name} to {new_name}")
-            logging.info(f"Renamed UV map for object {obj.name} from {old_name} to {new_name}")
+            print(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
+            logging.info(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
                 
 
         print("Renamed uv maps")
@@ -1950,8 +1950,8 @@ def transform_rotate(angles_list):
             )
             axis_index += 1
 
-        print(f"Rotated Objects: {angles_list}")
-        logging.info(f"Rotated Objects: {angles_list}")
+        print(f"Rotated objects: {angles_list}")
+        logging.info(f"Rotated objects: {angles_list}")
 
     except Exception as Argument:
         logging.exception("Could not rotate objects")
@@ -1965,8 +1965,8 @@ def transform_translate(lengths_list):
             orient_type='GLOBAL'
         )
 
-        print(f"Translated Objects: {lengths_list}")
-        logging.info(f"Translated Objects: {lengths_list}")
+        print(f"Translated objects: {lengths_list}")
+        logging.info(f"Translated objects: {lengths_list}")
 
     except Exception as Argument:
         logging.exception("Could not translate objects")
@@ -2070,7 +2070,7 @@ def export_models(export_file_1_command, export_file_1_options, export_file_1_sc
             logging.info("No models will be exported")
 
         print("Exported models")
-        logging.info("exported models")
+        logging.info("Exported Models")
 
     except Exception as Argument:
         logging.exception("Could not export models")
@@ -2094,20 +2094,20 @@ def get_export_file_1_size(export_file_1):
     try:
         if Path(export_file_1).exists():
             # Get current file size (in MB)
-            export_file_1_file_size = Path(export_file_1).stat().st_size / 1048576
+            export_file_1_file_size = round((Path(export_file_1).stat().st_size / 1048576), 2)
         
         else:
             export_file_1_file_size = 0
-            print(f"{export_file_1} doesn't exist.")
-            logging.info(f"{export_file_1} doesn't exist.")
+            print(f"{Path(export_file_1).name} doesn't exist.")
+            logging.info(f"{Path(export_file_1).name} doesn't exist.")
         
-        print("Got exported file size")
-        logging.info("Got exported file size")
+        print(f"Got exported file size: {Path(export_file_1).name} = {export_file_1_file_size} MB")
+        logging.info(f"Got exported file size: {Path(export_file_1).name} = {export_file_1_file_size} MB")
         
         return export_file_1_file_size
 
     except Exception as Argument:
-        logging.exception("Could not get exported file size")
+        logging.exception(f"Could not get exported file size: {Path(export_file_1).name}")
 		
 
 # Decimate objects to reduce file size.
@@ -2151,11 +2151,11 @@ def get_texture_resolution_maximum():
         texture_resolution_maximum = max(resolution_list)
         return texture_resolution_maximum
 
-        print("Got texture resolution maximum for auto resize files")
-        logging.info("Got texture resolution maximum for auto resize files")
+        print("Got texture resolution maximum for Auto Resize Files")
+        logging.info("Got texture resolution maximum for Auto Resize Files")
 
     except Exception as Argument:
-        logging.exception("Could not get texture resolution maximum for auto resize files")
+        logging.exception("Could not get texture resolution maximum for Auto Resize Files")
 
 
 # Auto resize method: Draco-Compress
@@ -2170,7 +2170,7 @@ def draco_compress_and_export(export_file_1, export_file_2):
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
     except Exception as Argument:
-        logging.exception("Could not draco-compress model for auto resize files")
+        logging.exception("Could not Draco-compress model for Auto Resize Files")
 
 
 # Auto resize method: Resize textures
@@ -2190,14 +2190,14 @@ def resize_textures_and_export(export_file_1, export_file_2, texture_resolution_
             elif texture_resolution_current / 2 < resize_textures_limit:
                 print("#################  Resize Textures  #################")
                 logging.info("#################  Resize Textures  #################")
-                print("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
-                logging.info("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
+                print(f"Skipped Resize Textures: Current Resolution ({texture_resolution_current}) <= Resize Limit ({resize_textures_limit})")
+                logging.info(f"Skipped Resize Textures: Current Resolution ({texture_resolution_current}) <= Resize Limit ({resize_textures_limit})")
 
         # Return current resolution.
         return texture_resolution_current
 
     except Exception as Argument:
-        logging.exception("Could not resize textures for auto resize files")
+        logging.exception("Could not resize textures for Auto Resize Files")
 
 
 # Auto resize method: Reformat textures
@@ -2219,7 +2219,7 @@ def reformat_textures_and_export(export_file_1, export_file_2):
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
     except Exception as Argument:
-        logging.exception("Could not reformat textures for auto resize files")
+        logging.exception("Could not reformat textures for Auto Resize Files")
 
 
 # Auto resize method: Decimate meshes
@@ -2240,13 +2240,13 @@ def decimate_meshes_and_export(export_file_1, export_file_2, decimate_counter, d
             elif decimate_counter > decimate_maximum:
                 print("#################  Decimate Meshes  #################")
                 logging.info("#################  Decimate Meshes  #################")
-                print("Decimation iteration maximum reached. Skipping Decimation.")
-                logging.info("Decimation iteration maximum reached. Skipping Decimation.")
+                print(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_maximum})")
+                logging.info(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_maximum})")
         
         return decimate_counter
 
     except Exception as Argument:
-        logging.exception("Could not decimate meshes for auto resize files")
+        logging.exception("Could not decimate meshes for Auto Resize Files")
 
 
 # Automatically try to resize the exported file (only takes export_file_1 into account)
@@ -2306,17 +2306,17 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
 
         # Report on how the auto-resizing turned out.
         if export_file_1_file_size < file_size_maximum:
-            print("Exported model is now below the specified maximum.")
-            logging.info("Exported model is now below the specified maximum.")
+            print(f"{Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+            logging.info(f"{Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
         elif export_file_1_file_size > file_size_maximum:
-            print("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
-            logging.info("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
+            print(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file_1).name} file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+            logging.info(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file_1).name} file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
         
-        print("Auto-resized exported files")
-        logging.info("Auto-resized exported files")
+        print("Auto Resized Files")
+        logging.info("Auto Resized Files")
 
     except Exception as Argument:
-        logging.exception("Could not auto-resize exported files")
+        logging.exception("Could not Auto Resize Files")
 
 
 # Modify textures if requested.
@@ -2559,8 +2559,8 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
             
             # If exported file is already above maximum, skip ahead.
             if export_file_1_file_size < file_size_maximum:
-                print(f"File is below target maximum. Skipping automatic file resizing for {item}")
-                logging.info(f"File is below target maximum. Skipping automatic file resizing for {item}")
+                print(f"Skipped Auto Resize Files: {Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Skipped Auto Resize Files: {Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
                 return
             
             # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
@@ -2573,21 +2573,21 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
 
             # If exported file is already above maximum, skip ahead.
             if export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
-                print(f"File already exists and is below target maximum. Skipping automatic file resizing for {item}")
-                logging.info(f"File already exists and is below target maximum. Skipping automatic file resizing for {item}")
+                print(f"Skipped Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Skipped Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
                 return
             
             elif export_file_1_file_size > file_size_maximum:
-                print(f"File already exists and is above target maximum. Initiating automatic file resizing for {item}")
-                logging.info(f"File already exists and is above target maximum. Initiating automatic file resizing for {item}")
+                print(f"Initiating Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Initiating Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 # Determine how many 3D files to export, then export.
                 export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
                 auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
 
             elif export_file_1_file_size == 0:
-                print(f"File doesn't exist. Exporting item and initiating automatic file resizing for {item}")
-                logging.info(f"File doesn't exist. Exporting item and initiating automatic file resizing for {item}")
+                print(f"Exporting model and initiating Auto Resize Files: {Path(export_file_1).name} doesn't yet exist.")
+                logging.info(f"Exporting model and initiating Auto Resize Files: {Path(export_file_1).name} doesn't yet exist.")
                 # Determine how many 3D files to export, then export.
                 export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
@@ -2609,11 +2609,11 @@ def import_uv_image(uv_path):
     try:
         bpy.ops.image.open(filepath=str(uv_path))
 
-        print(f"Imported uv image: {Path(uv_path).name}")
-        logging.info(f"Imported uv image: {Path(uv_path).name}")
+        print(f"Imported UV image: {Path(uv_path).name}")
+        logging.info(f"Imported UV image: {Path(uv_path).name}")
 
     except Exception as Argument:
-        logging.exception(f"Could not import uv image: {Path(uv_path).name}")
+        logging.exception(f"Could not import UV image: {Path(uv_path).name}")
 
 
 # Export UV Layout.
@@ -2645,11 +2645,11 @@ def export_a_uv_layout(item, name, directory, export_all):
         if uv_format not in uv_default_formats:
             import_uv_image(uv_path_png)
 
-        print("Exported uv layout")
-        logging.info("Exported uv layout")
+        print("Exported UV layout")
+        logging.info("Exported UV layout")
 
     except Exception as Argument:
-        logging.exception("Could not export uv layout")
+        logging.exception("Could not export UV layout")
 
 
 # Create a directory.  Overwrite if exists.
@@ -2660,11 +2660,11 @@ def create_a_directory(directory):
         elif not Path(directory).exists():
             Path(directory).mkdir()
 
-        print(f"Created a directory: {Path(directory).name}")
-        logging.info(f"Created a directory: {Path(directory).name}")
+        print(f"Created a directory: {Path(directory)}")
+        logging.info(f"Created a directory: {Path(directory)}")
 
     except Exception as Argument:
-        logging.exception(f"Could not create a directory: {Path(directory).name}")
+        logging.exception(f"Could not create a directory: {Path(directory)}")
 
 
 # Get UV directory based on menu option.
@@ -2681,12 +2681,12 @@ def determine_uv_directory(textures_dir):
         elif uv_export_location == "Custom":
             directory = Path(uv_directory_custom)
 
-        print("Determined uv directory")
-        logging.info("Determined uv directory")
+        print("Determined UV directory")
+        logging.info("Determined UV directory")
         return directory
     
     except Exception as Argument:
-        logging.exception("Could not determine uv directory")
+        logging.exception("Could not determine UV directory")
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
@@ -2756,11 +2756,11 @@ def determine_export_uv_layout(item, textures_dir):
             uv_tag = ["_UV"]
             reformat_images(uv_format, uv_image_quality, uv_tag)
 
-        print("Determined how to export uv layout(s)")
-        logging.info("Determined how to export uv layout(s)")
+        print("Determined how to export UV layout(s)")
+        logging.info("Determined how to export UV layout(s)")
 
     except Exception as Argument:
-        logging.exception("Could not determine how to export uv layout(s)")
+        logging.exception("Could not determine how to export UV layout(s)")
 
 
 # Determine whether asset preview has finished generating.
@@ -2774,7 +2774,7 @@ def preview_finished(asset):
         return True
 
     except Exception as Argument:
-        logging.exception("Could not determine if asset preview finished.")
+        logging.exception("Could not determine if Asset Preview finished.")
 
 
 # Generate preview image for asset browser.
@@ -2825,7 +2825,7 @@ def can_preview_be_generated(asset):
         return False
 
     except Exception as Argument:
-        logging.exception(f"Could not determine whether asset preview could be generated for: {asset.name}")
+        logging.exception(f"Could not determine whether Asset Preview could be generated for: {asset.name}")
 
 
 # Add tag to asset.
@@ -3062,11 +3062,11 @@ def archive_assets_to_library(item, blend):
         save_blend_file(blend)
         move_copy_blend_to_asset_library(item, blend)
 
-        print(f"Archived assets to library: {asset_library}")
-        logging.info(f"Archived assets to library: {asset_library}")
+        print(f"Archived Assets to library: {asset_library}")
+        logging.info(f"Archived Assets to library: {asset_library}")
 
     except Exception as Argument:
-        logging.exception(f"Could not archive assets to library: {asset_library}")
+        logging.exception(f"Could not archive Assets to library: {asset_library}")
 
 
 # Convert the file for every file found inside the given directory.
@@ -3188,13 +3188,13 @@ def list_exports(export_file_1, export_file_2):
     try:
         exports_list = []
         if model_quantity != "No Formats":
-            export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
+            export_file_1_file_size = get_export_file_1_size(export_file_1)
             export_file_1 = Path(export_file_1).name
             export_file_1_list = [export_file_1, export_file_1_file_size]
             exports_list.append(export_file_1_list)
 
             if model_quantity == "2 Formats":
-                export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
+                export_file_2_file_size = get_export_file_1_size(export_file_1 = export_file_2)
                 export_file_2 = Path(export_file_2).name
                 export_file_2_list = [export_file_2, export_file_2_file_size]
                 exports_list.append(export_file_2_list)
@@ -3216,13 +3216,13 @@ def make_directory(destination, name):
             if not new_dir.exists():
                 Path.mkdir(new_dir)
 
-        print("Made directory")
-        logging.info("Made directory")
+        print(f"Made directory: {new_dir}")
+        logging.info(f"Made directory: {new_dir}")
 
         return new_dir
 
     except Exception as Argument:
-        logging.exception("Could not made directory")
+        logging.exception(f"Could not make directory: {new_dir}")
 
 
 # Move and or copy files from item directory to custom directory specified by the User.
@@ -3309,8 +3309,8 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
 
             # If export_file_1 exists and is above maximum when auto_resize_files is set to "Only Above Max", convert item.
             if export_file_1_file_size > file_size_maximum:
-                print(f"File either already exists and is above target maximum. Initiating conversion and automatic file resizing for {item}")
-                logging.info(f"File either already exists and is above target maximum. Initiating conversion and automatic file resizing for {item}")
+                print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 # Run the converter on the item that was found.
                 converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
@@ -3325,14 +3325,14 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             
             # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
             elif export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
-                print(f"File already exists and is below target maximum. Skipping conversion for {item}")
-                logging.info(f"File already exists and is below target maximum. Skipping conversion for {item}")
+                print(f"Skipped Converter: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Skipped Converter: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
                 return conversion_list, conversion_count
 
             # If file size is zero, then the file cannot exist and requires export.
             elif export_file_1_file_size == 0:
-                print(f"File doesn't exist. Initiating conversion and automatic file resizing for {item}")
-                logging.info(f"File doesn't exist. Initiating conversion and automatic file resizing for {item}")
+                print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} doesn't yet exist.")
+                logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} doesn't yet exist.")
                 # Run the converter on the item that was found.
                 converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
@@ -3347,8 +3347,8 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
 
         # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
         elif auto_resize_files != "Only Above Max":
-            print(f"Initiating converter for {item}")
-            logging.info(f"Initiating converter for {item}")
+            print(f"Initiating Converter: {Path(import_file).name}")
+            logging.info(f"Initiating Converter: {Path(import_file).name}")
             # Run the converter on the item that was found.
             converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
             # Increment conversion counter and add converted item(s) to list.
@@ -3361,11 +3361,11 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, original_contents)
             return conversion_list, conversion_count
 
-        print(f"Determined conversion for {item}")
-        logging.info(f"Determined conversion for {item}")
+        print(f"Determined imports: {item}")
+        logging.info(f"Determined imports: {item}")
 
     except Exception as Argument:
-        logging.exception(f"Could not determine conversion for {item}")
+        logging.exception(f"Could not determine imports: {item}")
 
 
 # Main function that loops through specified directory and creates variables for the converter
@@ -3425,11 +3425,11 @@ def batch_converter():
         logging.info(f"{conversion_count} files were converted.")
         
         # Report list of files converted and their corresponding file sizes.
-        print("LIST OF EXPORTED ITEMS:")
+        print("ITEMS EXPORTED:")
         logging.info("ITEMS EXPORTED:")
         for i in conversion_list:
-            print(f"{i[0]} exported at {i[1]} MB.")
-            logging.info(f"{i[0]} exported at {i[1]} MB.")
+            print(f"{i[0]} = {i[1]} MB.")
+            logging.info(f"{i[0]} = {i[1]} MB.")
 
         print("-----------------------------------------------------------------")
         print("---------------------  BATCH CONVERTER END  ---------------------")
@@ -3439,7 +3439,7 @@ def batch_converter():
         logging.info("-----------------------------------------------------------------")
 
     except Exception as Argument:
-        logging.exception("Could not end batch converter")
+        logging.exception("Could not end Batch Converter")
 		
 
 # Quit Blender after batch conversion is complete.
