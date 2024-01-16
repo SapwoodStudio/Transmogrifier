@@ -110,7 +110,7 @@ def load_operator_preset(operator, preset):
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
         fp = "".join([d, "/", preset, ".py"])
         if Path(fp).is_file():  # Found the preset file
-            print("Using preset " + fp)
+            print(f"Using preset {fp}")
             file = open(fp, 'r')
             for line in file.readlines():
                 # This assumes formatting of these files remains exactly the same
@@ -171,7 +171,7 @@ def load_transmogrifier_preset(operator, preset):
     for d in bpy.utils.script_paths(subdir="presets/operator/" + operator):
         fp = "".join([d, "/", preset, ".json"])
         if Path(fp).is_file():  # Found the preset file
-            print("Using preset " + fp)
+            print(f"Using preset {fp}")
             
             # Open JSON file
             with open(fp, 'r') as openfile:
@@ -990,7 +990,7 @@ class TRANSMOGRIFY(Operator):
             return False
         directory = bpy.path.abspath(directory)  # Convert to absolute path
         if not Path(directory).is_dir() or directory == "":
-            self.report({'ERROR'}, (Path(directory).name + " directory doesn't exist"))
+            self.report({'ERROR'}, (f"{Path(directory).name} directory doesn't exist"))
             return False
         return True
 
@@ -1016,11 +1016,11 @@ class TRANSMOGRIFY(Operator):
             converter_report_dict = read_json()
             conversion_count = converter_report_dict["conversion_count"]
             if conversion_count > 1:
-                self.report({'INFO'}, "Conversion complete. " + str(conversion_count) + " files were converted.")
+                self.report({'INFO'}, f"Conversion complete. {conversion_count} files were converted.")
             elif conversion_count == 1:
-                self.report({'INFO'}, "Conversion complete. " + str(conversion_count) + " file was converted.")
+                self.report({'INFO'}, f"Conversion complete. {conversion_count} file was converted.")
             else:
-                self.report({'INFO'}, "Could not convert or no items needed conversion. " + str(conversion_count) + " files were converted.")
+                self.report({'INFO'}, f"Could not convert or no items needed conversion. {conversion_count} files were converted.")
 
         return {'FINISHED'}
 
