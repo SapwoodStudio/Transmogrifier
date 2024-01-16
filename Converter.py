@@ -1,12 +1,34 @@
-# BEGIN GPL LICENSE BLOCK #####
-#
+#  █████       █████   █████████  ██████████ ██████   █████  █████████  ██████████
+# ░░███       ░░███   ███░░░░░███░░███░░░░░█░░██████ ░░███  ███░░░░░███░░███░░░░░█
+#  ░███        ░███  ███     ░░░  ░███  █ ░  ░███░███ ░███ ░███    ░░░  ░███  █ ░ 
+#  ░███        ░███ ░███          ░██████    ░███░░███░███ ░░█████████  ░██████   
+#  ░███        ░███ ░███          ░███░░█    ░███ ░░██████  ░░░░░░░░███ ░███░░█   
+#  ░███      █ ░███ ░░███     ███ ░███ ░   █ ░███  ░░█████  ███    ░███ ░███ ░   █
+#  ███████████ █████ ░░█████████  ██████████ █████  ░░█████░░█████████  ██████████
+# ░░░░░░░░░░░ ░░░░░   ░░░░░░░░░  ░░░░░░░░░░ ░░░░░    ░░░░░  ░░░░░░░░░  ░░░░░░░░░░ 
+
+
+##### BEGIN GPL LICENSE BLOCK #####
+
 # This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 # This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>. 
-#
-# END GPL LICENSE BLOCK #####
+
+##### END GPL LICENSE BLOCK #####
+
+
+
+#  █████       █████ ███████████  ███████████     █████████   ███████████   █████ ██████████  █████████ 
+# ░░███       ░░███ ░░███░░░░░███░░███░░░░░███   ███░░░░░███ ░░███░░░░░███ ░░███ ░░███░░░░░█ ███░░░░░███
+#  ░███        ░███  ░███    ░███ ░███    ░███  ░███    ░███  ░███    ░███  ░███  ░███  █ ░ ░███    ░░░ 
+#  ░███        ░███  ░██████████  ░██████████   ░███████████  ░██████████   ░███  ░██████   ░░█████████ 
+#  ░███        ░███  ░███░░░░░███ ░███░░░░░███  ░███░░░░░███  ░███░░░░░███  ░███  ░███░░█    ░░░░░░░░███
+#  ░███      █ ░███  ░███    ░███ ░███    ░███  ░███    ░███  ░███    ░███  ░███  ░███ ░   █ ███    ░███
+#  ███████████ █████ ███████████  █████   █████ █████   █████ █████   █████ █████ ██████████░░█████████ 
+# ░░░░░░░░░░░ ░░░░░ ░░░░░░░░░░░  ░░░░░   ░░░░░ ░░░░░   ░░░░░ ░░░░░   ░░░░░ ░░░░░ ░░░░░░░░░░  ░░░░░░░░░  
+    
 
 import bpy
 import os
@@ -23,6 +45,17 @@ import time
 import numpy as np
 
 
+
+#  ███████████ █████  █████ ██████   █████   █████████  ███████████ █████    ███████    ██████   █████  █████████ 
+# ░░███░░░░░░█░░███  ░░███ ░░██████ ░░███   ███░░░░░███░█░░░███░░░█░░███   ███░░░░░███ ░░██████ ░░███  ███░░░░░███
+#  ░███   █ ░  ░███   ░███  ░███░███ ░███  ███     ░░░ ░   ░███  ░  ░███  ███     ░░███ ░███░███ ░███ ░███    ░░░ 
+#  ░███████    ░███   ░███  ░███░░███░███ ░███             ░███     ░███ ░███      ░███ ░███░░███░███ ░░█████████ 
+#  ░███░░░█    ░███   ░███  ░███ ░░██████ ░███             ░███     ░███ ░███      ░███ ░███ ░░██████  ░░░░░░░░███
+#  ░███  ░     ░███   ░███  ░███  ░░█████ ░░███     ███    ░███     ░███ ░░███     ███  ░███  ░░█████  ███    ░███
+#  █████       ░░████████   █████  ░░█████ ░░█████████     █████    █████ ░░░███████░   █████  ░░█████░░█████████ 
+# ░░░░░         ░░░░░░░░   ░░░░░    ░░░░░   ░░░░░░░░░     ░░░░░    ░░░░░    ░░░░░░░    ░░░░░    ░░░░░  ░░░░░░░░░  
+
+
 # Read Converter_Variables.json file where the user variables are stored.
 def read_json():
     try:
@@ -35,11 +68,11 @@ def read_json():
             json_object = json.load(openfile)
         
         return json_object
-        print("------------------------  READ CONVERTER_VARIABLES.JSON  ------------------------")
-        logging.info("READ CONVERTER_VARIABLES.JSON")
+        print("Read Converter_Variables.json")
+        logging.info("Read Converter_Variables.json")
 
     except Exception as Argument:
-        logging.exception("COULD NOT READ CONVERTER_VARIABLES.JSON")
+        logging.exception("Could Not Read Converter_Variables.json")
 
 
 # Read dictionary of variables from JSON file.
@@ -57,15 +90,15 @@ def get_variables():
                 value = str(value)
 
             # Concatenate command.
-            variable_assignment_command = "globals()" + "['" + str(key) + "']" + " = " + value
+            variable_assignment_command = f"globals()['{key}'] = {value}"
             # Execute variable assignment.
             exec(variable_assignment_command)
 
-        print("------------------------  GOT VARIABLES FROM JSON  ------------------------")
-        logging.info("GOT VARIABLES FROM JSON")
+        print("Got variables from JSON")
+        logging.info("Got variables from JSON")
 
     except Exception as Argument:
-        logging.exception("COULD NOT GET VARIABLES FROM JSON")
+        logging.exception("Could not get variables from JSON")
 
 
 # Make a log file to log conversion process.
@@ -73,9 +106,9 @@ def make_log_file():
     # Set path to log file with timestamp
     timestamp = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     if directory_output_location == "Custom":
-        log_file = Path(directory_output_custom, "Transmogrifier_Log_" + timestamp + ".txt")
+        log_file = Path(directory_output_custom, f"Transmogrifier_Log_{timestamp}.txt")
     elif directory_output_location != "Custom":
-        log_file = Path(directory, "Transmogrifier_Log_" + timestamp + ".txt")
+        log_file = Path(directory, f"Transmogrifier_Log_{timestamp}.txt")
     
     # Create log file.
     logging.basicConfig(
@@ -93,11 +126,11 @@ def enable_addons():
         bpy.ops.preferences.addon_enable(module='node_wrangler')
         bpy.ops.preferences.addon_enable(module='materials_utils')
 
-        print("------------------------  ENABLED ADDONS  ------------------------")
-        logging.info("ENABLED ADDONS")
+        print("Enabled addons")
+        logging.info("Enabled addons")
 
     except Exception as Argument:
-        logging.exception("COULD NOT ENABLE ADDONS")
+        logging.exception("Could not enable addons")
 
 
 # Copy file from source to destination.
@@ -118,11 +151,11 @@ def copy_file(directory, file_source):
         else:
             return  # Return nothing if source file doesn't exist.
 
-        print("Copied " + str(Path(file_source).name) + " to " + str(directory))
-        logging.info("Copied " + str(Path(file_source).name) + " to " + str(directory))
+        print(f"Copied {Path(file_source).name} to {directory}")
+        logging.info(f"Copied {Path(file_source).name} to {directory}")
     
     except Exception as Argument:
-        logging.exception("COULD NOT COPY FILE")
+        logging.exception(f"Could not copy {Path(file_source).name} to {directory}")
 
 
 # Move file from source to destination.
@@ -143,11 +176,11 @@ def move_file(directory, file_source):
         else:
             return  # Return nothing if source file doesn't exist.
                 
-        print("Moved " + str(Path(file_source).name) + " to " + str(directory))
-        logging.info("Moved " + str(Path(file_source).name) + " to " + str(directory))
-
+        print(f"Moved {Path(file_source).name} to {directory}")
+        logging.info(f"Moved {Path(file_source).name} to {directory}")
+    
     except Exception as Argument:
-        logging.exception("COULD NOT MOVE FILE")
+        logging.exception(f"Could not move {Path(file_source).name} to {directory}")
 
 
 # Override context perform certain context-dependent Blender operators.
@@ -165,12 +198,12 @@ def override_context(area_type, region_type):
             'region': regions[0],
         }
 
-        print("------------------------  OVERRODE CONTEXT  ------------------------")
-        logging.info("OVERRODE CONTEXT")
+        print("Overrode context")
+        logging.info("Overrode context")
         return override
 
     except Exception as Argument:
-        logging.exception("COULD NOT OVERRIDE CONTEXT")
+        logging.exception("Could not override context")
 
 
 # Preserve unused materials & textures by setting fake user(s).
@@ -179,11 +212,11 @@ def use_fake_user():
         for datablock in chain(bpy.data.materials, bpy.data.textures):
             datablock.use_fake_user = True
         
-        print("------------------------  USED FAKE USER FOR TEXTURES & MATERIALS  ------------------------")
-        logging.info("USED FAKE USER FOR TEXTURES & MATERIALS")
+        print("Used fake user for textures & materials")
+        logging.info("Used fake user for textures & materials")
 
     except Exception as Argument:
-        logging.exception("COULD NOT USE FAKE USER FOR TEXTURES & MATERIALS")
+        logging.exception("Could not use fake user for textures & materials")
 
 
 # Sometimes purge orphans won't delete data blocks (e.g. images) even though they have no users. This will force the deletion of any data blocks within a specified bpy.data.[data type]
@@ -193,11 +226,11 @@ def clean_data_block(block):
         for data in block:
             block.remove(data)
 
-        print("------------------------  CLEANED DATA BLOCK: " + str(block).upper() + "  ------------------------")
-        logging.info("CLEANED DATA BLOCK: " + str(block).upper())
+        print(f"Cleaned data block: {str(block).upper()}")
+        logging.info(f"Cleaned data block: {str(block).upper()}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CLEAN DATA BLOCK: " + str(block).upper())
+        logging.exception(f"Could not clean data block: {str(block).upper()}")
 		
 
 # Add new collection with name = prefix + item + suffix.
@@ -214,11 +247,11 @@ def add_collection(item):
         layer_collection = bpy.context.view_layer.layer_collection.children[collection.name]
         bpy.context.view_layer.active_layer_collection = layer_collection
 
-        print("------------------------  ADDED NEW COLLECTION: " + collection.name + "  ------------------------")
-        logging.info("ADDED NEW COLLECTION: " + collection.name)
+        print(f"Added new collection: {collection.name}")
+        logging.info(f"Added new collection: {collection.name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT ADD NEW COLLECTION: " + collection.name)
+        logging.exception(f"Could not add new collection: {collection.name}")
 
 
 # Recursively delete orphaned data blocks.
@@ -226,11 +259,11 @@ def purge_orphans():
     try:
         bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
-        print("------------------------  PURGED ORPHANED DATA BLOCKS RECURSIVELY  ------------------------")
-        logging.info("PURGED ORPHANED DATA BLOCKS RECURSIVELY")
+        print("Purged orphaned data blocks recursively")
+        logging.info("Purged orphaned data blocks recursively")
 
     except Exception as Argument:
-        logging.exception("COULD NOT PURGE ORPHANED DATA BLOCKS RECURSIVELY")
+        logging.exception("Could not purge orphaned data blocks recursively")
 		
 
 # Enable addon dependencies and clear the scene
@@ -241,11 +274,11 @@ def setup_scene(item):
         purge_orphans()
         add_collection(item)
 
-        print("------------------------  SET UP SCENE  ------------------------")
-        logging.info("SET UP SCENE")
+        print("Set up scene")
+        logging.info("Set up scene")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SET UP SCENE")
+        logging.exception("Could not set up scene")
 		
 
 # Append a blend file's objects to Converter.blend.
@@ -258,11 +291,11 @@ def append_blend_objects(import_file_command, import_file_options, import_file):
             if object is not None:
                 bpy.context.collection.objects.link(object)
 
-        print("------------------------  APPENDED BLEND FILE OBJECTS: " + str(Path(import_file).name) + "  ------------------------")
-        logging.info("APPENDED BLEND FILE OBJECTS: " + str(Path(import_file).name))
+        print(f"Appended blend file objects: {Path(import_file).name}")
+        logging.info(f"Appended blend file objects: {Path(import_file).name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT APPEND BLEND FILE OBJECTS: " + str(Path(import_file).name))
+        logging.exception(f"Could not append blend file objects: {Path(import_file).name}")
 
 
 # Import file of a format type supplied by the user.
@@ -274,16 +307,16 @@ def import_file_function(import_file_command, import_file_options, import_file):
             append_blend_objects(import_file_command, import_file_options, import_file)
             return
 
-        import_file_command = str(import_file_command) + str(import_file_options) + ")"  # Concatenate the import command with the import options dictionary
+        import_file_command = f"{import_file_command}{import_file_options})"  # Concatenate the import command with the import options dictionary
         print(import_file_command)
         logging.info(import_file_command)
         exec(import_file_command)  # Run import_file_command, which is stored as a string and won't run otherwise.
 
-        print("------------------------  IMPORTED FILE: " + str(Path(import_file).name) + "  ------------------------")
-        logging.info("IMPORTED FILE: " + str(Path(import_file).name))
+        print(f"Imported file: {Path(import_file).name}")
+        logging.info(f"Imported file: {Path(import_file).name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT IMPORT FILE: " + str(Path(import_file).name))
+        logging.exception(f"Could not import file: {Path(import_file).name}")
 		  
 
 # Move all objects and collections to item collection.
@@ -303,11 +336,11 @@ def move_objects_and_collections_to_item_collection(item):
                 bpy.context.scene.collection.objects.unlink(object)
                 item_collection.objects.link(object)
             
-        print("------------------------  SET UP SCENE  ------------------------")
-        logging.info("SET UP SCENE")
+        print(f"Moved objects in to Collection: {item_collection.name}")
+        logging.info(f"Moved objects in to Collection: {item_collection.name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SET UP SCENE")
+        logging.exception(f"Could not move objects in to Collection: {item_collection.name}")
 
 
 # Remove all animation data from imported objects. Sometimes 3DS Max exports objects with keyframes that cause scaling/transform issues in a GLB and USDZ.
@@ -318,14 +351,14 @@ def clear_animation_data():
 
         for object in objects:
             object.animation_data_clear()
-            print("Deleted animations for " + object.name + ".")
-            logging.info("Deleted animations for " + object.name + ".")
+            print(f"Deleted animations for {object.name}")
+            logging.info(f"Deleted animations for {object.name}")
         
-        print("------------------------  CLEARED ANIMATION DATA  ------------------------")
-        logging.info("CLEARED ANIMATION DATA")
+        print("Cleared animation data")
+        logging.info("Cleared animation data")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CLEARED ANIMATION DATA")
+        logging.exception("Could not clear animation data")
 		
 
 # Select all imported objects and apply transformations
@@ -352,11 +385,11 @@ def apply_transformations(apply_transforms_filter):
         # Apply transformations according to filter
         bpy.ops.object.transform_apply(location=filter_location, rotation=filter_rotation, scale=filter_scale)
 
-        print("------------------------  " + "APPLIED TRANSFORMATIONS: " + str(apply_transforms_filter) + "  ------------------------")
-        logging.info("APPLIED TRANSFORMATIONS: " + str(apply_transforms_filter))
+        print(f"Applied transformations: {apply_transforms_filter}")
+        logging.info(f"Applied transformations: {apply_transforms_filter}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT APPLY TRANSFORMATIONS: " + str(apply_transforms_filter))
+        logging.exception(f"Could not apply transformations: {apply_transforms_filter}")
 		
 
 # Clear all users of all materials.
@@ -371,11 +404,11 @@ def clear_materials_users():
         for material in bpy.data.materials:
             material.user_clear()
 
-        print("------------------------  CLEARED ALL USERS OF ALL MATERIALS  ------------------------")
-        logging.info("CLEARED ALL USERS OF ALL MATERIALS")
+        print("Cleared all users of all materials")
+        logging.info("Cleared all users of all materials")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CLEAR ALL USERS OF ALL MATERIALS")
+        logging.exception("Could not clear all users of all materials")
 
 
 # Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
@@ -383,11 +416,11 @@ def select_all():
     try:
         bpy.ops.object.select_all(action='SELECT')
 
-        print("------------------------  SELECTED ALL OBJECTS OF ALL TYPES  ------------------------")
-        logging.info("SELECTED ALL OBJECTS OF ALL TYPES")
+        print("Selected all objects of all types")
+        logging.info("Selected all objects of all types")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SELECT ALL OBJECTS OF ALL TYPES")
+        logging.exception("Could not select all objects of all types")
 		
 
 # Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
@@ -395,11 +428,11 @@ def deselect_all():
     try:
         bpy.ops.object.select_all(action='DESELECT')
 
-        print("------------------------  DESELECTED ALL OBJECTS OF ALL TYPES  ------------------------")
-        logging.info("DESELECTED ALL OBJECTS OF ALL TYPES")
+        print("Deselected all objects of all types")
+        logging.info("Deselected all objects of all types")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DESELECT ALL OBJECTS OF ALL TYPES")
+        logging.exception("Could not deselect all objects of all types")
 		
 
 # Prevent an empty from being actively selected object. This prevents a later error from happening when imported materials are removed later.
@@ -412,11 +445,11 @@ def select_only_meshes():
             object = bpy.context.window.scene.objects[0]
             bpy.context.view_layer.objects.active = object
 
-        print("------------------------  SELECTED ONLY MESH-TYPE OBJECTS  ------------------------")
-        logging.info("SELECTED ONLY MESH-TYPE OBJECTS")
+        print("Selected only mesh-type objects")
+        logging.info("Selected only mesh-type objects")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SELECT ONLY MESH-TYPE OBJECTS")
+        logging.exception("Could not select only mesh-type objects")
 		
 
 # Select all objects again before exporting. The previously actively selected object should still be a MESH type object, although this should no longer matter.
@@ -424,11 +457,11 @@ def select_by_material(material):
     try:
         bpy.ops.view3d.materialutilities_select_by_material_name(material_name = material.name)
 
-        print("------------------------  SELECTED OBJECTS WITH MATERIAL: " + str(material.name) + "  ------------------------")
-        logging.info("SELECTED OBJECTS WITH MATERIAL: " + str(material.name))
+        print(f"Selected objects with material: {material.name}")
+        logging.info(f"Selected objects with material: {material.name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SELECT OBJECTS WITH MATERIAL: " + str(material.name))
+        logging.exception(f"Could not select objects with material: {material.name}")
 		
 
 # Copy textures from custom directory to item directory.
@@ -451,11 +484,11 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
             print("Custom textures directory does not exist.")
             logging.info("Custom textures directory does not exist.")
 
-        print("------------------------  COPIED TEXTURES FROM CUSTOM SOURCE  ------------------------")
-        logging.info("COPIED TEXTURES FROM CUSTOM SOURCE")
+        print("Copied textures from custom source")
+        logging.info("Copied textures from custom source")
 
     except Exception as Argument:
-        logging.exception("COULD NOT COPY TEXTURES FROM CUSTOM SOURCE")
+        logging.exception("Could not copy textures from custom source")
 		
 
 # If User elected not to copy the custom textures directory to each item folder, delete the temporary copy of it there.
@@ -471,11 +504,11 @@ def remove_copy_textures_custom_dir(item_dir, textures_dir):
             if Path(textures_dir_original).exists():
                 Path(textures_dir_original).rename(Path(item_dir, textures_dir_original_name.replace("_original", "")))  # Return original textures_dir back to its former name before the conversion.
 
-        print("------------------------  REMOVED COPIED TEXTURES FROM CUSTOM SOURCE  ------------------------")
-        logging.info("REMOVED COPIED TEXTURES FROM CUSTOM SOURCE")
+        print("Removed copied textures from custom source")
+        logging.info("Removed copied textures from custom source")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REMOVE COPIED TEXTURES FROM CUSTOM SOURCE")
+        logging.exception("Could not remove copied textures from custom source")
 		
 
 # Define list of supported image texture extensions.
@@ -503,11 +536,11 @@ def supported_image_ext():
 
         return supported_image_ext
 
-        print("------------------------  GOT SUPPORTED IMAGE EXTENSIONS  ------------------------")
-        logging.info("GOT SUPPORTED IMAGE EXTENSIONS")
+        print("Got supported image extensions")
+        logging.info("Got supported image extensions")
 
     except Exception as Argument:
-        logging.exception("COULD NOT  GET SUPPORTED IMAGE EXTENSIONS")
+        logging.exception("Could not  get supported image extensions")
 		
 
 # Remove textures_temp_dir
@@ -517,11 +550,11 @@ def delete_textures_temp(textures_temp_dir):
         if Path(textures_temp_dir).exists():
             shutil.rmtree(textures_temp_dir)
         
-        print("------------------------  DELETED TEMPORARY TEXTURES DIRECTORY  ------------------------")
-        logging.info("DELETED TEMPORARY TEXTURES DIRECTORY")
+        print("Deleted temporary textures directory")
+        logging.info("Deleted temporary textures directory")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DELETE TEMPORARY TEXTURES DIRECTORY")
+        logging.exception("Could not delete temporary textures directory")
 		
 
 # Create a temporary textures folder where images can be resized and exported with specified models without affecting the quality of the original texture files. 
@@ -542,11 +575,11 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
                 image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
                 image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.startswith("Preview_")]  # Make a list of all potential texture candidates except for the preview images.
                 if not image_list:  # i.e. if image_list is empty
-                    print("No potential image textures found in " + str(item_dir))
-                    logging.info("No potential image textures found in " + str(item_dir))
+                    print(f"No potential image textures found in {item_dir}")
+                    logging.info(f"No potential image textures found in {item_dir}")
                 else:
-                    print("The following images will be copied to textures_temp: " + str(image_list))
-                    logging.info("The following images will be copied to textures_temp: " + str(image_list))
+                    print(f"The following images will be copied to textures_temp: {image_list}")
+                    logging.info(f"The following images will be copied to textures_temp: {image_list}")
                     for image in image_list:
                         image_src = Path(item_dir, image)
                         image_dest = Path(textures_temp_dir, image)
@@ -562,21 +595,21 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
             image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
             image_list = [file.name for file in Path.iterdir(item_dir) if file.name.lower().endswith(image_ext) and not file.name.startswith("Preview_")]  # Make a list of all potential texture candidates except for the preview images.
             if not image_list:  # i.e. if image_list is empty
-                print("No potential image textures found in " + str(item_dir))
-                logging.info("No potential image textures found in " + str(item_dir))
+                print(f"No potential image textures found in {item_dir}")
+                logging.info(f"No potential image textures found in {item_dir}")
             else:
-                print("The following images will be copied to textures_temp: " + str(image_list))
-                logging.info("The following images will be copied to textures_temp: " + str(image_list))
+                print(f"The following images will be copied to textures_temp: {image_list}")
+                logging.info(f"The following images will be copied to textures_temp: {image_list}")
                 for image in image_list:
                     image_src = Path(item_dir, image)
                     image_dest = Path(textures_temp_dir, image)
                     shutil.copy(image_src, image_dest)  # Copy each potential image texture to textures_temp
 
-        print("------------------------  CREATED TEMPORARY TEXTURES DIRECTORY  ------------------------")
-        logging.info("CREATED TEMPORARY TEXTURES DIRECTORY")
+        print("Created temporary textures directory")
+        logging.info("Created temporary textures directory")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CREATE TEMPORARY TEXTURES DIRECTORY")
+        logging.exception("Could not create temporary textures directory")
 		
 
 # Split image texture name into components to be regexed in find_replace_pbr_tag function.
@@ -600,13 +633,13 @@ def split_into_components(string):
 
         components = string.split(" ")
         
-        print("------------------------  SPLIT INTO COMPONENTS: " + str(Path(string_original).name) + " to " + str(components) + "  ------------------------")
-        logging.info("SPLIT INTO COMPONENTS: " + str(Path(string_original).name) + " to " + str(components))
+        print(f"Split into components: {Path(string_original).name} --> {components}")
+        logging.info(f"Split into components: {Path(string_original).name} --> {components}")
 
         return components
 
     except Exception as Argument:
-        logging.exception("COULD NOT SPLIT INTO COMPONENTS: " + str(Path(string_original).name))
+        logging.exception(f"Could not split into components: {Path(string_original).name} --> {components}")
 		
 
 # Regex, i.e. find and replace messy/misspelled PBR tag with clean PBR tag in a given image texture's name supplied by the regex_textures_external function.
@@ -647,11 +680,11 @@ def find_replace_pbr_tag(texture):
             texture = None
             return texture
 
-        print("------------------------  FOUND AND REPLACED PBR TAG: " + str(texture_original) + " to " + str(texture) + "  ------------------------")
-        logging.info("FOUND AND REPLACED PBR TAG: " + str(texture_original) + " to " + str(texture))
+        print(f"Found and replaced pbr tag: {texture_original} --> {texture}")
+        logging.info(f"Found and replaced pbr tag: {texture_original} --> {texture}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT FIND AND REPLACED PBR TAG: " + str(texture_original) + " to " + str(texture))
+        logging.exception(f"Could not find and replace pbr tag: {texture_original} --> {texture}")
 		
 
 # Regex, i.e. find and replace messy/misspelled transparency tag with clean PBR tag in a given object's name supplied by the regex_transparent_objects function.
@@ -681,11 +714,11 @@ def find_replace_transparency_tag(mesh_object):
             mesh_object = None
             return mesh_object
 
-        print("------------------------  FOUND AND REPLACED TRANSPARENCY TAG: " + str(mesh_object_original) + " to " + str(mesh_object) + "  ------------------------")
-        logging.info("FOUND AND REPLACED TRANSPARENCY TAG: " + str(mesh_object_original) + " to " + str(mesh_object))
+        print(f"Found and replaced transparency tag: {mesh_object_original} --> {mesh_object}")
+        logging.info(f"Found and replaced transparency tag: {mesh_object_original} --> {mesh_object}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT FIND AND REPLACED TRANSPARENCY TAG: " + str(mesh_object_original) + " to " + str(mesh_object))
+        logging.exception(f"Could not find and replaced transparency tag: {mesh_object_original} --> {mesh_object}")
 
 
 # Find and rename image textures from a dictionary with regex keys.
@@ -703,8 +736,8 @@ def regex_textures_external(textures_temp_dir):
                     pbr_tag_renamed = find_replace_pbr_tag(component)
                     if pbr_tag_renamed != None:
                         pbr_tag_renamed = pbr_tag_renamed[0]
-                        print("Found a match for " + pbr_tag_renamed + ".")
-                        logging.info("Found a match for " + pbr_tag_renamed + ".")
+                        print(f"Found a match for {pbr_tag_renamed}")
+                        logging.info(f"Found a match for {pbr_tag_renamed}")
                         tag_index = components.index(component)
                         components[tag_index] = pbr_tag_renamed
                         if pbr_tag_renamed == "BaseColor" and components[tag_index-1].lower() == "base":
@@ -717,19 +750,19 @@ def regex_textures_external(textures_temp_dir):
                     texture = Path(texture_path, texture)
                     texture_renamed = '_'.join(components[:-1])
                     texture_renamed = Path(texture_path, texture_renamed + '.' + components[-1])
-                    print("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
-                    logging.info("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
+                    print(f"Renamed texture: {Path(texture).name} --> {Path(texture_renamed).name}")
+                    logging.info(f"Renamed texture: {Path(texture).name} --> {Path(texture_renamed).name}")
                     Path(texture).rename(texture_renamed)
                         
                 else:
                     print("No PBR match found for current texture.")
                     logging.info("No PBR match found for current texture.")
 
-        print("------------------------  REGEXED EXTERNAL TEXTURES  ------------------------")
-        logging.info("REGEXED EXTERNAL TEXTURES")
+        print("Regexed external textures")
+        logging.info("Regexed external textures")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REGEX EXTERNAL TEXTURES")
+        logging.exception("Could not regex external textures")
 		
 
 # Find and rename image textures from a dictionary with regex keys.
@@ -744,8 +777,8 @@ def regex_textures_packed():
                 pbr_tag_renamed = find_replace_pbr_tag(component)
                 if pbr_tag_renamed != None:
                     pbr_tag_renamed = pbr_tag_renamed[0]
-                    print("Found a match for " + pbr_tag_renamed + ".")
-                    logging.info("Found a match for " + pbr_tag_renamed + ".")
+                    print(f"Found a match for {pbr_tag_renamed}")
+                    logging.info(f"Found a match for {pbr_tag_renamed}")
                     tag_index = components.index(component)
                     if pbr_tag_renamed == "Opacity" and len(components) - tag_index != -2:  # Don't rename any transparency string if it's not at the end of the texture name.
                         continue
@@ -757,21 +790,19 @@ def regex_textures_packed():
 
             if components_original != components:
                 texture_renamed = '_'.join(components[:-1])
-                print("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
-                logging.info("Renamed texture from " + str(Path(texture).name) + " to " + str(Path(texture_renamed).name))
                 texture.name = texture_renamed
-                print("Renamed " + texture_name + " to " + texture_renamed)
-                logging.info("Renamed " + texture_name + " to " + texture_renamed)
+                print(f"Renamed texture: {Path(texture).name} --> {Path(texture_renamed).name}")
+                logging.info(f"Renamed texture: {Path(texture).name} --> {Path(texture_renamed).name}")
                         
             else:
                 print("No PBR match found for current texture.")
                 logging.info("No PBR match found for current texture.")
 
-        print("------------------------  REGEXED PACKED TEXTURES  ------------------------")
-        logging.info("REGEXED PACKED TEXTURES")
+        print("Regexed packed textures")
+        logging.info("Regexed packed textures")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REGEX PACKED TEXTURES")
+        logging.exception("Could not regex packed textures")
 
 
 # Find and rename transparent objects that have mispellings of transparency with regex keys.
@@ -787,26 +818,26 @@ def regex_transparent_objects():
                 transparency_tag_renamed = find_replace_transparency_tag(component)
                 if transparency_tag_renamed != None:
                     transparency_tag_renamed = transparency_tag_renamed[0]
-                    print("Found a match for " + transparency_tag_renamed + ".")
-                    logging.info("Found a match for " + transparency_tag_renamed + ".")
+                    print(f"Found a match for {transparency_tag_renamed}")
+                    logging.info(f"Found a match for {transparency_tag_renamed}")
                     tag_index = components.index(component)
                     components[tag_index] = transparency_tag_renamed
 
             if components_original != components:
                 object_renamed = '_'.join(components)
                 object.name = object_renamed
-                print("Renamed " + str(object_name) + " to " + str(object_renamed))
-                logging.info("Renamed " + str(object_name) + " to " + str(object_renamed))
+                print(f"Renamed object: {object_name} --> {object_renamed}")
+                logging.info(f"Renamed object: {object_name} --> {object_renamed}")
                         
             else:
                 print("No transparency tag match found for current object.")
                 logging.info("No transparency tag match found for current object.")
 
-        print("------------------------  REGEXED TRANSPARENT OBJECTS  ------------------------")
-        logging.info("REGEXED TRANSPARENT OBJECTS")
+        print("Regexed transparent objects")
+        logging.info("Regexed transparent objects")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REGEX TRANSPARENT OBJECTS")
+        logging.exception("Could not regex transparent objects")
 		
 
 # Determine if current item has multiple texture sets present in textures_temp_dir. If so, loop through each texture set and create a material from the image textures in that set.
@@ -851,16 +882,16 @@ def create_materials(item, textures_temp_dir):
                         basecolor_count += 1
                 # If there is more than one BaseColor image, assume that there are multiple texture sets.
                 if basecolor_count > 1:
-                    print("Detected " + str(basecolor_count) + " texture sets.")
-                    logging.info("Detected " + str(basecolor_count) + " texture sets.")
                     texture_sets = list(set([image.split('_')[0] for image in textures_list]))
+                    print(f"Detected {basecolor_count} texture sets: {texture_sets}")
+                    logging.info(f"Detected {basecolor_count} texture sets: {texture_sets}")
                     for texture_set in texture_sets:
                         textures = [texture for texture in textures_list if texture.startswith(texture_set)]
                         create_a_material(item=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
                 # If there are less than or equal to 6 images in textures_temp, assume there is only one texture set.
                 elif basecolor_count <= 1:
-                    print("Detected " + str(basecolor_count) + " texture set.")
-                    logging.info("Detected " + str(basecolor_count) + " texture set.")
+                    print(f"Detected {basecolor_count} texture set")
+                    logging.info(f"Detected {basecolor_count} texture set")
                     textures = textures_list
 
                     create_a_material(item, textures_temp_dir, textures)
@@ -875,16 +906,16 @@ def create_materials(item, textures_temp_dir):
                     basecolor_count += 1
             # If there is more than one BaseColor image, assume that there are multiple texture sets.
             if basecolor_count > 1:
-                print("Detected " + str(basecolor_count) + " texture sets.")
-                logging.info("Detected " + str(basecolor_count) + " texture sets.")
                 texture_sets = list(set([image.split('_')[0] for image in textures_list]))
+                print(f"Detected {basecolor_count} texture sets: {texture_sets}")
+                logging.info(f"Detected {basecolor_count} texture sets: {texture_sets}")
                 for texture_set in texture_sets:
                     textures = [texture for texture in textures_list if texture.startswith(texture_set)]
                     create_a_material(item=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
             # If there are less than or equal to 6 images in textures_temp, assume there is only one texture set.
             elif basecolor_count <= 1:
-                print("Detected " + str(basecolor_count) + " texture set.")
-                logging.info("Detected " + str(basecolor_count) + " texture set.")
+                print(f"Detected {basecolor_count} texture set")
+                logging.info(f"Detected {basecolor_count} texture set")
                 textures = textures_list
 
                 create_a_material(item, textures_temp_dir, textures)
@@ -894,11 +925,11 @@ def create_materials(item, textures_temp_dir):
             print("No textures were found.")
             logging.info("No textures were found.")
                 
-        print("------------------------  CREATED MATERIALS  ------------------------")
-        logging.info("CREATED MATERIALS")
+        print("Created materials")
+        logging.info("Created materials")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CREATE MATERIALS")
+        logging.exception("Could not create materials")
 		
 
 # Add principled setup with Node Wrangler.
@@ -951,11 +982,11 @@ def add_principled_setup(material, textures_temp_dir, textures):
                 relative_path=relative_path
             )
         
-        print("------------------------  Added Principled Setup for " + str(material.name) + "  ------------------------")
-        logging.info("Added Principled Setup for " + str(material.name))
+        print(f"Added Principled Setup for {material.name}")
+        logging.info(f"Added Principled Setup for {material.name}")
     
     except Exception as Argument:
-        logging.exception("COULD NOT ADD PRINCIPLED SETUP FOR " + str(material.name))
+        logging.exception(f"Could not Add Principled Setup for {material.name}")
 
 
 # Add materials, import textures, and assign materials to objects.
@@ -983,14 +1014,14 @@ def create_a_material(item, textures_temp_dir, textures):
             # Add transparency tag to material name and set alpha blend.
             material.name = item + "_transparent"
             material.blend_method = "BLEND"
-            print("Found an opacity map for texture set: " + str(material_opaque.name) + ". Created transparent version of material, " + str(material.name))
-            logging.info("Found an opacity map for texture set: " + str(material_opaque.name) + ". Created transparent version of material, " + str(material.name))
+            print(f"Found an opacity map for texture set: {material_opaque.name}. Created transparent version of material, {material.name}")
+            logging.info(f"Found an opacity map for texture set: {material_opaque.name}. Created transparent version of material, {material.name}")
 
-        print("------------------------  CREATED A MATERIAL: " + str(item) + "  ------------------------")
-        logging.info("CREATED A MATERIAL: " + str(item))
+        print(f"Created a material: {item}")
+        logging.info(f"Created a material: {item}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CREATE A MATERIAL: " + str(item))
+        logging.exception(f"Could not create a material: {item}")
 		
 
 # Get alpha tags from Node Wrangler Preferences to use for checking if an object's indicates that it should be assigned a transparent material.
@@ -1004,28 +1035,28 @@ def get_nw_alpha_tags():
         gloss_abbr = tags.gloss.split(' ')
         rough_abbr = tags.rough.split(' ')
         socketnames = [
-        ['Displacement', tags.displacement.split(' '), None],
-        ['Base Color', tags.base_color.split(' '), None],
-        ['Subsurface Color', tags.sss_color.split(' '), None],
-        ['Metallic', tags.metallic.split(' '), None],
-        ['Specular', tags.specular.split(' '), None],
-        ['Roughness', rough_abbr + gloss_abbr, None],
-        ['Normal', normal_abbr + bump_abbr, None],
-        ['Transmission', tags.transmission.split(' '), None],
-        ['Emission', tags.emission.split(' '), None],
-        ['Alpha', tags.alpha.split(' '), None],
-        ['Ambient Occlusion', tags.ambient_occlusion.split(' '), None],
+            ['Displacement', tags.displacement.split(' '), None],
+            ['Base Color', tags.base_color.split(' '), None],
+            ['Subsurface Color', tags.sss_color.split(' '), None],
+            ['Metallic', tags.metallic.split(' '), None],
+            ['Specular', tags.specular.split(' '), None],
+            ['Roughness', rough_abbr + gloss_abbr, None],
+            ['Normal', normal_abbr + bump_abbr, None],
+            ['Transmission', tags.transmission.split(' '), None],
+            ['Emission', tags.emission.split(' '), None],
+            ['Alpha', tags.alpha.split(' '), None],
+            ['Ambient Occlusion', tags.ambient_occlusion.split(' '), None],
         ]
 
         alpha_tags = tuple(socketnames[9][1])  # Get a tuple of only the alpha tags.
 
         return alpha_tags
 
-        print("------------------------  GOT NODE WRANGLER ALPHA TAGS  ------------------------")
-        logging.info("GOT NODE WRANGLER ALPHA TAGS")
+        print("Got Node Wrangler alpha tags")
+        logging.info("Got Node Wrangler alpha tags")
 
     except Exception as Argument:
-        logging.exception("COULD NOT GET NODE WRANGLER ALPHA TAGS")
+        logging.exception("Could not get Node Wrangler alpha tags")
 		
 
 # Assign previously created materials to objects based on 1) how many texture sets were present in the textures_dir, 2) the objects' name prefixes (which texture set goes to what objects), and 3) the objects' name suffixes (determines transparency).
@@ -1054,8 +1085,8 @@ def assign_materials(item):
             for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
                 if object.type == 'MESH':
                     object.data.materials.append(material)
-                    print("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
-                    logging.info("Assigned material, " + str(material_name) + ", to object, " + str(object.name))
+                    print(f"Assigned material, {material_name}, to object, {object.name}")
+                    logging.info(f"Assigned material, {material_name}, to object, {object.name}")
 
         # Only one texture set was imported (one opaque material, one transparent version/copy of that opaque material).
         elif material_count == 2 and transparent_materials:
@@ -1065,19 +1096,19 @@ def assign_materials(item):
                     if object.type == 'MESH' and material_name.replace("_" + transparency_tag, "") == item: # Ignore the "_transparent" suffix of the transparent material.
                         if object_count == 1 and material_name.endswith(transparency_tag):
                             object.data.materials.append(material)
-                            print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                            logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
+                            print(f"Assigned transparent material, {material_name}, to transparent object, {object.name}")
+                            logging.info(f"Assigned transparent material, {material_name}, to transparent object, {object.name}")
                         elif object_count > 1:
                             if (transparency_tag in object.name or cutout_tag in object.name) and material_name.endswith(transparency_tag):
                                 object.data.materials.append(material)
                                 if cutout_tag in object.name:
                                     material.blend_method = "CLIP"
-                                print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                                logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
+                                print(f"Assigned transparent material, {material_name}, to transparent object, {object.name}")
+                                logging.info(f"Assigned transparent material, {material_name}, to transparent object, {object.name}")
                             elif not transparency_tag in object.name and not cutout_tag in object.name and not material_name.endswith(transparency_tag):
                                 object.data.materials.append(material)
-                                print("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
-                                logging.info("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
+                                print(f"Assigned opaque material, {material_name}, to opaque object, {object.name}")
+                                logging.info(f"Assigned opaque material, {material_name}, to opaque object, {object.name}")
                             else:
                                 continue
 
@@ -1091,12 +1122,12 @@ def assign_materials(item):
                             object.data.materials.append(material)
                             if cutout_tag in object.name:
                                 material.blend_method = "CLIP"
-                            print("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
-                            logging.info("Assigned transparent material, " + str(material_name) + ", to transparent object, " + str(object.name))
+                            print(f"Assigned transparent material, {material_name}, to transparent object, {object.name}")
+                            logging.info(f"Assigned transparent material, {material_name}, to transparent object, {object.name}")
                         elif material_name in object.name and not transparency_tag in object.name and not cutout_tag in object.name and not material_name.endswith(transparency_tag):
                             object.data.materials.append(material)
-                            print("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
-                            logging.info("Assigned opaque material, " + str(material_name) + ", to opaque object, " + str(object.name))
+                            print(f"Assigned opaque material, {material_name}, to opaque object, {object.name}")
+                            logging.info(f"Assigned opaque material, {material_name}, to opaque object, {object.name}")
                         else:
                             continue
 
@@ -1105,11 +1136,11 @@ def assign_materials(item):
             print("There are no mesh-type objects in the scene")
             logging.info("There are no mesh-type objects in the scene")
 
-        print("------------------------  ASSIGNED MATERIALS TO OBJECTS  ------------------------")
-        logging.info("ASSIGNED MATERIALS TO OBJECTS")
+        print("Assigned materials to objects")
+        logging.info("Assigned materials to objects")
 
     except Exception as Argument:
-        logging.exception("COULD NOT ASSIGN MATERIALS TO OBJECTS")
+        logging.exception("Could not assign materials to objects")
 		
 
 # Resize image textures in textures_temp folder before export.
@@ -1123,21 +1154,21 @@ def resize_textures(texture_resolution, texture_resolution_include):
                         if pbr_type in image.name:
                             image.scale(texture_resolution, texture_resolution) # (width, height)
                             image.save() # save images to textures_temp folder so USDZip will use smaller textures when zipping USD. 
-                            print(image.name + " resized to " + str(texture_resolution) + ", " + str(texture_resolution) + ".")
-                            logging.info(image.name + " resized to " + str(texture_resolution) + ", " + str(texture_resolution) + ".")
+                            print(f"Resized Image ({image.name}): {width, height} --> {texture_resolution, texture_resolution}")
+                            logging.info(f"Resized Image ({image.name}): {width, height} --> {texture_resolution, texture_resolution}")
                         else:
                             continue
                 elif texture_resolution > width and image.name != "Render Result":
-                    print("The requested texture resolution of " + str(texture_resolution) + " for " + image.name + " is greater than its original dimensions of " + "(" + str(width) + ", " + str(height) + "). Skipping image to avoid upscaling.")
-                    logging.info("The requested texture resolution of " + str(texture_resolution) + " for " + image.name + " is greater than its original dimensions of " + "(" + str(width) + ", " + str(height) + "). Skipping image to avoid upscaling.")
+                    print(f"Skipped Resize Image ({image.name}) to avoid upscaling: {width, height} --> {texture_resolution, texture_resolution}")
+                    logging.info(f"Skipped Resize Image ({image.name}) to avoid upscaling: {width, height} --> {texture_resolution, texture_resolution}")
             except:
                 pass
 
-        print("------------------------  RESIZED TEXTURES  ------------------------")
-        logging.info("RESIZED TEXTURES")
+        print("Resized textures")
+        logging.info("Resized textures")
 
     except Exception as Argument:
-        logging.exception("COULD NOT RESIZE TEXTURES")
+        logging.exception("Could not resize textures")
 		
 
 # Image types to save as.
@@ -1159,11 +1190,11 @@ def image_texture_ext_dict():
         
         return image_texture_ext
 
-        print("------------------------  GOT IMAGE TEXTURE EXTENSION DICTIONARY  ------------------------")
-        logging.info("GOT IMAGE TEXTURE EXTENSION DICTIONARY")
+        print("Got image texture extension dictionary")
+        logging.info("Got image texture extension dictionary")
 
     except Exception as Argument:
-        logging.exception("COULD NOT GET IMAGE TEXTURE EXTENSION DICTIONARY")
+        logging.exception("Could not get image texture extension dictionary")
 		
 
 # Get image type from extension.
@@ -1174,11 +1205,11 @@ def get_image_ext_key(val):
                 return key
         return "key doesn't exist"
 
-        print("------------------------  GOT IMAGE EXTENSION KEY  ------------------------")
-        logging.info("GOT IMAGE EXTENSION KEY")
+        print("Got image extension key")
+        logging.info("Got image extension key")
 
     except Exception as Argument:
-        logging.exception("COULD NOT GET IMAGE EXTENSION KEY")
+        logging.exception("Could not get image extension key")
 		
 
 # Change scene color management. Needed for converting image texture formats
@@ -1210,11 +1241,11 @@ def set_color_management(
         scene.sequencer_colorspace_settings.name = sequencer
         scene.view_settings.use_curve_mapping = use_curves
 
-        print("------------------------  SET COLOR MANAGEMENT  ------------------------")
-        logging.info("SET COLOR MANAGEMENT")
+        print("Set color management")
+        logging.info("Set color management")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SET COLOR MANAGEMENT")
+        logging.exception("Could not set color management")
 		
 
 # Convert images to specified format.
@@ -1258,8 +1289,8 @@ def reformat_images(image_format, image_quality, image_format_include):
                     
                     # Don't reformat image if converting between identical formats.
                     if image_ext == image_ext_new:
-                        print(image.name + " is already formatted as " + image_format + ". Skipping conversion.")
-                        logging.info(image.name + " is already formatted as " + image_format + ". Skipping conversion.")
+                        print(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({image_format})")
+                        logging.info(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({image_format})")
                         continue
 
                     # Change image name.
@@ -1278,34 +1309,34 @@ def reformat_images(image_format, image_quality, image_format_include):
                     # Ensure alpha modes and color spaces are set appropriately for EXR format.
                     if image_format == "OPEN_EXR":
                         image.alpha_mode = 'PREMUL'
-                        print(image.name + "'s alpha mode was set to 'Premultiplied' for EXR format.")
-                        logging.info(image.name + "'s alpha mode was set to 'Premultiplied' for EXR format.")
+                        print(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
+                        logging.info(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
                         if pbr_tag == "BaseColor":
                             image.colorspace_settings.name = 'Linear'
-                            print(image.name + "'s BaseColor texture's color space was set to 'Linear' for EXR format.")
-                            logging.info(image.name + "'s BaseColor texture's color space was set to 'Linear' for EXR format.")
+                            print(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
+                            logging.info(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
 
                     # Ensure alpha modes and color spaces are set appropriately for non-EXR formats.
                     elif image_format != "OPEN_EXR" and image_ext == ".exr":
                         image.alpha_mode = 'STRAIGHT'
-                        print(image.name + "'s alpha mode was set to 'Straight'.")
-                        logging.info(image.name + "'s alpha mode was set to 'Straight'.")
+                        print(f"{image.name}'s alpha mode was set to 'Straight'.")
+                        logging.info(f"{image.name}'s alpha mode was set to 'Straight'.")
                         if pbr_tag == "BaseColor":
                             image.colorspace_settings.name = 'sRGB'
-                            print(image.name + "'s BaseColor texture's color space was set to 'sRGB'.")
-                            logging.info(image.name + "'s BaseColor texture's color space was set to 'sRGB'.")
+                            print(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
+                            logging.info(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
 
-                    print(image_name + " was reformatted as " + image_format + ".")
-                    logging.info(image_name + " was reformatted as " + image_format + ".")
+                    print(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {image_format}")
+                    logging.info(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {image_format}")
 
                 else:
                     continue
 
-        print("------------------------  REFORMATTED IMAGES  ------------------------")
-        logging.info("REFORMATTED IMAGES")
+        print("Reformatted images")
+        logging.info("Reformatted images")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REFORMAT IMAGES")
+        logging.exception("Could not reformat images")
 		    
 
 # Save a .blend file preserving all materials created even if some are not assigned to any objects.
@@ -1332,7 +1363,7 @@ def save_blend_file(blend):
             bpy.ops.file.pack_all()
 
             # Delete blend_textures_temp since it is no longer needed.
-            blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+            blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
             delete_textures_temp(blend_textures)
 
         # Make paths relative if not packing and if elected.
@@ -1350,15 +1381,15 @@ def save_blend_file(blend):
         )
 
         # Delete Blender "save version" backup file (also known as a "blend1" file).
-        blend1 = Path(str(blend) + "1")
+        blend1 = Path(f"{blend}1")
         if Path(blend1).is_file():
             Path.unlink(blend1)
 
-        print("------------------------  SAVED BLEND FILE: " + str(Path(blend).name) + "  ------------------------")
-        logging.info("SAVED BLEND FILE: " + str(Path(blend).name))
+        print(f"Saved blend file: {Path(blend).name}")
+        logging.info(f"Saved blend file: {Path(blend).name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SAVE BLEND FILE: " + str(Path(blend).name))
+        logging.exception(f"Could not save blend file: {Path(blend).name}")
 		
 
 # Save.blend file and unpack images to textures_temp whenever packed images are used for conversion and are to be resized and/or reformatted.
@@ -1368,7 +1399,7 @@ def unpack_textures(item_dir, textures_temp_dir, blend):
         textures_dir_check = "".join([i.name for i in Path(item_dir).iterdir() if i.name.lower() == "textures"])  # Assumes a GNU/Linux or MacOS User does not have something like "textures" and "Textures" directories in item_dir.
         if textures_dir_check != "":
             textures_dir = Path(item_dir) / textures_dir_check  # Reset textures_dir to be case-sensitive for GNU/Linux or MacOS Users.
-            textures_original = textures_dir.parent / (textures_dir.name + "_original") 
+            textures_original = textures_dir.parent / (f"{textures_dir.name}_original") 
             textures_dir.rename(textures_original)
 
         # Save blend file.
@@ -1387,11 +1418,11 @@ def unpack_textures(item_dir, textures_temp_dir, blend):
         if textures_dir_check != "":
             textures_original.rename(textures_dir)
 
-        print("------------------------  UNPACKED TEXTURES  ------------------------")
-        logging.info("UNPACKED TEXTURES")
+        print("Unpacked textures")
+        logging.info("Unpacked textures")
 
     except Exception as Argument:
-        logging.exception("COULD NOT UNPACK TEXTURES")
+        logging.exception("Could not unpack textures")
 		
 
 # Returns a dictionary of which textures are assigned to which materials.
@@ -1431,11 +1462,11 @@ def map_textures_to_materials():
         
         return mapped_textures
 
-        print("------------------------ MAPPED TEXTURES TO MATERIALS  ------------------------")
-        logging.info("MAPPED TEXTURES TO MATERIALS")
+        print("Mapped textures to materials")
+        logging.info("Mapped textures to materials")
 
     except Exception as Argument:
-        logging.exception("COULD NOT MAP TEXTURES TO MATERIALS")
+        logging.exception("Could not map textures to materials")
 
 
 # Add material name as prefix to objects for later texture set matching.
@@ -1448,18 +1479,18 @@ def rename_objects_by_material_prefixes():
                 object_name_prefix = split_into_components(object.name)[0]
                 original_object_name = object.name
                 if material_name_prefix != object_name_prefix:
-                    object.name = material_name_prefix + "_" + object.name
-                    print(original_object_name + " now shares the prefix of its currently assigned material, " + object.active_material.name + ". New object name: " + object.name)
-                    logging.info(original_object_name + " now shares the prefix of its currently assigned material, " + object.active_material.name + ". New object name: " + object.name)
+                    object.name = f"{material_name_prefix}_{object.name}"
+                    print(f"Renamed object with prefix of linked material ({object.active_material.name}): {original_object_name} --> {object.name}")
+                    logging.info(f"Renamed object with prefix of linked material ({object.active_material.name}): {original_object_name} --> {object.name}")
                 else:
-                    print(original_object_name + " already shares the same prefix as its currently assigned material, " + object.active_material.name + ". Skipped renaming.")
-                    logging.info(original_object_name + " already shares the same prefix as its currently assigned material, " + object.active_material.name + ". Skipped renaming.")
+                    print(f"Skipped Rename object: Object already shares prefix of linked material ({object.active_material.name}): {object.name}")
+                    logging.info(f"Skipped Rename object: Object already shares prefix of linked material ({object.active_material.name}): {object.name}")
 
-        print("------------------------  RENAMED OBJECTS BY MATERIAL PREFIXES  ------------------------")
-        logging.info("RENAMED OBJECTS BY MATERIAL PREFIXES")
+        print("Renamed objects by material prefixes")
+        logging.info("Renamed objects by material prefixes")
 
     except Exception as Argument:
-        logging.exception("COULD NOT RENAME OBJECTS BY MATERIAL PREFIXES")
+        logging.exception("Could not rename objects by material prefixes")
 		
 
 # Find and rename transparent materials that have mispellings of transparency with regex keys. Regex transparent materials to prepare for the next function, which deletes any opaque versions of those transparent materials by relying on "transparent" existing in the material name.
@@ -1474,26 +1505,26 @@ def regex_transparent_materials():
                 transparency_tag_renamed = find_replace_transparency_tag(component)
                 if transparency_tag_renamed != None:
                     transparency_tag_renamed = transparency_tag_renamed[0]
-                    print("Found a match for " + transparency_tag_renamed + ".")
-                    logging.info("Found a match for " + transparency_tag_renamed + ".")
+                    print(f"Found a match for {transparency_tag_renamed}")
+                    logging.info(f"Found a match for {transparency_tag_renamed}")
                     tag_index = components.index(component)
                     components[tag_index] = transparency_tag_renamed
 
             if components_original != components:
                 material_renamed = '_'.join(components)
                 material.name = material_renamed
-                print("Renamed " + str(material_name) + " to " + str(material_renamed))
-                logging.info("Renamed " + str(material_name) + " to " + str(material_renamed))
+                print(f"Renamed {material_name} to {material_renamed}")
+                logging.info(f"Renamed {material_name} to {material_renamed}")
                         
             else:
                 print("No transparency tag match found for current material.")
                 logging.info("No transparency tag match found for current material.")
 
-        print("------------------------  REGEXED TRANSPARENT MATERIALS  ------------------------")
-        logging.info("REGEXED TRANSPARENT MATERIALS")
+        print("Regexed transparent materials")
+        logging.info("Regexed transparent materials")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REGEX TRANSPARENT MATERIALS")
+        logging.exception("Could not regex transparent materials")
 
 
 # Remove opaque versions of transparent materials to avoid duplicate textures bug, which resulted in models converting untextured.
@@ -1506,14 +1537,14 @@ def remove_opaque_material():
                 if opaque_material_name in bpy.data.materials:
                     opaque_material = bpy.data.materials[opaque_material_name]
                     bpy.data.materials.remove(opaque_material)
-                    print("Removed " + opaque_material_name + " material data block.")
-                    logging.info("Removed " + opaque_material_name + " material data block.")
+                    print(f"Removed {opaque_material_name} material data block.")
+                    logging.info(f"Removed {opaque_material_name} material data block.")
 
-        print("------------------------  REMOVED OPAQUE MATERIAL VERSION OF TRANSPARENT MATERIAL  ------------------------")
-        logging.info("REMOVED OPAQUE MATERIAL VERSION OF TRANSPARENT MATERIAL")
+        print("Removed opaque material version of transparent material")
+        logging.info("Removed opaque material version of transparent material")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REMOVE OPAQUE MATERIAL VERSION OF TRANSPARENT MATERIAL")
+        logging.exception("Could not remove opaque material version of transparent material")
 
 
 # Rename the separated output images with something similar to the combined image name.
@@ -1540,19 +1571,16 @@ def rename_output(image_texture_ext, image, image_name, add_tag, tag_1, tag_2, t
         # Rename the output to something closer to the combined image name.
         if Path(output_path).exists() and not Path(new_image_path).exists():
             Path(output_path).rename(new_image_path)
-            print("Output renamed from " + output + " to " + new_image_name)
-            logging.info("Output renamed from " + output + " to " + new_image_name)
+            print(f"Output renamed from {output} to {new_image_name}")
+            logging.info(f"Output renamed from {output} to {new_image_name}")
         else:
             if Path(output_path).exists():
                 Path.unlink(output_path)
-                print(new_image_path + " already exists. Deleted output.")
-                logging.info(new_image_path + " already exists. Deleted output.")
+                print(f"{new_image_path} already exists. Deleted output.")
+                logging.info(f"{new_image_path} already exists. Deleted output.")
         
-        print("------------------------  RENAMED OUTPUT  ------------------------")
-        logging.info("RENAMED OUTPUT")
-
     except Exception as Argument:
-        logging.exception("COULD NOT RENAME OUTPUT")
+        logging.exception("Could not rename output")
 		
 
 # Render the output of the compositor, then rename outputs with something similar to the combined image name.
@@ -1561,8 +1589,8 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
         # Get a list of either ORM images or BO images.
         combined_images_list = [i for i in bpy.data.images if tag_1.lower() in i.name.lower() and tag_2.lower() in i.name.lower()]
         combined_images_list_names = [i.name for i in combined_images_list]
-        print("Combined images detected: " + str(combined_images_list_names))
-        logging.info("Combined images detected: " + str(combined_images_list_names))
+        print(f"Combined images detected: {combined_images_list_names}")
+        logging.info(f"Combined images detected: {combined_images_list_names}")
 
         if combined_images_list:
             for image in combined_images_list:
@@ -1586,8 +1614,8 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                     tag_3_k = tag_3 + keyframe
                 # Now get a list of images and rename them before the next combined map output overwrites them.
                 output_list = [i.name for i in Path.iterdir(textures_temp_dir) if tag_1_k in i.name or tag_2_k in i.name or tag_3_k in i.name]
-                print("Output list: " + str(output_list))
-                logging.info("Output list: " + str(output_list))
+                print(f"Output list: {output_list}")
+                logging.info(f"Output list: {output_list}")
                 if output_list:
                     for output in output_list:
                         if tag_1_k in output:
@@ -1608,11 +1636,11 @@ def render_output(textures_temp_dir, image_node, tag_1, tag_2, tag_3, image_text
                     print("No such combined image exists")
                     logging.info("No such combined image exists")
 
-        print("------------------------  RENDERED OUTPUT  ------------------------")
-        logging.info("RENDERED OUTPUT")
+        print("Rendered output")
+        logging.info("Rendered output")
 
     except Exception as Argument:
-        logging.exception("COULD NOT RENDER OUTPUT")
+        logging.exception("Could not render output")
 		
 
 # Separate any combined image maps if imported model extension is ".glb".
@@ -1687,11 +1715,11 @@ def separate_gltf_maps(textures_temp_dir):
         compositing_node_tree.nodes[file_output_ORM_node_name].mute = True
         compositing_node_tree.nodes[file_output_BO_node_name].mute = True
 
-        print("------------------------  SEPARATED GLTF 'ORM' AND 'BO' IMAGE TEXTURE MAPS  ------------------------")
-        logging.info("SEPARATED GLTF 'ORM' AND 'BO' IMAGE TEXTURE MAPS")
+        print("Separated glTF 'ORM' and 'BO' image texture maps")
+        logging.info("Separated glTF 'ORM' and 'BO' image texture maps")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SEPARATE GLTF 'ORM' AND 'BO' IMAGE TEXTURE MAPS")
+        logging.exception("Could not separate glTF 'ORM' and 'BO' image texture maps")
 
 
 # If there is more than one material imported with the GLB but there exists at least one objects with two or more material slots, 
@@ -1707,11 +1735,11 @@ def separate_by_material():
             # Object Mode
             bpy.ops.object.mode_set(mode='OBJECT')
         
-        print("------------------------  SEPARATED MESHES INTO OBJECTS BY MATERIALS  ------------------------")
-        logging.info("SEPARATED MESHES INTO OBJECTS BY MATERIALS")
+        print("Separated meshes into objects by materials")
+        logging.info("Separated meshes into objects by materials")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SEPARATE MESHES INTO OBJECTS BY MATERIALS")
+        logging.exception("Could not separate meshes into objects by materials")
 
 
 # Rename textures based on associated material's prefix (for packed textures only)
@@ -1770,8 +1798,8 @@ def rename_textures_packed(textures_temp_dir):
                         new_image_name = new_image_name.replace(transparent_tag, "")
                     node.image.name = new_image_name
                     
-                    print(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
-                    logging.info(image_name + " now shares its material's prefix of " + str(material.name) + ". New texture name: " + new_image_name)
+                    print(f"Renamed texture with prefix of associated material ({material.name}): {image_name} --> {new_image_name}")
+                    logging.info(f"Renamed texture with prefix of associated material ({material.name}): {image_name} --> {new_image_name}")
             
             except AttributeError:
                 print("Image texture node does not contain an image")
@@ -1785,8 +1813,8 @@ def rename_textures_packed(textures_temp_dir):
         # Add material prefix to images before regexing.
         for material in bpy.data.materials:
             if material.node_tree:
-                print("material: " + str(material.name))
-                logging.info("material: " + str(material.name))
+                print(f"material: {material.name}")
+                logging.info(f"material: {material.name}")
 
                 bsdf = material.node_tree.nodes.get("Principled BSDF")
                 texture_list = get_node_inputs(bsdf)
@@ -1796,11 +1824,11 @@ def rename_textures_packed(textures_temp_dir):
         if regex_textures:
             regex_textures_packed()
         
-        print("------------------------  RENAMED PACKED TEXTURES  ------------------------")
-        logging.info("RENAMED PACKED TEXTURES")
+        print("Renamed packed textures")
+        logging.info("Renamed packed textures")
 
     except Exception as Argument:
-        logging.exception("COULD NOT RENAME PACKED TEXTURES")
+        logging.exception("Could not rename packed textures")
 		
 
 # Rename unpacked textures to match image names, since images packed into .blend have original texture filepaths
@@ -1815,14 +1843,14 @@ def rename_textures_unpacked(textures_temp_dir):
 
             image.filepath = str(path_new)
 
-            print("Renamed " + str(path_old.name) + " to " + str(path_new.name))
-            logging.info("Renamed " + str(path_old.name) + " to " + str(path_new.name))
+            print(f"Renamed {path_old.name} to {path_new.name}")
+            logging.info(f"Renamed {path_old.name} to {path_new.name}")
 
-        print("------------------------  RENAMED UNPACKED TEXTURES  ------------------------")
-        logging.info("RENAMED UNPACKED TEXTURES")
+        print("Renamed unpacked textures")
+        logging.info("Renamed unpacked textures")
 
     except Exception as Argument:
-        logging.exception("COULD NOT RENAME UNPACKED TEXTURES")
+        logging.exception("Could not rename unpacked textures")
 
 
 # For packed textures, reimport textures to respective existing materials after they have been unpacked and separated.
@@ -1843,11 +1871,11 @@ def reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures):
            # Add principled setup via Node Wrangler.
             add_principled_setup(material, textures_temp_dir, textures)
 
-        print("------------------------  RE-IMPORTED TEXTURES TO EXISTING MATERIALS  ------------------------")
-        logging.info("RE-IMPORTED TEXTURES TO EXISTING MATERIALS")
+        print("Re-imported textures to existing materials")
+        logging.info("Re-imported textures to existing materials")
     
     except Exception as Argument:
-        logging.exception("COULD NOT RE-IMPORT TEXTURES TO EXISTING MATERIALS")
+        logging.exception("Could not re-import textures to existing materials")
 
 
 # Delete all nodes for all materials except Principled BSDF's and Material Outputs.
@@ -1873,14 +1901,14 @@ def data_name_from_object():
                 old_name = obj.data.name
                 new_name = objName
                 obj.data.name = new_name
-                print("Renamed object data from " + str(old_name) + " to " + str(new_name))
-                logging.info("Renamed object data from " + str(old_name) + " to " + str(new_name))
+                print(f"Renamed object data from {old_name} to {new_name}")
+                logging.info(f"Renamed object data from {old_name} to {new_name}")
 
-        print("------------------------  SET DATA NAMES FROM OBJECTS  ------------------------")
-        logging.info("SET DATA NAMES FROM OBJECTS")
+        print("Set data names from objects")
+        logging.info("Set data names from objects")
     
     except Exception as Argument:
-        logging.exception("COULD NOT SET DATA NAMES FROM OBJECTS")
+        logging.exception("Could not set data names from objects")
 
 
 # Set all UV map names to "UVMap". This prevents a material issue with USDZ's - when object A and object B share the same material, but their UV
@@ -1898,8 +1926,8 @@ def rename_UV_maps():
                 new_name = uvmap.name
                 uv_index += 1
 
-                print("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
-                logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
+                print(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
+                logging.info(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
             
             # Now go back to the first UV map and rename. If this was done first and another UV channel existed with that name, then the first UV channel would be named
             # like "UV_Map.001" which is not desirable and may contain a character compatible with USD format or Maya (i.e. ".").
@@ -1907,15 +1935,15 @@ def rename_UV_maps():
             obj.data.uv_layers[0].name = str(rename_uvs_name)
             new_name = obj.data.uv_layers[0].name
 
-            print("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
-            logging.info("Renamed UV map for object " + str(obj.name) + " from " + str(old_name) + " to " + str(new_name))
+            print(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
+            logging.info(f"Renamed UV map for object ({obj.name}): {old_name} --> {new_name}")
                 
 
-        print("------------------------  RENAMED UV MAPS  ------------------------")
-        logging.info("RENAMED UV MAPS")
+        print("Renamed uv maps")
+        logging.info("Renamed uv maps")
     
     except Exception as Argument:
-        logging.exception("COULD NOT RENAME UV MAPS")
+        logging.exception("Could not rename uv maps")
 
 
 # Scale all objects by the factors provided.
@@ -1929,11 +1957,11 @@ def transform_resize(scales_list):
             center_override=(0, 0, 0)
             )
 
-        print("------------------------  SCALED OBJECTS BY: " + str(scales_list) + "  ------------------------")
-        logging.info("SCALED OBJECTS BY: " + str(scales_list))
+        print(f"Scaled objects: {scales_list}")
+        logging.info(f"Scaled objects: {scales_list}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SCALE OBJECTS")
+        logging.exception("Could not scale objects")
 
 
 # Rotate all objects by angles provided.
@@ -1955,11 +1983,11 @@ def transform_rotate(angles_list):
             )
             axis_index += 1
 
-        print("------------------------  ROTATED OBJECTS BY: " + str(angles_list) + "  ------------------------")
-        logging.info("ROTATED OBJECTS BY: " + str(angles_list))
+        print(f"Rotated objects: {angles_list}")
+        logging.info(f"Rotated objects: {angles_list}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT ROTATE OBJECTS")
+        logging.exception("Could not rotate objects")
 
 
 # Move all objects by lengths provided.
@@ -1970,19 +1998,16 @@ def transform_translate(lengths_list):
             orient_type='GLOBAL'
         )
 
-        print("------------------------  TRANSLATED OBJECTS BY: " + str(lengths_list) + "  ------------------------")
-        logging.info("TRANSLATED OBJECTS BY: " + str(lengths_list))
+        print(f"Translated objects: {lengths_list}")
+        logging.info(f"Translated objects: {lengths_list}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT TRANSLATE OBJECTS")
+        logging.exception("Could not translate objects")
 
 
 # Set custom transformations if requested by the User.
 def set_transformations(set_transforms_filter, set_location, set_rotation, set_scale):
     try:
-        print("Set the following transformations: " + str(set_transforms_filter))
-        logging.info("Set the following transformations: " + str(set_transforms_filter))
-
         # All objects (including empties) have already been selected.
         if "Location" in set_transforms_filter:
             transform_translate(set_location)
@@ -1991,28 +2016,29 @@ def set_transformations(set_transforms_filter, set_location, set_rotation, set_s
         if "Scale" in set_transforms_filter:
             transform_resize(set_scale)
 
-        print("------------------------  SET TRANSFORMATIONS  ------------------------")
-        logging.info("SET TRANSFORMATIONS")
+        print(f"Set transformations: {set_transforms_filter}")
+        logging.info(f"Set transformations: {set_transforms_filter}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SET TRANSFORMATIONS")
+        logging.exception("Could not set transformations")
 		
 
 # Set scene units before exporting.
 def set_scene_units(unit_system, length_unit):
     try:
         bpy.context.scene.unit_settings.system = unit_system
-        bpy.context.scene.unit_settings.length_unit = length_unit
-        print("Set scene unit system to " + unit_system + ".")
-        logging.info("Set scene unit system to " + unit_system + ".")
-        print("Set scene length unit to " + length_unit + ".")
-        logging.info("Set scene length unit to " + length_unit + ".")
+        print(f"Set scene unit system: {unit_system}")
+        logging.info(f"Set scene unit system: {unit_system}")
 
-        print("------------------------  SET SCENE UNITS  ------------------------")
-        logging.info("SET SCENE UNITS")
+        bpy.context.scene.unit_settings.length_unit = length_unit
+        print(f"Set scene length unit: {length_unit}")
+        logging.info(f"Set scene length unit: {length_unit}")
+
+        print("Set scene units")
+        logging.info("Set scene units")
 
     except Exception as Argument:
-        logging.exception("COULD NOT SET SCENE UNITS")
+        logging.exception("Could not set scene units")
 		
 
 # Export a model.
@@ -2020,15 +2046,15 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
     try:
         # Set scale
         transform_resize([export_file_scale, export_file_scale, export_file_scale])
-        print("Scaled models by " + str(export_file_scale))
-        logging.info("Scaled models by " + str(export_file_scale))
+        print(f"Scaled models: {export_file_scale}")
+        logging.info(f"Scaled models: {export_file_scale}")
         # Apply transforms if requested
         if apply_transforms:
             apply_transformations(apply_transforms_filter)
         
         # Export the model.
         export_file_options["filepath"] = export_file  # Set filepath to the location of the model to be exported.
-        export_file_command = str(export_file_command) + str(export_file_options) + ")"  # Concatenate the export command with the export options dictionary.
+        export_file_command = f"{export_file_command}{export_file_options})"  # Concatenate the export command with the export options dictionary.
 
         # Run export_file_command, which is stored as a string and won't run otherwise.
         if Path(export_file).suffix == ".blend":
@@ -2040,20 +2066,23 @@ def export_a_model(export_file_scale, export_file_command, export_file_options, 
 
         # Reset scale
         export_file_scale = 1 / export_file_scale
+        
         # Apply transforms if requested
         if apply_transforms:
             apply_transformations(apply_transforms_filter)
         transform_resize([export_file_scale, export_file_scale, export_file_scale])
-        print("Reset scale of models by " + str(export_file_scale))
-        logging.info("Reset scale of models by " + str(export_file_scale))
+        print(f"Reset model scale: {export_file_scale}")
+        logging.info(f"Reset model scale: {export_file_scale}")
+       
         # Apply transforms if requested
         if apply_transforms:
             apply_transformations(apply_transforms_filter)
-        print("------------------------  EXPORTED A MODEL: " + str(Path(export_file).name) + "  ------------------------")
-        logging.info("EXPORTED A MODEL: " + str(Path(export_file).name))
+        
+        print(f"Exported a model: {Path(export_file).name}")
+        logging.info(f"Exported a model: {Path(export_file).name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT EXPORT A MODEL")
+        logging.exception("Could not export a model")
 
 
 # Determine how many, if any, models to export.
@@ -2073,11 +2102,11 @@ def export_models(export_file_1_command, export_file_1_options, export_file_1_sc
             print("No models will be exported")
             logging.info("No models will be exported")
 
-        print("------------------------  EXPORTED MODELS  ------------------------")
-        logging.info("EXPORTED MODELS")
+        print("Exported models")
+        logging.info("Exported Models")
 
     except Exception as Argument:
-        logging.exception("COULD NOT EXPORT MODELS")
+        logging.exception("Could not export models")
 		
 
 # Deletes the temporary textures folder.
@@ -2086,11 +2115,11 @@ def delete_textures_temp(textures_temp_dir):
         if Path(textures_temp_dir).exists():
             shutil.rmtree(textures_temp_dir)
 
-        print("------------------------  DELETED TEMPORARY TEXTURES DIRECTORY  ------------------------")
-        logging.info("DELETED TEMPORARY TEXTURES DIRECTORY")
+        print("Deleted temporary textures directory")
+        logging.info("Deleted temporary textures directory")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DELETE TEMPORARY TEXTURES DIRECTORY")
+        logging.exception("Could not delete temporary textures directory")
 		
 
 # Get file size of export_file_1
@@ -2098,20 +2127,20 @@ def get_export_file_1_size(export_file_1):
     try:
         if Path(export_file_1).exists():
             # Get current file size (in MB)
-            export_file_1_file_size = Path(export_file_1).stat().st_size / 1048576
+            export_file_1_file_size = round((Path(export_file_1).stat().st_size / 1048576), 2)
         
         else:
-            print(str(export_file_1) + " doesn't exist.")
-            logging.info(str(export_file_1) + " doesn't exist.")
             export_file_1_file_size = 0
+            print(f"{Path(export_file_1).name} doesn't exist.")
+            logging.info(f"{Path(export_file_1).name} doesn't exist.")
         
-        print("------------------------  GOT EXPORTED FILE SIZE  ------------------------")
-        logging.info("GOT EXPORTED FILE SIZE")
+        print(f"Got exported file size: {Path(export_file_1).name} = {export_file_1_file_size} MB")
+        logging.info(f"Got exported file size: {Path(export_file_1).name} = {export_file_1_file_size} MB")
         
         return export_file_1_file_size
 
     except Exception as Argument:
-        logging.exception("COULD NOT GET EXPORTED FILE SIZE")
+        logging.exception(f"Could not get exported file size: {Path(export_file_1).name}")
 		
 
 # Decimate objects to reduce file size.
@@ -2138,11 +2167,9 @@ def decimate_objects():
         
         print("Decimated meshes by a factor of 0.5")
         logging.info("Decimated meshes by a factor of 0.5")
-        print("------------------------  DECIMATED OBJECTS  ------------------------")
-        logging.info("DECIMATED OBJECTS")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DECIMATE OBJECTS")
+        logging.exception("Could not decimate objects")
 
 
 # Auto resize premise: Get maximum image texture dimensions to use as a starting point for resizing textures.
@@ -2157,11 +2184,11 @@ def get_texture_resolution_maximum():
         texture_resolution_maximum = max(resolution_list)
         return texture_resolution_maximum
 
-        print("------------------------  GOT TEXTURE RESOLUTION MAXIMUM FOR AUTO RESIZE FILES  ------------------------")
-        logging.info("GOT TEXTURE RESOLUTION MAXIMUM FOR AUTO RESIZE FILES")
+        print("Got texture resolution maximum for Auto Resize Files")
+        logging.info("Got texture resolution maximum for Auto Resize Files")
 
     except Exception as Argument:
-        logging.exception("COULD NOT GET TEXTURE RESOLUTION MAXIMUM FOR AUTO RESIZE FILES")
+        logging.exception("Could not get texture resolution maximum for Auto Resize Files")
 
 
 # Auto resize method: Draco-Compress
@@ -2176,7 +2203,7 @@ def draco_compress_and_export(export_file_1, export_file_2):
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
     except Exception as Argument:
-        logging.exception("COULD NOT DRACO-COMPRESS MODEL FOR AUTO RESIZE FILES")
+        logging.exception("Could not Draco-compress model for Auto Resize Files")
 
 
 # Auto resize method: Resize textures
@@ -2196,14 +2223,14 @@ def resize_textures_and_export(export_file_1, export_file_2, texture_resolution_
             elif texture_resolution_current / 2 < resize_textures_limit:
                 print("#################  Resize Textures  #################")
                 logging.info("#################  Resize Textures  #################")
-                print("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
-                logging.info("Current texture resolution is at or below resizing limit. Skipping texture resizing.")
+                print(f"Skipped Resize Textures: Current Resolution ({texture_resolution_current}) <= Resize Limit ({resize_textures_limit})")
+                logging.info(f"Skipped Resize Textures: Current Resolution ({texture_resolution_current}) <= Resize Limit ({resize_textures_limit})")
 
         # Return current resolution.
         return texture_resolution_current
 
     except Exception as Argument:
-        logging.exception("COULD NOT RESIZE TEXTURES FOR AUTO RESIZE FILES")
+        logging.exception("Could not resize textures for Auto Resize Files")
 
 
 # Auto resize method: Reformat textures
@@ -2225,7 +2252,7 @@ def reformat_textures_and_export(export_file_1, export_file_2):
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
     except Exception as Argument:
-        logging.exception("COULD NOT REFORMAT TEXTURES FOR AUTO RESIZE FILES")
+        logging.exception("Could not reformat textures for Auto Resize Files")
 
 
 # Auto resize method: Decimate meshes
@@ -2246,13 +2273,13 @@ def decimate_meshes_and_export(export_file_1, export_file_2, decimate_counter, d
             elif decimate_counter > decimate_maximum:
                 print("#################  Decimate Meshes  #################")
                 logging.info("#################  Decimate Meshes  #################")
-                print("Decimation iteration maximum reached. Skipping Decimation.")
-                logging.info("Decimation iteration maximum reached. Skipping Decimation.")
+                print(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_maximum})")
+                logging.info(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_maximum})")
         
         return decimate_counter
 
     except Exception as Argument:
-        logging.exception("COULD NOT DECIMATE MESHES FOR AUTO RESIZE FILES")
+        logging.exception("Could not decimate meshes for Auto Resize Files")
 
 
 # Automatically try to resize the exported file (only takes export_file_1 into account)
@@ -2312,17 +2339,17 @@ def auto_resize_exported_files(item_dir, item, import_file, textures_dir, textur
 
         # Report on how the auto-resizing turned out.
         if export_file_1_file_size < file_size_maximum:
-            print("Exported model is now below the specified maximum.")
-            logging.info("Exported model is now below the specified maximum.")
+            print(f"{Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+            logging.info(f"{Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
         elif export_file_1_file_size > file_size_maximum:
-            print("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
-            logging.info("Exported model is still above the specified maximum, but ran out of methods. Exiting.")
+            print(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file_1).name} file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+            logging.info(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file_1).name} file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
         
-        print("------------------------  AUTO-RESIZED EXPORTED FILES  ------------------------")
-        logging.info("AUTO-RESIZED EXPORTED FILES")
+        print("Auto Resized Files")
+        logging.info("Auto Resized Files")
 
     except Exception as Argument:
-        logging.exception("COULD NOT AUTO-RESIZE EXPORTED FILES")
+        logging.exception("Could not Auto Resize Files")
 
 
 # Modify textures if requested.
@@ -2333,11 +2360,11 @@ def determine_modify_textures():
         if image_format != "Default":
             reformat_images(image_format, image_quality, image_format_include)
 
-        print("------------------------  DETERMINED WHETHER TO MODIFY TEXTURES  ------------------------")
-        logging.info("DETERMINED WHETHER TO MODIFY TEXTURES")
+        print("Determined whether to modify textures")
+        logging.info("Determined whether to modify textures")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DETERMINE WHETHER TO MODIFY TEXTURES")
+        logging.exception("Could not determine whether to modify textures")
 
 
 # Apply "Custom" textures to objects.
@@ -2377,7 +2404,7 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
 
         # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
         textures_temp_dir = item_dir / textures_temp_dir.name
-        textures_temp_dir_renamed = item_dir / ("textures_" + blend.stem)
+        textures_temp_dir_renamed = item_dir / (f"textures_{blend.stem}")
         if Path(textures_temp_dir_renamed).exists():  # Remove the local copy of temporary textures directory if it already exists from a prior conversion.
             shutil.rmtree(textures_temp_dir_renamed)
         Path(textures_temp_dir).rename(textures_temp_dir_renamed)
@@ -2393,11 +2420,11 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
         if copy_textures_custom_dir:
             copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
         
-        print("------------------------  APPLIED CUSTOM TEXTURES TO OBJECTS  ------------------------")
-        logging.info("APPLIED CUSTOM TEXTURES TO OBJECTS")
+        print("Applied custom textures to objects")
+        logging.info("Applied custom textures to objects")
 
     except Exception as Argument:
-        logging.exception("COULD NOT APPLY CUSTOM TEXTURES TO OBJECTS")
+        logging.exception("Could not apply custom textures to objects")
 
 
 # Rename textures_temp_dir and repath images inside the .blend.
@@ -2408,13 +2435,13 @@ def repath_blend_textures(blend, path_old, path_new):
             image_filepath_new = image_filepath.replace(path_old.name, path_new.name)
             bpy.data.images[image.name].filepath = image_filepath_new
         
-        print("------------------------  RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND   ------------------------")
-        logging.info("RENAMED MODIFIED TEXTURES DIRECTORY AND REPATHED BLEND")
+        print("Renamed modified textures directory and repathed blend")
+        logging.info("Renamed modified textures directory and repathed blend")
         
         save_blend_file(blend)  # Save the .blend.
 
     except Exception as Argument:
-        logging.exception("COULD NOT RENAME MODIFIED TEXTURES DIRECTORY OR REPATH BLEND")
+        logging.exception("Could not rename modified textures directory or repath blend")
 
 
 # Apply "Packed" textures to objects.
@@ -2467,11 +2494,11 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
         # Delete saved .blend that was used for unpacking textures.
         Path.unlink(blend)
                 
-        print("------------------------  APPLIED PACKED TEXTURES TO OBJECTS  ------------------------")
-        logging.info("APPLIED PACKED TEXTURES TO OBJECTS")
+        print("Applied packed textures to objects")
+        logging.info("Applied packed textures to objects")
 
     except Exception as Argument:
-        logging.exception("COULD NOT APPLY PACKED TEXTURES TO OBJECTS")
+        logging.exception("Could not apply packed textures to objects")
 
 
 # Apply "External" textures to objects.
@@ -2521,11 +2548,11 @@ def apply_textures_external(item_dir, item, import_file, textures_dir, textures_
         # Assign materials to objects.
         assign_materials(item)
 
-        print("------------------------  APPLIED EXTERNAL TEXTURES TO OBJECTS  ------------------------")
-        logging.info("APPLIED EXTERNAL TEXTURES TO OBJECTS")
+        print("Applied external textures to objects")
+        logging.info("Applied external textures to objects")
 
     except Exception as Argument:
-        logging.exception("COULD NOT APPLY EXTERNAL TEXTURES TO OBJECTS")
+        logging.exception("Could not apply external textures to objects")
 
 
 # Determine where textures should be sourced, then texture the model.
@@ -2540,11 +2567,11 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
         elif textures_source == "Custom":
             apply_textures_custom(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
             
-        print("------------------------  APPLIED TEXTURES TO OBJECTS  ------------------------")
-        logging.info("APPLIED TEXTURES TO OBJECTS")
+        print("Applied textures to objects")
+        logging.info("Applied textures to objects")
 
     except Exception as Argument:
-        logging.exception("COULD NOT APPLY TEXTURES TO OBJECTS")
+        logging.exception("Could not apply textures to objects")
 		
 
 # Decide whether to export files (again) or not based on auto_resize_files menu.
@@ -2565,8 +2592,8 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
             
             # If exported file is already above maximum, skip ahead.
             if export_file_1_file_size < file_size_maximum:
-                print("File is below target maximum. Skipping automatic file resizing for " + str(item) + ".")
-                logging.info("File is below target maximum. Skipping automatic file resizing for " + str(item) + ".")
+                print(f"Skipped Auto Resize Files: {Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Skipped Auto Resize Files: {Path(export_file_1).name} ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
                 return
             
             # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
@@ -2579,21 +2606,21 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
 
             # If exported file is already above maximum, skip ahead.
             if export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
-                print("File already exists and is below target maximum. Skipping automatic file resizing for " + str(item) + ".")
-                logging.info("File already exists and is below target maximum. Skipping automatic file resizing for " + str(item) + ".")
+                print(f"Skipped Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Skipped Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
                 return
             
             elif export_file_1_file_size > file_size_maximum:
-                print("File already exists and is above target maximum. Initiating automatic file resizing for " + str(item) + ".")
-                logging.info("File already exists is above target maximum. Initiating automatic file resizing for " + str(item) + ".")
+                print(f"Initiating Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Initiating Auto Resize Files: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 # Determine how many 3D files to export, then export.
                 export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
                 auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
 
             elif export_file_1_file_size == 0:
-                print("File doesn't exist. Exporting item and initiating automatic file resizing for " + str(item) + ".")
-                logging.info("File doesn't exist. Exporting item and initiating automatic file resizing for " + str(item) + ".")
+                print(f"Exporting model and initiating Auto Resize Files: {Path(export_file_1).name} doesn't yet exist.")
+                logging.info(f"Exporting model and initiating Auto Resize Files: {Path(export_file_1).name} doesn't yet exist.")
                 # Determine how many 3D files to export, then export.
                 export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
@@ -2603,11 +2630,11 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
-        print("------------------------  DETERMINED WHETHER/WHAT TO EXPORT  ------------------------")
-        logging.info("DETERMINED WHETHER/WHAT TO EXPORT")
+        print("Determined whether/what to export")
+        logging.info("Determined whether/what to export")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DETERMINE WHETHER/WHAT TO EXPORT")
+        logging.exception("Could not determine whether/what to export")
 
 
 # Import UV images to Blender for reformatting.
@@ -2615,11 +2642,11 @@ def import_uv_image(uv_path):
     try:
         bpy.ops.image.open(filepath=str(uv_path))
 
-        print("------------------------  IMPORTED UV IMAGE: " + Path(uv_path).name + "  ------------------------")
-        logging.info("IMPORTED UV IMAGE: " + Path(uv_path).name)
+        print(f"Imported UV image: {Path(uv_path).name}")
+        logging.info(f"Imported UV image: {Path(uv_path).name}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT IMPORT UV IMAGE: " + Path(uv_path).name)
+        logging.exception(f"Could not import UV image: {Path(uv_path).name}")
 
 
 # Export UV Layout.
@@ -2651,11 +2678,11 @@ def export_a_uv_layout(item, name, directory, export_all):
         if uv_format not in uv_default_formats:
             import_uv_image(uv_path_png)
 
-        print("------------------------  EXPORTED UV LAYOUT  ------------------------")
-        logging.info("EXPORTED UV LAYOUT")
+        print("Exported UV layout")
+        logging.info("Exported UV layout")
 
     except Exception as Argument:
-        logging.exception("COULD NOT EXPORT UV LAYOUT")
+        logging.exception("Could not export UV layout")
 
 
 # Create a directory.  Overwrite if exists.
@@ -2666,11 +2693,11 @@ def create_a_directory(directory):
         elif not Path(directory).exists():
             Path(directory).mkdir()
 
-        print("------------------------  CREATED A DIRECTORY: " + Path(directory).name + "  ------------------------")
-        logging.info("CREATED A DIRECTORY: " + Path(directory).name)
+        print(f"Created a directory: {Path(directory)}")
+        logging.info(f"Created a directory: {Path(directory)}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CREATE A DIRECTORY: " + Path(directory).name)
+        logging.exception(f"Could not create a directory: {Path(directory)}")
 
 
 # Get UV directory based on menu option.
@@ -2687,12 +2714,12 @@ def determine_uv_directory(textures_dir):
         elif uv_export_location == "Custom":
             directory = Path(uv_directory_custom)
 
-        print("------------------------  DETERMINED UV DIRECTORY  ------------------------")
-        logging.info("DETERMINED UV DIRECTORY")
+        print("Determined UV directory")
+        logging.info("Determined UV directory")
         return directory
     
     except Exception as Argument:
-        logging.exception("COULD NOT DETERMINE UV DIRECTORY")
+        logging.exception("Could not determine UV directory")
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
@@ -2703,33 +2730,33 @@ def determine_keep_modified_textures(item_dir, blend, import_file, export_file_1
 
             # Correct the textures temporary directory location for Custom textures scenario.
             if textures_source == "Custom":
-                textures_temp_dir = item_dir / ("textures_" + blend.stem)
+                textures_temp_dir = item_dir / (f"textures_{blend.stem}")
             
             # Copy temporary textures directory as a blend_textures directory.
-            blend_textures = item_dir / (textures_temp_dir.name + "_blend")
+            blend_textures = item_dir / (f"{textures_temp_dir.name}_blend")
             if blend_textures.exists():
                 shutil.rmtree(blend_textures)
             shutil.copytree(textures_temp_dir, blend_textures)
             
             # Repath the textures to blend_textures.
             repath_blend_textures(blend, textures_temp_dir, blend_textures)  # Repath the textures.
-            print("------------------------  PRESERVED MODIFIED TEXTURES FOR BLEND  ------------------------")
-            logging.info("PRESERVED MODIFIED TEXTURES FOR BLEND")
+            print("Preserved modified textures for blend")
+            logging.info("Preserved modified textures for blend")
         
         # Delete temporary textures directory (local copy for Custom textures scenario) if elected.
         if not keep_modified_textures:
-            textures_temp_dir = item_dir / ("textures_" + blend.stem)
+            textures_temp_dir = item_dir / (f"textures_{blend.stem}")
             delete_textures_temp(textures_temp_dir)
         
         # Delete local copy of textures directory for Custom textures scenario if elected.
         elif textures_source == "Custom" and not copy_textures_custom_dir:
             remove_copy_textures_custom_dir(item_dir, textures_dir)
 
-        print("------------------------  DETERMINED WHETHER TO KEEP MODIFIED TEXTURES  ------------------------")
-        logging.info("DETERMINED WHETHER TO KEEP MODIFIED TEXTURES")
+        print("Determined whether to keep modified textures")
+        logging.info("Determined whether to keep modified textures")
     
     except Exception as Argument:
-        logging.exception("COULD NOT DETERMINE WHETHER TO KEEP MODIFIED TEXTURES")
+        logging.exception("Could not determine whether to keep modified textures")
 
 
 # Determine how to export UV layouts.
@@ -2762,11 +2789,11 @@ def determine_export_uv_layout(item, textures_dir):
             uv_tag = ["_UV"]
             reformat_images(uv_format, uv_image_quality, uv_tag)
 
-        print("------------------------  DETERMINED HOW TO EXPORT UV LAYOUT(S)  ------------------------")
-        logging.info("DETERMINED HOW TO EXPORT UV LAYOUT(S)")
+        print("Determined how to export UV layout(s)")
+        logging.info("Determined how to export UV layout(s)")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DETERMINE HOW TO EXPORT UV LAYOUT(S)")
+        logging.exception("Could not determine how to export UV layout(s)")
 
 
 # Determine whether asset preview has finished generating.
@@ -2780,7 +2807,7 @@ def preview_finished(asset):
         return True
 
     except Exception as Argument:
-        logging.exception("Could not determine if asset preview finished.")
+        logging.exception("Could not determine if Asset Preview finished.")
 
 
 # Generate preview image for asset browser.
@@ -2794,11 +2821,11 @@ def generate_preview(asset):
                 break
             time.sleep(0.1)
 
-        print("------------------------  Generated Asset Preview: " + asset.name + "  ------------------------")
-        logging.info("Generated Asset Preview: " + asset.name)
+        print(f"Generated Asset Preview: {asset.name}")
+        logging.info(f"Generated Asset Preview: {asset.name}")
 
     except Exception as Argument:
-        logging.exception("Could not generate Asset Preview: " + asset.name)
+        logging.exception(f"Could not generate Asset Preview: {asset.name}")
 
 
 # Determine whether the asset can have a preview image generated for it.
@@ -2831,7 +2858,7 @@ def can_preview_be_generated(asset):
         return False
 
     except Exception as Argument:
-        logging.exception("Could not determine whether asset preview could be generated for: " + asset.name)
+        logging.exception(f"Could not determine whether Asset Preview could be generated for: {asset.name}")
 
 
 # Add tag to asset.
@@ -2839,11 +2866,11 @@ def add_asset_tag(asset, tag):
     try:
         asset.asset_data.tags.new(tag)
 
-        print("------------------------  Added tag: " + tag + "  ------------------------")
-        logging.info("Added tag: " + tag)
+        print(f"Added tag: {tag}")
+        logging.info(f"Added tag: {tag}")
 
     except Exception as Argument:
-        logging.exception("Could not add tag: " + tag)
+        logging.exception(f"Could not add tag: {tag}")
 
 
 # Add tags to asset.
@@ -2856,11 +2883,11 @@ def add_asset_tags(asset):
         for tag in tags:
             add_asset_tag(asset, tag)
 
-        print("------------------------  Added Tags to Asset: " + asset.name + "  ------------------------")
-        logging.info("Added Tags to Asset: " + asset.name)
+        print(f"Added Tags to Asset: {asset.name}")
+        logging.info(f"Added Tags to Asset: {asset.name}")
 
     except Exception as Argument:
-        logging.exception("Could not Add Tags to Asset: " + asset.name)
+        logging.exception(f"Could not Add Tags to Asset: {asset.name}")
 
 
 # Add metadata to asset.
@@ -2872,11 +2899,11 @@ def add_metadata_to_asset(asset):
         asset.asset_data.author = asset_author
         add_asset_tags(asset)
 
-        print("------------------------  Added Metadata to Asset: " + asset.name + "  ------------------------")
-        logging.info("Added Metadata to Asset: " + asset.name)
+        print(f"Added Metadata to Asset: {asset.name}")
+        logging.info(f"Added Metadata to Asset: {asset.name}")
 
     except Exception as Argument:
-        logging.exception("Added Metadata to Asset: " + asset.name)
+        logging.exception(f"Added Metadata to Asset: {asset.name}")
 
 
 # Create an image in bpy.data.images
@@ -2893,7 +2920,7 @@ def create_image(name, width, height, alpha=True):
         return image
 
     except Exception as Argument:
-        logging.exception("Could not create image: " + str(name))
+        logging.exception(f"Could not create image: {name}")
 
 
 # Extract generated asset preview to disk.
@@ -2911,16 +2938,16 @@ def extract_preview_to_disk(asset, asset_type, blend):
             for char in ("/", "\\", ":", "|", '"', "!", "?", "<", ">", "*"):
                 if char in image.name:
                     image.name = image.name.replace(char, "_")
-            image.filepath = str(folder / (image.name + ".png"))
+            image.filepath = str(folder / f"{image.name}.png")
             
             try:
                 image.pixels.foreach_set(asset_preview.image_pixels_float)
             except TypeError:
-                logging.exception("Could not Extract Asset Preview: " + image_name)
+                logging.exception(f"Could not Extract Asset Preview: {image_name}")
             else:
                 image.save()
-                print("------------------------  Extracted Asset Preview: " + image_name + "  ------------------------")
-                logging.info("Extracted Asset Preview: " + image_name)
+                print(f"Extracted Asset Preview: {image_name}")
+                logging.info(f"Extracted Asset Preview: {image_name}")
 
             bpy.data.images.remove(image)
         
@@ -2928,15 +2955,15 @@ def extract_preview_to_disk(asset, asset_type, blend):
             return False
 
     except Exception as Argument:
-        logging.exception("Could not Extract Asset Preview: " + image_name)
+        logging.exception(f"Could not Extract Asset Preview: {image_name}")
 
 
 # Mark asset.
 def mark_asset(asset, asset_type, assets_in_library, blend):
     try:
         if assets_ignore_duplicates and asset_type in assets_ignore_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
-            print(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
-            logging.info(asset.name + " already exists as an asset in library: " + asset_library + ". Skipping mark asset to avoid duplicate assets.")
+            print(f"Skipped Mark Asset: {asset.name}.  Asset already exists in Library: {asset_library}")
+            logging.info(f"Skipped Mark Asset: {asset.name}.  Asset already exists in Library: {asset_library}")
             return
         
         asset.asset_mark()  # Mark asset.
@@ -2953,11 +2980,11 @@ def mark_asset(asset, asset_type, assets_in_library, blend):
         if asset_extract_previews:
             extract_preview_to_disk(asset, asset_type, blend)  # Extract preview.
 
-        print("------------------------  Marked Asset: " + asset.name + "  ------------------------")
-        logging.info("Marked Asset: " + asset.name)
+        print(f"Marked Asset: {asset.name}")
+        logging.info(f"Marked Asset: {asset.name}")
 
     except Exception as Argument:
-        logging.exception("Could not Mark Asset: " + asset.name)
+        logging.exception(f"Could not Mark Asset: {asset.name}")
 
 
 # Get a dictionary of asset names by data-block type that exist in a given asset library.
@@ -2974,20 +3001,20 @@ def get_assets_in_library(library_name):
         asset_library = asset_libraries.data.asset_libraries[library_name]
         library_path = Path(asset_library.path)
         blend_files = [fp for fp in library_path.glob("**/*.blend") if fp.is_file()]
-        print(f"Checking the contents of library '{library_name}' :")
+        print(f"Checking the contents of library '{library_name}':")
         for blend_file in blend_files:
             with bpy.data.libraries.load(str(blend_file), assets_only=True) as (file_contents, _):
                 for key in keys:
-                    assets = eval("file_contents." + key.lower())
+                    assets = eval(f"file_contents.{key.lower()}")
                     assets_in_library[key] += assets  # Add assets of given data block to their associated list in the dictionary.
         
-        print("------------------------  Got Assets in Library (" + library_name + "): " + str(assets_in_library) + "  ------------------------")
-        logging.info("Got Assets in Library (" + library_name + "): " + str(assets_in_library))
+        print(f"Got Assets in Library ({library_name}): {assets_in_library}")
+        logging.info(f"Got Assets in Library ({library_name}): {assets_in_library}")
         
         return assets_in_library
 
     except Exception as Argument:
-        logging.exception("Could not get Assets in Library (" + library_name + "): " + str(assets_in_library))
+        logging.exception(f"Could not get Assets in Library ({library_name}): {assets_in_library}")
 
 
 # Mark assets in asset data filter.
@@ -3024,11 +3051,11 @@ def mark_assets(item, blend):
             for world in bpy.data.worlds:
                 mark_asset(world, "Worlds", assets_in_library, blend)
 
-        print("------------------------  MARKED ASSETS  ------------------------")
-        logging.info("MARKED ASSETS")
+        print("Marked assets")
+        logging.info("Marked assets")
 
     except Exception as Argument:
-        logging.exception("COULD NOT MARK ASSETS")
+        logging.exception("Could not mark assets")
 
 
 # Move/Copy blend file and textures to selected Asset Library.
@@ -3041,7 +3068,7 @@ def move_copy_blend_to_asset_library(item, blend):
                 return
 
             asset_dir = make_directory(asset_library_path, blend.stem)
-            blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+            blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
             blend_and_associated_files = [blend, blend_textures]
             asset_previews = [file for file in blend.parent.iterdir() if file.name.startswith("Preview_") and file.suffix == ".png"]  # Get a list of extracted asset previews.
             
@@ -3054,7 +3081,7 @@ def move_copy_blend_to_asset_library(item, blend):
                 elif asset_blend_location == "Copy":
                     copy_file(asset_dir, file)
 
-        print("------------------------  Moved/Copied Blend and Associated Files to Asset Library   ------------------------")
+        print("Moved/Copied Blend and Associated Files to Asset Library")
         logging.info("Moved/Copied Blend and Associated Files to Asset Library")
 
     except Exception as Argument:
@@ -3068,21 +3095,21 @@ def archive_assets_to_library(item, blend):
         save_blend_file(blend)
         move_copy_blend_to_asset_library(item, blend)
 
-        print("------------------------  ARCHIVED ASSETS TO LIBRARY: " + asset_library + "  ------------------------")
-        logging.info("ARCHIVED ASSETS TO LIBRARY: " + asset_library)
+        print(f"Archived Assets to library: {asset_library}")
+        logging.info(f"Archived Assets to library: {asset_library}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT ARCHIVE ASSETS TO LIBRARY: " + asset_library)
+        logging.exception(f"Could not archive Assets to library: {asset_library}")
 
 
 # Convert the file for every file found inside the given directory.
 def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count):
     try:
         print("-------------------------------------------------------------------")
-        print("------------------------  CONVERTER START: " + str(Path(import_file).name) + "  ------------------------")
+        print(f"CONVERTER START: {Path(import_file).name}")
         print("-------------------------------------------------------------------")
         logging.info("-------------------------------------------------------------------")
-        logging.info("------------------------  CONVERTER START: " + str(Path(import_file).name) + "  ------------------------")
+        logging.info(f"CONVERTER START: {Path(import_file).name}")
         logging.info("-------------------------------------------------------------------")
         
         # Set up scene.
@@ -3159,14 +3186,14 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
 
 
         print("-------------------------------------------------------------------")
-        print("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
+        print(f"CONVERTER END: {Path(import_file).name}")
         print("-------------------------------------------------------------------")
         logging.info("-------------------------------------------------------------------")
-        logging.info("----------------  CONVERTER END: " + str(Path(import_file).name) + "  ----------------")
+        logging.info(f"CONVERTER END: {Path(import_file).name}")
         logging.info("-------------------------------------------------------------------")
 
     except Exception as Argument:
-        logging.exception("COULD NOT CONVERT FILE: " + str(Path(import_file).name))
+        logging.exception(f"COULD NOT CONVERT FILE: {Path(import_file).name}")
 		
 
 # Write conversion report to a JSON file.
@@ -3182,11 +3209,11 @@ def report_conversion_count(conversion_count):
         with open(json_file, "w") as outfile:
             json.dump(conversion_report_dict, outfile)
 
-        print("------------------------  REPORTED CONVERSION COUNT  ------------------------")
-        logging.info("REPORTED CONVERSION COUNT")
+        print("Reported conversion count")
+        logging.info("Reported conversion count")
 
     except Exception as Argument:
-        logging.exception("COULD NOT REPORT CONVERSION COUNT")
+        logging.exception("Could not report conversion count")
 		
 
 # Make a list of exports for the current item, which will then be appended to the full conversion_list to be reported in the log.
@@ -3194,24 +3221,24 @@ def list_exports(export_file_1, export_file_2):
     try:
         exports_list = []
         if model_quantity != "No Formats":
-            export_file_1_file_size = round(get_export_file_1_size(export_file_1), 2)
+            export_file_1_file_size = get_export_file_1_size(export_file_1)
             export_file_1 = Path(export_file_1).name
             export_file_1_list = [export_file_1, export_file_1_file_size]
             exports_list.append(export_file_1_list)
 
             if model_quantity == "2 Formats":
-                export_file_2_file_size = round(get_export_file_1_size(export_file_1 = export_file_2), 2)
+                export_file_2_file_size = get_export_file_1_size(export_file_1 = export_file_2)
                 export_file_2 = Path(export_file_2).name
                 export_file_2_list = [export_file_2, export_file_2_file_size]
                 exports_list.append(export_file_2_list)
         
         return exports_list
         
-        print("------------------------  LISTED EXPORTS  ------------------------")
-        logging.info("LISTED EXPORTS")
+        print("Listed exports")
+        logging.info("Listed exports")
 
     except Exception as Argument:
-        logging.exception("COULD NOT LIST EXPORTS")
+        logging.exception("Could not list exports")
 
 
 # Create a new directory in a given directory.
@@ -3222,13 +3249,13 @@ def make_directory(destination, name):
             if not new_dir.exists():
                 Path.mkdir(new_dir)
 
-        print("------------------------  MADE DIRECTORY  ------------------------")
-        logging.info("MADE DIRECTORY")
+        print(f"Made directory: {new_dir}")
+        logging.info(f"Made directory: {new_dir}")
 
         return new_dir
 
     except Exception as Argument:
-        logging.exception("COULD NOT MADE DIRECTORY")
+        logging.exception(f"Could not make directory: {new_dir}")
 
 
 # Move and or copy files from item directory to custom directory specified by the User.
@@ -3250,7 +3277,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             files_to_move.append(textures_dir)
         if keep_modified_textures:  # Include temporary texures directory.
             if textures_source == "Custom":
-                textures_temp_dir = item_dir / ("textures_" + blend.stem)  # Make sure only the local copy of textures_temp_dir for custom textures gets moved.
+                textures_temp_dir = item_dir / (f"textures_{blend.stem}")  # Make sure only the local copy of textures_temp_dir for custom textures gets moved.
             files_to_move.append(textures_temp_dir)
         if export_uv_layout:  # Include UVs in UV directory or individual images adjacent to the imported model.
             if uv_export_location == "UV":
@@ -3262,7 +3289,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         if archive_assets and asset_library == "NO_LIBRARY":  # Include assets.
             files_to_move.append(blend)
             if not pack_resources:  # Include blend textures if not packing resources.
-                blend_textures = blend.parent / ("textures_" + blend.stem + "_blend")
+                blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
                 files_to_move.append(blend_textures)
             if asset_extract_previews:  # Include asset preview(s).
                 previews = [files_to_move.append(file) for file in Path.iterdir(item_dir) if "Preview" in file.name and file.suffix == ".png"]
@@ -3284,11 +3311,11 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         for file in files_to_move:
             move_file(destination, file)
         
-        print("------------------------  MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY  ------------------------")
-        logging.info("MOVED/COPIED ITEMS TO CUSTOM OUTPUT DIRECTORY")
+        print("Moved/copied items to custom output directory")
+        logging.info("Moved/copied items to custom output directory")
 
     except Exception as Argument:
-        logging.exception("COULD NOT MOVE/COPY ITEMS TO CUSTOM OUTPUT DIRECTORY")
+        logging.exception("Could not move/copy items to custom output directory")
         
 
 # Determine whether to import a model before converting in order to save time.
@@ -3315,8 +3342,8 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
 
             # If export_file_1 exists and is above maximum when auto_resize_files is set to "Only Above Max", convert item.
             if export_file_1_file_size > file_size_maximum:
-                print("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
-                logging.info("File either already exists and is above target maximum. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 # Run the converter on the item that was found.
                 converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
@@ -3331,14 +3358,14 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             
             # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
             elif export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
-                print("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
-                logging.info("File already exists and is below target maximum. Skipping conversion for " + str(item) + ".")
+                print(f"Skipped Converter: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+                logging.info(f"Skipped Converter: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
                 return conversion_list, conversion_count
 
             # If file size is zero, then the file cannot exist and requires export.
             elif export_file_1_file_size == 0:
-                print("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
-                logging.info("File doesn't exist. Initiating conversion and automatic file resizing for " + str(item) + ".")
+                print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} doesn't yet exist.")
+                logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} doesn't yet exist.")
                 # Run the converter on the item that was found.
                 converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
@@ -3353,8 +3380,8 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
 
         # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
         elif auto_resize_files != "Only Above Max":
-            print("Initiating converter for " + str(item) + ".")
-            logging.info("Initiating converter for " + str(item) + ".")
+            print(f"Initiating Converter: {Path(import_file).name}")
+            logging.info(f"Initiating Converter: {Path(import_file).name}")
             # Run the converter on the item that was found.
             converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
             # Increment conversion counter and add converted item(s) to list.
@@ -3367,11 +3394,11 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, original_contents)
             return conversion_list, conversion_count
 
-        print("------------------------  DETERMINED CONVERSION FOR " + str(item) + "  ------------------------")
-        logging.info("DETERMINED CONVERSION FOR " + str(item))
+        print(f"Determined imports: {item}")
+        logging.info(f"Determined imports: {item}")
 
     except Exception as Argument:
-        logging.exception("COULD NOT DETERMINE CONVERSION FOR " + str(item))
+        logging.exception(f"Could not determine imports: {item}")
 
 
 # Main function that loops through specified directory and creates variables for the converter
@@ -3427,15 +3454,15 @@ def batch_converter():
         report_conversion_count(conversion_count)
 
         # Report final conversion count.
-        print(str(conversion_count) + " files were converted.")
-        logging.info(str(conversion_count) + " files were converted.")
+        print(f"{conversion_count} files were converted.")
+        logging.info(f"{conversion_count} files were converted.")
         
         # Report list of files converted and their corresponding file sizes.
-        print("LIST OF EXPORTED ITEMS:")
+        print("ITEMS EXPORTED:")
         logging.info("ITEMS EXPORTED:")
         for i in conversion_list:
-            print(str(i[0]) + " exported at " + str(i[1]) + " MB.")
-            logging.info(str(i[0]) + " exported at " + str(i[1]) + " MB.")
+            print(f"{i[0]} = {i[1]} MB.")
+            logging.info(f"{i[0]} = {i[1]} MB.")
 
         print("-----------------------------------------------------------------")
         print("---------------------  BATCH CONVERTER END  ---------------------")
@@ -3445,7 +3472,7 @@ def batch_converter():
         logging.info("-----------------------------------------------------------------")
 
     except Exception as Argument:
-        logging.exception("COULD NOT END BATCH CONVERTER")
+        logging.exception("Could not end Batch Converter")
 		
 
 # Quit Blender after batch conversion is complete.
@@ -3453,11 +3480,11 @@ def quit_blender():
     try:
         bpy.ops.wm.quit_blender()
 
-        print("------------------------  QUIT BLENDER  ------------------------")
-        logging.info("QUIT BLENDER")
+        print("Quit Blender")
+        logging.info("Quit Blender")
 
     except Exception as Argument:
-        logging.exception("COULD NOT QUIT BLENDER")
+        logging.exception("Could not quit Blender")
 		
 
 # Transmogrify.
