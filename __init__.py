@@ -1,13 +1,34 @@
-# BEGIN GPL LICENSE BLOCK #####
-#
+#  █████       █████   █████████  ██████████ ██████   █████  █████████  ██████████
+# ░░███       ░░███   ███░░░░░███░░███░░░░░█░░██████ ░░███  ███░░░░░███░░███░░░░░█
+#  ░███        ░███  ███     ░░░  ░███  █ ░  ░███░███ ░███ ░███    ░░░  ░███  █ ░ 
+#  ░███        ░███ ░███          ░██████    ░███░░███░███ ░░█████████  ░██████   
+#  ░███        ░███ ░███          ░███░░█    ░███ ░░██████  ░░░░░░░░███ ░███░░█   
+#  ░███      █ ░███ ░░███     ███ ░███ ░   █ ░███  ░░█████  ███    ░███ ░███ ░   █
+#  ███████████ █████ ░░█████████  ██████████ █████  ░░█████░░█████████  ██████████
+# ░░░░░░░░░░░ ░░░░░   ░░░░░░░░░  ░░░░░░░░░░ ░░░░░    ░░░░░  ░░░░░░░░░  ░░░░░░░░░░ 
+                                                                                
+
+##### BEGIN GPL LICENSE BLOCK #####
+
 # This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 # This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>. 
-#
-# END GPL LICENSE BLOCK #####
 
+##### END GPL LICENSE BLOCK #####
+
+
+
+#  █████       █████ ███████████  ███████████     █████████   ███████████   █████ ██████████  █████████ 
+# ░░███       ░░███ ░░███░░░░░███░░███░░░░░███   ███░░░░░███ ░░███░░░░░███ ░░███ ░░███░░░░░█ ███░░░░░███
+#  ░███        ░███  ░███    ░███ ░███    ░███  ░███    ░███  ░███    ░███  ░███  ░███  █ ░ ░███    ░░░ 
+#  ░███        ░███  ░██████████  ░██████████   ░███████████  ░██████████   ░███  ░██████   ░░█████████ 
+#  ░███        ░███  ░███░░░░░███ ░███░░░░░███  ░███░░░░░███  ░███░░░░░███  ░███  ░███░░█    ░░░░░░░░███
+#  ░███      █ ░███  ░███    ░███ ░███    ░███  ░███    ░███  ░███    ░███  ░███  ░███ ░   █ ███    ░███
+#  ███████████ █████ ███████████  █████   █████ █████   █████ █████   █████ █████ ██████████░░█████████ 
+# ░░░░░░░░░░░ ░░░░░ ░░░░░░░░░░░  ░░░░░   ░░░░░ ░░░░░   ░░░░░ ░░░░░   ░░░░░ ░░░░░ ░░░░░░░░░░  ░░░░░░░░░  
+                                                                                                      
 
 import bpy
 from bpy.types import AddonPreferences, PropertyGroup, Operator, Panel
@@ -18,6 +39,18 @@ from pathlib import Path
 import re
 import json
 import subprocess
+
+
+
+#  █████ ██████   █████ ███████████    ███████   
+# ░░███ ░░██████ ░░███ ░░███░░░░░░█  ███░░░░░███ 
+#  ░███  ░███░███ ░███  ░███   █ ░  ███     ░░███
+#  ░███  ░███░░███░███  ░███████   ░███      ░███
+#  ░███  ░███ ░░██████  ░███░░░█   ░███      ░███
+#  ░███  ░███  ░░█████  ░███  ░    ░░███     ███ 
+#  █████ █████  ░░█████ █████       ░░░███████░  
+# ░░░░░ ░░░░░    ░░░░░ ░░░░░          ░░░░░░░    
+
 
 bl_info = {
     "name": "Transmogrifier",
@@ -30,6 +63,18 @@ bl_info = {
     "doc_url": "github.com/SapwoodStudio/Transmogrifier",
     "tracker_url": "github.com/sapwoodstudio/Transmogrifier/issues",
 }
+
+
+
+#  ███████████ █████  █████ ██████   █████   █████████  ███████████ █████    ███████    ██████   █████  █████████ 
+# ░░███░░░░░░█░░███  ░░███ ░░██████ ░░███   ███░░░░░███░█░░░███░░░█░░███   ███░░░░░███ ░░██████ ░░███  ███░░░░░███
+#  ░███   █ ░  ░███   ░███  ░███░███ ░███  ███     ░░░ ░   ░███  ░  ░███  ███     ░░███ ░███░███ ░███ ░███    ░░░ 
+#  ░███████    ░███   ░███  ░███░░███░███ ░███             ░███     ░███ ░███      ░███ ░███░░███░███ ░░█████████ 
+#  ░███░░░█    ░███   ░███  ░███ ░░██████ ░███             ░███     ░███ ░███      ░███ ░███ ░░██████  ░░░░░░░░███
+#  ░███  ░     ░███   ░███  ░███  ░░█████ ░░███     ███    ░███     ░███ ░░███     ███  ░███  ░░█████  ███    ░███
+#  █████       ░░████████   █████  ░░█████ ░░█████████     █████    █████ ░░░███████░   █████  ░░█████░░█████████ 
+# ░░░░░         ░░░░░░░░   ░░░░░    ░░░░░   ░░░░░░░░░     ░░░░░    ░░░░░    ░░░░░░░    ░░░░░    ░░░░░  ░░░░░░░░░  
+
 
 # A Dictionary of operator_name: [list of preset EnumProperty item tuples].
 # Blender's doc warns that not keeping reference to enum props array can
@@ -210,6 +255,15 @@ def get_asset_catalog_index(catalog_name):
     return 0
 
 
+
+#  █████  █████ █████
+# ░░███  ░░███ ░░███ 
+#  ░███   ░███  ░███ 
+#  ░███   ░███  ░███ 
+#  ░███   ░███  ░███ 
+#  ░███   ░███  ░███ 
+#  ░░████████   █████
+#   ░░░░░░░░   ░░░░░ 
 
 
 # Refresh UI when a Transmogrifier preset is selected by running REFRESHUI operator.
@@ -685,6 +739,16 @@ def read_json():
 
 
 
+#    █████████  █████         █████████    █████████   █████████  ██████████  █████████ 
+#   ███░░░░░███░░███         ███░░░░░███  ███░░░░░███ ███░░░░░███░░███░░░░░█ ███░░░░░███
+#  ███     ░░░  ░███        ░███    ░███ ░███    ░░░ ░███    ░░░  ░███  █ ░ ░███    ░░░ 
+# ░███          ░███        ░███████████ ░░█████████ ░░█████████  ░██████   ░░█████████ 
+# ░███          ░███        ░███░░░░░███  ░░░░░░░░███ ░░░░░░░░███ ░███░░█    ░░░░░░░░███
+# ░░███     ███ ░███      █ ░███    ░███  ███    ░███ ███    ░███ ░███ ░   █ ███    ░███
+#  ░░█████████  ███████████ █████   █████░░█████████ ░░█████████  ██████████░░█████████ 
+#   ░░░░░░░░░  ░░░░░░░░░░░ ░░░░░   ░░░░░  ░░░░░░░░░   ░░░░░░░░░  ░░░░░░░░░░  ░░░░░░░░░  
+
+
 # Side Panel panel (used with Side Panel option)
 class VIEW3D_PT_transmogrify_general(Panel):
     bl_space_type = 'VIEW_3D'
@@ -743,6 +807,7 @@ class POPOVER_PT_transmogrify(Panel):
         draw_settings_transforms(self, context)
         draw_settings_optimize_files(self, context)
         draw_settings_archive(self, context)
+
 
 # Copy import/export/transmogrifier presets and studiolights shipped with Transmogrifier to relevant Blender Preferences directories.
 class COPY_ASSETS(Operator):
@@ -880,7 +945,6 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
 
     preset_name: bpy.props.StringProperty(name="Name", default="")
 
-
     def execute(self, context):
         
         variables_dict = get_transmogrifier_settings(self, context)
@@ -894,11 +958,11 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=200)
     
+
 class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
     """Removes currently selected Transmogrifier preset"""
     bl_idname = "transmogrifierpreset.remove"
     bl_label = "Remove Preset"
-
 
     def execute(self, context):
         
@@ -910,6 +974,7 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
             Path.unlink(json_file)
 
         return {'FINISHED'}
+
 
 # Operator called when pressing the Batch Convert button.
 class TRANSMOGRIFY(Operator):
@@ -1378,6 +1443,17 @@ class TRANSMOGRIFY(Operator):
 
         print("Conversion Complete")
         self.file_count += 1
+
+
+
+#   █████████  ██████████ ███████████ ███████████ █████ ██████   █████   █████████   █████████ 
+#  ███░░░░░███░░███░░░░░█░█░░░███░░░█░█░░░███░░░█░░███ ░░██████ ░░███   ███░░░░░███ ███░░░░░███
+# ░███    ░░░  ░███  █ ░ ░   ░███  ░ ░   ░███  ░  ░███  ░███░███ ░███  ███     ░░░ ░███    ░░░ 
+# ░░█████████  ░██████       ░███        ░███     ░███  ░███░░███░███ ░███         ░░█████████ 
+#  ░░░░░░░░███ ░███░░█       ░███        ░███     ░███  ░███ ░░██████ ░███    █████ ░░░░░░░░███
+#  ███    ░███ ░███ ░   █    ░███        ░███     ░███  ░███  ░░█████ ░░███  ░░███  ███    ░███
+# ░░█████████  ██████████    █████       █████    █████ █████  ░░█████ ░░█████████ ░░█████████ 
+#  ░░░░░░░░░  ░░░░░░░░░░    ░░░░░       ░░░░░    ░░░░░ ░░░░░    ░░░░░   ░░░░░░░░░   ░░░░░░░░░  
 
 
 # Groups together all the addon settings that are saved in each .blend file
@@ -2327,6 +2403,16 @@ class TransmogrifierSettings(PropertyGroup):
         },
     )
     
+
+
+#  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
+# ░░███░░░░░███ ░░███░░░░░█  ███░░░░░███░░███  ███░░░░░███░█░░░███░░░█░░███░░░░░███ ░░███ ░░███ 
+#  ░███    ░███  ░███  █ ░  ███     ░░░  ░███ ░███    ░░░ ░   ░███  ░  ░███    ░███  ░░███ ███  
+#  ░██████████   ░██████   ░███          ░███ ░░█████████     ░███     ░██████████    ░░█████   
+#  ░███░░░░░███  ░███░░█   ░███    █████ ░███  ░░░░░░░░███    ░███     ░███░░░░░███    ░░███    
+#  ░███    ░███  ░███ ░   █░░███  ░░███  ░███  ███    ░███    ░███     ░███    ░███     ░███    
+#  █████   █████ ██████████ ░░█████████  █████░░█████████     █████    █████   █████    █████   
+# ░░░░░   ░░░░░ ░░░░░░░░░░   ░░░░░░░░░  ░░░░░  ░░░░░░░░░     ░░░░░    ░░░░░   ░░░░░    ░░░░░    
 
 
 def register():
