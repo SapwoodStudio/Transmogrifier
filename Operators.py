@@ -500,7 +500,7 @@ class TRANSMOGRIFY(Operator):
         variables_dict.update(additional_settings_dict)
 
         # Write variables to JSON file before running converter
-        json_file = Path(__file__).parent.resolve() / "Converter_Variables.json"
+        json_file = Path(__file__).parent.resolve() / "Settings.json"
         Functions.write_json(variables_dict, json_file)
 
         # Run Converter.py

@@ -56,11 +56,11 @@ import numpy as np
 # ░░░░░         ░░░░░░░░   ░░░░░    ░░░░░   ░░░░░░░░░     ░░░░░    ░░░░░    ░░░░░░░    ░░░░░    ░░░░░  ░░░░░░░░░  
 
 
-# Read Converter_Variables.json file where the user variables are stored.
+# Read Settings.json file where the user variables are stored.
 def read_json():
     try:
         # Open JSON file
-        json_file = Path(__file__).parent.resolve() / "Converter_Variables.json"
+        json_file = Path(__file__).parent.resolve() / "Settings.json"
 
         with open(json_file, 'r') as openfile:
         
@@ -68,11 +68,11 @@ def read_json():
             json_object = json.load(openfile)
         
         return json_object
-        print("Read Converter_Variables.json")
-        logging.info("Read Converter_Variables.json")
+        print("Read Settings.json")
+        logging.info("Read Settings.json")
 
     except Exception as Argument:
-        logging.exception("Could Not Read Converter_Variables.json")
+        logging.exception("Could Not Read Settings.json")
 
 
 # Read dictionary of variables from JSON file.
