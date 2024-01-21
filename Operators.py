@@ -558,17 +558,25 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
     bl_idname = "transmogrifierpreset.add"
     bl_label = "Add Preset"
 
+    # Captured preset name from pop-up dialog window.
     preset_name: bpy.props.StringProperty(name="Name", default="")
 
     def execute(self, context):
-        
-        variables_dict = Functions.get_transmogrifier_settings(self, context)
+        # Set Transmogrifier operator preset directory and new preset file.
         add_preset_name = self.preset_name + ".json"
-        json_file = Path(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]) / add_preset_name
-        Functions.write_json(variables_dict, json_file)
+        transmogrifier_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier"
+        if not Path(transmogrifier_preset_dir).exists():  # Check if operator preset directory exists.
+            Path(transmogrifier_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Transmogrifier operator preset directory.
+        json_file = transmogrifier_preset_dir / add_preset_name
 
+        # Get current Transmogrifier settings.
+        variables_dict = Functions.get_transmogrifier_settings(self, context)
+
+        # Save new Transmogrifier operator preset as JSON file.
+        Functions.write_json(variables_dict, json_file)
         return {'FINISHED'}
     
+    # Pop-up dialog window to capture new preset name.
     def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self, width=200)
@@ -580,14 +588,24 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
     bl_label = "Remove Preset"
 
     def execute(self, context):
-        
+        # Get selected Transmogrifier operator preset.
         settings = bpy.context.scene.TransmogrifierSettings
         remove_preset_name = settings.transmogrifier_preset_enum + ".json"
-        json_file = Path(bpy.utils.script_paths(subdir="presets/operator/transmogrifier")[0]) / remove_preset_name
 
-        if remove_preset_name != "NO_PRESET":
-            Path.unlink(json_file)
+        # Set Transmogrifier operator preset directory and preset file to be removed.
+        transmogrifier_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier"
+        if not Path(transmogrifier_preset_dir).exists():  # Check if operator preset directory exists.
+            Path(transmogrifier_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Transmogrifier operator preset directory.
+        json_file = transmogrifier_preset_dir / remove_preset_name
 
+        # Return early and report error if Transmogrifier operator preset does not exist.
+        if not json_file.is_file():
+            self.report({'ERROR'}, f"Transmogrifier preset does not exist: {remove_preset_name}")
+            return {'CANCELLED'}
+
+        # Remove Transmogrifier operator preset.
+        self.report({'INFO'}, f"Removed Transmogrifier preset: {remove_preset_name}")
+        Path.unlink(json_file)
         return {'FINISHED'}
 
 
