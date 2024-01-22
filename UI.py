@@ -33,11 +33,14 @@ import bpy
 from bpy.types import (
     AddonPreferences, 
     Panel,
+    Operator, 
 ) 
 from bpy.props import (
     EnumProperty,
+    StringProperty,
 )
 from . import bl_info
+from . import Custom_Scripts
 
 
 
@@ -458,6 +461,29 @@ def draw_settings_archive(self, context):
         col.prop(settings, 'asset_extract_previews')
 
 
+# Texture Settings
+def draw_settings_scripts(self, context):
+    settings = bpy.context.scene.TransmogrifierSettings
+    col = self.layout.column(align=True)
+    col.scale_y = 1.5
+    col.label(text="Custom Scripts:", icon='FILE_SCRIPT')
+    col.operator('ui.add_custom_script')
+
+    # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
+    for index, custom_script in enumerate(context.scene.custom_scripts):   
+        layout = self.layout
+        layout.separator(factor = 1.0)
+        custom_script_box = layout.box()
+        main_col = custom_script_box.column()
+        
+        grid = main_col.grid_flow(row_major = True, columns = 2, even_columns = True)
+
+        grid.label(text = "Script") 
+        grid.prop(custom_script, "directory", text="")
+        grid.label(text = "Trigger")          
+        grid.prop(custom_script, "Trigger", text="")
+
+
 # Draws the button and popover dropdown button used in the
 # 3D Viewport Header or Top Bar
 def draw_popover(self, context):
@@ -513,6 +539,15 @@ class VIEW3D_PT_transmogrify_archive(Panel):
     def draw(self, context):
         draw_settings_archive(self, context)
 
+class VIEW3D_PT_transmogrify_scripts(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "🐍  Scripts"
+
+    def draw(self, context):
+        draw_settings_scripts(self, context)
+
 # Popover panel (used on 3D Viewport Header or Top Bar option)
 class POPOVER_PT_transmogrify(Panel):
     bl_space_type = 'TOPBAR'
@@ -525,6 +560,7 @@ class POPOVER_PT_transmogrify(Panel):
         draw_settings_transforms(self, context)
         draw_settings_optimize_files(self, context)
         draw_settings_archive(self, context)
+        draw_settings_scripts(self, context)
 
 
 # Addon settings that are NOT specific to a .blend file
@@ -540,6 +576,7 @@ class TransmogrifierPreferences(AddonPreferences):
             bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scene)
             bpy.utils.unregister_class(VIEW3D_PT_transmogrify_optimize_files)
             bpy.utils.unregister_class(VIEW3D_PT_transmogrify_archive)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scripts)
         if self.addon_location == 'TOPBAR':
             bpy.types.TOPBAR_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DHEADER':
@@ -550,6 +587,7 @@ class TransmogrifierPreferences(AddonPreferences):
             bpy.utils.register_class(VIEW3D_PT_transmogrify_scene)
             bpy.utils.register_class(VIEW3D_PT_transmogrify_optimize_files)
             bpy.utils.register_class(VIEW3D_PT_transmogrify_archive)
+            bpy.utils.register_class(VIEW3D_PT_transmogrify_scripts)
 
 
     addon_location: EnumProperty(
@@ -580,6 +618,23 @@ class TransmogrifierPreferences(AddonPreferences):
         col.operator("copyassets.transmogrifier", text="Copy Assets to Preferences", icon="DUPLICATE")
 
 
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
+class UI_OT_cgm_add_custom_script(Operator):
+    '''
+    Add new custom script to UI
+    '''
+
+    bl_idname = "ui.add_custom_script"
+    bl_label = "Add Custom Script"
+
+    print_string : StringProperty()
+
+    def execute(self, context):
+        # Import Custom_Scripts
+        Custom_Scripts.add_customscript(context)
+        return {'FINISHED'}
+
+
 
 #  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
 # ░░███░░░░░███ ░░███░░░░░█  ███░░░░░███░░███  ███░░░░░███░█░░░███░░░█░░███░░░░░███ ░░███ ░░███ 
@@ -593,6 +648,7 @@ class TransmogrifierPreferences(AddonPreferences):
 classes = (
     TransmogrifierPreferences,
     POPOVER_PT_transmogrify,
+    UI_OT_cgm_add_custom_script,
 )
 
 # Register Classes.
@@ -612,6 +668,7 @@ def register():
         bpy.utils.register_class(VIEW3D_PT_transmogrify_scene)
         bpy.utils.register_class(VIEW3D_PT_transmogrify_optimize_files)
         bpy.utils.register_class(VIEW3D_PT_transmogrify_archive)
+        bpy.utils.register_class(VIEW3D_PT_transmogrify_scripts)
 
 # Unregister Classes.
 def unregister():
@@ -627,3 +684,4 @@ def unregister():
         bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scene)
         bpy.utils.unregister_class(VIEW3D_PT_transmogrify_optimize_files)
         bpy.utils.unregister_class(VIEW3D_PT_transmogrify_archive)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scripts)
