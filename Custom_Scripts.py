@@ -59,15 +59,15 @@ class CustomScript(PropertyGroup):
 
     name: bpy.props.StringProperty(name="Name", default="Unknown")
 
-    directory: StringProperty(
-        name="Directory",
+    filepath: StringProperty(
+        name="File Path",
         description="",
-        default="//",
-        subtype='DIR_PATH',
+        default="*.py",
+        subtype='FILE_PATH',
     )
 
-    Trigger: EnumProperty(
-        name="Run Script at",
+    trigger: EnumProperty(
+        name="Trigger",
         description="Set when custom script should be triggered",
         items=[
             ("Before_Import", "Before Import", "", 1),
@@ -80,9 +80,30 @@ class CustomScript(PropertyGroup):
 
 
 def add_customscript(context):
-    new_custom_script = context.scene.custom_scripts.add()
+    new_custom_script = context.scene.TM_custom_scripts.add()
     new_custom_script.name = "Custom Script"
 
+def update_customscript_names(context):
+    for index, custom_script in enumerate(context.scene.TM_custom_scripts):
+        custom_script.name = f"Script {index + 1}"
+
+class TM_OT_delete_custom_script(Operator):
+    """Delete Custom Script"""
+
+    bl_idname = "transmogrifier.delete_custom_script"
+    bl_label = "Delete Custom Script"
+    bl_description = "Delete Custom Script"
+
+    custom_script_index: IntProperty(
+        name="Index to delete",
+        description="Index of the custom script to delete",
+        min=0, 
+    )   
+
+    def execute(self, context):
+        context.scene.TM_custom_scripts.remove(self.custom_script_index)
+        update_customscript_names(context)
+        return {'FINISHED'}
 
 
 #  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
@@ -96,6 +117,7 @@ def add_customscript(context):
 
 classes = (
     CustomScript,
+    TM_OT_delete_custom_script,
 )
 
 # Register Classes.
@@ -103,11 +125,11 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.custom_scripts = bpy.props.CollectionProperty(type=CustomScript)
+    bpy.types.Scene.TM_custom_scripts = bpy.props.CollectionProperty(type=CustomScript)
 
 # Unregister Classes.
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
     
-    del bpy.types.Scene.custom_scripts
+    del bpy.types.Scene.TM_custom_scripts

@@ -461,28 +461,30 @@ def draw_settings_archive(self, context):
         col.prop(settings, 'asset_extract_previews')
 
 
-# Texture Settings
+# Custom Script Settings
 def draw_settings_scripts(self, context):
     settings = bpy.context.scene.TransmogrifierSettings
+    self.layout.use_property_split = True
+    self.layout.use_property_decorate = False
+
     col = self.layout.column(align=True)
-    col.scale_y = 1.5
+    col.scale_y = 1.2
     col.label(text="Custom Scripts:", icon='FILE_SCRIPT')
     col.operator('ui.add_custom_script')
 
     # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
-    for index, custom_script in enumerate(context.scene.custom_scripts):   
+    for index, custom_script in enumerate(context.scene.TM_custom_scripts):   
         layout = self.layout
-        layout.separator(factor = 1.0)
+        # layout.separator(factor = 1.0)
         custom_script_box = layout.box()
-        main_col = custom_script_box.column()
+        col = custom_script_box.column()
+        grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
+        grid.label(text=custom_script.name, icon='FILE_SCRIPT')
+        props = grid.operator('transmogrifier.delete_custom_script', text = "", icon = 'PANEL_CLOSE')
+        props.custom_script_index = index
+        col.prop(custom_script, "filepath")  
+        col.prop(custom_script, "trigger")
         
-        grid = main_col.grid_flow(row_major = True, columns = 2, even_columns = True)
-
-        grid.label(text = "Script") 
-        grid.prop(custom_script, "directory", text="")
-        grid.label(text = "Trigger")          
-        grid.prop(custom_script, "Trigger", text="")
-
 
 # Draws the button and popover dropdown button used in the
 # 3D Viewport Header or Top Bar
@@ -619,7 +621,7 @@ class TransmogrifierPreferences(AddonPreferences):
 
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
-class UI_OT_cgm_add_custom_script(Operator):
+class TM_UI_OT_add_custom_script(Operator):
     '''
     Add new custom script to UI
     '''
@@ -632,6 +634,7 @@ class UI_OT_cgm_add_custom_script(Operator):
     def execute(self, context):
         # Import Custom_Scripts
         Custom_Scripts.add_customscript(context)
+        Custom_Scripts.update_customscript_names(context)
         return {'FINISHED'}
 
 
@@ -648,7 +651,7 @@ class UI_OT_cgm_add_custom_script(Operator):
 classes = (
     TransmogrifierPreferences,
     POPOVER_PT_transmogrify,
-    UI_OT_cgm_add_custom_script,
+    TM_UI_OT_add_custom_script,
 )
 
 # Register Classes.

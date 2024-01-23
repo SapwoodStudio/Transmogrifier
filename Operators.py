@@ -64,18 +64,36 @@ class TRANSMOGRIFY(Operator):
             return False
         directory = bpy.path.abspath(directory)  # Convert to absolute path
         if not Path(directory).is_dir() or directory == "":
-            self.report({'ERROR'}, (f"{Path(directory).name} directory doesn't exist"))
+            self.report({'ERROR'}, (f"Directory doesn't exist: {Path(directory).name}"))
+            return False
+        return True
+
+    def check_custom_script_path(self, context, filepath, name):
+        if filepath != bpy.path.abspath(filepath): # Then the blend file hasn't been saved
+            self.report({'ERROR'}, "Save .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
+            return False
+        filepath = bpy.path.abspath(filepath)  # Convert to absolute path
+        if not Path(filepath).is_file() or filepath == "":
+            self.report({'ERROR'}, (f"{name} doesn't exist: {Path(filepath).name}"))
+            return False
+        if Path(filepath).suffix != ".py":  # Make sure the selected file is a Python file.
+            self.report({'ERROR'}, (f"{name} is not a Python file: {Path(filepath).name}"))
             return False
         return True
 
 
     def execute(self, context):
         settings = bpy.context.scene.TransmogrifierSettings
-
         base_dir = settings.directory
+
+        # Check directory and file paths.
         directory_checks_out = self.check_directory_path(context, settings.directory)
         if not directory_checks_out:
             return {'FINISHED'}
+        for index, custom_script in enumerate(context.scene.TM_custom_scripts):
+            custom_script_checks_out = self.check_custom_script_path(context, custom_script.filepath, custom_script.name)
+            if not custom_script_checks_out:
+                return {'FINISHED'}
 
         # Create path to Converter.py
         converter_py = Path(__file__).parent.resolve() / "Converter.py"
