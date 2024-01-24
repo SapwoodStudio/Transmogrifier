@@ -40,6 +40,7 @@ from bpy.props import (
     FloatVectorProperty,
     PointerProperty,
     StringProperty,
+    CollectionProperty,
 )
 from . import Functions
 
@@ -55,7 +56,7 @@ from . import Functions
 #  ░░░░░░░░░  ░░░░░░░░░░    ░░░░░       ░░░░░    ░░░░░ ░░░░░    ░░░░░   ░░░░░░░░░   ░░░░░░░░░  
 
 # Groups together all the addon settings that are saved in each .blend file
-class TransmogrifierSettings(PropertyGroup):
+class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     # Preset Settings:
     # Option to select Transmogrifier presets
     transmogrifier_preset: StringProperty(default='FBX_to_GLB')
@@ -1002,6 +1003,31 @@ class TransmogrifierSettings(PropertyGroup):
     )
     
 
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
+class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
+
+    name: bpy.props.StringProperty(name="Name", default="Unknown")
+
+    filepath: StringProperty(
+        name="File Path",
+        description="",
+        default="*.py",
+        subtype='FILE_PATH',
+    )
+
+    trigger: EnumProperty(
+        name="Trigger",
+        description="Set when custom script should be triggered",
+        items=[
+            ("Before_Import", "Before Import", "", 1),
+            ("After_Import", "After Import", "", 2),
+            ("Before_Export", "Before Export", "", 3),
+            ("After_Export", "After Export", "", 4),
+        ],
+        default="After_Import",
+    )
+
+
 
 #  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
 # ░░███░░░░░███ ░░███░░░░░█  ███░░░░░███░░███  ███░░░░░███░█░░░███░░░█░░███░░░░░███ ░░███ ░░███ 
@@ -1013,7 +1039,8 @@ class TransmogrifierSettings(PropertyGroup):
 # ░░░░░   ░░░░░ ░░░░░░░░░░   ░░░░░░░░░  ░░░░░  ░░░░░░░░░     ░░░░░    ░░░░░   ░░░░░    ░░░░░    
 
 classes = (
-    TransmogrifierSettings,
+    TRANSMOGRIFIER_PG_TransmogrifierSettings,
+    TRANSMOGRIFIER_PG_TransmogrifierScripts,
 )
 
 # Register Classes.
@@ -1021,8 +1048,9 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    # Add TransmogrifierSettings to Scene type.
-    bpy.types.Scene.TransmogrifierSettings = PointerProperty(type=TransmogrifierSettings)
+    # Add settings to Scene type.
+    bpy.types.Scene.transmogrifier_settings = PointerProperty(type=TRANSMOGRIFIER_PG_TransmogrifierSettings)
+    bpy.types.Scene.transmogrifier_scripts = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierScripts)
 
 # Unregister Classes.
 def unregister():
@@ -1030,4 +1058,5 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     # Delete the settings from Scene type (Doesn't actually remove existing ones from scenes).
-    del bpy.types.Scene.TransmogrifierSettings
+    del bpy.types.Scene.transmogrifier_settings
+    del bpy.types.Scene.transmogrifier_scripts

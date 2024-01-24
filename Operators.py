@@ -32,6 +32,9 @@ import bpy
 from bpy.types import (
     Operator, 
 ) 
+from bpy.props import (
+    IntProperty,
+)
 import os
 import subprocess
 import shutil
@@ -51,7 +54,7 @@ from . import Functions
 #    ░░░░░░░    ░░░░░        ░░░░░░░░░░ ░░░░░   ░░░░░ ░░░░░   ░░░░░    ░░░░░       ░░░░░░░    ░░░░░   ░░░░░  ░░░░░░░░░  
 
 # Operator called when pressing the Batch Convert button.
-class TRANSMOGRIFY(Operator):
+class TRANSMOGRIFIER_OT_transmogrify(Operator):
     """Batch converts 3D files and associated textures into other formats"""
     bl_idname = "transmogrifier.transmogrify"
     bl_label = "Batch Convert"
@@ -83,14 +86,14 @@ class TRANSMOGRIFY(Operator):
 
 
     def execute(self, context):
-        settings = bpy.context.scene.TransmogrifierSettings
+        settings = bpy.context.scene.transmogrifier_settings
         base_dir = settings.directory
 
         # Check directory and file paths.
         directory_checks_out = self.check_directory_path(context, settings.directory)
         if not directory_checks_out:
             return {'FINISHED'}
-        for index, custom_script in enumerate(context.scene.TM_custom_scripts):
+        for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
             custom_script_checks_out = self.check_custom_script_path(context, custom_script.filepath, custom_script.name)
             if not custom_script_checks_out:
                 return {'FINISHED'}
@@ -125,9 +128,9 @@ class TRANSMOGRIFY(Operator):
 
 
     def export_selection(self, context, base_dir):
-        settings = bpy.context.scene.TransmogrifierSettings
+        settings = bpy.context.scene.transmogrifier_settings
 
-        # Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
+        # Create variables_dict dictionary from transmogrifier_settings to pass to write_json function later.
         variables_dict = Functions.get_transmogrifier_settings(self, context)
 
         # Create path to StartConverter.cmd
@@ -538,9 +541,9 @@ class TRANSMOGRIFY(Operator):
 
 
 # Copy import/export/transmogrifier presets shipped with Transmogrifier to relevant Blender Preferences directory.
-class COPY_ASSETS(Operator):
+class TRANSMOGRIFIER_OT_copy_assets(Operator):
     """Copy example presets shipped with Transmogrifier to User Preferences"""
-    bl_idname = "copyassets.transmogrifier"
+    bl_idname = "transmogrifier.copy_assets"
     bl_label = "Copy Assets to Preferences"
 
     def execute(self, context):
@@ -571,10 +574,10 @@ class COPY_ASSETS(Operator):
         return {'FINISHED'}
 
 
-class ADD_TRANSMOGRIFIER_PRESET(Operator):
+class TRANSMOGRIFIER_OT_add_preset(Operator):
     """Creates a Transmogrifier preset from current settings"""
-    bl_idname = "transmogrifierpreset.add"
-    bl_label = "Add Preset"
+    bl_idname = "transmogrifier.add_preset"
+    bl_label = "Add Transmogrifier Preset"
 
     # Captured preset name from pop-up dialog window.
     preset_name: bpy.props.StringProperty(name="Name", default="")
@@ -592,6 +595,7 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
 
         # Save new Transmogrifier operator preset as JSON file.
         Functions.write_json(variables_dict, json_file)
+        self.report({'INFO'}, f"Added Transmogrifier preset: {add_preset_name}")
         return {'FINISHED'}
     
     # Pop-up dialog window to capture new preset name.
@@ -600,14 +604,14 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
         return wm.invoke_props_dialog(self, width=200)
     
 
-class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
+class TRANSMOGRIFIER_OT_remove_preset(Operator):
     """Removes currently selected Transmogrifier preset"""
-    bl_idname = "transmogrifierpreset.remove"
-    bl_label = "Remove Preset"
+    bl_idname = "transmogrifier.remove_preset"
+    bl_label = "Remove Transmogrifier Preset"
 
     def execute(self, context):
         # Get selected Transmogrifier operator preset.
-        settings = bpy.context.scene.TransmogrifierSettings
+        settings = bpy.context.scene.transmogrifier_settings
         remove_preset_name = settings.transmogrifier_preset_enum + ".json"
 
         # Set Transmogrifier operator preset directory and preset file to be removed.
@@ -627,6 +631,40 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
         return {'FINISHED'}
 
 
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
+class TRANSMOGRIFIER_OT_add_custom_script(Operator):
+    '''Add new custom script to UI'''
+
+    bl_idname = "transmogrifier.add_custom_script"
+    bl_label = "Add Custom Script"
+    bl_description = "Add new custom script to UI"
+
+    def execute(self, context):
+        # Import Functions
+        Functions.add_customscript(context)
+        Functions.update_customscript_names(context)
+        return {'FINISHED'}
+
+
+class TRANSMOGRIFIER_OT_remove_custom_script(Operator):
+    '''Remove custom script from UI'''
+
+    bl_idname = "transmogrifier.remove_custom_script"
+    bl_label = "Remove Custom Script"
+    bl_description = "Remove custom script from UI"
+
+    custom_script_index: IntProperty(
+        name="Index to remove",
+        description="Index of the custom script to remove",
+        min=0, 
+    )   
+
+    def execute(self, context):
+        context.scene.transmogrifier_scripts.remove(self.custom_script_index)
+        Functions.update_customscript_names(context)
+        return {'FINISHED'}
+
+
 
 #  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
 # ░░███░░░░░███ ░░███░░░░░█  ███░░░░░███░░███  ███░░░░░███░█░░░███░░░█░░███░░░░░███ ░░███ ░░███ 
@@ -638,10 +676,12 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
 # ░░░░░   ░░░░░ ░░░░░░░░░░   ░░░░░░░░░  ░░░░░  ░░░░░░░░░     ░░░░░    ░░░░░   ░░░░░    ░░░░░    
 
 classes = (
-    TRANSMOGRIFY,
-    COPY_ASSETS,
-    ADD_TRANSMOGRIFIER_PRESET,
-    REMOVE_TRANSMOGRIFIER_PRESET,
+    TRANSMOGRIFIER_OT_transmogrify,
+    TRANSMOGRIFIER_OT_copy_assets,
+    TRANSMOGRIFIER_OT_add_preset,
+    TRANSMOGRIFIER_OT_remove_preset,
+    TRANSMOGRIFIER_OT_add_custom_script,
+    TRANSMOGRIFIER_OT_remove_custom_script,
 )
 
 # Register Classes.

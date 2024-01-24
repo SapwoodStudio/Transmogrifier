@@ -67,7 +67,6 @@ bl_info = {
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), __init__.py
 modules = (
-    '.Custom_Scripts',
     '.Functions',
     '.Operators',
     '.Settings',
@@ -87,7 +86,6 @@ def reimport_modules():
 import_modules()
 reimport_modules()
 
-from . import Custom_Scripts
 from . import Functions
 from . import Operators
 from . import Settings
@@ -107,14 +105,12 @@ from . import UI
 # Register Classes.
 def register():
     import_modules()
-    Custom_Scripts.register()
     Operators.register()
     Settings.register()
     UI.register()
 
 # Unregister Classes.
 def unregister():
-    Custom_Scripts.unregister()
     Operators.unregister()
     Settings.unregister()
     UI.unregister()

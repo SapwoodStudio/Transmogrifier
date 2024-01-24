@@ -46,7 +46,7 @@ import json
 
 # Refresh UI when a Transmogrifier preset is selected.
 def refresh_ui(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
 
     if settings.transmogrifier_preset != "NO_PRESET":
         # Load selected Transmogrifier preset as a dictionary.
@@ -228,7 +228,7 @@ asset_catalog_enum_items_refs = {"asset_catalogs": []}
 # Get asset catalogs and return a list of them.  Add them as the value to the dictionary.
 def get_asset_catalogs():
     catalogs_list = [('NO_CATALOG', "(no catalog)", "Don't assign assets to a catalog.", 0)]
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     asset_libraries = bpy.context.preferences.filepaths.asset_libraries
     library_name = settings.asset_library
     library_path = [library.path for library in asset_libraries if library.name == library_name]
@@ -258,9 +258,9 @@ def get_asset_catalog_index(catalog_name):
 
 
 
-# Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
+# Create variables_dict dictionary from transmogrifier_settings to pass to write_json function later.
 def get_transmogrifier_settings(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     keys = [key for key in settings.__annotations__ if "enum" not in key]
     values = []
     for key in keys:
@@ -287,6 +287,16 @@ def get_transmogrifier_settings(self, context):
     variables_dict = dict(zip(keys, values))
 
     return variables_dict
+
+
+def add_customscript(context):
+    new_custom_script = context.scene.transmogrifier_scripts.add()
+    new_custom_script.name = "Custom Script"
+
+
+def update_customscript_names(context):
+    for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
+        custom_script.name = f"Script {index + 1}"
 
 
 # Write user variables to a JSON file.

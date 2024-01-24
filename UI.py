@@ -36,11 +36,12 @@ from bpy.types import (
     Operator, 
 ) 
 from bpy.props import (
+    IntProperty,
     EnumProperty,
     StringProperty,
 )
 from . import bl_info
-from . import Custom_Scripts
+from . import Functions
 
 
 
@@ -57,7 +58,7 @@ from . import Custom_Scripts
 # Draws the .blend file specific settings used in the
 # Popover panel or Side Panel panel
 def draw_settings_general(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
 
@@ -72,7 +73,7 @@ def draw_settings_general(self, context):
     # Batch Convert button
     row = self.layout.row()
     row = row.row(align=True)
-    row.operator('transmogrifier.transmogrify', text='Batch Convert', icon='FILE_CACHE')
+    row.operator('transmogrifier.transmogrify', icon='FILE_CACHE')
     row.scale_y = 1.5
 
     # UI settings
@@ -92,8 +93,8 @@ def draw_settings_general(self, context):
     self.layout.use_property_split = False
     row = layout.row(align=True)
     row.prop(settings, 'transmogrifier_preset_enum')
-    row.operator("transmogrifierpreset.add", text="", icon="ADD")
-    row.operator("transmogrifierpreset.remove", text="", icon="REMOVE")
+    row.operator("transmogrifier.add_preset", text="", icon="ADD")
+    row.operator("transmogrifier.remove_preset", text="", icon="REMOVE")
 
     # Import Settings
     self.layout.use_property_split = True
@@ -235,7 +236,7 @@ def draw_settings_general(self, context):
 
 # Texture Settings
 def draw_settings_textures(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
     col = self.layout.column(align=True)
@@ -315,7 +316,7 @@ def draw_settings_textures(self, context):
             
 
 def draw_settings_transforms(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
     col = self.layout.column(align=True)
@@ -370,7 +371,7 @@ def draw_settings_transforms(self, context):
     
 # Set max file size options.
 def draw_settings_optimize_files(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
     col = self.layout.column(align=True)
@@ -396,7 +397,7 @@ def draw_settings_optimize_files(self, context):
 
 # Archive options
 def draw_settings_archive(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
     col = self.layout.column(align=True)
@@ -463,27 +464,32 @@ def draw_settings_archive(self, context):
 
 # Custom Script Settings
 def draw_settings_scripts(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
 
     col = self.layout.column(align=True)
     col.scale_y = 1.2
     col.label(text="Custom Scripts:", icon='FILE_SCRIPT')
-    col.operator('ui.add_custom_script')
 
-    # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
-    for index, custom_script in enumerate(context.scene.TM_custom_scripts):   
-        layout = self.layout
-        # layout.separator(factor = 1.0)
-        custom_script_box = layout.box()
-        col = custom_script_box.column()
-        grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
-        grid.label(text=custom_script.name, icon='FILE_SCRIPT')
-        props = grid.operator('transmogrifier.delete_custom_script', text = "", icon = 'PANEL_CLOSE')
-        props.custom_script_index = index
-        col.prop(custom_script, "filepath")  
-        col.prop(custom_script, "trigger")
+    if settings.ui_toggle == "Advanced":
+        col.operator('transmogrifier.add_custom_script')
+
+        # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
+        for index, custom_script in enumerate(context.scene.transmogrifier_scripts):   
+            layout = self.layout
+            # layout.separator(factor = 1.0)
+            custom_script_box = layout.box()
+            col = custom_script_box.column()
+            grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
+            grid.label(text=custom_script.name, icon='FILE_SCRIPT')
+            props = grid.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
+            props.custom_script_index = index
+            col.prop(custom_script, "filepath")  
+            col.prop(custom_script, "trigger")
+    
+    elif settings.ui_toggle == "Simple":
+        col.label(text="(Toggle 'Advanced' UI to view settings)")
         
 
 # Draws the button and popover dropdown button used in the
@@ -492,11 +498,11 @@ def draw_popover(self, context):
     row = self.layout.row()
     row = row.row(align=True)
     row.operator('transmogrifier.transmogrify', text='', icon='FILE_CACHE')
-    row.popover(panel='POPOVER_PT_transmogrify', text='')
+    row.popover(panel='POPOVER_PT_transmogrifier', text='')
 
 
 # Side Panel panel (used with Side Panel option)
-class VIEW3D_PT_transmogrify_general(Panel):
+class VIEW3D_PT_transmogrifier_general(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
@@ -505,7 +511,7 @@ class VIEW3D_PT_transmogrify_general(Panel):
     def draw(self, context):
         draw_settings_general(self, context)
         
-class VIEW3D_PT_transmogrify_textures(Panel):
+class VIEW3D_PT_transmogrifier_textures(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
@@ -514,7 +520,7 @@ class VIEW3D_PT_transmogrify_textures(Panel):
     def draw(self, context):
         draw_settings_textures(self, context)
 
-class VIEW3D_PT_transmogrify_scene(Panel):
+class VIEW3D_PT_transmogrifier_scene(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
@@ -523,7 +529,7 @@ class VIEW3D_PT_transmogrify_scene(Panel):
     def draw(self, context):
         draw_settings_transforms(self, context)
 
-class VIEW3D_PT_transmogrify_optimize_files(Panel):
+class VIEW3D_PT_transmogrifier_optimize_files(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
@@ -532,7 +538,7 @@ class VIEW3D_PT_transmogrify_optimize_files(Panel):
     def draw(self, context):
         draw_settings_optimize_files(self, context)
 
-class VIEW3D_PT_transmogrify_archive(Panel):
+class VIEW3D_PT_transmogrifier_archive(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
@@ -541,7 +547,7 @@ class VIEW3D_PT_transmogrify_archive(Panel):
     def draw(self, context):
         draw_settings_archive(self, context)
 
-class VIEW3D_PT_transmogrify_scripts(Panel):
+class VIEW3D_PT_transmogrifier_scripts(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
@@ -551,7 +557,7 @@ class VIEW3D_PT_transmogrify_scripts(Panel):
         draw_settings_scripts(self, context)
 
 # Popover panel (used on 3D Viewport Header or Top Bar option)
-class POPOVER_PT_transmogrify(Panel):
+class POPOVER_PT_transmogrifier(Panel):
     bl_space_type = 'TOPBAR'
     bl_region_type = 'HEADER'
     bl_label = "Transmogrifier"
@@ -572,24 +578,24 @@ class TransmogrifierPreferences(AddonPreferences):
     def addon_location_updated(self, context):
         bpy.types.TOPBAR_MT_editor_menus.remove(draw_popover)
         bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
-        if hasattr(bpy.types, "VIEW3D_PT_transmogrify_general"):
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_general)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_textures)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scene)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_optimize_files)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_archive)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scripts)
+        if hasattr(bpy.types, "VIEW3D_PT_transmogrifier_general"):
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_general)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_archive)
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
         if self.addon_location == 'TOPBAR':
             bpy.types.TOPBAR_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DHEADER':
             bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DSIDE':
-            bpy.utils.register_class(VIEW3D_PT_transmogrify_general)
-            bpy.utils.register_class(VIEW3D_PT_transmogrify_textures)
-            bpy.utils.register_class(VIEW3D_PT_transmogrify_scene)
-            bpy.utils.register_class(VIEW3D_PT_transmogrify_optimize_files)
-            bpy.utils.register_class(VIEW3D_PT_transmogrify_archive)
-            bpy.utils.register_class(VIEW3D_PT_transmogrify_scripts)
+            bpy.utils.register_class(VIEW3D_PT_transmogrifier_general)
+            bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
+            bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
+            bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files)
+            bpy.utils.register_class(VIEW3D_PT_transmogrifier_archive)
+            bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
 
 
     addon_location: EnumProperty(
@@ -617,25 +623,7 @@ class TransmogrifierPreferences(AddonPreferences):
         # Display copy assets button
         box = layout.box()
         col = box.column(align=True)
-        col.operator("copyassets.transmogrifier", text="Copy Assets to Preferences", icon="DUPLICATE")
-
-
-# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
-class TM_UI_OT_add_custom_script(Operator):
-    '''
-    Add new custom script to UI
-    '''
-
-    bl_idname = "ui.add_custom_script"
-    bl_label = "Add Custom Script"
-
-    print_string : StringProperty()
-
-    def execute(self, context):
-        # Import Custom_Scripts
-        Custom_Scripts.add_customscript(context)
-        Custom_Scripts.update_customscript_names(context)
-        return {'FINISHED'}
+        col.operator("transmogrifier.copy_assets", text="Copy Assets to Preferences", icon="DUPLICATE")
 
 
 
@@ -650,8 +638,7 @@ class TM_UI_OT_add_custom_script(Operator):
 
 classes = (
     TransmogrifierPreferences,
-    POPOVER_PT_transmogrify,
-    TM_UI_OT_add_custom_script,
+    POPOVER_PT_transmogrifier,
 )
 
 # Register Classes.
@@ -666,12 +653,12 @@ def register():
     if prefs.addon_location == '3DHEADER':
         bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
     elif prefs.addon_location == '3DSIDE':
-        bpy.utils.register_class(VIEW3D_PT_transmogrify_general)
-        bpy.utils.register_class(VIEW3D_PT_transmogrify_textures)
-        bpy.utils.register_class(VIEW3D_PT_transmogrify_scene)
-        bpy.utils.register_class(VIEW3D_PT_transmogrify_optimize_files)
-        bpy.utils.register_class(VIEW3D_PT_transmogrify_archive)
-        bpy.utils.register_class(VIEW3D_PT_transmogrify_scripts)
+        bpy.utils.register_class(VIEW3D_PT_transmogrifier_general)
+        bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
+        bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
+        bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files)
+        bpy.utils.register_class(VIEW3D_PT_transmogrifier_archive)
+        bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
 
 # Unregister Classes.
 def unregister():
@@ -681,10 +668,10 @@ def unregister():
     # Remove UI
     bpy.types.TOPBAR_MT_editor_menus.remove(draw_popover)
     bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
-    if hasattr(bpy.types, "VIEW3D_PT_transmogrify_general"):
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_general)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_textures)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scene)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_optimize_files)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_archive)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrify_scripts)
+    if hasattr(bpy.types, "VIEW3D_PT_transmogrifier_general"):
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_general)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_archive)
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
