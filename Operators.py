@@ -60,9 +60,9 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
     bl_label = "Batch Convert"
     file_count = 0
 
-    # Stop converter if directory has not been selected or .blend file has not been saved.
+    # Stop batch converter if directory has not been selected or .blend file has not been saved.
     def check_directory_path(self, context, directory):
-        if directory != bpy.path.abspath(directory): # Then the blend file hasn't been saved
+        if directory != bpy.path.abspath(directory) and not bpy.data.is_saved: # Then the blend file hasn't been saved
             self.report({'ERROR'}, "Save .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
             return False
         directory = bpy.path.abspath(directory)  # Convert to absolute path
@@ -71,9 +71,10 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
             return False
         return True
 
+    # Stop batch converter if script has not been selected or .blend file has not been saved.
     def check_custom_script_path(self, context, filepath, name):
-        if filepath != bpy.path.abspath(filepath): # Then the blend file hasn't been saved
-            self.report({'ERROR'}, "Save .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
+        if filepath != bpy.path.abspath(filepath) and not bpy.data.is_saved: # Then the blend file hasn't been saved
+            self.report({'ERROR'}, "Save .blend file somewhere before using a relative script path\n(or use an absolute script path instead)")
             return False
         filepath = bpy.path.abspath(filepath)  # Convert to absolute path
         if not Path(filepath).is_file() or filepath == "":
@@ -87,14 +88,15 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
     def execute(self, context):
         settings = bpy.context.scene.transmogrifier_settings
+        scripts = bpy.context.scene.transmogrifier_scripts
         base_dir = settings.directory
 
-        # Check directory and file paths.
+        # Check directory and file paths.  Stop batch converter if they don't check-out.
         directory_checks_out = self.check_directory_path(context, settings.directory)
         if not directory_checks_out:
             return {'FINISHED'}
-        for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
-            custom_script_checks_out = self.check_custom_script_path(context, custom_script.filepath, custom_script.name)
+        for index, custom_script in enumerate(scripts):
+            custom_script_checks_out = self.check_custom_script_path(context, custom_script.script_filepath, custom_script.script_name)
             if not custom_script_checks_out:
                 return {'FINISHED'}
 

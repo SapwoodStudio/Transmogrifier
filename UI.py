@@ -470,10 +470,12 @@ def draw_settings_scripts(self, context):
 
     col = self.layout.column(align=True)
     col.scale_y = 1.2
-    col.label(text="Custom Scripts:", icon='FILE_SCRIPT')
+    grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
+    grid.label(text="Custom Scripts:", icon='FILE_SCRIPT')
 
     if settings.ui_toggle == "Advanced":
-        col.operator('transmogrifier.add_custom_script')
+        grid.scale_x = 1.2
+        grid.operator('transmogrifier.add_custom_script', text="", icon="ADD")
 
         # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
         for index, custom_script in enumerate(context.scene.transmogrifier_scripts):   
@@ -482,11 +484,11 @@ def draw_settings_scripts(self, context):
             custom_script_box = layout.box()
             col = custom_script_box.column()
             grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
-            grid.label(text=custom_script.name, icon='FILE_SCRIPT')
+            grid.label(text=custom_script.script_name, icon='FILE_SCRIPT')
             props = grid.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
             props.custom_script_index = index
-            col.prop(custom_script, "filepath")  
-            col.prop(custom_script, "trigger")
+            col.prop(custom_script, "script_filepath")  
+            col.prop(custom_script, "script_trigger")
     
     elif settings.ui_toggle == "Simple":
         col.label(text="(Toggle 'Advanced' UI to view settings)")

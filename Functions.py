@@ -258,18 +258,18 @@ def get_asset_catalog_index(catalog_name):
 
 
 
-# Create variables_dict dictionary from transmogrifier_settings to pass to write_json function later.
+# Create variables_dict dictionary from transmogrifier_settings and transmogrifier_scripts to pass to write_json function later.
 def get_transmogrifier_settings(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     keys = [key for key in settings.__annotations__ if "enum" not in key]
     values = []
     for key in keys:
         # Get value as string to be evaluated later.
-        value = eval('settings.' + str(key))
+        value = eval(f"settings.{key}")
         # Convert relative paths to absolute paths.
-        directory_path = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
-        if key in directory_path:
-            value = bpy.path.abspath(value)
+        directory_paths = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
+        if key in directory_paths:
+            value = str(Path(bpy.path.abspath(value)).resolve())
         # Convert enumproperty numbers to numbers.
         if key == "texture_resolution" or key == "resize_textures_limit" or key == "uv_resolution":
             if value != "Default":
@@ -286,17 +286,33 @@ def get_transmogrifier_settings(self, context):
 
     variables_dict = dict(zip(keys, values))
 
+    # Make a dictionary of lists of values of custom scripts.
+    scripts = bpy.context.scene.transmogrifier_scripts
+    custom_scripts = []
+    for script in scripts:
+        values = []
+        for key in script.__annotations__:
+            value = eval(f"script.{key}")
+            if key == "script_filepath":
+                value = str(Path(bpy.path.abspath(value)).resolve())
+            values.append(value)
+        custom_scripts.append(values)
+    custom_scripts_dict = {"custom_scripts": custom_scripts}
+
+    # Add custom scripts list to dictionary of settings.
+    variables_dict.update(custom_scripts_dict)
+
     return variables_dict
 
 
 def add_customscript(context):
     new_custom_script = context.scene.transmogrifier_scripts.add()
-    new_custom_script.name = "Custom Script"
+    new_custom_script.script_name = "Custom Script"
 
 
 def update_customscript_names(context):
     for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
-        custom_script.name = f"Script {index + 1}"
+        custom_script.script_name = f"Script {index + 1}"
 
 
 # Write user variables to a JSON file.

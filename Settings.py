@@ -1006,16 +1006,16 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
 class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
 
-    name: bpy.props.StringProperty(name="Name", default="Unknown")
+    script_name: bpy.props.StringProperty(name="Name", default="Unknown")
 
-    filepath: StringProperty(
+    script_filepath: StringProperty(
         name="File Path",
         description="",
         default="*.py",
         subtype='FILE_PATH',
     )
 
-    trigger: EnumProperty(
+    script_trigger: EnumProperty(
         name="Trigger",
         description="Set when custom script should be triggered",
         items=[
