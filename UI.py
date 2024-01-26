@@ -469,13 +469,13 @@ def draw_settings_scripts(self, context):
     self.layout.use_property_decorate = False
 
     col = self.layout.column(align=True)
-    col.scale_y = 1.2
+    col.scale_y = 1.0
     grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
     grid.label(text="Custom Scripts:", icon='FILE_SCRIPT')
 
     if settings.ui_toggle == "Advanced":
-        grid.scale_x = 1.2
-        grid.operator('transmogrifier.add_custom_script', text="", icon="ADD")
+        col = self.layout.column(align=True)
+        col.operator('transmogrifier.add_custom_script', icon="ADD")
 
         # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
         for index, custom_script in enumerate(context.scene.transmogrifier_scripts):   

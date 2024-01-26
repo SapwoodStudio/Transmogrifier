@@ -638,7 +638,7 @@ class TRANSMOGRIFIER_OT_add_custom_script(Operator):
     '''Add new custom script to UI'''
 
     bl_idname = "transmogrifier.add_custom_script"
-    bl_label = "Add Custom Script"
+    bl_label = "Add Script"
     bl_description = "Add new custom script to UI"
 
     def execute(self, context):
