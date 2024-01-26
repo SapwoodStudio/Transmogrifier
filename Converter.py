@@ -2801,19 +2801,19 @@ def run_custom_scripts(trigger):
     try:
         for script in custom_scripts:
             script_name = script[0]
-            script_filepath = Path(script[1])
+            script_filepath = script[1]
             script_trigger = script[-1]
-            if script_trigger != trigger:
+            if script_trigger != trigger:  # Skip the script if it's not the right time to run it.
                 continue
             
             # Run script in the current "Converter.blend" session (not as a subprocess).
-            exec(compile(open(str(script_filepath)).read(), str(script_filepath), 'exec'))
+            exec(compile(open(script_filepath).read(), script_filepath, 'exec'))
 
-            print(f"Ran custom script: {script_filepath.name}")
-            logging.info(f"Ran custom script: {script_filepath.name}")
+            print(f"Ran custom script: {script_name}")
+            logging.info(f"Ran custom script: {script_name}")
 
     except Exception as Argument:
-        logging.exception(f"Could not run custom script: {script_filepath.name}")
+        logging.exception(f"Could not run custom script: {script_name}")
 
 
 # Determine whether asset preview has finished generating.

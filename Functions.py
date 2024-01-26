@@ -305,14 +305,16 @@ def get_transmogrifier_settings(self, context):
     return variables_dict
 
 
-def add_customscript(context):
+# Add a custom script.
+def add_customscript(self, context):
     new_custom_script = context.scene.transmogrifier_scripts.add()
-    new_custom_script.script_name = "Custom Script"
+    new_custom_script.script_name = Path(new_custom_script.script_filepath).name
 
 
-def update_customscript_names(context):
+# Update custom script names based on file names.
+def update_customscript_names(self, context):
     for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
-        custom_script.script_name = f"Script {index + 1}"
+        custom_script.script_name = Path(custom_script.script_filepath).name
 
 
 # Write user variables to a JSON file.

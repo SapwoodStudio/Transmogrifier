@@ -643,8 +643,8 @@ class TRANSMOGRIFIER_OT_add_custom_script(Operator):
 
     def execute(self, context):
         # Import Functions
-        Functions.add_customscript(context)
-        Functions.update_customscript_names(context)
+        Functions.add_customscript(self, context)
+        Functions.update_customscript_names(self, context)
         return {'FINISHED'}
 
 
@@ -663,7 +663,7 @@ class TRANSMOGRIFIER_OT_remove_custom_script(Operator):
 
     def execute(self, context):
         context.scene.transmogrifier_scripts.remove(self.custom_script_index)
-        Functions.update_customscript_names(context)
+        Functions.update_customscript_names(self, context)
         return {'FINISHED'}
 
 
