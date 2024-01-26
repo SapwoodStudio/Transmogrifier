@@ -1006,11 +1006,11 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
 class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
 
-    script_name: bpy.props.StringProperty(name="Name", default="Unknown")
+    script_name: bpy.props.StringProperty(name="Name", default="Script")
 
     script_filepath: StringProperty(
         name="File Path",
-        description="",
+        description="Path to a Python script file",
         default="*.py",
         subtype='FILE_PATH',
     )
@@ -1019,12 +1019,13 @@ class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
         name="Trigger",
         description="Set when custom script should be triggered",
         items=[
-            ("Before_Import", "Before Import", "", 1),
-            ("After_Import", "After Import", "", 2),
-            ("Before_Export", "Before Export", "", 3),
-            ("After_Export", "After Export", "", 4),
+            ("Before_Batch", "Before Batch", "Run script before the batch conversion begins.", 1),
+            ("Before_Import", "Before Import", "Run script immediately before importing a model.", 2),
+            ("Before_Export", "Before Export", "Run script immediately before exporting a model.", 3),
+            ("After_Export", "After Export", "Run script immediately after exporting a model.", 4),
+            ("After_Batch", "After Batch", "Run script after the batch conversion ends.", 5),
         ],
-        default="After_Import",
+        default="Before_Export",
     )
 
 
