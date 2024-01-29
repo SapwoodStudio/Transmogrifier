@@ -44,9 +44,20 @@ import json
 #  █████       ░░████████   █████  ░░█████ ░░█████████     █████    █████ ░░░███████░   █████  ░░█████░░█████████ 
 # ░░░░░         ░░░░░░░░   ░░░░░    ░░░░░   ░░░░░░░░░     ░░░░░    ░░░░░    ░░░░░░░    ░░░░░    ░░░░░  ░░░░░░░░░  
 
+
+# Load custom scripts from JSON file.
+def load_custom_scripts(custom_scripts_list):
+    for script in custom_scripts_list:
+        new_custom_script = bpy.context.scene.transmogrifier_scripts.add()
+        new_custom_script.script_name = script[0]
+        new_custom_script.script_filepath = script[1]
+        new_custom_script.script_trigger = script[-1]
+
+
 # Refresh UI when a Transmogrifier preset is selected.
 def refresh_ui(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
+    scripts = bpy.context.scene.transmogrifier_scripts
 
     if settings.transmogrifier_preset != "NO_PRESET":
         # Load selected Transmogrifier preset as a dictionary.
@@ -54,6 +65,10 @@ def refresh_ui(self, context):
 
         # Read dictionary and change UI settings to reflect selected preset.
         for key, value in transmogrifier_preset_dict.items():
+            scripts.clear()  # Clear any existing custom script instances.
+            if key == "custom_scripts":
+                load_custom_scripts(value)  # Load custom scripts from JSON file.
+                continue
             # Make sure double-backslashes are preserved in directory path.
             directories_set = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
             if key in directories_set and value != "":
@@ -228,7 +243,7 @@ asset_catalog_enum_items_refs = {"asset_catalogs": []}
 # Get asset catalogs and return a list of them.  Add them as the value to the dictionary.
 def get_asset_catalogs():
     catalogs_list = [('NO_CATALOG', "(no catalog)", "Don't assign assets to a catalog.", 0)]
-    settings = bpy.context.scene.TransmogrifierSettings
+    settings = bpy.context.scene.transmogrifier_settings
     asset_libraries = bpy.context.preferences.filepaths.asset_libraries
     library_name = settings.asset_library
     library_path = [library.path for library in asset_libraries if library.name == library_name]
@@ -258,22 +273,26 @@ def get_asset_catalog_index(catalog_name):
 
 
 
-# Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
-def get_transmogrifier_settings(self, context):
-    settings = bpy.context.scene.TransmogrifierSettings
+# Create variables_dict dictionary from transmogrifier_settings and transmogrifier_scripts to pass to write_json function later.
+def get_transmogrifier_settings(self, context, use_absolute_paths):
+    settings = bpy.context.scene.transmogrifier_settings
     keys = [key for key in settings.__annotations__ if "enum" not in key]
     values = []
-    for key in keys:
+    
+    for key in keys:    
         # Get value as string to be evaluated later.
-        value = eval('settings.' + str(key))
+        value = eval(f"settings.{key}")
+        
         # Convert relative paths to absolute paths.
-        directory_path = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
-        if key in directory_path:
-            value = bpy.path.abspath(value)
+        directory_paths = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
+        if use_absolute_paths and key in directory_paths:
+            value = str(Path(bpy.path.abspath(value)).resolve())
+        
         # Convert enumproperty numbers to numbers.
         if key == "texture_resolution" or key == "resize_textures_limit" or key == "uv_resolution":
             if value != "Default":
                 value = int(value)
+
         # Convert dictionaries and vectors to tuples.
         if "{" in str(value):
             value = tuple(value)
@@ -286,7 +305,56 @@ def get_transmogrifier_settings(self, context):
 
     variables_dict = dict(zip(keys, values))
 
+    # Make a dictionary of lists of values of custom scripts.
+    scripts = bpy.context.scene.transmogrifier_scripts
+    custom_scripts = []
+    
+    for script in scripts:
+        values = []
+        for key in script.__annotations__:
+            value = eval(f"script.{key}")
+            if use_absolute_paths and key == "script_filepath":
+                value = str(Path(bpy.path.abspath(value)).resolve())
+            values.append(value)
+        custom_scripts.append(values)
+    custom_scripts_dict = {"custom_scripts": custom_scripts}
+
+    # Add custom scripts list to dictionary of settings.
+    variables_dict.update(custom_scripts_dict)
+
     return variables_dict
+
+
+# Add a custom script.
+def add_customscript(self, context):
+    new_custom_script = context.scene.transmogrifier_scripts.add()
+    new_custom_script.script_name = Path(new_custom_script.script_filepath).name
+
+
+# Update custom script names based on file names.
+def update_customscript_names(self, context):
+    for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
+        script_filepath = Path(bpy.path.abspath(custom_script.script_filepath))
+
+        # Added a new custom script (default name is "*.py")
+        if script_filepath.suffix == ".py" and not script_filepath.is_file() and custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
+            custom_script.script_name = f"Script {index + 1}"
+        
+        # File is not a Python file.
+        elif script_filepath.suffix != ".py":
+            custom_script.script_name = f"(Not a Python File) {script_filepath.name}"
+
+        # File is a Python file but doesn't exist.
+        elif not script_filepath.is_file() and script_filepath.suffix == ".py":
+            custom_script.script_name = f"(Missing) {script_filepath.name}"
+
+        # File is a Python file and might exist, but path is relative and current Blend session is unsaved.
+        elif script_filepath != Path(custom_script.script_filepath) and not bpy.data.is_saved:
+            custom_script.script_name = f"(Missing) {script_filepath.name}"
+
+        # File is a Python file and exists.
+        elif script_filepath.is_file() and script_filepath.suffix == ".py":
+            custom_script.script_name = script_filepath.name
 
 
 # Write user variables to a JSON file.

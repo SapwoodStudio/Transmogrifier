@@ -2796,6 +2796,26 @@ def determine_export_uv_layout(item, textures_dir):
         logging.exception("Could not determine how to export UV layout(s)")
 
 
+# Run a custom script.
+def run_custom_scripts(trigger):
+    try:
+        for script in custom_scripts:
+            script_name = script[0]
+            script_filepath = script[1]
+            script_trigger = script[-1]
+            if script_trigger != trigger:  # Skip the script if it's not the right time to run it.
+                continue
+            
+            # Run script in the current "Converter.blend" session (not as a subprocess).
+            exec(compile(open(script_filepath).read(), script_filepath, 'exec'))
+
+            print(f"Ran custom script: {script_name}")
+            logging.info(f"Ran custom script: {script_name}")
+
+    except Exception as Argument:
+        logging.exception(f"Could not run custom script: {script_name}")
+
+
 # Determine whether asset preview has finished generating.
 # Source: https://projects.blender.org/blender/blender/issues/93893#issuecomment-168540
 def preview_finished(asset):
@@ -3120,6 +3140,9 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
             clean_data_block(bpy.data.materials)
             clean_data_block(bpy.data.images)
 
+        # Run custom scripts with triggers "Before Import".
+        run_custom_scripts("Before_Import")
+
         # Import the file.
         import_file_function(import_file_command, import_file_options, import_file)
 
@@ -3163,8 +3186,14 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         if set_transforms:
             set_transformations(set_transforms_filter, set_location, set_rotation, set_scale)
 
+        # Run custom scripts with triggers "Before Export".
+        run_custom_scripts("Before_Export")
+
         # Decide whether to export files or not based on auto_resize_files menu.
         determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+
+        # Run custom scripts with triggers "After Export".
+        run_custom_scripts("After_Export")
 
         # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
@@ -3422,6 +3451,9 @@ def batch_converter():
         # Enable addons
         enable_addons()
 
+        # Run custom scripts with triggers "Before Batch".
+        run_custom_scripts("Before_Batch")
+
         # Run converter in every subdirectory that contains a model of the specified file type.
         for subdir, dirs, files in os.walk(directory):
             for file in files:
@@ -3449,6 +3481,9 @@ def batch_converter():
             textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
             if Path(textures_temp_dir).exists():
                 delete_textures_temp(textures_temp_dir)
+
+        # Run custom scripts with triggers "After Batch".
+        run_custom_scripts("After_Batch")
 
         # Report conversion count to Converter_Report.json
         report_conversion_count(conversion_count)

@@ -32,6 +32,9 @@ import bpy
 from bpy.types import (
     Operator, 
 ) 
+from bpy.props import (
+    IntProperty,
+)
 import os
 import subprocess
 import shutil
@@ -51,31 +54,51 @@ from . import Functions
 #    ░░░░░░░    ░░░░░        ░░░░░░░░░░ ░░░░░   ░░░░░ ░░░░░   ░░░░░    ░░░░░       ░░░░░░░    ░░░░░   ░░░░░  ░░░░░░░░░  
 
 # Operator called when pressing the Batch Convert button.
-class TRANSMOGRIFY(Operator):
+class TRANSMOGRIFIER_OT_transmogrify(Operator):
     """Batch converts 3D files and associated textures into other formats"""
     bl_idname = "transmogrifier.transmogrify"
     bl_label = "Batch Convert"
     file_count = 0
 
-    # Stop converter if directory has not been selected or .blend file has not been saved.
+    # Stop batch converter if directory has not been selected or .blend file has not been saved.
     def check_directory_path(self, context, directory):
-        if directory != bpy.path.abspath(directory): # Then the blend file hasn't been saved
-            self.report({'ERROR'}, "Save .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
+        if directory != bpy.path.abspath(directory) and not bpy.data.is_saved: # Then the blend file hasn't been saved
+            self.report({'ERROR'}, f"Cannot find directory: {Path(directory)}\nSave .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
             return False
         directory = bpy.path.abspath(directory)  # Convert to absolute path
         if not Path(directory).is_dir() or directory == "":
-            self.report({'ERROR'}, (f"{Path(directory).name} directory doesn't exist"))
+            self.report({'ERROR'}, (f"Directory doesn't exist: {Path(directory)}"))
+            return False
+        return True
+
+    # Stop batch converter if script has not been selected or .blend file has not been saved.
+    def check_custom_script_path(self, context, filepath, name):
+        if filepath != bpy.path.abspath(filepath) and not bpy.data.is_saved and Path(filepath).suffix == ".py": # Then the blend file hasn't been saved
+            self.report({'ERROR'}, f"Cannot find Custom Script: {Path(filepath).name}\nSave .blend file somewhere before using a relative script path\n(or use an absolute script path instead)")
+            return False
+        filepath = bpy.path.abspath(filepath)  # Convert to absolute path
+        if Path(filepath).suffix == ".py" and (not Path(filepath).is_file() or filepath == ""):
+            self.report({'ERROR'}, (f"Custom Script doesn't exist: {Path(filepath).name}"))
+            return False
+        if Path(filepath).suffix != ".py":  # Make sure the selected file is a Python file.
+            self.report({'ERROR'}, (f"Custom Script is not a Python file: {Path(filepath).name}"))
             return False
         return True
 
 
     def execute(self, context):
-        settings = bpy.context.scene.TransmogrifierSettings
-
+        settings = bpy.context.scene.transmogrifier_settings
+        scripts = bpy.context.scene.transmogrifier_scripts
         base_dir = settings.directory
+
+        # Check directory and file paths.  Stop batch converter if they don't check-out.
         directory_checks_out = self.check_directory_path(context, settings.directory)
         if not directory_checks_out:
             return {'FINISHED'}
+        for index, custom_script in enumerate(scripts):
+            custom_script_checks_out = self.check_custom_script_path(context, custom_script.script_filepath, custom_script.script_name)
+            if not custom_script_checks_out:
+                return {'FINISHED'}
 
         # Create path to Converter.py
         converter_py = Path(__file__).parent.resolve() / "Converter.py"
@@ -107,10 +130,10 @@ class TRANSMOGRIFY(Operator):
 
 
     def export_selection(self, context, base_dir):
-        settings = bpy.context.scene.TransmogrifierSettings
+        settings = bpy.context.scene.transmogrifier_settings
 
-        # Create variables_dict dictionary from TransmogrifierSettings to pass to write_json function later.
-        variables_dict = Functions.get_transmogrifier_settings(self, context)
+        # Create variables_dict dictionary from transmogrifier_settings to pass to write_json function later.
+        variables_dict = Functions.get_transmogrifier_settings(self, context, True)
 
         # Create path to StartConverter.cmd
         start_converter_file = Path(__file__).parent.resolve() / "StartConverter.cmd"
@@ -520,9 +543,9 @@ class TRANSMOGRIFY(Operator):
 
 
 # Copy import/export/transmogrifier presets shipped with Transmogrifier to relevant Blender Preferences directory.
-class COPY_ASSETS(Operator):
+class TRANSMOGRIFIER_OT_copy_assets(Operator):
     """Copy example presets shipped with Transmogrifier to User Preferences"""
-    bl_idname = "copyassets.transmogrifier"
+    bl_idname = "transmogrifier.copy_assets"
     bl_label = "Copy Assets to Preferences"
 
     def execute(self, context):
@@ -553,10 +576,10 @@ class COPY_ASSETS(Operator):
         return {'FINISHED'}
 
 
-class ADD_TRANSMOGRIFIER_PRESET(Operator):
+class TRANSMOGRIFIER_OT_add_preset(Operator):
     """Creates a Transmogrifier preset from current settings"""
-    bl_idname = "transmogrifierpreset.add"
-    bl_label = "Add Preset"
+    bl_idname = "transmogrifier.add_preset"
+    bl_label = "Add Transmogrifier Preset"
 
     # Captured preset name from pop-up dialog window.
     preset_name: bpy.props.StringProperty(name="Name", default="")
@@ -570,10 +593,11 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
         json_file = transmogrifier_preset_dir / add_preset_name
 
         # Get current Transmogrifier settings.
-        variables_dict = Functions.get_transmogrifier_settings(self, context)
+        variables_dict = Functions.get_transmogrifier_settings(self, context, False)
 
         # Save new Transmogrifier operator preset as JSON file.
         Functions.write_json(variables_dict, json_file)
+        self.report({'INFO'}, f"Added Transmogrifier preset: {add_preset_name}")
         return {'FINISHED'}
     
     # Pop-up dialog window to capture new preset name.
@@ -582,14 +606,14 @@ class ADD_TRANSMOGRIFIER_PRESET(Operator):
         return wm.invoke_props_dialog(self, width=200)
     
 
-class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
+class TRANSMOGRIFIER_OT_remove_preset(Operator):
     """Removes currently selected Transmogrifier preset"""
-    bl_idname = "transmogrifierpreset.remove"
-    bl_label = "Remove Preset"
+    bl_idname = "transmogrifier.remove_preset"
+    bl_label = "Remove Transmogrifier Preset"
 
     def execute(self, context):
         # Get selected Transmogrifier operator preset.
-        settings = bpy.context.scene.TransmogrifierSettings
+        settings = bpy.context.scene.transmogrifier_settings
         remove_preset_name = settings.transmogrifier_preset_enum + ".json"
 
         # Set Transmogrifier operator preset directory and preset file to be removed.
@@ -609,6 +633,40 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
         return {'FINISHED'}
 
 
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
+class TRANSMOGRIFIER_OT_add_custom_script(Operator):
+    '''Add new custom script to UI'''
+
+    bl_idname = "transmogrifier.add_custom_script"
+    bl_label = "Add Script"
+    bl_description = "Add new custom script to UI"
+
+    def execute(self, context):
+        # Import Functions
+        Functions.add_customscript(self, context)
+        Functions.update_customscript_names(self, context)
+        return {'FINISHED'}
+
+
+class TRANSMOGRIFIER_OT_remove_custom_script(Operator):
+    '''Remove custom script from UI'''
+
+    bl_idname = "transmogrifier.remove_custom_script"
+    bl_label = "Remove Custom Script"
+    bl_description = "Remove custom script from UI"
+
+    custom_script_index: IntProperty(
+        name="Index to remove",
+        description="Index of the custom script to remove",
+        min=0, 
+    )   
+
+    def execute(self, context):
+        context.scene.transmogrifier_scripts.remove(self.custom_script_index)
+        Functions.update_customscript_names(self, context)
+        return {'FINISHED'}
+
+
 
 #  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
 # ░░███░░░░░███ ░░███░░░░░█  ███░░░░░███░░███  ███░░░░░███░█░░░███░░░█░░███░░░░░███ ░░███ ░░███ 
@@ -620,10 +678,12 @@ class REMOVE_TRANSMOGRIFIER_PRESET(Operator):
 # ░░░░░   ░░░░░ ░░░░░░░░░░   ░░░░░░░░░  ░░░░░  ░░░░░░░░░     ░░░░░    ░░░░░   ░░░░░    ░░░░░    
 
 classes = (
-    TRANSMOGRIFY,
-    COPY_ASSETS,
-    ADD_TRANSMOGRIFIER_PRESET,
-    REMOVE_TRANSMOGRIFIER_PRESET,
+    TRANSMOGRIFIER_OT_transmogrify,
+    TRANSMOGRIFIER_OT_copy_assets,
+    TRANSMOGRIFIER_OT_add_preset,
+    TRANSMOGRIFIER_OT_remove_preset,
+    TRANSMOGRIFIER_OT_add_custom_script,
+    TRANSMOGRIFIER_OT_remove_custom_script,
 )
 
 # Register Classes.
