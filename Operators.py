@@ -63,25 +63,25 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
     # Stop batch converter if directory has not been selected or .blend file has not been saved.
     def check_directory_path(self, context, directory):
         if directory != bpy.path.abspath(directory) and not bpy.data.is_saved: # Then the blend file hasn't been saved
-            self.report({'ERROR'}, "Save .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
+            self.report({'ERROR'}, f"Cannot find directory: {Path(directory)}\nSave .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
             return False
         directory = bpy.path.abspath(directory)  # Convert to absolute path
         if not Path(directory).is_dir() or directory == "":
-            self.report({'ERROR'}, (f"Directory doesn't exist: {Path(directory).name}"))
+            self.report({'ERROR'}, (f"Directory doesn't exist: {Path(directory)}"))
             return False
         return True
 
     # Stop batch converter if script has not been selected or .blend file has not been saved.
     def check_custom_script_path(self, context, filepath, name):
-        if filepath != bpy.path.abspath(filepath) and not bpy.data.is_saved: # Then the blend file hasn't been saved
-            self.report({'ERROR'}, "Save .blend file somewhere before using a relative script path\n(or use an absolute script path instead)")
+        if filepath != bpy.path.abspath(filepath) and not bpy.data.is_saved and Path(filepath).suffix == ".py": # Then the blend file hasn't been saved
+            self.report({'ERROR'}, f"Cannot find Custom Script: {Path(filepath).name}\nSave .blend file somewhere before using a relative script path\n(or use an absolute script path instead)")
             return False
         filepath = bpy.path.abspath(filepath)  # Convert to absolute path
-        if not Path(filepath).is_file() or filepath == "":
-            self.report({'ERROR'}, (f"{name} doesn't exist: {Path(filepath).name}"))
+        if Path(filepath).suffix == ".py" and (not Path(filepath).is_file() or filepath == ""):
+            self.report({'ERROR'}, (f"Custom Script doesn't exist: {Path(filepath).name}"))
             return False
         if Path(filepath).suffix != ".py":  # Make sure the selected file is a Python file.
-            self.report({'ERROR'}, (f"{name} is not a Python file: {Path(filepath).name}"))
+            self.report({'ERROR'}, (f"Custom Script is not a Python file: {Path(filepath).name}"))
             return False
         return True
 
@@ -133,7 +133,7 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         settings = bpy.context.scene.transmogrifier_settings
 
         # Create variables_dict dictionary from transmogrifier_settings to pass to write_json function later.
-        variables_dict = Functions.get_transmogrifier_settings(self, context)
+        variables_dict = Functions.get_transmogrifier_settings(self, context, True)
 
         # Create path to StartConverter.cmd
         start_converter_file = Path(__file__).parent.resolve() / "StartConverter.cmd"
@@ -593,7 +593,7 @@ class TRANSMOGRIFIER_OT_add_preset(Operator):
         json_file = transmogrifier_preset_dir / add_preset_name
 
         # Get current Transmogrifier settings.
-        variables_dict = Functions.get_transmogrifier_settings(self, context)
+        variables_dict = Functions.get_transmogrifier_settings(self, context, False)
 
         # Save new Transmogrifier operator preset as JSON file.
         Functions.write_json(variables_dict, json_file)

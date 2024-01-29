@@ -40,6 +40,7 @@ from bpy.props import (
     EnumProperty,
     StringProperty,
 )
+from pathlib import Path
 from . import bl_info
 from . import Functions
 
@@ -484,7 +485,31 @@ def draw_settings_scripts(self, context):
             custom_script_box = layout.box()
             col = custom_script_box.column()
             grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
-            grid.label(text=custom_script.script_name, icon='FILE_SCRIPT')
+
+            script_filepath = Path(bpy.path.abspath(custom_script.script_filepath))
+            
+            # Added a new custom script (default name is "*.py")
+            if script_filepath.suffix == ".py" and not script_filepath.is_file() and custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
+                script_icon = "FILE_SCRIPT"
+
+            # File is not a Python file.
+            elif script_filepath.suffix != ".py":
+                script_icon = "ERROR"
+
+            # File is a Python file but doesn't exist.
+            elif not script_filepath.is_file() and script_filepath.suffix == ".py":
+                script_icon = "ERROR"
+
+            # File is a Python file and might exist, but path is relative and current Blend session is unsaved.
+            elif script_filepath != Path(custom_script.script_filepath) and not bpy.data.is_saved:
+                script_icon = "ERROR"
+
+            # File is a Python file and exists.
+            elif script_filepath.is_file() and script_filepath.suffix == ".py":
+                script_icon = "FILE_SCRIPT"
+            
+            grid.label(text=custom_script.script_name, icon=script_icon)
+
             props = grid.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
             props.custom_script_index = index
             col.prop(custom_script, "script_filepath")  
