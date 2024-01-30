@@ -62,26 +62,33 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
     # Stop batch converter if directory has not been selected or .blend file has not been saved.
     def check_directory_path(self, context, directory):
-        if directory != bpy.path.abspath(directory) and not bpy.data.is_saved: # Then the blend file hasn't been saved
+        # Check if path is absolute and if blend file has been saved.
+        if Path(directory) != Path(bpy.path.abspath(directory)).resolve() and not bpy.data.is_saved:
             self.report({'ERROR'}, f"Cannot find directory: {Path(directory)}\nSave .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
             return False
-        directory = bpy.path.abspath(directory)  # Convert to absolute path
-        if not Path(directory).is_dir() or directory == "":
-            self.report({'ERROR'}, (f"Directory doesn't exist: {Path(directory)}"))
+        # Convert to absolute path.
+        directory = Path(bpy.path.abspath(directory)).resolve()
+        # Check if directory exists.
+        if not directory.is_dir():
+            self.report({'ERROR'}, (f"Directory doesn't exist: {directory}"))
             return False
         return True
 
     # Stop batch converter if script has not been selected or .blend file has not been saved.
     def check_custom_script_path(self, context, filepath, name):
-        if filepath != bpy.path.abspath(filepath) and not bpy.data.is_saved and Path(filepath).suffix == ".py": # Then the blend file hasn't been saved
+        # Check if file is a Python file.
+        if Path(filepath).suffix != ".py":
+            self.report({'ERROR'}, (f"Custom Script is not a Python file: {Path(filepath).name}"))
+            return False
+        # Check if path is absolute and if blend file has been saved.
+        if Path(filepath) != Path(bpy.path.abspath(filepath)).resolve() and not bpy.data.is_saved:
             self.report({'ERROR'}, f"Cannot find Custom Script: {Path(filepath).name}\nSave .blend file somewhere before using a relative script path\n(or use an absolute script path instead)")
             return False
-        filepath = bpy.path.abspath(filepath)  # Convert to absolute path
-        if Path(filepath).suffix == ".py" and (not Path(filepath).is_file() or filepath == ""):
-            self.report({'ERROR'}, (f"Custom Script doesn't exist: {Path(filepath).name}"))
-            return False
-        if Path(filepath).suffix != ".py":  # Make sure the selected file is a Python file.
-            self.report({'ERROR'}, (f"Custom Script is not a Python file: {Path(filepath).name}"))
+        # Convert to absolute path.
+        filepath = Path(bpy.path.abspath(filepath)).resolve()
+        # Check if Python file exists.
+        if filepath.suffix == ".py" and not filepath.is_file():
+            self.report({'ERROR'}, (f"Custom Script doesn't exist: {filepath.name}"))
             return False
         return True
 

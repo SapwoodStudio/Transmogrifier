@@ -489,7 +489,7 @@ def draw_settings_scripts(self, context):
             script_filepath = Path(bpy.path.abspath(custom_script.script_filepath))
             
             # Added a new custom script (default name is "*.py")
-            if script_filepath.suffix == ".py" and not script_filepath.is_file() and custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
+            if custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
                 script_icon = "FILE_SCRIPT"
 
             # File is not a Python file.

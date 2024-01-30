@@ -334,10 +334,10 @@ def add_customscript(self, context):
 # Update custom script names based on file names.
 def update_customscript_names(self, context):
     for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
-        script_filepath = Path(bpy.path.abspath(custom_script.script_filepath))
+        script_filepath = Path(bpy.path.abspath(custom_script.script_filepath)).resolve()
 
         # Added a new custom script (default name is "*.py")
-        if script_filepath.suffix == ".py" and not script_filepath.is_file() and custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
+        if custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
             custom_script.script_name = f"Script {index + 1}"
         
         # File is not a Python file.
