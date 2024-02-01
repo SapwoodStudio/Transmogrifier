@@ -30,6 +30,7 @@
 
 import bpy
 from pathlib import Path
+import glob
 import re
 import json
 
@@ -375,3 +376,26 @@ def read_json():
         json_object = json.load(openfile)
     
     return json_object
+
+
+# Traverse a given directory for a given file type and return a list of files.
+def get_files_in_directory_tree(directory, extension):
+    files = glob.glob(f"{directory}/**/*{extension}", recursive=True)
+
+    # Convert list items to pathlib Paths.
+    if files:
+        files = [Path(file) for file in files]
+
+    return files
+
+
+# Count how many files of a given type are in a given directory.
+def count_files_in_directory_tree(directory, extension):
+    files = get_files_in_directory_tree(directory, extension)
+
+    if not files:
+        file_count = 0
+        return file_count
+    
+    file_count = len(files)
+    return(file_count)
