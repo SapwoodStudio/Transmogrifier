@@ -425,7 +425,7 @@ def update_batch_convert_info_message(self, context):
 
     # Check if directory is absolute and if Blender session is saved.
     if (Path(import_directory) != Path(bpy.path.abspath(import_directory)).resolve() or import_directory == "") and not bpy.data.is_saved:
-        settings.batch_convert_info_message = f"0 {import_ext.upper()[1:]} files detected."
+        settings.batch_convert_info_message = f"0 {settings.import_file} files detected."
         return
 
     # Change path to absolute directory.
@@ -436,8 +436,8 @@ def update_batch_convert_info_message(self, context):
     # Check if there are models to import and export.
     if models_to_import and settings.model_quantity != "No Formats":
         if settings.model_quantity == "1 Format":
-            settings.batch_convert_info_message = f"{models_to_import} {import_ext.upper()[1:]} ⇒ {models_to_import} {settings.export_file_1}"
+            settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} ⇒ {models_to_import} {settings.export_file_1}"
         elif settings.model_quantity == "2 Formats":
-            settings.batch_convert_info_message = f"{models_to_import} {import_ext.upper()[1:]} ⇒ {models_to_import} {settings.export_file_1} + {models_to_import} {settings.export_file_2}"
+            settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} ⇒ {models_to_import} {settings.export_file_1} + {models_to_import} {settings.export_file_2}"
     elif not models_to_import:
-        settings.batch_convert_info_message = f"{models_to_import} {import_ext.upper()[1:]} files detected."
+        settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} files detected."

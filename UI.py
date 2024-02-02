@@ -81,9 +81,7 @@ def draw_settings_general(self, context):
     if settings.batch_convert_info_message != "":
         custom_script_box = self.layout.box()
         box = custom_script_box.column()
-        grid = box.grid_flow(row_major = True, columns = 2, even_columns = False)
-        grid.label(text=settings.batch_convert_info_message, icon="INFO")
-    
+        box.label(text=settings.batch_convert_info_message, icon="INFO")
 
     # UI settings
     # self.layout.separator()
