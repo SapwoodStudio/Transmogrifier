@@ -78,29 +78,12 @@ def draw_settings_general(self, context):
     row.scale_y = 1.5
 
     # Info box about how many items will be converted.
-    # Get import directory
-    import_directory = Path(bpy.path.abspath(settings.directory)).resolve()
-    # Get import extension, adjust for USD- and glTF-specific extensions
-    import_ext = f".{settings.import_file}".lower()
-    if settings.import_file == 'USD':
-        import_ext = settings.import_usd_extension
-    elif settings.import_file == 'glTF':
-        import_ext = settings.import_gltf_extension
-    # Count models that will be imported.
-    models_to_import = Functions.count_files_in_directory_tree(import_directory, import_ext)
-    # Reset import extension (for USD- and glTF-specific extensions)
-    import_ext = f".{settings.import_file}".lower()
-    # Draw UI
-    custom_script_box = self.layout.box()
-    box = custom_script_box.column()
-    grid = box.grid_flow(row_major = True, columns = 2, even_columns = False)
-    if models_to_import and settings.model_quantity != "No Formats":
-        if settings.model_quantity == "1 Format":
-            grid.label(text=f"{models_to_import} {import_ext.upper()[1:]} ⇒ {models_to_import} {settings.export_file_1}", icon="INFO")
-        elif settings.model_quantity == "2 Formats":
-            grid.label(text=f"{models_to_import} {import_ext.upper()[1:]} ⇒ {models_to_import} {settings.export_file_1} and {models_to_import} {settings.export_file_2}", icon="INFO")
-    elif not models_to_import:
-        grid.label(text=f"{models_to_import} {import_ext.upper()[1:]} files detected.", icon="INFO")
+    if settings.batch_convert_info_message != "":
+        custom_script_box = self.layout.box()
+        box = custom_script_box.column()
+        grid = box.grid_flow(row_major = True, columns = 2, even_columns = False)
+        grid.label(text=settings.batch_convert_info_message, icon="INFO")
+    
 
     # UI settings
     # self.layout.separator()
