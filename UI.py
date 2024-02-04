@@ -60,6 +60,7 @@ from . import Functions
 # Popover panel or Side Panel panel
 def draw_settings_general(self, context):
     settings = bpy.context.scene.transmogrifier_settings
+    imports = bpy.context.scene.transmogrifier_imports
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
 
@@ -103,37 +104,84 @@ def draw_settings_general(self, context):
     row.operator("transmogrifier.add_preset", text="", icon="ADD")
     row.operator("transmogrifier.remove_preset", text="", icon="REMOVE")
 
+
+
     # Import Settings
     self.layout.use_property_split = True
-    # self.layout.separator()
     col = self.layout.column(align=True)
-    col.label(text="Import:", icon='IMPORT')
-    # Directory input
-    col.prop(settings, 'directory')
-    col.prop(settings, 'import_file')
-    # self.layout.separator()
-    # col = self.layout.column()
+    col.label(text="Imports:", icon='IMPORT')
 
-    # col.label(text=settings.import_file + " Settings:")
-    if settings.import_file == 'DAE':
-        col.prop(settings, 'import_dae_preset_enum')
-    elif settings.import_file == 'ABC':
-        col.prop(settings, 'import_abc_preset_enum')
-    elif settings.import_file == 'USD':
-        col.prop(settings, 'import_usd_extension')
-        col.prop(settings, 'import_usd_preset_enum')
-    elif settings.import_file == 'OBJ':
-        col.prop(settings, 'import_obj_preset_enum')
-    elif settings.import_file == 'PLY':
-        col.prop(settings, 'import_ply_ascii')
-    elif settings.import_file == 'STL':
-        col.prop(settings, 'import_stl_ascii')
-    elif settings.import_file == 'FBX':
-        col.prop(settings, 'import_fbx_preset_enum')
-    elif settings.import_file == 'glTF':
-        col.prop(settings, 'import_gltf_extension')
-    elif settings.import_file == 'X3D':
-        col.prop(settings, 'import_x3d_preset_enum')
+    # Add import file
+    col = self.layout.column(align=True)
+    col.operator('transmogrifier.add_import', icon="ADD")
+
+    # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
+    for index, import_file in enumerate(context.scene.transmogrifier_imports):   
+        layout = self.layout
+        import_file_box = layout.box()
+        col = import_file_box.column()
+        grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
+        
+        grid.label(text=import_file.name, icon='IMPORT')
+
+        props = grid.operator('transmogrifier.remove_import', text = "", icon = 'PANEL_CLOSE')
+        props.index = index
+
+        if not settings.sync_import_directories:
+            col.prop(import_file, "directory")
+        col.prop(import_file, "format")
+        if import_file.format == 'DAE':
+            col.prop(import_file, 'import_dae_preset_enum')
+        elif import_file.format == 'ABC':
+            col.prop(import_file, 'import_abc_preset_enum')
+        elif import_file.format == 'USD':
+            col.prop(import_file, 'import_usd_extension')
+            col.prop(import_file, 'import_usd_preset_enum')
+        elif import_file.format == 'OBJ':
+            col.prop(import_file, 'import_obj_preset_enum')
+        elif import_file.format == 'PLY':
+            col.prop(import_file, 'import_ply_ascii')
+        elif import_file.format == 'STL':
+            col.prop(import_file, 'import_stl_ascii')
+        elif import_file.format == 'FBX':
+            col.prop(import_file, 'import_fbx_preset_enum')
+        elif import_file.format == 'glTF':
+            col.prop(import_file, 'import_gltf_extension')
+        elif import_file.format == 'X3D':
+            col.prop(import_file, 'import_x3d_preset_enum')
+        
+
+    col = self.layout.column(align=True)
+    col.prop(settings, 'sync_import_directories')
+    if settings.sync_import_directories:
+        col.prop(settings, 'import_directory')
+
+
+    # TO DELETE Original import file settings
+    # col = self.layout.column(align=True)
+    # col.prop(settings, 'import_file')
+
+    # if settings.import_file == 'DAE':
+    #     col.prop(settings, 'import_dae_preset_enum')
+    # elif settings.import_file == 'ABC':
+    #     col.prop(settings, 'import_abc_preset_enum')
+    # elif settings.import_file == 'USD':
+    #     col.prop(settings, 'import_usd_extension')
+    #     col.prop(settings, 'import_usd_preset_enum')
+    # elif settings.import_file == 'OBJ':
+    #     col.prop(settings, 'import_obj_preset_enum')
+    # elif settings.import_file == 'PLY':
+    #     col.prop(settings, 'import_ply_ascii')
+    # elif settings.import_file == 'STL':
+    #     col.prop(settings, 'import_stl_ascii')
+    # elif settings.import_file == 'FBX':
+    #     col.prop(settings, 'import_fbx_preset_enum')
+    # elif settings.import_file == 'glTF':
+    #     col.prop(settings, 'import_gltf_extension')
+    # elif settings.import_file == 'X3D':
+    #     col.prop(settings, 'import_x3d_preset_enum')
+
+
 
     # Export Settings
     col = self.layout.column(align=True)

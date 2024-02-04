@@ -641,6 +641,38 @@ class TRANSMOGRIFIER_OT_remove_preset(Operator):
 
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
+class TRANSMOGRIFIER_OT_add_import(Operator):
+    '''Add new import to UI'''
+
+    bl_idname = "transmogrifier.add_import"
+    bl_label = "Add Import"
+    bl_description = "Add new import to UI"
+
+    def execute(self, context):
+        new_import = context.scene.transmogrifier_imports.add()
+        new_import.name = new_import.format
+        return {'FINISHED'}
+
+
+class TRANSMOGRIFIER_OT_remove_import(Operator):
+    '''Remove import from UI'''
+
+    bl_idname = "transmogrifier.remove_import"
+    bl_label = "Remove import file"
+    bl_description = "Remove import from UI"
+
+    index: IntProperty(
+        name="Index to remove",
+        description="Index of the import to remove",
+        min=0, 
+    )   
+
+    def execute(self, context):
+        context.scene.transmogrifier_imports.remove(self.index)
+        return {'FINISHED'}
+
+
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
 class TRANSMOGRIFIER_OT_add_custom_script(Operator):
     '''Add new custom script to UI'''
 
@@ -675,6 +707,7 @@ class TRANSMOGRIFIER_OT_remove_custom_script(Operator):
 
 
 
+
 #  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
 # ░░███░░░░░███ ░░███░░░░░█  ███░░░░░███░░███  ███░░░░░███░█░░░███░░░█░░███░░░░░███ ░░███ ░░███ 
 #  ░███    ░███  ░███  █ ░  ███     ░░░  ░███ ░███    ░░░ ░   ░███  ░  ░███    ░███  ░░███ ███  
@@ -689,6 +722,8 @@ classes = (
     TRANSMOGRIFIER_OT_copy_assets,
     TRANSMOGRIFIER_OT_add_preset,
     TRANSMOGRIFIER_OT_remove_preset,
+    TRANSMOGRIFIER_OT_add_import, 
+    TRANSMOGRIFIER_OT_remove_import,
     TRANSMOGRIFIER_OT_add_custom_script,
     TRANSMOGRIFIER_OT_remove_custom_script,
 )

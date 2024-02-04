@@ -326,6 +326,18 @@ def get_transmogrifier_settings(self, context, use_absolute_paths):
     return variables_dict
 
 
+# Update import file names based on file formats.
+def update_import_names(self, context):
+    for index, import_file in enumerate(context.scene.transmogrifier_imports):
+        import_file.name = import_file.format
+
+
+def update_import_directories(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    for index, import_file in enumerate(context.scene.transmogrifier_imports):
+        import_file.directory = settings.import_directory
+
+
 # Add a custom script.
 def add_customscript(self, context):
     new_custom_script = context.scene.transmogrifier_scripts.add()
@@ -403,7 +415,7 @@ def count_files_in_directory_tree(self, context, directory, extension):
 
 def get_import_ext(self, context, settings):
     # Get import directory
-    import_directory = settings.directory
+    import_directory = settings.import_directory
 
     # Get import extension
     import_ext = f".{settings.import_file}".lower()
@@ -420,7 +432,7 @@ def get_import_ext(self, context, settings):
 def update_batch_convert_info_message(self, context):
     # Get variables.
     settings = bpy.context.scene.transmogrifier_settings
-    import_directory = settings.directory
+    import_directory = settings.import_directory
     import_ext = get_import_ext(self, context, settings)
 
     # Check if directory is absolute and if Blender session is saved.

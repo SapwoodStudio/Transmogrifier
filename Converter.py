@@ -3456,7 +3456,7 @@ def batch_converter():
         run_custom_scripts("Before_Batch")
 
         # Run converter in every subdirectory that contains a model of the specified file type.
-        for subdir, dirs, files in os.walk(directory):
+        for subdir, dirs, files in os.walk(import_directory):
             for file in files:
                 item = Path(file).stem
                 file = Path(subdir, file.lower())
