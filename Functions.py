@@ -329,13 +329,57 @@ def get_transmogrifier_settings(self, context, use_absolute_paths):
 # Update import file names based on file formats.
 def update_import_names(self, context):
     for index, import_file in enumerate(context.scene.transmogrifier_imports):
-        import_file.name = import_file.format
+        import_file.name = import_file.extension.upper()[1:]
 
 
+# Synchronize import directories with master directory.
 def update_import_directories(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     for index, import_file in enumerate(context.scene.transmogrifier_imports):
         import_file.directory = settings.import_directory
+
+
+# Dictionary of import/export file extensions.  glTF and USD get updated with additional extensions when User selects those formats.
+format_extension_enum_items_refs = {
+    "DAE": [(".dae", ".dae", "", 0)],
+    "ABC": [(".abc", ".abc", "", 0)],
+    "USD": [(".usd", ".usd", "", 0)],
+    "OBJ": [(".obj", ".obj", "", 0)],
+    "PLY": [(".ply", ".ply", "", 0)],
+    "STL": [(".stl", ".stl", "", 0)],
+    "FBX": [(".fbx", ".fbx", "", 0)],
+    "glTF": [(".gltf", ".gltf", "", 0)],
+    "X3D": [(".x3d", ".x3d", "", 0)],
+    "BLEND": [(".blend", ".blend", "", 0)],
+}
+
+
+# Get file extension(s) for a given format.
+def get_format_extensions(format):
+    # Convert format to extension.
+    extensions = [(f".{format.lower()}", f".{format.lower()}", "", 0)]
+
+    # USD extensions.
+    if format == "USD":
+        extensions = [
+            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 0),
+            (".usdc", "Binary Crate (default) (.usdc)", "Binary, fast, hard to edit", 1),
+            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 2),
+            (".usd", "Plain (.usd)", "Can be either binary or ASCII\nIn Blender this imports to binary", 3),
+        ]
+
+    # glTF extensions.
+    elif format == "glTF":
+        extensions = [
+            (".glb", "glTF Binary (.glb)", "", 0),
+            (".gltf", "glTF Embedded or Separate (.gltf)", "", 1),
+        ]
+
+    # Replace dictionary entry for given format with updated extension(s).
+    format_extension_enum_items_refs[format] = extensions
+
+    # Return list of extension items.
+    return extensions
 
 
 # Add a custom script.

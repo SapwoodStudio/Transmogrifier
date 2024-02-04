@@ -75,14 +75,14 @@ def draw_settings_general(self, context):
     # Batch Convert button
     row = self.layout.row()
     row = row.row(align=True)
-    row.operator('transmogrifier.transmogrify', icon='FILE_CACHE')
+    row.operator('transmogrifier.transmogrify', icon='PLAY')
     row.scale_y = 1.5
 
     # Info box about how many items will be converted.
     if settings.batch_convert_info_message != "":
         custom_script_box = self.layout.box()
         box = custom_script_box.column()
-        box.label(text=settings.batch_convert_info_message, icon="INFO")
+        box.label(text=settings.batch_convert_info_message, icon="FILE_CACHE")
 
     # UI settings
     # self.layout.separator()
@@ -129,23 +129,21 @@ def draw_settings_general(self, context):
         props = grid.operator('transmogrifier.remove_import', text = "", icon = 'PANEL_CLOSE')
         props.index = index
 
-        # Directory
-        if not settings.sync_import_directories:
-            col.prop(import_file, "directory")
-
         # Format
         col.prop(import_file, "format")
 
         # Extension options for USD and glTF formats.
-        if import_file.format == 'USD':
-            col.prop(import_file, 'import_usd_extension') 
-        if import_file.format == 'glTF':
-            col.prop(import_file, 'import_gltf_extension')
+        if import_file.format == 'USD' or import_file.format == "glTF":
+            col.prop(import_file, 'extension') 
 
         # Preset
         if import_file.format in import_file.preset_dict:
             col.prop(import_file, "preset_enum")
-        
+
+        # Directory
+        if not settings.sync_import_directories:
+            col.prop(import_file, "directory")
+
     # Directory Sync
     col = self.layout.column(align=True)
     col.prop(settings, 'sync_import_directories')

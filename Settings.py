@@ -90,7 +90,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=Functions.update_batch_convert_info_message,
+        update=Functions.update_import_directories,
     )
     import_file: EnumProperty(
         name="Format",
@@ -1017,40 +1017,11 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             'Objects',
         },
     )
-    
-
-# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
-class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
-    script_name: StringProperty(
-        name="Name", 
-        default="Script",
-    )
-
-    script_filepath: StringProperty(
-        name="File Path",
-        description="Path to a Python script file",
-        default="*.py",
-        subtype='FILE_PATH',
-        update=Functions.update_customscript_names,
-    )
-
-    script_trigger: EnumProperty(
-        name="Trigger",
-        description="Set when custom script should be triggered",
-        items=[
-            ("Before_Batch", "Before Batch", "Run script before the batch conversion begins.", 1),
-            ("Before_Import", "Before Import", "Run script immediately before importing a model.", 2),
-            ("Before_Export", "Before Export", "Run script immediately before exporting a model.", 3),
-            ("After_Export", "After Export", "Run script immediately after exporting a model.", 4),
-            ("After_Batch", "After Batch", "Run script after the batch conversion ends.", 5),
-        ],
-        default="Before_Export",
-    )
 
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
 class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
-    
+
     name: StringProperty(
         name="Name", 
         default="FBX",
@@ -1083,7 +1054,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
         update=Functions.update_import_names,
     )
 
-    # Presets: A string property for saving User option (without new presets changing User choice), and enum property for choosing
+    # A string property for saving User option (without new presets changing User choice), and enum property for choosing.
     preset: StringProperty(
         name="Preset",
         default='NO_PRESET',
@@ -1096,54 +1067,55 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
         "OBJ": "wm.obj_import",
         "FBX": "import_scene.fbx",
         "X3D": "import_scene.x3d",
+        # "PLY": "wm.ply_import"  # Add this when it comes out of experimental and the current importer (import_mesh.ply) becomes legacy.
     }
 
     preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
+        name="Preset", 
+        options={'SKIP_SAVE'},
         description="Use import settings from a preset.\n(Create in the import settings from the File > Import menu",
         items=lambda self, context: Functions.get_operator_presets(self.preset_dict[self.format]),
         get=lambda self: Functions.get_preset_index(self.preset_dict[self.format], self.preset),
         set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[self.preset_dict[self.format]][value][0]),
     )
 
-    extension: StringProperty(
-        name="Extension",
-        default='NO_PRESET',
+    extension: EnumProperty(
+        name="Extension", 
+        options={'SKIP_SAVE'},
+        description="Format extension",
+        items=lambda self, context: Functions.get_format_extensions(self.format),
+        update=Functions.update_import_names,
     )
 
 
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
+class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
+    
+    script_name: StringProperty(
+        name="Name", 
+        default="Script",
+    )
 
+    script_filepath: StringProperty(
+        name="File Path",
+        description="Path to a Python script file",
+        default="*.py",
+        subtype='FILE_PATH',
+        update=Functions.update_customscript_names,
+    )
 
-    # Make extension dictionary and EnumProperty and have it work similar to preset_enum above
-
-
-
-
-
-    import_usd_extension: EnumProperty(
-        name="Extension",
-        description="Which type of USD to import",
+    script_trigger: EnumProperty(
+        name="Trigger",
+        description="Set when custom script should be triggered",
         items=[
-            (".usd", "Plain (.usd)",
-             "Can be either binary or ASCII\nIn Blender this imports to binary", 1),
-            (".usdc", "Binary Crate (default) (.usdc)",
-             "Binary, fast, hard to edit", 2),
-            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
-            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
+            ("Before_Batch", "Before Batch", "Run script before the batch conversion begins.", 1),
+            ("Before_Import", "Before Import", "Run script immediately before importing a model.", 2),
+            ("Before_Export", "Before Export", "Run script immediately before exporting a model.", 3),
+            ("After_Export", "After Export", "Run script immediately after exporting a model.", 4),
+            ("After_Batch", "After Batch", "Run script after the batch conversion ends.", 5),
         ],
-        default=".usdz",
+        default="Before_Export",
     )
-    import_gltf_extension: EnumProperty(
-        name="Extension",
-        description="Which type of glTF to import",
-        items=[
-            (".glb", "glTF Binary (.glb)", "", 1),
-            (".gltf", "glTF Embedded or Separate (.gltf)", "", 2),
-        ],
-        default=".glb",
-    )
-    ply_ascii: BoolProperty(name="ASCII Format", default=False)
-    stl_ascii: BoolProperty(name="ASCII Format", default=False)
 
 
 
@@ -1158,8 +1130,8 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
 
 classes = (
     TRANSMOGRIFIER_PG_TransmogrifierSettings,
+    TRANSMOGRIFIER_PG_TransmogrifierImports,
     TRANSMOGRIFIER_PG_TransmogrifierScripts,
-    TRANSMOGRIFIER_PG_TransmogrifierImports
 )
 
 # Register Classes.
@@ -1169,8 +1141,8 @@ def register():
 
     # Add settings to Scene type.
     bpy.types.Scene.transmogrifier_settings = PointerProperty(type=TRANSMOGRIFIER_PG_TransmogrifierSettings)
-    bpy.types.Scene.transmogrifier_scripts = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierScripts)
     bpy.types.Scene.transmogrifier_imports = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierImports)
+    bpy.types.Scene.transmogrifier_scripts = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierScripts)
     
 
 # Unregister Classes.
@@ -1179,5 +1151,5 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     # Delete the settings from Scene type (Doesn't actually remove existing ones from scenes).
-    del bpy.types.Scene.transmogrifier_settings
     del bpy.types.Scene.transmogrifier_imports
+    del bpy.types.Scene.transmogrifier_settings
