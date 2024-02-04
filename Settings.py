@@ -122,7 +122,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
         ],
         default=".usdz",
-        update=Functions.update_batch_convert_info_message,
     )
     import_gltf_extension: EnumProperty(
         name="Extension",
@@ -132,7 +131,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             (".gltf", "glTF Embedded or Separate (.gltf)", "", 2),
         ],
         default=".glb",
-        update=Functions.update_batch_convert_info_message,
     )
     ply_ascii: BoolProperty(name="ASCII Format", default=False)
     stl_ascii: BoolProperty(name="ASCII Format", default=False)
@@ -274,7 +272,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
         ],
         default=".usdz",
-        update=Functions.update_batch_convert_info_message,
     )
     ply_ascii: BoolProperty(name="ASCII Format", default=False)
     stl_ascii: BoolProperty(name="ASCII Format", default=False)

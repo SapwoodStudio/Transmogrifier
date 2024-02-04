@@ -44,7 +44,6 @@ from bpy.app.handlers import persistent
 from itertools import chain
 import time
 import numpy as np
-from . import Functions
 
 
 
@@ -3455,9 +3454,6 @@ def batch_converter():
 
         # Run custom scripts with triggers "Before Batch".
         run_custom_scripts("Before_Batch")
-
-        # Get a list of models to import.
-        models_to_import = Functions.get_files_in_directory_tree(directory, import_file_ext)
 
         # Run converter in every subdirectory that contains a model of the specified file type.
         for subdir, dirs, files in os.walk(directory):
