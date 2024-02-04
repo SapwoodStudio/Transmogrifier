@@ -84,6 +84,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
+        update=Functions.update_batch_convert_info_message,
     )
     import_file: EnumProperty(
         name="Format",
@@ -101,6 +102,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10)
         ],
         default="FBX",
+        update=Functions.update_batch_convert_info_message,
+    )
+    # Batch Convert Info Message
+    batch_convert_info_message: StringProperty(
+        name="Batch Convert Info Message",
+        default="",
     )
     # Import Format specific options:
     import_usd_extension: EnumProperty(
@@ -123,7 +130,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             (".glb", "glTF Binary (.glb)", "", 1),
             (".gltf", "glTF Embedded or Separate (.gltf)", "", 2),
         ],
-        default=".glb"
+        default=".glb",
     )
     ply_ascii: BoolProperty(name="ASCII Format", default=False)
     stl_ascii: BoolProperty(name="ASCII Format", default=False)
@@ -214,6 +221,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="glTF",
+        update=Functions.update_batch_convert_info_message,
     )
     # File 1 scale.
     export_file_1_scale: FloatProperty(
@@ -241,6 +249,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="USD",
+        update=Functions.update_batch_convert_info_message,
     )
     # File 2 scale.
     export_file_2_scale: FloatProperty(
@@ -387,6 +396,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
         ],
         default="1 Format",
+        update=Functions.update_batch_convert_info_message,
     )
     prefix: StringProperty(
         name="Prefix",

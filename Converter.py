@@ -32,6 +32,7 @@
 
 import bpy
 import os
+import glob
 import datetime
 import sys
 import shutil

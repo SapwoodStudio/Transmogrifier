@@ -77,6 +77,12 @@ def draw_settings_general(self, context):
     row.operator('transmogrifier.transmogrify', icon='FILE_CACHE')
     row.scale_y = 1.5
 
+    # Info box about how many items will be converted.
+    if settings.batch_convert_info_message != "":
+        custom_script_box = self.layout.box()
+        box = custom_script_box.column()
+        box.label(text=settings.batch_convert_info_message, icon="INFO")
+
     # UI settings
     # self.layout.separator()
     col = self.layout.column(align=True)
@@ -128,8 +134,6 @@ def draw_settings_general(self, context):
         col.prop(settings, 'import_gltf_extension')
     elif settings.import_file == 'X3D':
         col.prop(settings, 'import_x3d_preset_enum')
-
-
 
     # Export Settings
     col = self.layout.column(align=True)
