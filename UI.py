@@ -137,7 +137,7 @@ def draw_settings_general(self, context):
             col.prop(import_file, 'extension') 
 
         # Preset
-        if import_file.format in import_file.preset_dict:
+        if Functions.import_preset_dict[import_file.format] != "NO_OPERATOR":
             col.prop(import_file, "preset_enum")
 
         # Directory

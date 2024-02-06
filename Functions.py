@@ -99,7 +99,15 @@ def refresh_ui(self, context):
 # Blender's doc warns that not keeping reference to enum props array can
 # cause crashs and weird issues.
 # Also useful for the get_preset_index function.
-preset_enum_items_refs = {}
+preset_enum_items_refs = {
+    "wm.collada_import": [],
+    "wm.alembic_import": [], 
+    "wm.usd_import": [],
+    "wm.obj_import": [],
+    "import_scene.fbx": [],
+    "import_scene.x3d": [],
+    "NO_OPERATOR": [],
+}
 
 # Returns a list of tuples used for an EnumProperty's items (identifier, name, description)
 # identifier, and name are the file name of the preset without the file extension (.py)
@@ -326,10 +334,53 @@ def get_transmogrifier_settings(self, context, use_absolute_paths):
     return variables_dict
 
 
-# Update import file names based on file formats.
-def update_import_names(self, context):
+# Import format dictionary containing [operator preset directory name, operator, options dictionary].
+import_dict = {
+    "DAE": ["wm.collada_import", "bpy.ops.wm.collada_import(**", {}],
+    "ABC": ["wm.alembic_import", "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **", {}], 
+    "USD": ["wm.usd_import", "bpy.ops.wm.usd_import(**", {}],
+    "OBJ": ["wm.obj_import", "bpy.ops.wm.obj_import(**", {}],
+    "PLY": ["NO_OPERATOR", "bpy.ops.import_mesh.ply(**", {}], 
+    "STL": ["NO_OPERATOR", "bpy.ops.import_mesh.stl(**", {}],
+    "FBX": ["import_scene.fbx", "bpy.ops.import_scene.fbx(**", {}],
+    "glTF": ["NO_OPERATOR", "bpy.ops.import_scene.gltf(**", {}],
+    "X3D": ["import_scene.x3d", "bpy.ops.import_scene.x3d(**", {}],
+    "BLEND": ["NO_OPERATOR", "bpy.ops.wm.append(**", {
+        "filepath": "",
+        "directory": "\\Object\\",
+        "autoselect": True,
+        "active_collection": True,
+        "instance_collections": False,
+        "instance_object_data": True,
+        "set_fake": False,
+        "use_recursive": True,
+    }],
+}
+
+# Get operator options for a given preset for a given format.
+def get_operator_options(format, preset):
+    options = import_dict[format][2]
+    if import_dict[format][0] == "NO_OPERATOR":
+        return options
+    
+    options = load_operator_preset(import_dict[format][0], preset)
+    return options
+
+# Update import file names and operators based on file formats.
+def update_import_settings(self, context):
     for index, import_file in enumerate(context.scene.transmogrifier_imports):
+        # Update box name from import extension.
         import_file.name = import_file.extension.upper()[1:]
+        
+        # Update import preset from current preset_enum.
+        import_file.preset = import_file.preset_enum
+
+        # Update import operator and options
+        format = import_file.format
+        preset = import_file.preset
+        import_file.operator = f"{import_dict[format][1]}"
+        import_file.options = str(get_operator_options(format, preset))
+
 
 
 # Synchronize import directories with master directory.
@@ -352,7 +403,6 @@ format_extension_enum_items_refs = {
     "X3D": [(".x3d", ".x3d", "", 0)],
     "BLEND": [(".blend", ".blend", "", 0)],
 }
-
 
 # Get file extension(s) for a given format.
 def get_format_extensions(format):

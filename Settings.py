@@ -1051,32 +1051,24 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10)
         ],
         default="FBX",
-        update=Functions.update_import_names,
+        update=Functions.update_import_settings,
     )
 
-    # A string property for saving User option (without new presets changing User choice), and enum property for choosing.
+    # A string property for saving User option (without new presets changing User choice),...
     preset: StringProperty(
         name="Preset",
         default='NO_PRESET',
     )
 
-    preset_dict = {
-        "DAE": "wm.collada_import",
-        "ABC": "wm.alembic_import", 
-        "USD": "wm.usd_import",
-        "OBJ": "wm.obj_import",
-        "FBX": "import_scene.fbx",
-        "X3D": "import_scene.x3d",
-        # "PLY": "wm.ply_import"  # Add this when it comes out of experimental and the current importer (import_mesh.ply) becomes legacy.
-    }
-
+    # ... and enum property for choosing.
     preset_enum: EnumProperty(
         name="Preset", 
         options={'SKIP_SAVE'},
         description="Use import settings from a preset.\n(Create in the import settings from the File > Import menu",
-        items=lambda self, context: Functions.get_operator_presets(self.preset_dict[self.format]),
-        get=lambda self: Functions.get_preset_index(self.preset_dict[self.format], self.preset),
-        set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[self.preset_dict[self.format]][value][0]),
+        items=lambda self, context: Functions.get_operator_presets(Functions.import_dict[self.format][0]),
+        get=lambda self: Functions.get_preset_index(Functions.import_dict[self.format][0], self.preset),
+        set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[Functions.import_dict[self.format][0]][value][0]),
+        update=Functions.update_import_settings,
     )
 
     extension: EnumProperty(
@@ -1084,7 +1076,19 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
         options={'SKIP_SAVE'},
         description="Format extension",
         items=lambda self, context: Functions.get_format_extensions(self.format),
-        update=Functions.update_import_names,
+        update=Functions.update_import_settings,
+    )
+
+    operator: StringProperty(
+        name="Operator",
+        description="Import operator string",
+        default="bpy.ops.import_scene.fbx(**",
+    )
+
+    options: StringProperty(
+        name="Options",
+        description="Dictionary of import operator options from preset",
+        default="{}",
     )
 
 
