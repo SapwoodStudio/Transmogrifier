@@ -507,34 +507,34 @@ def draw_settings_scripts(self, context):
             col = custom_script_box.column()
             grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
 
-            script_filepath = Path(bpy.path.abspath(custom_script.script_filepath))
+            file = Path(bpy.path.abspath(custom_script.file))
             
             # Added a new custom script (default name is "*.py")
-            if custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
-                script_icon = "FILE_SCRIPT"
+            if custom_script.file == "*.py"  and file.name == "*.py":
+                icon = "FILE_SCRIPT"
 
             # File is not a Python file.
-            elif script_filepath.suffix != ".py":
-                script_icon = "ERROR"
+            elif file.suffix != ".py":
+                icon = "ERROR"
 
             # File is a Python file but doesn't exist.
-            elif not script_filepath.is_file() and script_filepath.suffix == ".py":
-                script_icon = "ERROR"
+            elif not file.is_file() and file.suffix == ".py":
+                icon = "ERROR"
 
             # File is a Python file and might exist, but path is relative and current Blend session is unsaved.
-            elif script_filepath != Path(custom_script.script_filepath) and not bpy.data.is_saved:
-                script_icon = "ERROR"
+            elif file != Path(custom_script.file) and not bpy.data.is_saved:
+                icon = "ERROR"
 
             # File is a Python file and exists.
-            elif script_filepath.is_file() and script_filepath.suffix == ".py":
-                script_icon = "FILE_SCRIPT"
+            elif file.is_file() and file.suffix == ".py":
+                icon = "FILE_SCRIPT"
             
-            grid.label(text=custom_script.script_name, icon=script_icon)
+            grid.label(text=custom_script.name, icon=icon)
 
             props = grid.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
             props.custom_script_index = index
-            col.prop(custom_script, "script_filepath")  
-            col.prop(custom_script, "script_trigger")
+            col.prop(custom_script, "file")  
+            col.prop(custom_script, "trigger")
     
     elif settings.ui_toggle == "Simple":
         col.label(text="(Toggle 'Advanced' UI to view settings)")

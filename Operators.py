@@ -96,14 +96,14 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
     def execute(self, context):
         settings = bpy.context.scene.transmogrifier_settings
         scripts = bpy.context.scene.transmogrifier_scripts
-        base_dir = settings.directory
+        base_dir = settings.import_directory
 
         # Check directory and file paths.  Stop batch converter if they don't check-out.
-        directory_checks_out = self.check_directory_path(context, settings.directory)
+        directory_checks_out = self.check_directory_path(context, settings.import_directory)
         if not directory_checks_out:
             return {'FINISHED'}
         for index, custom_script in enumerate(scripts):
-            custom_script_checks_out = self.check_custom_script_path(context, custom_script.script_filepath, custom_script.script_name)
+            custom_script_checks_out = self.check_custom_script_path(context, custom_script.file, custom_script.name)
             if not custom_script_checks_out:
                 return {'FINISHED'}
 
@@ -139,8 +139,8 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
     def export_selection(self, context, base_dir):
         settings = bpy.context.scene.transmogrifier_settings
 
-        # Create variables_dict dictionary from transmogrifier_settings to pass to write_json function later.
-        variables_dict = Functions.get_transmogrifier_settings(self, context, True)
+        # Create settings_dict dictionary from transmogrifier_settings to pass to write_json function later.
+        settings_dict = Functions.get_settings_dict(self, context, True)
 
         # Create path to StartConverter.cmd
         start_converter_file = Path(__file__).parent.resolve() / "StartConverter.cmd"
@@ -171,89 +171,89 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
             index += 1
             
 
-        # Determine options and import command for Import File Format
+        # # Determine options and import command for Import File Format
 
-        if settings.import_file == "DAE":
-            options = Functions.load_operator_preset(
-                'wm.collada_import', settings.import_dae_preset)
-            #bpy.ops.wm.collada_import(**options)
-            import_file_command = "bpy.ops.wm.collada_import(**"
+        # if settings.import_file == "DAE":
+        #     options = Functions.load_operator_preset(
+        #         'wm.collada_import', settings.import_dae_preset)
+        #     #bpy.ops.wm.collada_import(**options)
+        #     import_file_command = "bpy.ops.wm.collada_import(**"
             
-        elif settings.import_file == "ABC":
-            options = Functions.load_operator_preset(
-                'wm.alembic_import', settings.import_abc_preset)
-            # By default, alembic_export operator runs in the background, this messes up batch
-            # export though. alembic_export has an "as_background_job" arg that can be set to
-            # false to disable it, but its marked deprecated, saying that if you EXECUTE the
-            # operator rather than INVOKE it it runs in the foreground. Here I change the
-            # execution context to EXEC_REGION_WIN.
-            # docs.blender.org/api/current/bpy.ops.html?highlight=exec_default#execution-context
-            #bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **options)
-            import_file_command = "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **"
+        # elif settings.import_file == "ABC":
+        #     options = Functions.load_operator_preset(
+        #         'wm.alembic_import', settings.import_abc_preset)
+        #     # By default, alembic_export operator runs in the background, this messes up batch
+        #     # export though. alembic_export has an "as_background_job" arg that can be set to
+        #     # false to disable it, but its marked deprecated, saying that if you EXECUTE the
+        #     # operator rather than INVOKE it it runs in the foreground. Here I change the
+        #     # execution context to EXEC_REGION_WIN.
+        #     # docs.blender.org/api/current/bpy.ops.html?highlight=exec_default#execution-context
+        #     #bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **options)
+        #     import_file_command = "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **"
 
-        elif settings.import_file == "USD":
-            options = Functions.load_operator_preset(
-                'wm.usd_import', settings.import_usd_preset)
-            import_file_command = "bpy.ops.wm.usd_import(**"
+        # elif settings.import_file == "USD":
+        #     options = Functions.load_operator_preset(
+        #         'wm.usd_import', settings.import_usd_preset)
+        #     import_file_command = "bpy.ops.wm.usd_import(**"
 
-        elif settings.import_file == "OBJ":
-            options = Functions.load_operator_preset(
-                'wm.obj_import', settings.import_obj_preset)
-            import_file_command = "bpy.ops.wm.obj_import(**"
+        # elif settings.import_file == "OBJ":
+        #     options = Functions.load_operator_preset(
+        #         'wm.obj_import', settings.import_obj_preset)
+        #     import_file_command = "bpy.ops.wm.obj_import(**"
             
-        elif settings.import_file == "PLY":
-            options = {
-                'filepath': '',
-            }
-            import_file_command = "bpy.ops.import_mesh.ply(**"
+        # elif settings.import_file == "PLY":
+        #     options = {
+        #         'filepath': '',
+        #     }
+        #     import_file_command = "bpy.ops.import_mesh.ply(**"
             
-        elif settings.import_file == "STL":
-            options = {
-                'filepath': '',
-            }
-            import_file_command = "bpy.ops.import_mesh.stl(**"
+        # elif settings.import_file == "STL":
+        #     options = {
+        #         'filepath': '',
+        #     }
+        #     import_file_command = "bpy.ops.import_mesh.stl(**"
 
-        elif settings.import_file == "FBX":
-            options = Functions.load_operator_preset(
-                'import_scene.fbx', settings.import_fbx_preset)
-            import_file_command = "bpy.ops.import_scene.fbx(**"
+        # elif settings.import_file == "FBX":
+        #     options = Functions.load_operator_preset(
+        #         'import_scene.fbx', settings.import_fbx_preset)
+        #     import_file_command = "bpy.ops.import_scene.fbx(**"
 
-        elif settings.import_file == "glTF":
-            options = {
-                'filepath': '',
-            }
-            import_file_command = "bpy.ops.import_scene.gltf(**"
+        # elif settings.import_file == "glTF":
+        #     options = {
+        #         'filepath': '',
+        #     }
+        #     import_file_command = "bpy.ops.import_scene.gltf(**"
 
-        elif settings.import_file == "X3D":
-            options = Functions.load_operator_preset(
-                'import_scene.x3d', settings.import_x3d_preset)
-            import_file_command = "bpy.ops.import_scene.x3d(**"
+        # elif settings.import_file == "X3D":
+        #     options = Functions.load_operator_preset(
+        #         'import_scene.x3d', settings.import_x3d_preset)
+        #     import_file_command = "bpy.ops.import_scene.x3d(**"
 
-        elif settings.import_file == "BLEND":
-            options = {
-                "filepath": "",
-                "directory": "\\Object\\",
-                "autoselect": True,
-                "active_collection": True,
-                "instance_collections": False,
-                "instance_object_data": True,
-                "set_fake": False,
-                "use_recursive": True
-            }
-            import_file_command = "bpy.ops.wm.append(**"
+        # elif settings.import_file == "BLEND":
+        #     options = {
+        #         "filepath": "",
+        #         "directory": "\\Object\\",
+        #         "autoselect": True,
+        #         "active_collection": True,
+        #         "instance_collections": False,
+        #         "instance_object_data": True,
+        #         "set_fake": False,
+        #         "use_recursive": True
+        #     }
+        #     import_file_command = "bpy.ops.wm.append(**"
         
-        # Set import variables to write to JSON
+        # # Set import variables to write to JSON
         
-        # Set import file extension
-        if settings.import_file == "glTF":
-            import_file_ext = settings.import_gltf_extension
-        elif settings.import_file == "USD":
-            import_file_ext = settings.import_usd_extension
-        else:
-            import_file_ext = "." + settings.import_file.lower()
+        # # Set import file extension
+        # if settings.import_file == "glTF":
+        #     import_file_ext = settings.import_gltf_extension
+        # elif settings.import_file == "USD":
+        #     import_file_ext = settings.import_usd_extension
+        # else:
+        #     import_file_ext = "." + settings.import_file.lower()
         
-        # Set import file options
-        import_file_options = options
+        # # Set import file options
+        # import_file_options = options
 
 
 
@@ -514,11 +514,11 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         elif unit_system == "NONE":
             length_unit = "NONE"
 
-        # Update variables_dict with additional import/export options
+        # Update settings_dict with additional import/export options
         additional_settings_dict = {
-            "import_file_ext": import_file_ext,
-            "import_file_command": import_file_command, 
-            "import_file_options": import_file_options, 
+            # "import_file_ext": import_file_ext,
+            # "import_file_command": import_file_command, 
+            # "import_file_options": import_file_options, 
             "export_file_1_ext": export_file_1_ext, 
             "export_file_1_command": export_file_1_command, 
             "export_file_1_options": export_file_1_options, 
@@ -527,22 +527,22 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
             "export_file_2_options": export_file_2_options, 
             "length_unit": length_unit
         }
-        variables_dict.update(additional_settings_dict)
+        settings_dict.update(additional_settings_dict)
 
         # Write variables to JSON file before running converter
         json_file = Path(__file__).parent.resolve() / "Settings.json"
-        Functions.write_json(variables_dict, json_file)
+        Functions.write_json(settings_dict, json_file)
 
-        # Run Converter.py
-        subprocess.call(
-            [
-                blender_dir,
-                converter_blend,
-                "--python",
-                converter_py,
-            ],
-            cwd=transmogrifier_dir
-        ) 
+        # # Run Converter.py
+        # subprocess.call(
+        #     [
+        #         blender_dir,
+        #         converter_blend,
+        #         "--python",
+        #         converter_py,
+        #     ],
+        #     cwd=transmogrifier_dir
+        # ) 
         
 
         print("Conversion Complete")
@@ -600,10 +600,10 @@ class TRANSMOGRIFIER_OT_add_preset(Operator):
         json_file = transmogrifier_preset_dir / add_preset_name
 
         # Get current Transmogrifier settings.
-        variables_dict = Functions.get_transmogrifier_settings(self, context, False)
+        settings_dict = Functions.get_settings_dict(self, context, False)
 
         # Save new Transmogrifier operator preset as JSON file.
-        Functions.write_json(variables_dict, json_file)
+        Functions.write_json(settings_dict, json_file)
         self.report({'INFO'}, f"Added Transmogrifier preset: {add_preset_name}")
         return {'FINISHED'}
     
@@ -651,6 +651,7 @@ class TRANSMOGRIFIER_OT_add_import(Operator):
     def execute(self, context):
         new_import = context.scene.transmogrifier_imports.add()
         new_import.name = new_import.format
+        Functions.update_import_directories(self, context)
         return {'FINISHED'}
 
 
@@ -682,8 +683,8 @@ class TRANSMOGRIFIER_OT_add_custom_script(Operator):
 
     def execute(self, context):
         # Import Functions
-        Functions.add_customscript(self, context)
-        Functions.update_customscript_names(self, context)
+        Functions.add_custom_script(self, context)
+        Functions.update_custom_script_names(self, context)
         return {'FINISHED'}
 
 
@@ -702,7 +703,7 @@ class TRANSMOGRIFIER_OT_remove_custom_script(Operator):
 
     def execute(self, context):
         context.scene.transmogrifier_scripts.remove(self.custom_script_index)
-        Functions.update_customscript_names(self, context)
+        Functions.update_custom_script_names(self, context)
         return {'FINISHED'}
 
 
