@@ -54,20 +54,25 @@ from mathutils import Vector, Euler
 # Refresh UI when a Transmogrifier preset is selected.
 def refresh_ui(self, context):
     settings = bpy.context.scene.transmogrifier_settings
+    imports = bpy.context.scene.transmogrifier_imports
     scripts = bpy.context.scene.transmogrifier_scripts
 
     if settings.transmogrifier_preset != "NO_PRESET":
         # Load selected Transmogrifier preset as a dictionary.
         transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
+        imports.clear() # Clear any existing imports instances.
+        scripts.clear()  # Clear any existing custom script instances.
 
         # Read dictionary and change UI settings to reflect selected preset.
         for key, value in transmogrifier_preset_dict.items():
-            scripts.clear()  # Clear any existing custom script instances.
+            if key == "imports":
+                load_imports(value)  # Load imports from JSON file.
+                continue
             if key == "scripts":
                 load_custom_scripts(value)  # Load custom scripts from JSON file.
                 continue
             # Make sure double-backslashes are preserved in directory path.
-            directories_set = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
+            directories_set = ("import_directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
             if key in directories_set and value != "":
                 value = "'" + repr(value) + "'"
             # Don't affect currently selected Transmogrifier preset
@@ -295,6 +300,16 @@ def update_batch_convert_info_message(self, context):
 # ░░█░░█░█░█▀▀░█░█░█▀▄░░█░░▀▀█
 # ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
+# Load imports from JSON file.
+def load_imports(imports):
+    for import_file in imports:
+        load_import = bpy.context.scene.transmogrifier_imports.add()
+        for key, value in import_file.items():
+            # Concatenate the current import property assignment.
+            property_assignment = f"load_import.{key} = {repr(str(value))}"
+            # Make the property (key) equal to the preset (value).
+            exec(property_assignment)
+        
 # Import format dictionary containing [operator preset directory name, operator, options dictionary].
 import_dict = {
     "DAE": ["wm.collada_import", "bpy.ops.wm.collada_import(**", {}],
