@@ -57,6 +57,11 @@ from . import Functions
 
 # Groups together all the addon settings that are saved in each .blend file
 class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
+    # Batch Convert Info Message
+    batch_convert_info_message: StringProperty(
+        name="Batch Convert Info Message",
+        default="",
+    )
     # Preset Settings:
     # Option to select Transmogrifier presets
     transmogrifier_preset: StringProperty(default='FBX_to_GLB')
@@ -66,7 +71,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         items=lambda self, context: Functions.get_transmogrifier_presets('transmogrifier'),
         get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
         set=lambda self, value: setattr(self, 'transmogrifier_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
-        update=Functions.refresh_ui
+        update=Functions.set_settings
     )
     # UI Setting
     ui_toggle: EnumProperty(
@@ -109,11 +114,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         ],
         default="FBX",
         update=Functions.update_batch_convert_info_message,
-    )
-    # Batch Convert Info Message
-    batch_convert_info_message: StringProperty(
-        name="Batch Convert Info Message",
-        default="",
     )
     # Import Format specific options:
     import_usd_extension: EnumProperty(
