@@ -248,8 +248,6 @@ def update_import_directories(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     for index, import_file in enumerate(context.scene.transmogrifier_imports):
         import_file.directory = settings.import_directory
-    
-    update_batch_convert_info_message(self, context)
 
 
 # Traverse a given directory for a given file type and return a dictionary of files.
@@ -360,41 +358,6 @@ def check_custom_script_path(self, context, filepath, name):
     
     message = "Script path checks out"
     return True, message
-
-
-
-# ░▀█▀░█▀█░█▀▀░█▀█░░░█▄█░█▀▀░█▀▀░█▀▀░█▀█░█▀▀░█▀▀
-# ░░█░░█░█░█▀▀░█░█░░░█░█░█▀▀░▀▀█░▀▀█░█▀█░█░█░█▀▀
-# ░▀▀▀░▀░▀░▀░░░▀▀▀░░░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀▀▀
-
-def update_batch_convert_info_message(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    imports = bpy.context.scene.transmogrifier_imports
-    
-    # Check to make sure import directories exist.
-    for i in imports:
-        directory_checks_out, message = check_directory_path(self, context, i.directory)
-        if not directory_checks_out:
-            settings.batch_convert_info_message = message
-            return
-    
-    # If import directories exist, get import files.
-    import_files_dict = get_import_files(self, context)
-
-    # Concatenate import formats with the respective number of files found for each.
-    imports_string = ""
-    for key, value in import_files_dict.items():
-        count = len(import_files_dict[key])
-        imports_string += f"{count} {key}, "
-
-    # Trim off ending space and comma.
-    imports_string = imports_string [:-2]
-
-    # Info message.
-    message = f"{imports_string}  ⇒  "
-
-    # Update info message setting.
-    settings.batch_convert_info_message = message
 
 
 
@@ -510,7 +473,6 @@ def update_custom_script_names(self, context):
 def get_propertygroups():
     property_groups = {
         "settings": [bpy.context.scene.transmogrifier_settings, False, [
-            "batch_convert_info_message",
             "advanced_ui",
             "transmogrifier_preset",
             ]

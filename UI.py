@@ -41,8 +41,6 @@ from bpy.props import (
     StringProperty,
 )
 from pathlib import Path
-import textwrap
-
 from . import bl_info
 from . import Functions
 
@@ -74,36 +72,16 @@ def draw_settings_general(self, context):
     title = bl_info["name"] + " " + version
     row = self.layout.row(align=True)
     row.label(text=title)
-    row.prop(settings, 'advanced_ui', expand=False, text="", icon="WORKSPACE")
+    row.prop(settings, 'advanced_ui', expand=False, text="", icon="OPTIONS")
 
     # Batch Convert button
-    row = self.layout.row()
-    row = row.row(align=True)
+    row = self.layout.row(align=True)   
     row.operator('transmogrifier.transmogrify', icon='PLAY')
+    row.scale_x = 1.25
+    row.operator('transmogrifier.forecast', text='', icon='INFO')
     row.scale_y = 1.5
 
-    # Batch Convert Info Message about how many items will be converted.
-    if settings.batch_convert_info_message != "":
-        # width = bpy.context.region.width  # Adaptive approach does not work well with a 4K monitor.
-        wrapp = textwrap.TextWrapper(width=40) #width/7.25) # Adaptive approach does not work well with a 4K monitor.
-        wList = wrapp.wrap(text=settings.batch_convert_info_message)
-        info_box = self.layout.box()
-        info_box.separator(factor = 0.1)
-        for index, text in enumerate(wList): 
-            row = info_box.row(align = True)
-            row.scale_y = 0.6
-            row.separator(factor = 0.5)
-            row.alignment = 'EXPAND'
-            if index == 0:
-                row.label(text=text, icon="INFO")
-                row.separator(factor = 0.5)
-                continue
-            row.label(text=text)
-            row.separator(factor = 0.5)
-        info_box.separator(factor = 0.1)
-
     # Transmogrifier Presets Menu
-    # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="Workflow:", icon='DRIVER')
     layout = self.layout
@@ -113,8 +91,6 @@ def draw_settings_general(self, context):
     row.prop(settings, 'transmogrifier_preset_enum')
     row.operator("transmogrifier.add_preset", text="", icon="ADD")
     row.operator("transmogrifier.remove_preset", text="", icon="REMOVE")
-
-
 
     # Import Settings
     self.layout.use_property_split = True
@@ -548,8 +524,8 @@ def draw_settings_scripts(self, context):
             col.prop(custom_script, "file")  
             col.prop(custom_script, "trigger")
     
-    elif settings.advanced_ui:# == "Simple":
-        col.label(text="(Toggle 'Advanced' UI to view settings)")
+    elif not settings.advanced_ui:# == "Simple":
+        col.label(text="(Toggle 'Advanced UI' to view)")
         
 
 # Draws the button and popover dropdown button used in the

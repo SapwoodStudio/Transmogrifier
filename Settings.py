@@ -57,13 +57,12 @@ from . import Functions
 
 # Groups together all the addon settings that are saved in each .blend file
 class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
-    # Batch Convert Info Message
-    batch_convert_info_message: StringProperty(
-        name="Batch Convert Info Message",
-        default="",
+    advanced_ui: BoolProperty(
+        name="Advanced UI",
+        description="Toggle simple/advanced user interface options",
+        default=False,
     )
-    # Preset Settings:
-    # Option to select Transmogrifier presets
+    # Transmogrifier Presets (aka Workflows)
     transmogrifier_preset: StringProperty(default='FBX_to_GLB')
     transmogrifier_preset_enum: EnumProperty(
         name="", options={'SKIP_SAVE'},
@@ -72,11 +71,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
         set=lambda self, value: setattr(self, 'transmogrifier_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
         update=Functions.set_settings
-    )
-    advanced_ui: BoolProperty(
-        name="Advanced UI",
-        description="Toggle simple or advanced user interface options",
-        default=True,
     )
     # Import Settings
     sync_import_directories: BoolProperty(
@@ -108,7 +102,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     #         ("BLEND", "Blender (.blend)", "", 10)
     #     ],
     #     default="FBX",
-    #     update=Functions.update_batch_convert_info_message,
     # )
     # # Import Format specific options:
     # import_usd_extension: EnumProperty(
@@ -222,7 +215,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="glTF",
-        # update=Functions.update_batch_convert_info_message,
     )
     # File 1 scale.
     export_file_1_scale: FloatProperty(
@@ -250,7 +242,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="USD",
-        # update=Functions.update_batch_convert_info_message,
     )
     # File 2 scale.
     export_file_2_scale: FloatProperty(
@@ -397,7 +388,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
         ],
         default="1 Format",
-        # update=Functions.update_batch_convert_info_message,
     )
     prefix: StringProperty(
         name="Prefix",
@@ -1027,7 +1017,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=Functions.update_batch_convert_info_message,
     )
 
     format: EnumProperty(

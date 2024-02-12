@@ -523,12 +523,60 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
         print("Conversion Complete")
         self.file_count += 1
-    
-    # # Pop-up confirmation window.
-    # def invoke(self, context, event):
-    #     wm = context.window_manager
-    #     return wm.invoke_confirm(self, event)
+
+
+class TRANSMOGRIFIER_OT_forecast(Operator):
+    """Calculate batch conversion and display info message of the forecast"""
+    bl_idname = "transmogrifier.forecast"
+    bl_label = "Forecast Conversion"
+
+    def execute(self, context):
+        settings = bpy.context.scene.transmogrifier_settings
+        imports = bpy.context.scene.transmogrifier_imports
         
+        # Check if any imports exist.
+        if not imports:
+            message = "Please Add Import"
+            self.popup_message(context, message=message, title="Forecast", icon='INFO')
+            self.report({'INFO'}, message)
+            return {'FINISHED'}
+
+        # Check to make sure import directories exist.
+        for i in imports:
+            directory_checks_out, message = Functions.check_directory_path(self, context, i.directory)
+            if not directory_checks_out:
+                self.report({'ERROR'}, message)
+                return {'FINISHED'}
+        
+        # If import directories exist, get import files.
+        import_files_dict = Functions.get_import_files(self, context)
+
+        # Concatenate import formats with the respective number of files found for each.
+        imports_string = ""
+        for key, value in import_files_dict.items():
+            count = len(import_files_dict[key])
+            imports_string += f"{count} {key}, "
+
+        # Trim off ending space and comma.
+        imports_string = imports_string [:-2]
+
+        # Info message.
+        message = f"{imports_string}  ⇒  "
+
+        # Report message.
+        self.popup_message(context, message=message, title="Forecast", icon='INFO')
+        self.report({'INFO'}, message)
+        return {'FINISHED'}
+
+
+    # Message box pop-up.
+    def popup_message(self, context, message="", title="Message Box", icon='INFO'):
+
+        def draw(self, context):
+            self.layout.label(text=message)
+
+        bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
+
 
 
 # Copy import/export/transmogrifier presets shipped with Transmogrifier to relevant Blender Preferences directory.
@@ -652,7 +700,6 @@ class TRANSMOGRIFIER_OT_remove_import(Operator):
 
     def execute(self, context):
         context.scene.transmogrifier_imports.remove(self.index)
-        Functions.update_batch_convert_info_message(self, context)
         return {'FINISHED'}
 
 
@@ -703,6 +750,7 @@ class TRANSMOGRIFIER_OT_remove_custom_script(Operator):
 
 classes = (
     TRANSMOGRIFIER_OT_transmogrify,
+    TRANSMOGRIFIER_OT_forecast,
     TRANSMOGRIFIER_OT_copy_assets,
     TRANSMOGRIFIER_OT_add_preset,
     TRANSMOGRIFIER_OT_remove_preset,
