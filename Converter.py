@@ -2800,21 +2800,18 @@ def determine_export_uv_layout(item, textures_dir):
 # Run a custom script.
 def run_custom_scripts(trigger):
     try:
-        for script in custom_scripts:
-            script_name = script[0]
-            script_filepath = script[1]
-            script_trigger = script[-1]
-            if script_trigger != trigger:  # Skip the script if it's not the right time to run it.
+        for script in scripts:
+            if script["trigger"] != trigger:  # Skip the script if it's not the right time to run it.
                 continue
             
             # Run script in the current "Converter.blend" session (not as a subprocess).
-            exec(compile(open(script_filepath).read(), script_filepath, 'exec'))
+            exec(compile(open(script["file"]).read(), script["file"], 'exec'))
 
-            print(f"Ran custom script: {script_name}")
-            logging.info(f"Ran custom script: {script_name}")
+            print(f"Ran custom script: {script["name"]}")
+            logging.info(f"Ran custom script: {script["name"]}")
 
     except Exception as Argument:
-        logging.exception(f"Could not run custom script: {script_name}")
+        logging.exception(f"Could not run custom script: {script["name"]}")
 
 
 # Determine whether asset preview has finished generating.

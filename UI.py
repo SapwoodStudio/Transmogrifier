@@ -41,6 +41,8 @@ from bpy.props import (
     StringProperty,
 )
 from pathlib import Path
+import textwrap
+
 from . import bl_info
 from . import Functions
 
@@ -70,7 +72,9 @@ def draw_settings_general(self, context):
         version = version + "." + str(num)
     version = version.lstrip(".")
     title = bl_info["name"] + " " + version
-    self.layout.label(text = title)
+    row = self.layout.row(align=True)
+    row.label(text=title)
+    row.prop(settings, 'advanced_ui', expand=False, text="", icon="WORKSPACE")
 
     # Batch Convert button
     row = self.layout.row()
@@ -78,19 +82,25 @@ def draw_settings_general(self, context):
     row.operator('transmogrifier.transmogrify', icon='PLAY')
     row.scale_y = 1.5
 
-    # Info box about how many items will be converted.
+    # Batch Convert Info Message about how many items will be converted.
     if settings.batch_convert_info_message != "":
-        custom_script_box = self.layout.box()
-        box = custom_script_box.column()
-        box.label(text=settings.batch_convert_info_message, icon="FILE_CACHE")
-
-    # UI settings
-    # self.layout.separator()
-    col = self.layout.column(align=True)
-    col.label(text="User Interface:", icon='WORKSPACE')
-    self.layout.use_property_split = False
-    grid = self.layout.grid_flow(columns=2, align=True)
-    grid.prop(settings, 'ui_toggle', expand=True)
+        # width = bpy.context.region.width  # Adaptive approach does not work well with a 4K monitor.
+        wrapp = textwrap.TextWrapper(width=40) #width/7.25) # Adaptive approach does not work well with a 4K monitor.
+        wList = wrapp.wrap(text=settings.batch_convert_info_message)
+        info_box = self.layout.box()
+        info_box.separator(factor = 0.1)
+        for index, text in enumerate(wList): 
+            row = info_box.row(align = True)
+            row.scale_y = 0.6
+            row.separator(factor = 0.5)
+            row.alignment = 'EXPAND'
+            if index == 0:
+                row.label(text=text, icon="INFO")
+                row.separator(factor = 0.5)
+                continue
+            row.label(text=text)
+            row.separator(factor = 0.5)
+        info_box.separator(factor = 0.1)
 
     # Transmogrifier Presets Menu
     # self.layout.separator()
@@ -119,14 +129,14 @@ def draw_settings_general(self, context):
     for index, import_file in enumerate(context.scene.transmogrifier_imports):   
         layout = self.layout
         import_file_box = layout.box()
+        row = import_file_box.row()
         col = import_file_box.column()
-        grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
         
         # Import file name
-        grid.label(text=import_file.name, icon='IMPORT')
+        row.label(text=import_file.name, icon='IMPORT')
 
         # Remove import button
-        props = grid.operator('transmogrifier.remove_import', text = "", icon = 'PANEL_CLOSE')
+        props = row.operator('transmogrifier.remove_import', text = "", icon = 'PANEL_CLOSE')
         props.index = index
 
         # Format
@@ -161,13 +171,13 @@ def draw_settings_general(self, context):
         col.prop(settings, "directory_output_custom")
         if settings.directory_output_custom:
             col.prop(settings, "use_subdirectories")
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui:
             if settings.use_subdirectories:
                 col.prop(settings, "copy_item_dir_contents")
             col = self.layout.column(align=True)
     
     # Quantity
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col.prop(settings, "model_quantity")
 
     # Align menu items to the right.
@@ -204,7 +214,7 @@ def draw_settings_general(self, context):
                 col.prop(settings, 'make_paths_relative')
         
         # Set scale
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui == "Advanced":
             # col = self.layout.column(align=True)
             col.prop(settings, 'export_file_1_scale')
             # self.layout.separator()
@@ -240,7 +250,7 @@ def draw_settings_general(self, context):
                     col.prop(settings, 'make_paths_relative')
             
             # Set scale
-            if settings.ui_toggle == "Advanced":
+            if settings.advanced_ui:
                 # col = self.layout.column(align=True)
                 col.prop(settings, 'export_file_2_scale')
 
@@ -251,7 +261,7 @@ def draw_settings_general(self, context):
     col.label(text="Names:", icon='SORTALPHA')
     col.prop(settings, 'prefix')
     col.prop(settings, 'suffix')
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col = self.layout.column(align=True)
         col.prop(settings, 'set_data_names')
 
@@ -269,25 +279,26 @@ def draw_settings_textures(self, context):
     col.prop(settings, 'use_textures')
 
     if settings.use_textures:
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui:
             col.prop(settings, 'regex_textures')
             col.prop(settings, 'keep_modified_textures')
             self.layout.use_property_split = True
             col = self.layout.column(align=True)
         col.prop(settings, 'textures_source')
-        if settings.ui_toggle == "Advanced":
-            if settings.import_file == "BLEND" and settings.textures_source == "External":
+        if settings.advanced_ui:
+            import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
+            if "BLEND" in import_formats and settings.textures_source == "External":
                 col.prop(settings, 'use_linked_blend_textures')
                 col = self.layout.column(align=True)
         if settings.textures_source == "Custom":
             col.prop(settings, 'textures_custom_dir')
-            if settings.ui_toggle == "Advanced":
+            if settings.advanced_ui:
                 col.prop(settings, 'copy_textures_custom_dir')
                 if settings.copy_textures_custom_dir:
                     col.prop(settings, 'replace_textures')
                 col = self.layout.column(align=True)
         
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui:
             # col = self.layout.column(align=True)
             col.prop(settings, 'texture_resolution')
 
@@ -313,7 +324,7 @@ def draw_settings_textures(self, context):
                 grid = self.layout.grid_flow(columns=3, align=True)
                 grid.prop(settings, 'image_format_include')
         
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         self.layout.use_property_split = True
         col = self.layout.column(align=True)
         col.label(text="UVs:", icon='UV')
@@ -346,7 +357,7 @@ def draw_settings_transforms(self, context):
     # Transformation options.
     self.layout.use_property_split = True
     # col = self.layout.column(align=True)
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col.label(text="Transformations:", icon='CON_PIVOT')
         col.prop(settings, 'set_transforms')
         if settings.set_transforms:
@@ -403,7 +414,7 @@ def draw_settings_optimize_files(self, context):
     col.label(text="Auto-Optimize:", icon='TRIA_DOWN_BAR')
     col.prop(settings, 'auto_resize_files')
     self.layout.use_property_split = True
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         if settings.auto_resize_files != "None":
             col.prop(settings, 'file_size_maximum')
             grid = self.layout.grid_flow(columns=1, align=True)
@@ -430,7 +441,7 @@ def draw_settings_archive(self, context):
     col.prop(settings, 'save_conversion_log')
     col.prop(settings, 'archive_assets')
 
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         if settings.archive_assets:
             self.layout.use_property_split = False
             col.label(text="Mark Assets:")
@@ -451,7 +462,8 @@ def draw_settings_archive(self, context):
                 col = self.layout.column(align=True)
                         
             self.layout.use_property_split = False
-            if "Collections" in settings.asset_types_to_mark and settings.import_file == "BLEND":
+            import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
+            if "Collections" in settings.asset_types_to_mark and "BLEND" in import_formats:
                 col.label(text="Collections:")
                 col.prop(settings, 'mark_only_master_collection')
                 col = self.layout.column(align=True)
@@ -495,7 +507,7 @@ def draw_settings_scripts(self, context):
     grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
     grid.label(text="Custom Scripts:", icon='FILE_SCRIPT')
 
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col = self.layout.column(align=True)
         col.operator('transmogrifier.add_custom_script', icon="ADD")
 
@@ -504,8 +516,6 @@ def draw_settings_scripts(self, context):
             layout = self.layout
             # layout.separator(factor = 1.0)
             custom_script_box = layout.box()
-            col = custom_script_box.column()
-            grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
 
             file = Path(bpy.path.abspath(custom_script.file))
             
@@ -529,14 +539,16 @@ def draw_settings_scripts(self, context):
             elif file.is_file() and file.suffix == ".py":
                 icon = "FILE_SCRIPT"
             
-            grid.label(text=custom_script.name, icon=icon)
-
-            props = grid.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
+            row = custom_script_box.row()
+            row.label(text=custom_script.name, icon=icon)
+            props = row.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
             props.custom_script_index = index
+
+            col = custom_script_box.column()
             col.prop(custom_script, "file")  
             col.prop(custom_script, "trigger")
     
-    elif settings.ui_toggle == "Simple":
+    elif settings.advanced_ui:# == "Simple":
         col.label(text="(Toggle 'Advanced' UI to view settings)")
         
 

@@ -60,51 +60,20 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
     bl_label = "Batch Convert"
     file_count = 0
 
-    # Stop batch converter if directory has not been selected or .blend file has not been saved.
-    def check_directory_path(self, context, directory):
-        # Check if path is absolute and if blend file has been saved.
-        if Path(directory) != Path(bpy.path.abspath(directory)).resolve() and not bpy.data.is_saved:
-            self.report({'ERROR'}, f"Cannot find directory: {Path(directory)}\nSave .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)")
-            return False
-        # Convert to absolute path.
-        directory = Path(bpy.path.abspath(directory)).resolve()
-        # Check if directory exists.
-        if not directory.is_dir():
-            self.report({'ERROR'}, (f"Directory doesn't exist: {directory}"))
-            return False
-        return True
-
-    # Stop batch converter if script has not been selected or .blend file has not been saved.
-    def check_custom_script_path(self, context, filepath, name):
-        # Check if file is a Python file.
-        if Path(filepath).suffix != ".py":
-            self.report({'ERROR'}, (f"Custom Script is not a Python file: {Path(filepath).name}"))
-            return False
-        # Check if path is absolute and if blend file has been saved.
-        if Path(filepath) != Path(bpy.path.abspath(filepath)).resolve() and not bpy.data.is_saved:
-            self.report({'ERROR'}, f"Cannot find Custom Script: {Path(filepath).name}\nSave .blend file somewhere before using a relative script path\n(or use an absolute script path instead)")
-            return False
-        # Convert to absolute path.
-        filepath = Path(bpy.path.abspath(filepath)).resolve()
-        # Check if Python file exists.
-        if filepath.suffix == ".py" and not filepath.is_file():
-            self.report({'ERROR'}, (f"Custom Script doesn't exist: {filepath.name}"))
-            return False
-        return True
-
-
     def execute(self, context):
         settings = bpy.context.scene.transmogrifier_settings
         scripts = bpy.context.scene.transmogrifier_scripts
         base_dir = settings.import_directory
-
+        
         # Check directory and file paths.  Stop batch converter if they don't check-out.
-        directory_checks_out = self.check_directory_path(context, settings.import_directory)
+        directory_checks_out, message = Functions.check_directory_path(self, context, settings.import_directory)
         if not directory_checks_out:
+            self.report({'ERROR'}, message)
             return {'FINISHED'}
         for index, custom_script in enumerate(scripts):
-            custom_script_checks_out = self.check_custom_script_path(context, custom_script.file, custom_script.name)
+            custom_script_checks_out, message = Functions.check_custom_script_path(self, context, custom_script.file, custom_script.name)
             if not custom_script_checks_out:
+                self.report({'ERROR'}, message)
                 return {'FINISHED'}
 
         # Create path to Converter.py
@@ -117,7 +86,8 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         if self.file_count == 0:
             self.report({'ERROR'}, "Could not convert.")
         else:
-            converter_report_dict = Functions.read_json()
+            converter_report_json = Path(__file__).parent.resolve() / "Converter_Report.json"
+            converter_report_dict = Functions.read_json(converter_report_json)
             conversion_count = converter_report_dict["conversion_count"]
             if conversion_count > 1:
                 self.report({'INFO'}, f"Conversion complete. {conversion_count} files were converted.")
@@ -165,7 +135,7 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
             if menu != "Custom":
                 index += 1
                 continue
-            directory_checks_out = self.check_directory_path(context, directories_to_check[index])
+            directory_checks_out = Functions.check_directory_path(context, directories_to_check[index])
             if not directory_checks_out:
                 return {'FINISHED'}
             index += 1
@@ -529,9 +499,15 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         }
         settings_dict.update(additional_settings_dict)
 
-        # Write variables to JSON file before running converter
-        json_file = Path(__file__).parent.resolve() / "Settings.json"
-        Functions.write_json(settings_dict, json_file)
+        # Write settings to JSON file.
+        settings_json = Path(__file__).parent.resolve() / "Settings.json"
+        Functions.write_json(settings_dict, settings_json)
+
+        # Write import files list to JSON file.
+        import_files = Functions.get_import_files(self, context)
+        imports_json = Path(__file__).parent.resolve() / "Imports.json" 
+        Functions.write_json(import_files, imports_json)
+
 
         # # Run Converter.py
         # subprocess.call(
@@ -547,6 +523,12 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
         print("Conversion Complete")
         self.file_count += 1
+    
+    # # Pop-up confirmation window.
+    # def invoke(self, context, event):
+    #     wm = context.window_manager
+    #     return wm.invoke_confirm(self, event)
+        
 
 
 # Copy import/export/transmogrifier presets shipped with Transmogrifier to relevant Blender Preferences directory.
@@ -593,17 +575,17 @@ class TRANSMOGRIFIER_OT_add_preset(Operator):
 
     def execute(self, context):
         # Set Transmogrifier operator preset directory and new preset file.
-        add_preset_name = self.preset_name + ".json"
+        add_preset_name = f"{self.preset_name}.json"
         transmogrifier_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier"
         if not Path(transmogrifier_preset_dir).exists():  # Check if operator preset directory exists.
             Path(transmogrifier_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Transmogrifier operator preset directory.
-        json_file = transmogrifier_preset_dir / add_preset_name
+        preset_json = transmogrifier_preset_dir / add_preset_name
 
         # Get current Transmogrifier settings.
         settings_dict = Functions.get_settings_dict(self, context, False)
 
         # Save new Transmogrifier operator preset as JSON file.
-        Functions.write_json(settings_dict, json_file)
+        Functions.write_json(settings_dict, preset_json)
         self.report({'INFO'}, f"Added Transmogrifier preset: {add_preset_name}")
         return {'FINISHED'}
     
@@ -621,22 +603,22 @@ class TRANSMOGRIFIER_OT_remove_preset(Operator):
     def execute(self, context):
         # Get selected Transmogrifier operator preset.
         settings = bpy.context.scene.transmogrifier_settings
-        remove_preset_name = settings.transmogrifier_preset_enum + ".json"
+        remove_preset_name = f"{settings.transmogrifier_preset_enum}.json"
 
         # Set Transmogrifier operator preset directory and preset file to be removed.
         transmogrifier_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier"
         if not Path(transmogrifier_preset_dir).exists():  # Check if operator preset directory exists.
             Path(transmogrifier_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Transmogrifier operator preset directory.
-        json_file = transmogrifier_preset_dir / remove_preset_name
+        preset_json = transmogrifier_preset_dir / remove_preset_name
 
         # Return early and report error if Transmogrifier operator preset does not exist.
-        if not json_file.is_file():
+        if not preset_json.is_file():
             self.report({'ERROR'}, f"Transmogrifier preset does not exist: {remove_preset_name}")
             return {'CANCELLED'}
 
         # Remove Transmogrifier operator preset.
         self.report({'INFO'}, f"Removed Transmogrifier preset: {remove_preset_name}")
-        Path.unlink(json_file)
+        Path.unlink(preset_json)
         return {'FINISHED'}
 
 
@@ -670,6 +652,7 @@ class TRANSMOGRIFIER_OT_remove_import(Operator):
 
     def execute(self, context):
         context.scene.transmogrifier_imports.remove(self.index)
+        Functions.update_batch_convert_info_message(self, context)
         return {'FINISHED'}
 
 

@@ -189,76 +189,6 @@ def get_transmogrifier_preset_index(operator, preset_name):
 
 
 
-# ░▀█▀░█▀█░█▀▀░█▀█░░░█▄█░█▀▀░█▀▀░█▀▀░█▀█░█▀▀░█▀▀
-# ░░█░░█░█░█▀▀░█░█░░░█░█░█▀▀░▀▀█░▀▀█░█▀█░█░█░█▀▀
-# ░▀▀▀░▀░▀░▀░░░▀▀▀░░░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀▀▀
-
-# Traverse a given directory for a given file type and return a list of files.
-def get_files_in_directory_tree(self, context, directory, extension):
-    files = glob.glob(f"{directory}/**/*{extension}", recursive=True)
-
-    # Convert list items to pathlib Paths.
-    if files:
-        files = [Path(file) for file in files]
-
-    return files
-
-
-# Count how many files of a given type are in a given directory.
-def count_files_in_directory_tree(self, context, directory, extension):
-    files = get_files_in_directory_tree(self, context, directory, extension)
-
-    if not files:
-        file_count = 0
-        return file_count
-    
-    file_count = len(files)
-    return(file_count)
-
-
-def get_import_ext(self, context, settings):
-    # Get import directory
-    import_directory = settings.import_directory
-
-    # Get import extension
-    import_ext = f".{settings.import_file}".lower()
-    
-    # Adjust for USD- and glTF-specific extensions
-    if settings.import_file == 'USD':
-        import_ext = settings.import_usd_extension
-    elif settings.import_file == 'glTF':
-        import_ext = settings.import_gltf_extension
-        
-    return import_ext
-
-
-def update_batch_convert_info_message(self, context):
-    # Get variables.
-    settings = bpy.context.scene.transmogrifier_settings
-    import_directory = settings.import_directory
-    import_ext = get_import_ext(self, context, settings)
-
-    # Check if directory is absolute and if Blender session is saved.
-    if (Path(import_directory) != Path(bpy.path.abspath(import_directory)).resolve() or import_directory == "") and not bpy.data.is_saved:
-        settings.batch_convert_info_message = f"0 {settings.import_file} files detected."
-        return
-
-    # Change path to absolute directory.
-    import_directory = Path(bpy.path.abspath(import_directory)).resolve()
-    # Count models that will be imported.
-    models_to_import = count_files_in_directory_tree(self, context, import_directory, import_ext)
-
-    # Check if there are models to import and export.
-    if models_to_import and settings.model_quantity != "No Formats":
-        if settings.model_quantity == "1 Format":
-            settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} ⇒ {models_to_import} {settings.export_file_1}"
-        elif settings.model_quantity == "2 Formats":
-            settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} ⇒ {models_to_import} {settings.export_file_1} + {models_to_import} {settings.export_file_2}"
-    elif not models_to_import:
-        settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} files detected."
-
-
-
 # ░▀█▀░█▄█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
 # ░░█░░█░█░█▀▀░█░█░█▀▄░░█░░▀▀█
 # ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
@@ -318,6 +248,22 @@ def update_import_directories(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     for index, import_file in enumerate(context.scene.transmogrifier_imports):
         import_file.directory = settings.import_directory
+    
+    update_batch_convert_info_message(self, context)
+
+
+# Traverse a given directory for a given file type and return a dictionary of files.
+def get_import_files(self, context):
+    imports = bpy.context.scene.transmogrifier_imports
+
+    import_files_dict = {}
+
+    for i in imports:
+        directory = str(Path(bpy.path.abspath(i.directory)).resolve())
+        files = glob.glob(f"{directory}/**/*{i.extension}", recursive=True)
+        import_files_dict[i.name] = files
+
+    return import_files_dict
 
 
 
@@ -366,6 +312,89 @@ def get_format_extensions(format):
 
     # Return list of extension items.
     return extensions
+
+
+
+# ░█▀▀░█░█░█▀▀░█▀▀░█░█░░░█▀█░█▀█░▀█▀░█░█░█▀▀
+# ░█░░░█▀█░█▀▀░█░░░█▀▄░░░█▀▀░█▀█░░█░░█▀█░▀▀█
+# ░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░░░▀░░░▀░▀░░▀░░▀░▀░▀▀▀
+
+# Stop batch converter and update info message if directory has not been selected or .blend file has not been saved.
+def check_directory_path(self, context, directory):
+    # Check if path is absolute and if blend file has been saved.
+    if Path(directory) != Path(bpy.path.abspath(directory)).resolve() and not bpy.data.is_saved:
+        message = f"Cannot find directory: {Path(bpy.path.abspath(directory)).resolve().name}.  \nSave .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)"
+        return False, message
+    
+    # Convert to absolute path.
+    directory = Path(bpy.path.abspath(directory)).resolve()
+    
+    # Check if directory exists.
+    if not directory.is_dir():
+        message = f"Directory doesn't exist: {directory.name}"
+        return False, message
+    
+    message = "Directory checks out"
+    return True, message
+
+
+# Stop batch converter if script has not been selected or .blend file has not been saved.
+def check_custom_script_path(self, context, filepath, name):
+    # Check if file is a Python file.
+    if Path(filepath).suffix != ".py":
+        message = f"Custom Script is not a Python file: {Path(filepath).name}"
+        return False, message
+    
+    # Check if path is absolute and if blend file has been saved.
+    if Path(filepath) != Path(bpy.path.abspath(filepath)).resolve() and not bpy.data.is_saved:
+        message = f"Cannot find Custom Script: {Path(filepath).name}. \nSave .blend file somewhere before using a relative script path\n(or use an absolute script path instead)"
+        return False, message
+    
+    # Convert to absolute path.
+    filepath = Path(bpy.path.abspath(filepath)).resolve()
+    
+    # Check if Python file exists.
+    if filepath.suffix == ".py" and not filepath.is_file():
+        message = f"Custom Script doesn't exist: {filepath.name}"
+        return False, message
+    
+    message = "Script path checks out"
+    return True, message
+
+
+
+# ░▀█▀░█▀█░█▀▀░█▀█░░░█▄█░█▀▀░█▀▀░█▀▀░█▀█░█▀▀░█▀▀
+# ░░█░░█░█░█▀▀░█░█░░░█░█░█▀▀░▀▀█░▀▀█░█▀█░█░█░█▀▀
+# ░▀▀▀░▀░▀░▀░░░▀▀▀░░░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀▀▀
+
+def update_batch_convert_info_message(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    imports = bpy.context.scene.transmogrifier_imports
+    
+    # Check to make sure import directories exist.
+    for i in imports:
+        directory_checks_out, message = check_directory_path(self, context, i.directory)
+        if not directory_checks_out:
+            settings.batch_convert_info_message = message
+            return
+    
+    # If import directories exist, get import files.
+    import_files_dict = get_import_files(self, context)
+
+    # Concatenate import formats with the respective number of files found for each.
+    imports_string = ""
+    for key, value in import_files_dict.items():
+        count = len(import_files_dict[key])
+        imports_string += f"{count} {key}, "
+
+    # Trim off ending space and comma.
+    imports_string = imports_string [:-2]
+
+    # Info message.
+    message = f"{imports_string}  ⇒  "
+
+    # Update info message setting.
+    settings.batch_convert_info_message = message
 
 
 
@@ -482,7 +511,7 @@ def get_propertygroups():
     property_groups = {
         "settings": [bpy.context.scene.transmogrifier_settings, False, [
             "batch_convert_info_message",
-            "ui_toggle",
+            "advanced_ui",
             "transmogrifier_preset",
             ]
         ],
@@ -662,11 +691,9 @@ def write_json(settings_dict, json_file):
         json.dump(settings_dict, outfile)
 
 
-# Read the JSON file where the conversion count is stored.
-def read_json():
+# Read the JSON file and return contents.
+def read_json(json_file):
     # Open JSON file
-    json_file = Path(__file__).parent.resolve() / "Converter_Report.json"
-
     with open(json_file, 'r') as openfile:
     
         # Read from JSON file
