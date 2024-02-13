@@ -509,16 +509,16 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         Functions.write_json(import_files, imports_json)
 
 
-        # # Run Converter.py
-        # subprocess.call(
-        #     [
-        #         blender_dir,
-        #         converter_blend,
-        #         "--python",
-        #         converter_py,
-        #     ],
-        #     cwd=transmogrifier_dir
-        # ) 
+        # Run Converter.py
+        subprocess.call(
+            [
+                blender_dir,
+                converter_blend,
+                "--python",
+                converter_py,
+            ],
+            cwd=transmogrifier_dir
+        ) 
         
 
         print("Conversion Complete")

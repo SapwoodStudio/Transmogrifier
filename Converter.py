@@ -58,48 +58,66 @@ import numpy as np
 
 
 # Read Settings.json file where the user variables are stored.
-def read_json():
+def read_json(json_file):
     try:
-        # Open JSON file
-        json_file = Path(__file__).parent.resolve() / "Settings.json"
-
         with open(json_file, 'r') as openfile:
         
             # Read from JSON file
             json_object = json.load(openfile)
         
         return json_object
-        print("Read Settings.json")
-        logging.info("Read Settings.json")
+
+        print(f"Read {json_file.name}")
+        logging.info(f"Read {json_file.name}")
 
     except Exception as Argument:
-        logging.exception("Could Not Read Settings.json")
+        logging.exception(f"Could Not Read {json_file.name}")
 
 
-# Read dictionary of variables from JSON file.
-def get_variables():
+# Set global variables from JSON dictionary.
+def set_settings(json_dict):
     try:
-        # Assign variables from dictionary and make all variables global
-        variables_dict = read_json()
-
-        for key, value in variables_dict.items():
+        for key, value in json_dict.items():
             # Preserve quotation marks during exec() if value is a string type object.
-            if type(value) == str:
+            if isinstance(value, str):
                 value = repr(value)
+            
             # Don't preserve quotation marks during exec() if value is not a string type object.
             else:
                 value = str(value)
-
+            
             # Concatenate command.
             variable_assignment_command = f"globals()['{key}'] = {value}"
+            
             # Execute variable assignment.
             exec(variable_assignment_command)
-
-        print("Got variables from JSON")
-        logging.info("Got variables from JSON")
+        
+        print("Set setting from JSON")
+        logging.info("Set settings from JSON")
 
     except Exception as Argument:
-        logging.exception("Could not get variables from JSON")
+        logging.exception("Could not set settings from JSON")
+
+
+# Read dictionary of settings from JSON file.
+def get_settings(json_files):
+    try:
+        # Loop through JSON files list.
+        for json_file in json_files:
+            json_file = Path(__file__).parent.resolve() / json_file
+            
+            # Assign variables from dictionary and make all variables global
+            json_dict = read_json(json_file)
+
+            # Set settings.
+            set_settings(json_dict)
+        
+
+        print("Got setting from JSON")
+        logging.info("Got settings from JSON")
+
+    except Exception as Argument:
+        logging.exception("Could not get settings from JSON")
 
 
 # Make a log file to log conversion process.
@@ -109,7 +127,7 @@ def make_log_file():
     if directory_output_location == "Custom":
         log_file = Path(directory_output_custom, f"Transmogrifier_Log_{timestamp}.txt")
     elif directory_output_location != "Custom":
-        log_file = Path(directory, f"Transmogrifier_Log_{timestamp}.txt")
+        log_file = Path(import_directory, f"Transmogrifier_Log_{timestamp}.txt")
     
     # Create log file.
     logging.basicConfig(
@@ -300,18 +318,32 @@ def append_blend_objects(import_file_command, import_file_options, import_file):
 
 
 # Import file of a format type supplied by the user.
-def import_file_function(import_file_command, import_file_options, import_file):
+def import_a_file(import_file):
     try:
-        import_file_options["filepath"] = import_file  # Set filepath to the location of the model to be imported
-        
-        if import_file_command == "bpy.ops.wm.append(**":  # Select "Objects" Library to append from current .blend file.
-            append_blend_objects(import_file_command, import_file_options, import_file)
-            return
+        # Get import dictionary for the given import file.
+        import_dict = [import_dict for import_dict in imports if import_dict["extension"] == Path(import_file).suffix][0]
 
-        import_file_command = f"{import_file_command}{import_file_options})"  # Concatenate the import command with the import options dictionary
-        print(import_file_command)
-        logging.info(import_file_command)
-        exec(import_file_command)  # Run import_file_command, which is stored as a string and won't run otherwise.
+        # Get import options.
+        options = eval(import_dict["options"])
+
+        # Update options with filepath to the location of the model to be imported.
+        options["filepath"] = import_file  
+        
+        # Get import operator.
+        operator = import_dict["operator"]
+        
+        # Select "Objects" Library to append from current .blend file if importing a blend file.
+        if operator == "bpy.ops.wm.append(**": 
+            append_blend_objects(operator, options, import_file)
+            return
+        
+        # Concatenate the import command with the import options dictionary
+        operator = f"{operator}{options})"
+        print(operator)
+        logging.info(operator)
+
+        # Run operator, which is stored as a string and won't run otherwise.
+        exec(operator)
 
         print(f"Imported file: {Path(import_file).name}")
         logging.info(f"Imported file: {Path(import_file).name}")
@@ -2580,9 +2612,9 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
     try:
         # Force global variables to reset to original settings, specifically export_file_1(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
         # Assign variables from dictionary.
-        variables_dict = read_json()
-        export_file_1_options = variables_dict["export_file_1_options"]
-        export_file_2_options = variables_dict["export_file_2_options"]
+        settings_dict = read_json(Path(__file__).parent.resolve() / "Settings.json")
+        export_file_1_options = settings_dict["export_file_1_options"]
+        export_file_2_options = settings_dict["export_file_2_options"]
 
         if auto_resize_files == "All":
             # Determine how many 3D files to export, then export.
@@ -2804,14 +2836,17 @@ def run_custom_scripts(trigger):
             if script["trigger"] != trigger:  # Skip the script if it's not the right time to run it.
                 continue
             
+            # Get script name.
+            script_name = script["name"]
+
             # Run script in the current "Converter.blend" session (not as a subprocess).
             exec(compile(open(script["file"]).read(), script["file"], 'exec'))
 
-            print(f"Ran custom script: {script["name"]}")
-            logging.info(f"Ran custom script: {script["name"]}")
+            print(f"Ran custom script: {script_name}")
+            logging.info(f"Ran custom script: {script_name}")
 
     except Exception as Argument:
-        logging.exception(f"Could not run custom script: {script["name"]}")
+        logging.exception(f"Could not run custom script: {script_name}")
 
 
 # Determine whether asset preview has finished generating.
@@ -3142,7 +3177,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         run_custom_scripts("Before_Import")
 
         # Import the file.
-        import_file_function(import_file_command, import_file_options, import_file)
+        import_a_file(import_file)
 
         # Move all objects and collections to item collection.
         move_objects_and_collections_to_item_collection(item)
@@ -3428,6 +3463,27 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
         logging.exception(f"Could not determine imports: {item}")
 
 
+# Get a list of imports from Imports.json
+def get_imports():
+    try:
+        imports_json = Path(__file__).parent.resolve() / "Imports.json"
+
+        imports_dict = read_json(imports_json)
+
+        # Fill a format-agnostic list of all import files detected.
+        imports_list = []
+        for import_format, import_list in imports_dict.items():
+            imports_list.extend([Path(import_file) for import_file in import_list])
+
+        return imports_list
+
+        print(f"Got imports from {imports_json.name}")
+        logging.info(f"Got imports from {imports_json.name}")
+
+    except Exception as Argument:
+        logging.exception(f"Could not get {imports_json.name}")
+
+
 # Main function that loops through specified directory and creates variables for the converter
 def batch_converter():
     try:
@@ -3452,27 +3508,50 @@ def batch_converter():
         # Run custom scripts with triggers "Before Batch".
         run_custom_scripts("Before_Batch")
 
-        # Run converter in every subdirectory that contains a model of the specified file type.
-        for subdir, dirs, files in os.walk(import_directory):
-            for file in files:
-                item = Path(file).stem
-                file = Path(subdir, file.lower())
-                item_dir = Path(subdir)
-                if import_file_ext in file.name:
-                    import_file = str(Path(subdir, item + import_file_ext))
-                    textures_dir = Path(subdir, 'textures')
-                    textures_temp_dir = Path(subdir, 'textures_' + prefix + item + suffix)
-                    if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
-                        textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
-                    export_file_1 = str(Path(subdir, prefix + item + suffix + export_file_1_ext))
-                    export_file_2 = str(Path(subdir, prefix + item + suffix + export_file_2_ext))
-                    blend = Path(subdir, prefix + item + suffix + ".blend")
+        # Get a list of imports from Imports.json
+        imports_list = get_imports()
 
-                    # Determine which models to import, then convert the ones that are eligible for import.
-                    conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list)
+        # Convert all items in imports list.
+        for file in imports_list:
+            item = file.stem
+            item_dir = file.parent
+            import_file = str(file)
+            textures_dir = item_dir / "textures"
+            textures_temp_dir = item_dir / f"{textures_dir}_{prefix}{item}{suffix}"
+            if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
+                textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
+            export_name = f"{prefix}{item}{suffix}"
+            export_file_1 = str(item_dir / f"{export_name}{export_file_1_ext}")
+            export_file_2 = str(item_dir / f"{export_name}{export_file_2_ext}")
+            blend = item_dir / f"{export_name}.blend"
 
-                else:
-                    continue
+            # Determine which models to import, then convert the ones that are eligible for import.
+            conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list)
+
+        
+        ### Old batch converter
+
+        # for subdir, dirs, files in os.walk(import_directory):
+        #     for file in files:
+        #         item = Path(file).stem
+        #         file = Path(subdir, file.lower())
+        #         item_dir = Path(subdir)
+        #         if import_file_ext in file.name:
+        #             import_file = str(Path(subdir, item + import_file_ext))
+        #             textures_dir = Path(subdir, 'textures')
+        #             textures_temp_dir = Path(subdir, 'textures_' + prefix + item + suffix)
+        #             if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
+        #                 textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
+        #             export_file_1 = str(Path(subdir, prefix + item + suffix + export_file_1_ext))
+        #             export_file_2 = str(Path(subdir, prefix + item + suffix + export_file_2_ext))
+        #             blend = Path(subdir, prefix + item + suffix + ".blend")
+
+        #             # Determine which models to import, then convert the ones that are eligible for import.
+        #             conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list)
+
+        #         else:
+        #             continue
+        
         
         # If using custom textures, delete temporary textures directory only after all items have been converted.
         if use_textures and textures_source == "Custom" and not keep_modified_textures:
@@ -3523,7 +3602,7 @@ def quit_blender():
 # Transmogrify.
 def transmogrify():
     # Step 1: Set global variables.
-    get_variables()
+    get_settings(["Settings.json"])
 
     # Step 2: Start logging conversion if requested by User.
     if save_conversion_log:
