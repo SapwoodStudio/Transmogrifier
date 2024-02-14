@@ -1459,7 +1459,7 @@ def unpack_textures(item_dir, textures_temp_dir, blend):
 		
 
 # Returns a dictionary of which textures are assigned to which materials.
-def map_textures_to_materials():
+def map_textures_to_materials(import_file):
     try:
         materials = []
         texture_sets = []
@@ -1471,7 +1471,7 @@ def map_textures_to_materials():
                 for node in material.node_tree.nodes:
                     if node.type=='TEX_IMAGE':
                         texture = Path(node.image.name).stem  # Remove any leftover image texture extensions.
-                        if import_file_ext == ".glb":
+                        if Path(import_file).suffix == ".glb":
                             if "BaseColor" in texture:
                                 base_color = texture.replace("_Opacity", "")
                                 texture_set.append(base_color)
@@ -2497,17 +2497,17 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
 
         # Rename unpacked textures to match image name, since images packed into .blend use names from 
         #  original texture filepath baked into their data instead of the image name.
-        if import_file_ext == ".blend":
+        if Path(import_file).suffix == ".blend":
             rename_textures_unpacked(textures_temp_dir)
 
         # Modify textures if requested.
-        if import_file_ext != ".glb":
+        if Path(import_file).suffix != ".glb":
             determine_modify_textures()
 
         # Only separate image textures if imported file is a GLB.
-        elif import_file_ext == ".glb":
+        elif Path(import_file).suffix == ".glb":
             # Get a dictionary of which textures are assigned to which materials.
-            mapped_textures = map_textures_to_materials()
+            mapped_textures = map_textures_to_materials(import_file)
 
             # Separate the combined maps.
             separate_gltf_maps(textures_temp_dir)
@@ -3536,8 +3536,8 @@ def batch_converter():
         #         item = Path(file).stem
         #         file = Path(subdir, file.lower())
         #         item_dir = Path(subdir)
-        #         if import_file_ext in file.name:
-        #             import_file = str(Path(subdir, item + import_file_ext))
+        #         if import_file.suffix in file.name:
+        #             import_file = str(Path(subdir, item + import_file.suffix))
         #             textures_dir = Path(subdir, 'textures')
         #             textures_temp_dir = Path(subdir, 'textures_' + prefix + item + suffix)
         #             if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
