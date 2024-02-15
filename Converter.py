@@ -318,19 +318,16 @@ def append_blend_objects(import_file_command, import_file_options, import_file):
 
 
 # Import file of a format type supplied by the user.
-def import_a_file(import_file):
+def import_a_file(import_file, import_settings_dict):
     try:
-        # Get import dictionary for the given import file.
-        import_dict = [import_dict for import_dict in imports if import_dict["extension"] == Path(import_file).suffix][0]
-
-        # Get import options.
-        options = eval(import_dict["options"])
+        # Get import options as a dictionary.
+        options = eval(import_settings_dict["options"])
 
         # Update options with filepath to the location of the model to be imported.
         options["filepath"] = import_file  
         
         # Get import operator.
-        operator = import_dict["operator"]
+        operator = import_settings_dict["operator"]
         
         # Select "Objects" Library to append from current .blend file if importing a blend file.
         if operator == "bpy.ops.wm.append(**": 
@@ -2979,13 +2976,13 @@ def create_image(name, width, height, alpha=True):
 # Extract generated asset preview to disk.
 # Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
 # asset_browser_utilities/module/preview/operator/extract.py, Line 29
-def extract_preview_to_disk(asset, asset_type, blend):
+def extract_preview_to_disk(asset, asset_type, export_name, blend):
     try:
         folder = Path(blend).parent
         asset_preview = asset.preview
         
         if asset_preview is not None and asset_type in asset_extract_previews_filter:
-            image_name = "Preview_" + asset.name + "_" + asset_type
+            image_name = f"Preview_{export_name}_{asset_type}"
             image = create_image(image_name, asset_preview.image_size[0], asset_preview.image_size[1])
             image.file_format = "PNG"
             for char in ("/", "\\", ":", "|", '"', "!", "?", "<", ">", "*"):
@@ -3012,7 +3009,7 @@ def extract_preview_to_disk(asset, asset_type, blend):
 
 
 # Mark asset.
-def mark_asset(asset, asset_type, assets_in_library, blend):
+def mark_asset(asset, asset_type, assets_in_library, export_name, blend):
     try:
         if assets_ignore_duplicates and asset_type in assets_ignore_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
             print(f"Skipped Mark Asset: {asset.name}.  Asset already exists in Library: {asset_library}")
@@ -3031,7 +3028,7 @@ def mark_asset(asset, asset_type, assets_in_library, blend):
             generate_preview(asset)  # Generate preview.
 
         if asset_extract_previews:
-            extract_preview_to_disk(asset, asset_type, blend)  # Extract preview.
+            extract_preview_to_disk(asset, asset_type, export_name, blend)  # Extract preview.
 
         print(f"Marked Asset: {asset.name}")
         logging.info(f"Marked Asset: {asset.name}")
@@ -3071,38 +3068,38 @@ def get_assets_in_library(library_name):
 
 
 # Mark assets in asset data filter.
-def mark_assets(item, blend):
+def mark_assets(item, export_name, blend):
     try:
         assets_in_library = get_assets_in_library(asset_library)  # Get a dictionary of assets in the selected asset library.
 
         if "Actions" in asset_types_to_mark:
             for action in bpy.data.actions:
-                mark_asset(action, "Actions", assets_in_library, blend)
+                mark_asset(action, "Actions", assets_in_library, export_name, blend)
         
         if "Collections" in asset_types_to_mark:
             master_collection_name = prefix + item + suffix
             for collection in bpy.data.collections:
                 if mark_only_master_collection and collection.name != master_collection_name:
                     continue
-                mark_asset(collection, "Collections", assets_in_library, blend)
+                mark_asset(collection, "Collections", assets_in_library, export_name, blend)
                 
         if "Materials" in asset_types_to_mark:
             for material in bpy.data.materials:
-                mark_asset(material, "Materials", assets_in_library, blend)
+                mark_asset(material, "Materials", assets_in_library, export_name, blend)
 
         if "Node_Groups" in asset_types_to_mark:
             for node_group in bpy.data.node_groups:
-                mark_asset(node_group, "Node_Groups", assets_in_library, blend)
+                mark_asset(node_group, "Node_Groups", assets_in_library, export_name, blend)
     
         if "Objects" in asset_types_to_mark:
             for object in bpy.data.objects:
                 if not object.type in asset_object_types_filter:  # Mark only certain selected object types as assets.
                     continue
-                mark_asset(object, "Objects", assets_in_library, blend)
+                mark_asset(object, "Objects", assets_in_library, export_name, blend)
 
         if "Worlds" in asset_types_to_mark:
             for world in bpy.data.worlds:
-                mark_asset(world, "Worlds", assets_in_library, blend)
+                mark_asset(world, "Worlds", assets_in_library, export_name, blend)
 
         print("Marked assets")
         logging.info("Marked assets")
@@ -3142,9 +3139,9 @@ def move_copy_blend_to_asset_library(item, blend):
 
 
 # Archive assets to Asset Library by marking, tagging, and cataloging.
-def archive_assets_to_library(item, blend):
+def archive_assets_to_library(item, export_name, blend):
     try:
-        mark_assets(item, blend)
+        mark_assets(item, export_name, blend)
         save_blend_file(blend)
         move_copy_blend_to_asset_library(item, blend)
 
@@ -3156,7 +3153,7 @@ def archive_assets_to_library(item, blend):
 
 
 # Convert the file for every file found inside the given directory.
-def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count):
+def converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count):
     try:
         print("-------------------------------------------------------------------")
         print(f"CONVERTER START: {Path(import_file).name}")
@@ -3177,7 +3174,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         run_custom_scripts("Before_Import")
 
         # Import the file.
-        import_a_file(import_file)
+        import_a_file(import_file, import_settings_dict)
 
         # Move all objects and collections to item collection.
         move_objects_and_collections_to_item_collection(item)
@@ -3238,7 +3235,7 @@ def converter(item_dir, item, import_file, textures_dir, textures_temp_dir, expo
         
         # Archive assets to library.
         if archive_assets:
-            archive_assets_to_library(item, blend)
+            archive_assets_to_library(item, export_name, blend)
 
         # Save only single preview image of collections if desired when not archiving assets to library.
         if not archive_assets and asset_extract_previews:
@@ -3381,7 +3378,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         
 
 # Determine whether to import a model before converting in order to save time.
-def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list):
+def determine_imports(item, item_dir, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name,  export_file_1, export_file_2, blend, conversion_count, conversion_list):
     try:
         # Get original contents inside the item directory.  Will be used later if exporting models to a custom output directory.
         original_contents = [file for file in Path.iterdir(item_dir)]
@@ -3407,7 +3404,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
+                converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -3429,7 +3426,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
                 print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} doesn't yet exist.")
                 logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} doesn't yet exist.")
                 # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
+                converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count)
                 # Increment conversion counter and add converted item(s) to list.
                 exports_list = list_exports(export_file_1, export_file_2)
                 # Add export(s) to conversion list.
@@ -3445,7 +3442,7 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
             print(f"Initiating Converter: {Path(import_file).name}")
             logging.info(f"Initiating Converter: {Path(import_file).name}")
             # Run the converter on the item that was found.
-            converter(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count)
+            converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count)
             # Increment conversion counter and add converted item(s) to list.
             exports_list = list_exports(export_file_1, export_file_2)
             # Add export(s) to conversion list.
@@ -3463,25 +3460,20 @@ def determine_imports(item, item_dir, import_file, textures_dir, textures_temp_d
         logging.exception(f"Could not determine imports: {item}")
 
 
-# Get a list of imports from Imports.json
-def get_imports():
+# Identify duplicate import formats.
+def identify_duplicate_imports():
     try:
-        imports_json = Path(__file__).parent.resolve() / "Imports.json"
+        import_formats = [import_settings_dict["format"] for import_settings_dict in imports]
+        duplicates = [format for format in import_formats if import_formats.count(format) > 1]
+        unique_duplicates = list(set(duplicates))
 
-        imports_dict = read_json(imports_json)
+        print(f"Identified {len(unique_duplicates)} duplicates: {unique_duplicates}")
+        logging.info(f"Identified {len(unique_duplicates)} duplicates: {unique_duplicates}")
 
-        # Fill a format-agnostic list of all import files detected.
-        imports_list = []
-        for import_format, import_list in imports_dict.items():
-            imports_list.extend([Path(import_file) for import_file in import_list])
-
-        return imports_list
-
-        print(f"Got imports from {imports_json.name}")
-        logging.info(f"Got imports from {imports_json.name}")
+        return unique_duplicates
 
     except Exception as Argument:
-        logging.exception(f"Could not get {imports_json.name}")
+        logging.exception(f"Could not identify duplicates")
 
 
 # Main function that loops through specified directory and creates variables for the converter
@@ -3508,51 +3500,48 @@ def batch_converter():
         # Run custom scripts with triggers "Before Batch".
         run_custom_scripts("Before_Batch")
 
-        # Get a list of imports from Imports.json
-        imports_list = get_imports()
+        # Get a dictionary of imports from Imports.json
+        imports_json = Path(__file__).parent.resolve() / "Imports.json"
+        imports_dict = read_json(imports_json)
 
-        # Convert all items in imports list.
-        for file in imports_list:
-            item = file.stem
-            item_dir = file.parent
-            import_file = str(file)
-            textures_dir = item_dir / "textures"
-            textures_temp_dir = item_dir / f"{textures_dir}_{prefix}{item}{suffix}"
-            if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
-                textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
-            export_name = f"{prefix}{item}{suffix}"
-            export_file_1 = str(item_dir / f"{export_name}{export_file_1_ext}")
-            export_file_2 = str(item_dir / f"{export_name}{export_file_2_ext}")
-            blend = item_dir / f"{export_name}.blend"
-
-            # Determine which models to import, then convert the ones that are eligible for import.
-            conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list)
-
+        # Identify duplicate import formats.
+        duplicates = identify_duplicate_imports()
         
-        ### Old batch converter
+        # Loop through every import instance dictionary defined in Settings.json > "imports" setting.
+        for import_settings_dict in imports:
 
-        # for subdir, dirs, files in os.walk(import_directory):
-        #     for file in files:
-        #         item = Path(file).stem
-        #         file = Path(subdir, file.lower())
-        #         item_dir = Path(subdir)
-        #         if import_file.suffix in file.name:
-        #             import_file = str(Path(subdir, item + import_file.suffix))
-        #             textures_dir = Path(subdir, 'textures')
-        #             textures_temp_dir = Path(subdir, 'textures_' + prefix + item + suffix)
-        #             if textures_source == "Custom":  # Assign textures_temp to be beside custom textures source.
-        #                 textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
-        #             export_file_1 = str(Path(subdir, prefix + item + suffix + export_file_1_ext))
-        #             export_file_2 = str(Path(subdir, prefix + item + suffix + export_file_2_ext))
-        #             blend = Path(subdir, prefix + item + suffix + ".blend")
+            # Get a list of imports for the given import instance's format from the Imports.json dictionary.
+            import_list = imports_dict[import_settings_dict["name"]]
 
-        #             # Determine which models to import, then convert the ones that are eligible for import.
-        #             conversion_list, conversion_count = determine_imports(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, conversion_count, conversion_list)
+            # Loop through files in the current imports list and determine imports/run converter for each.
+            for file in import_list:
+                file = Path(file)
+                item = file.stem
+                item_dir = file.parent
+                import_file = str(file)
 
-        #         else:
-        #             continue
-        
-        
+                # Append preset name to suffix if there are duplicate import formats with different presets.
+                preset = ""
+                if import_settings_dict["name"] in duplicates:
+                    preset = "_" + import_settings_dict["preset"]
+                export_name = f"{prefix}{item}{suffix}{preset}"
+
+                # Set textures directories.                
+                textures_dir = item_dir / "textures"
+                textures_temp_dir = item_dir / f"{textures_dir}_{export_name}"
+
+                # Assign textures_temp to be beside custom textures source.
+                if textures_source == "Custom":  
+                    textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
+                
+                # Set export file paths.
+                export_file_1 = str(item_dir / f"{export_name}{export_file_1_ext}")
+                export_file_2 = str(item_dir / f"{export_name}{export_file_2_ext}")
+                blend = item_dir / f"{export_name}.blend"
+
+                # Determine which models to import, then convert the ones that are eligible for import.
+                conversion_list, conversion_count = determine_imports(item, item_dir, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count, conversion_list)
+
         # If using custom textures, delete temporary textures directory only after all items have been converted.
         if use_textures and textures_source == "Custom" and not keep_modified_textures:
             textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
