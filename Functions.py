@@ -250,6 +250,14 @@ def update_import_directories(self, context):
         import_file.directory = settings.import_directory
 
 
+# Get a list of files to be imported for a given instance of the transmogrifier_imports CollectionProperty.
+def get_import_files_list(import_instance):
+    directory = str(Path(bpy.path.abspath(import_instance.directory)).resolve())
+    files = glob.glob(f"{directory}/**/*{import_instance.extension}", recursive=True)
+
+    return files
+
+
 # Traverse a given directory for a given file type and return a dictionary of files.
 def get_import_files(self, context):
     imports = bpy.context.scene.transmogrifier_imports
@@ -257,10 +265,16 @@ def get_import_files(self, context):
     import_files_dict = {}
 
     for i in imports:
-        directory = str(Path(bpy.path.abspath(i.directory)).resolve())
-        files = glob.glob(f"{directory}/**/*{i.extension}", recursive=True)
-        import_files_dict[i.name] = files
-
+        files = get_import_files_list(i)
+        
+        # If there are multiple imports of the same file format, don't overwrite existing imports.
+        if i.name in import_files_dict:
+            import_files_dict[i.name].extend(files)
+        
+        # Add import files to dictionary according to format.
+        else:
+            import_files_dict[i.name] = files
+            
     return import_files_dict
 
 
@@ -500,7 +514,7 @@ def is_int(x):
 
 
 # Get properties of an individual PropertyGroup instance.
-def get_properties(propertygroup, properties_to_ignore, use_absolute_paths):
+def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths):
     keys = [key for key in propertygroup.__annotations__ if key not in properties_to_ignore and "_enum" not in key]  # Eventually remove the need for "_enum" condition.
     values = []
 
@@ -528,6 +542,10 @@ def get_properties(propertygroup, properties_to_ignore, use_absolute_paths):
     
     settings_dict = dict(zip(keys, values))
 
+    # Add list of imports to imports property.
+    if name == "imports":
+        settings_dict.update({"files": get_import_files_list(propertygroup)})
+
     return settings_dict
 
 
@@ -540,14 +558,14 @@ def get_propertygroups_properties(name, propertygroup, is_collection_property, p
         
         # Loop through each instance, get a dictionary of properties for each, and add each set of properties to the list.
         for propertygroup in propertygroups:
-            collection_of_settings.append(get_properties(propertygroup, properties_to_ignore, use_absolute_paths))
+            collection_of_settings.append(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
         
         # Update the settings dictionary with every instance.
         settings_dict.update({name: collection_of_settings})
     
     # If PropertyGroup is a PointerProperty, simply get a dictionary of properties from it.
     elif not is_collection_property:
-        settings_dict.update(get_properties(propertygroup, properties_to_ignore, use_absolute_paths))
+        settings_dict.update(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
 
     return settings_dict
 
@@ -575,6 +593,10 @@ def load_propertygroup_settings(property_groups, properties, group):
     for key, value in properties.items():
         # If a property name shares the same name of a PropertyGroup, skip.  The value is a list of dictionaries of properties of each instance that will be looped through later.
         if key in property_groups:
+            continue
+        
+        # Since "files" is a property added to imports/exports instance dictionaries but is not a part of their properties, skip.
+        elif key == "files":
             continue
         
         # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.

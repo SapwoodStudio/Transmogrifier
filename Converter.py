@@ -3460,22 +3460,6 @@ def determine_imports(item, item_dir, import_file, import_settings_dict, texture
         logging.exception(f"Could not determine imports: {item}")
 
 
-# Identify duplicate import formats.
-def identify_duplicate_imports():
-    try:
-        import_formats = [import_settings_dict["format"] for import_settings_dict in imports]
-        duplicates = [format for format in import_formats if import_formats.count(format) > 1]
-        unique_duplicates = list(set(duplicates))
-
-        print(f"Identified {len(unique_duplicates)} duplicates: {unique_duplicates}")
-        logging.info(f"Identified {len(unique_duplicates)} duplicates: {unique_duplicates}")
-
-        return unique_duplicates
-
-    except Exception as Argument:
-        logging.exception(f"Could not identify duplicates")
-
-
 # Main function that loops through specified directory and creates variables for the converter
 def batch_converter():
     try:
@@ -3501,17 +3485,17 @@ def batch_converter():
         run_custom_scripts("Before_Batch")
 
         # Get a dictionary of imports from Imports.json
-        imports_json = Path(__file__).parent.resolve() / "Imports.json"
-        imports_dict = read_json(imports_json)
+        # imports_json = Path(__file__).parent.resolve() / "Imports.json"
+        # imports_dict = read_json(imports_json)
 
         # Identify duplicate import formats.
-        duplicates = identify_duplicate_imports()
+        # duplicates = identify_duplicate_imports()
         
         # Loop through every import instance dictionary defined in Settings.json > "imports" setting.
         for import_settings_dict in imports:
 
             # Get a list of imports for the given import instance's format from the Imports.json dictionary.
-            import_list = imports_dict[import_settings_dict["name"]]
+            import_list = import_settings_dict["files"]
 
             # Loop through files in the current imports list and determine imports/run converter for each.
             for file in import_list:
@@ -3519,22 +3503,11 @@ def batch_converter():
                 item = file.stem
                 item_dir = file.parent
                 import_file = str(file)
-
-                # Append preset name to suffix if there are duplicate import formats with different presets.
-                preset = ""
-                if import_settings_dict["name"] in duplicates:
-                    preset = "_" + import_settings_dict["preset"]
-                export_name = f"{prefix}{item}{suffix}{preset}"
-
-                # Set textures directories.                
+                export_name = f"{prefix}{item}{suffix}"            
                 textures_dir = item_dir / "textures"
                 textures_temp_dir = item_dir / f"{textures_dir}_{export_name}"
-
-                # Assign textures_temp to be beside custom textures source.
                 if textures_source == "Custom":  
                     textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
-                
-                # Set export file paths.
                 export_file_1 = str(item_dir / f"{export_name}{export_file_1_ext}")
                 export_file_2 = str(item_dir / f"{export_name}{export_file_2_ext}")
                 blend = item_dir / f"{export_name}.blend"

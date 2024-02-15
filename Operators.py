@@ -503,11 +503,6 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         settings_json = Path(__file__).parent.resolve() / "Settings.json"
         Functions.write_json(settings_dict, settings_json)
 
-        # Write import files list to JSON file.
-        import_files = Functions.get_import_files(self, context)
-        imports_json = Path(__file__).parent.resolve() / "Imports.json" 
-        Functions.write_json(import_files, imports_json)
-
 
         # Run Converter.py
         subprocess.call(
