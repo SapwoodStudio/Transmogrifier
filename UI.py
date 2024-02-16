@@ -132,9 +132,10 @@ def draw_settings_general(self, context):
 
     # Directory Sync
     col = self.layout.column(align=True)
-    col.prop(settings, 'sync_import_directories')
-    if settings.sync_import_directories:
-        col.prop(settings, 'import_directory')
+    if len(imports) > 1 or (len(imports) == 1 and settings.sync_import_directories):
+        col.prop(settings, 'sync_import_directories')
+        if settings.sync_import_directories:
+            col.prop(settings, 'import_directory')
 
 
 

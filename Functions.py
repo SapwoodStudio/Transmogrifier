@@ -542,7 +542,7 @@ def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths
     
     settings_dict = dict(zip(keys, values))
 
-    # Add list of imports to imports property.
+    # Add list of imports to each imports instance.
     if name == "imports":
         settings_dict.update({"files": get_import_files_list(propertygroup)})
 

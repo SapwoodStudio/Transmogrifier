@@ -76,7 +76,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     sync_import_directories: BoolProperty(
         name="Sync Directories",
         description="Synchronize import directories for all import file formats",
-        default=True,
+        default=False,
         update=Functions.update_import_directories,
     )
     import_directory: StringProperty(
