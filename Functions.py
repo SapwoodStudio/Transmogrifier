@@ -33,6 +33,7 @@ from pathlib import Path
 import glob
 import re
 import json
+from mathutils import Vector, Euler
 
 
 
@@ -46,60 +47,24 @@ import json
 # ░░░░░         ░░░░░░░░   ░░░░░    ░░░░░   ░░░░░░░░░     ░░░░░    ░░░░░    ░░░░░░░    ░░░░░    ░░░░░  ░░░░░░░░░  
 
 
-# Load custom scripts from JSON file.
-def load_custom_scripts(custom_scripts_list):
-    for script in custom_scripts_list:
-        new_custom_script = bpy.context.scene.transmogrifier_scripts.add()
-        new_custom_script.script_name = script[0]
-        new_custom_script.script_filepath = script[1]
-        new_custom_script.script_trigger = script[-1]
-
-
-# Refresh UI when a Transmogrifier preset is selected.
-def refresh_ui(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    scripts = bpy.context.scene.transmogrifier_scripts
-
-    if settings.transmogrifier_preset != "NO_PRESET":
-        # Load selected Transmogrifier preset as a dictionary.
-        transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
-
-        # Read dictionary and change UI settings to reflect selected preset.
-        for key, value in transmogrifier_preset_dict.items():
-            scripts.clear()  # Clear any existing custom script instances.
-            if key == "custom_scripts":
-                load_custom_scripts(value)  # Load custom scripts from JSON file.
-                continue
-            # Make sure double-backslashes are preserved in directory path.
-            directories_set = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
-            if key in directories_set and value != "":
-                value = "'" + repr(value) + "'"
-            # Don't affect currently selected Transmogrifier preset
-            elif key == "transmogrifier_preset":
-                continue
-            # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.
-            if type(value) == str:
-                if value == '':
-                    value = "''"
-                else:
-                    value = "'" + value + "'"
-            # If a value is a list that contains strings, then change the list to a set.
-            elif type(value) == list and type(value[0]) == str:
-                value = set(value)
-            # If an integer object is an option of an EnumProperty drop down, make it a string.
-            if key in ("texture_resolution", "resize_textures_limit", "uv_resolution") and type(value) == int:
-                value = "'" + str(value) + "'"   
-            # Concatenate the current variable/setting to be updated.
-            update_setting = 'settings.' + str(key) + ' = ' + str(value)
-            # Make the setting (key) equal to the preset (value)
-            exec(update_setting)
-
+# ░█▀█░█▀█░█▀▀░█▀▄░█▀█░▀█▀░█▀█░█▀▄░░░█▀█░█▀▄░█▀▀░█▀▀░█▀▀░▀█▀░█▀▀
+# ░█░█░█▀▀░█▀▀░█▀▄░█▀█░░█░░█░█░█▀▄░░░█▀▀░█▀▄░█▀▀░▀▀█░█▀▀░░█░░▀▀█
+# ░▀▀▀░▀░░░▀▀▀░▀░▀░▀░▀░░▀░░▀▀▀░▀░▀░░░▀░░░▀░▀░▀▀▀░▀▀▀░▀▀▀░░▀░░▀▀▀
 
 # A Dictionary of operator_name: [list of preset EnumProperty item tuples].
 # Blender's doc warns that not keeping reference to enum props array can
 # cause crashs and weird issues.
 # Also useful for the get_preset_index function.
-preset_enum_items_refs = {}
+preset_enum_items_refs = {
+    "wm.collada_import": [],
+    "wm.alembic_import": [], 
+    "wm.usd_import": [],
+    "wm.obj_import": [],
+    "import_scene.fbx": [],
+    "import_scene.x3d": [],
+    "NO_OPERATOR": [],
+}
+
 
 # Returns a list of tuples used for an EnumProperty's items (identifier, name, description)
 # identifier, and name are the file name of the preset without the file extension (.py)
@@ -115,6 +80,7 @@ def get_operator_presets(operator):
     # cause crashs and weird issues:
     preset_enum_items_refs[operator] = presets
     return presets
+
 
 # Returns a dictionary of options from an operator's preset.
 # When calling an operator's method, you can use ** before a dictionary
@@ -145,6 +111,7 @@ def load_operator_preset(operator, preset):
     # (the preset option should look blank if the file doesn't exist anyway)
     return options
 
+
 # Finds the index of a preset with preset_name and returns it
 # Useful for transferring the value of a saved preset (in a StringProperty)
 # to the NOT saved EnumProperty for that preset used to present a nice GUI.
@@ -155,11 +122,17 @@ def get_preset_index(operator, preset_name):
     return 0
 
 
+
+# ░▀█▀░█▀▄░█▀█░█▀█░█▀▀░█▄█░█▀█░█▀▀░█▀▄░▀█▀░█▀▀░▀█▀░█▀▀░█▀▄░░░█▀█░█▀▄░█▀▀░█▀▀░█▀▀░▀█▀░█▀▀
+# ░░█░░█▀▄░█▀█░█░█░▀▀█░█░█░█░█░█░█░█▀▄░░█░░█▀▀░░█░░█▀▀░█▀▄░░░█▀▀░█▀▄░█▀▀░▀▀█░█▀▀░░█░░▀▀█
+# ░░▀░░▀░▀░▀░▀░▀░▀░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░░░▀▀▀░▀▀▀░▀░▀░░░▀░░░▀░▀░▀▀▀░▀▀▀░▀▀▀░░▀░░▀▀▀
+
 # A Dictionary of operator_name: [list of preset EnumProperty item tuples].
 # Blender's doc warns that not keeping reference to enum props array can
 # cause crashs and weird issues.
 # Also useful for the get_preset_index function.
 transmogrifier_preset_enum_items_refs = {}
+
 
 # Returns a list of tuples used for an EnumProperty's items (identifier, name, description)
 # identifier, and name are the file name of the preset without the file extension (.json)
@@ -175,6 +148,7 @@ def get_transmogrifier_presets(operator):
     # cause crashs and weird issues:
     transmogrifier_preset_enum_items_refs[operator] = presets
     return presets
+
 
 # Returns a dictionary of options from an operator's preset.
 # When calling an operator's method, you can use ** before a dictionary
@@ -203,6 +177,7 @@ def load_transmogrifier_preset(operator, preset):
     # (the preset option should look blank if the file doesn't exist anyway)
     return json_dict
 
+
 # Finds the index of a preset with preset_name and returns it
 # Useful for transferring the value of a saved preset (in a StringProperty)
 # to the NOT saved EnumProperty for that preset used to present a nice GUI.
@@ -213,6 +188,196 @@ def get_transmogrifier_preset_index(operator, preset_name):
     return 0
 
 
+
+# ░▀█▀░█▄█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
+# ░░█░░█░█░█▀▀░█░█░█▀▄░░█░░▀▀█
+# ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
+
+# Import format dictionary containing [operator preset directory name, operator, options dictionary].
+import_dict = {
+    "DAE": ["wm.collada_import", "bpy.ops.wm.collada_import(**", {}],
+    "ABC": ["wm.alembic_import", "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **", {}], 
+    "USD": ["wm.usd_import", "bpy.ops.wm.usd_import(**", {}],
+    "OBJ": ["wm.obj_import", "bpy.ops.wm.obj_import(**", {}],
+    "PLY": ["NO_OPERATOR", "bpy.ops.import_mesh.ply(**", {}], 
+    "STL": ["NO_OPERATOR", "bpy.ops.import_mesh.stl(**", {}],
+    "FBX": ["import_scene.fbx", "bpy.ops.import_scene.fbx(**", {}],
+    "glTF": ["NO_OPERATOR", "bpy.ops.import_scene.gltf(**", {}],
+    "X3D": ["import_scene.x3d", "bpy.ops.import_scene.x3d(**", {}],
+    "BLEND": ["NO_OPERATOR", "bpy.ops.wm.append(**", {
+        "filepath": "",
+        "directory": "\\Object\\",
+        "autoselect": True,
+        "active_collection": True,
+        "instance_collections": False,
+        "instance_object_data": True,
+        "set_fake": False,
+        "use_recursive": True,
+    }],
+}
+
+
+# Get operator options for a given preset for a given format.
+def get_operator_options(format, preset):
+    options = import_dict[format][2]
+    if import_dict[format][0] == "NO_OPERATOR":
+        return options
+    
+    options = load_operator_preset(import_dict[format][0], preset)
+    return options
+
+
+# Update import file names and operators based on file formats.
+def update_import_settings(self, context):
+    for index, import_file in enumerate(context.scene.transmogrifier_imports):
+        # Update box name from import extension.
+        import_file.name = import_file.extension.upper()[1:]
+        
+        # Update import preset from current preset_enum.
+        import_file.preset = import_file.preset_enum
+
+        # Update import operator and options
+        format = import_file.format
+        preset = import_file.preset
+        import_file.operator = f"{import_dict[format][1]}"
+        import_file.options = str(get_operator_options(format, preset))
+
+
+# Synchronize import directories with master directory.
+def update_import_directories(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    for index, import_file in enumerate(context.scene.transmogrifier_imports):
+        import_file.directory = settings.import_directory
+
+
+# Get a list of files to be imported for a given instance of the transmogrifier_imports CollectionProperty.
+def get_import_files_list(import_instance):
+    directory = str(Path(bpy.path.abspath(import_instance.directory)).resolve())
+    files = glob.glob(f"{directory}/**/*{import_instance.extension}", recursive=True)
+
+    return files
+
+
+# Traverse a given directory for a given file type and return a dictionary of files.
+def get_import_files(self, context):
+    imports = bpy.context.scene.transmogrifier_imports
+
+    import_files_dict = {}
+
+    for i in imports:
+        files = get_import_files_list(i)
+        
+        # If there are multiple imports of the same file format, don't overwrite existing imports.
+        if i.name in import_files_dict:
+            import_files_dict[i.name].extend(files)
+        
+        # Add import files to dictionary according to format.
+        else:
+            import_files_dict[i.name] = files
+            
+    return import_files_dict
+
+
+
+# ░█▀▀░█░█░▀█▀░█▀▀░█▀█░█▀▀░▀█▀░█▀█░█▀█░█▀▀
+# ░█▀▀░▄▀▄░░█░░█▀▀░█░█░▀▀█░░█░░█░█░█░█░▀▀█
+# ░▀▀▀░▀░▀░░▀░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
+
+# Dictionary of import/export file extensions.  glTF and USD get updated with additional extensions when User selects those formats.
+format_extension_enum_items_refs = {
+    "DAE": [(".dae", ".dae", "", 0)],
+    "ABC": [(".abc", ".abc", "", 0)],
+    "USD": [(".usd", ".usd", "", 0)],
+    "OBJ": [(".obj", ".obj", "", 0)],
+    "PLY": [(".ply", ".ply", "", 0)],
+    "STL": [(".stl", ".stl", "", 0)],
+    "FBX": [(".fbx", ".fbx", "", 0)],
+    "glTF": [(".gltf", ".gltf", "", 0)],
+    "X3D": [(".x3d", ".x3d", "", 0)],
+    "BLEND": [(".blend", ".blend", "", 0)],
+}
+
+
+# Get file extension(s) for a given format.
+def get_format_extensions(format):
+    # Convert format to extension.
+    extensions = [(f".{format.lower()}", f".{format.lower()}", "", 0)]
+
+    # USD extensions.
+    if format == "USD":
+        extensions = [
+            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 0),
+            (".usdc", "Binary Crate (default) (.usdc)", "Binary, fast, hard to edit", 1),
+            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 2),
+            (".usd", "Plain (.usd)", "Can be either binary or ASCII\nIn Blender this imports to binary", 3),
+        ]
+
+    # glTF extensions.
+    elif format == "glTF":
+        extensions = [
+            (".glb", "glTF Binary (.glb)", "", 0),
+            (".gltf", "glTF Embedded or Separate (.gltf)", "", 1),
+        ]
+
+    # Replace dictionary entry for given format with updated extension(s).
+    format_extension_enum_items_refs[format] = extensions
+
+    # Return list of extension items.
+    return extensions
+
+
+
+# ░█▀▀░█░█░█▀▀░█▀▀░█░█░░░█▀█░█▀█░▀█▀░█░█░█▀▀
+# ░█░░░█▀█░█▀▀░█░░░█▀▄░░░█▀▀░█▀█░░█░░█▀█░▀▀█
+# ░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░▀░░░▀░░░▀░▀░░▀░░▀░▀░▀▀▀
+
+# Stop batch converter and update info message if directory has not been selected or .blend file has not been saved.
+def check_directory_path(self, context, directory):
+    # Check if path is absolute and if blend file has been saved.
+    if Path(directory) != Path(bpy.path.abspath(directory)).resolve() and not bpy.data.is_saved:
+        message = f"Cannot find directory: {Path(bpy.path.abspath(directory)).resolve().name}.  \nSave .blend file somewhere before using a relative directory path\n(or use an absolute directory path instead)"
+        return False, message
+    
+    # Convert to absolute path.
+    directory = Path(bpy.path.abspath(directory)).resolve()
+    
+    # Check if directory exists.
+    if not directory.is_dir():
+        message = f"Directory doesn't exist: {directory.name}"
+        return False, message
+    
+    message = "Directory checks out"
+    return True, message
+
+
+# Stop batch converter if script has not been selected or .blend file has not been saved.
+def check_custom_script_path(self, context, filepath, name):
+    # Check if file is a Python file.
+    if Path(filepath).suffix != ".py":
+        message = f"Custom Script is not a Python file: {Path(filepath).name}"
+        return False, message
+    
+    # Check if path is absolute and if blend file has been saved.
+    if Path(filepath) != Path(bpy.path.abspath(filepath)).resolve() and not bpy.data.is_saved:
+        message = f"Cannot find Custom Script: {Path(filepath).name}. \nSave .blend file somewhere before using a relative script path\n(or use an absolute script path instead)"
+        return False, message
+    
+    # Convert to absolute path.
+    filepath = Path(bpy.path.abspath(filepath)).resolve()
+    
+    # Check if Python file exists.
+    if filepath.suffix == ".py" and not filepath.is_file():
+        message = f"Custom Script doesn't exist: {filepath.name}"
+        return False, message
+    
+    message = "Script path checks out"
+    return True, message
+
+
+
+# ░█▀█░█▀▀░█▀▀░█▀▀░▀█▀░█▀▀
+# ░█▀█░▀▀█░▀▀█░█▀▀░░█░░▀▀█
+# ░▀░▀░▀▀▀░▀▀▀░▀▀▀░░▀░░▀▀▀
 
 # A dictionary of one key with a value of a list of asset libraries.
 asset_library_enum_items_refs = {"asset_libraries": []}
@@ -229,6 +394,7 @@ def get_asset_libraries():
 
     return libraries_list
 
+
 # Get index of selected asset library in asset_library_enum property based on its position in the dictionary value list.
 def get_asset_library_index(library_name):
     for l in range(len(asset_library_enum_items_refs["asset_libraries"])):
@@ -237,9 +403,9 @@ def get_asset_library_index(library_name):
     return 0
 
 
-
 # A dictionary of one key with a value of a list of asset catalogs.
 asset_catalog_enum_items_refs = {"asset_catalogs": []}
+
 
 # Get asset catalogs and return a list of them.  Add them as the value to the dictionary.
 def get_asset_catalogs():
@@ -265,6 +431,7 @@ def get_asset_catalogs():
 
     return catalogs_list
 
+
 # Get index of selected asset catalog in asset_catalog_enum property based on its position in the dictionary value list.
 def get_asset_catalog_index(catalog_name):
     for l in range(len(asset_catalog_enum_items_refs["asset_catalogs"])):
@@ -274,170 +441,246 @@ def get_asset_catalog_index(catalog_name):
 
 
 
-# Create variables_dict dictionary from transmogrifier_settings and transmogrifier_scripts to pass to write_json function later.
-def get_transmogrifier_settings(self, context, use_absolute_paths):
-    settings = bpy.context.scene.transmogrifier_settings
-    keys = [key for key in settings.__annotations__ if "enum" not in key]
-    values = []
-    
-    for key in keys:    
-        # Get value as string to be evaluated later.
-        value = eval(f"settings.{key}")
-        
-        # Convert relative paths to absolute paths.
-        directory_paths = ("directory", "directory_output_custom", "textures_custom_dir", "uv_directory_custom")
-        if use_absolute_paths and key in directory_paths:
-            value = str(Path(bpy.path.abspath(value)).resolve())
-        
-        # Convert enumproperty numbers to numbers.
-        if key == "texture_resolution" or key == "resize_textures_limit" or key == "uv_resolution":
-            if value != "Default":
-                value = int(value)
-
-        # Convert dictionaries and vectors to tuples.
-        if "{" in str(value):
-            value = tuple(value)
-        elif "<" in str(value):
-            value = str(value)
-            char_start = "("
-            char_end = ")"
-            value = eval(re.sub('[xyz=]', '', "(" + ''.join(value).split(char_start)[1].split(char_end)[0] + ")"))
-        values.append(value)
-
-    variables_dict = dict(zip(keys, values))
-
-    # Make a dictionary of lists of values of custom scripts.
-    scripts = bpy.context.scene.transmogrifier_scripts
-    custom_scripts = []
-    
-    for script in scripts:
-        values = []
-        for key in script.__annotations__:
-            value = eval(f"script.{key}")
-            if use_absolute_paths and key == "script_filepath":
-                value = str(Path(bpy.path.abspath(value)).resolve())
-            values.append(value)
-        custom_scripts.append(values)
-    custom_scripts_dict = {"custom_scripts": custom_scripts}
-
-    # Add custom scripts list to dictionary of settings.
-    variables_dict.update(custom_scripts_dict)
-
-    return variables_dict
-
+# ░█▀▀░█░█░█▀▀░▀█▀░█▀█░█▄█░░░█▀▀░█▀▀░█▀▄░▀█▀░█▀█░▀█▀░█▀▀
+# ░█░░░█░█░▀▀█░░█░░█░█░█░█░░░▀▀█░█░░░█▀▄░░█░░█▀▀░░█░░▀▀█
+# ░▀▀▀░▀▀▀░▀▀▀░░▀░░▀▀▀░▀░▀░░░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░░░░▀░░▀▀▀
 
 # Add a custom script.
-def add_customscript(self, context):
-    new_custom_script = context.scene.transmogrifier_scripts.add()
-    new_custom_script.script_name = Path(new_custom_script.script_filepath).name
-
+def add_custom_script(self, context):
+    new_script = context.scene.transmogrifier_scripts.add()
+    new_script.name = Path(new_script.file).name
 
 # Update custom script names based on file names.
-def update_customscript_names(self, context):
+def update_custom_script_names(self, context):
     for index, custom_script in enumerate(context.scene.transmogrifier_scripts):
-        script_filepath = Path(bpy.path.abspath(custom_script.script_filepath)).resolve()
+        file = Path(bpy.path.abspath(custom_script.file)).resolve()
 
         # Added a new custom script (default name is "*.py")
-        if custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
-            custom_script.script_name = f"Script {index + 1}"
+        if custom_script.file == "*.py"  and file.name == "*.py":
+            custom_script.name = f"Script {index + 1}"
         
         # File is not a Python file.
-        elif script_filepath.suffix != ".py":
-            custom_script.script_name = f"(Not a Python File) {script_filepath.name}"
+        elif file.suffix != ".py":
+            custom_script.name = f"(Not a Python File) {file.name}"
 
         # File is a Python file but doesn't exist.
-        elif not script_filepath.is_file() and script_filepath.suffix == ".py":
-            custom_script.script_name = f"(Missing) {script_filepath.name}"
+        elif not file.is_file() and file.suffix == ".py":
+            custom_script.name = f"(Missing) {file.name}"
 
         # File is a Python file and might exist, but path is relative and current Blend session is unsaved.
-        elif script_filepath != Path(custom_script.script_filepath) and not bpy.data.is_saved:
-            custom_script.script_name = f"(Missing) {script_filepath.name}"
+        elif file != Path(custom_script.file) and not bpy.data.is_saved:
+            custom_script.name = f"(Missing) {file.name}"
 
         # File is a Python file and exists.
-        elif script_filepath.is_file() and script_filepath.suffix == ".py":
-            custom_script.script_name = script_filepath.name
+        elif file.is_file() and file.suffix == ".py":
+            custom_script.name = file.name
 
+
+
+# ░█▀█░█▀▄░█▀█░█▀█░█▀▀░█▀▄░▀█▀░█░█░░░█▀▀░█▀▄░█▀█░█░█░█▀█░█▀▀
+# ░█▀▀░█▀▄░█░█░█▀▀░█▀▀░█▀▄░░█░░░█░░░░█░█░█▀▄░█░█░█░█░█▀▀░▀▀█
+# ░▀░░░▀░▀░▀▀▀░▀░░░▀▀▀░▀░▀░░▀░░░▀░░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░░░▀▀▀
+
+# Get a list of all PropertyGroups whose properties need recorded/read to/from either Settings.json or a [Transmogrifier_Preset].json.
+# Used for Get Settings and Set Settings.
+# [PropertyGroup, name, is a CollectionProperty, properties to ignore]
+def get_propertygroups():
+    property_groups = {
+        "settings": [bpy.context.scene.transmogrifier_settings, False, [
+            "advanced_ui",
+            "transmogrifier_preset",
+            ]
+        ],
+        "imports": [bpy.context.scene.transmogrifier_imports, True, []],
+        "scripts": [bpy.context.scene.transmogrifier_scripts, True, []],
+    }
+    
+    return property_groups
+
+
+
+# ░█▀▀░█▀▀░▀█▀░░░█▀▀░█▀▀░▀█▀░▀█▀░▀█▀░█▀█░█▀▀░█▀▀
+# ░█░█░█▀▀░░█░░░░▀▀█░█▀▀░░█░░░█░░░█░░█░█░█░█░▀▀█
+# ░▀▀▀░▀▀▀░░▀░░░░▀▀▀░▀▀▀░░▀░░░▀░░▀▀▀░▀░▀░▀▀▀░▀▀▀
+
+# Check if a value is an integer.
+def is_int(x):
+    try:
+        x = int(x)
+    except (TypeError, ValueError):
+        return False
+    else:
+        return True
+
+
+# Get properties of an individual PropertyGroup instance.
+def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths):
+    keys = [key for key in propertygroup.__annotations__ if key not in properties_to_ignore and "_enum" not in key]  # Eventually remove the need for "_enum" condition.
+    values = []
+
+    for key in keys:
+        value = eval(f"propertygroup.{key}")
+        
+        # Check if value is a file or directory path.  If so, and if writing to Settings.json, make it absolute.
+        if use_absolute_paths and Path(bpy.path.abspath(str(value))).resolve().exists() and value != "":
+            value = str(Path(bpy.path.abspath(value)).resolve())
+
+        # Convert value to integer if it's formatted as a string (for EnumProperty numeric values)
+        elif isinstance(value, str) and is_int(value):
+            value = int(value)
+
+        # Convert set to tuple.
+        elif isinstance(value, set):
+            value = tuple(value)
+        
+        # Convert Vector or Euler to tuple.
+        elif isinstance(value, Vector) or isinstance(value, Euler):
+            value = [value[0], value[1], value[2]]
+
+        # Append value to list.
+        values.append(value)
+    
+    settings_dict = dict(zip(keys, values))
+
+    # Add list of imports to each imports instance.
+    if name == "imports":
+        settings_dict.update({"files": get_import_files_list(propertygroup)})
+
+    return settings_dict
+
+
+# Loop through instances in a CollectionProperty group and return dictionary of them.
+def get_propertygroups_properties(name, propertygroup, is_collection_property, properties_to_ignore, use_absolute_paths, settings_dict):
+    # If PropertyGroup is a CollectionProperty, list the existing instances.
+    if is_collection_property: 
+        propertygroups = [instance for index, instance in enumerate(propertygroup)]
+        collection_of_settings = []
+        
+        # Loop through each instance, get a dictionary of properties for each, and add each set of properties to the list.
+        for propertygroup in propertygroups:
+            collection_of_settings.append(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
+        
+        # Update the settings dictionary with every instance.
+        settings_dict.update({name: collection_of_settings})
+    
+    # If PropertyGroup is a PointerProperty, simply get a dictionary of properties from it.
+    elif not is_collection_property:
+        settings_dict.update(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
+
+    return settings_dict
+
+
+# Create settings_dict dictionary from PropertyGroups to pass to write_json function later.
+def get_settings_dict(self, context, use_absolute_paths):
+    settings_dict = {}
+    property_groups = get_propertygroups()
+
+    # Loop through each PropertyGroup and update the dictionary of settings.
+    for key, value in property_groups.items():
+        settings_dict.update(get_propertygroups_properties(key, value[0], value[1], value[2], use_absolute_paths, settings_dict))
+
+    return settings_dict
+    
+
+
+# ░█▀▀░█▀▀░▀█▀░░░█▀▀░█▀▀░▀█▀░▀█▀░▀█▀░█▀█░█▀▀░█▀▀
+# ░▀▀█░█▀▀░░█░░░░▀▀█░█▀▀░░█░░░█░░░█░░█░█░█░█░▀▀█
+# ░▀▀▀░▀▀▀░░▀░░░░▀▀▀░▀▀▀░░▀░░░▀░░▀▀▀░▀░▀░▀▀▀░▀▀▀
+
+# Load/set each property within a given PropertyGroup.
+def load_propertygroup_settings(property_groups, properties, group):
+    # Loop through each property in the PropertyGroup and load/set value from the given Transmogrifier preset.
+    for key, value in properties.items():
+        # If a property name shares the same name of a PropertyGroup, skip.  The value is a list of dictionaries of properties of each instance that will be looped through later.
+        if key in property_groups:
+            continue
+        
+        # Since "files" is a property added to imports/exports instance dictionaries but is not a part of their PropertyGroups, skip.
+        elif key == "files":
+            continue
+        
+        # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.
+        elif isinstance(value, str):
+            value = repr(value)
+
+        # If a value is a list that contains strings, then change the list to a set.
+        elif isinstance(value, list) and isinstance(value[0], str):
+            value = set(value)
+
+        # If an integer is an option of a certain EnumProperty drop down, make it a string.
+        elif key in ("texture_resolution", "resize_textures_limit", "uv_resolution") and isinstance(value, int):
+            value = repr(str(value))
+
+        # Concatenate the current property assignment.
+        property_assignment = f"group.{key} = {value}"
+
+        # Make the property (key) equal to the preset (value).
+        exec(property_assignment)
+
+
+# If PropertyGroup is a CollectionProperty, instantiate and load settings for each instance.
+def instantiate_propertygroups(property_groups, properties_list, propertygroup):
+    for properties in properties_list:
+        # Add new instance.
+        group = propertygroup.add()
+
+        # Load/set properties for that group.
+        load_propertygroup_settings(property_groups, properties, group)
+        
+
+# Update settings when a Transmogrifier preset is selected.
+def set_settings(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    imports = bpy.context.scene.transmogrifier_imports
+    scripts = bpy.context.scene.transmogrifier_scripts
+
+    # Get PropertyGroups.
+    property_groups = get_propertygroups()
+
+    if settings.transmogrifier_preset != "NO_PRESET":
+        # Load selected Transmogrifier preset as a dictionary.
+        transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
+
+        # Clear any existing imports instances.
+        imports.clear()
+        
+        # Clear any existing custom script instances.
+        scripts.clear()
+
+        # Loop through each PropertyGroup ("settings", "imports", etc.)
+        for key, value in property_groups.items():
+            try:
+                # If PropertyGroup is not a CollectionProperty, go straight to loading/setting the properties from the preset.
+                if value[1] == False:
+                    load_propertygroup_settings(property_groups, transmogrifier_preset_dict, value[0])
+                
+                # If PropertyGroup is a CollectionProperty, instantiate and load settings for each instance.
+                else:
+                    instantiate_propertygroups(property_groups, transmogrifier_preset_dict[key], value[0])
+
+            # If using an old Transmogrifier preset (i.e. without new properties such as "imports" and "scripts"), skip.
+            except KeyError:
+                continue
+
+
+
+# ░▀▀█░█▀▀░█▀█░█▀█░░░█░█░▀█▀░▀█▀░█░░░▀█▀░▀█▀░▀█▀░█▀▀░█▀▀
+# ░░░█░▀▀█░█░█░█░█░░░█░█░░█░░░█░░█░░░░█░░░█░░░█░░█▀▀░▀▀█
+# ░▀▀░░▀▀▀░▀▀▀░▀░▀░░░▀▀▀░░▀░░▀▀▀░▀▀▀░▀▀▀░░▀░░▀▀▀░▀▀▀░▀▀▀
 
 # Write user variables to a JSON file.
-def write_json(variables_dict, json_file):
+def write_json(settings_dict, json_file):
         
     with open(json_file, "w") as outfile:
-        json.dump(variables_dict, outfile)
+        json.dump(settings_dict, outfile)
 
 
-# Read the JSON file where the conversion count is stored.
-def read_json():
+# Read the JSON file and return contents.
+def read_json(json_file):
     # Open JSON file
-    json_file = Path(__file__).parent.resolve() / "Converter_Report.json"
-
     with open(json_file, 'r') as openfile:
     
         # Read from JSON file
         json_object = json.load(openfile)
     
     return json_object
-
-
-# Traverse a given directory for a given file type and return a list of files.
-def get_files_in_directory_tree(self, context, directory, extension):
-    files = glob.glob(f"{directory}/**/*{extension}", recursive=True)
-
-    # Convert list items to pathlib Paths.
-    if files:
-        files = [Path(file) for file in files]
-
-    return files
-
-
-# Count how many files of a given type are in a given directory.
-def count_files_in_directory_tree(self, context, directory, extension):
-    files = get_files_in_directory_tree(self, context, directory, extension)
-
-    if not files:
-        file_count = 0
-        return file_count
-    
-    file_count = len(files)
-    return(file_count)
-
-
-def get_import_ext(self, context, settings):
-    # Get import directory
-    import_directory = settings.directory
-
-    # Get import extension
-    import_ext = f".{settings.import_file}".lower()
-    
-    # Adjust for USD- and glTF-specific extensions
-    if settings.import_file == 'USD':
-        import_ext = settings.import_usd_extension
-    elif settings.import_file == 'glTF':
-        import_ext = settings.import_gltf_extension
-        
-    return import_ext
-
-
-def update_batch_convert_info_message(self, context):
-    # Get variables.
-    settings = bpy.context.scene.transmogrifier_settings
-    import_directory = settings.directory
-    import_ext = get_import_ext(self, context, settings)
-
-    # Check if directory is absolute and if Blender session is saved.
-    if (Path(import_directory) != Path(bpy.path.abspath(import_directory)).resolve() or import_directory == "") and not bpy.data.is_saved:
-        settings.batch_convert_info_message = f"0 {settings.import_file} files detected."
-        return
-
-    # Change path to absolute directory.
-    import_directory = Path(bpy.path.abspath(import_directory)).resolve()
-    # Count models that will be imported.
-    models_to_import = count_files_in_directory_tree(self, context, import_directory, import_ext)
-
-    # Check if there are models to import and export.
-    if models_to_import and settings.model_quantity != "No Formats":
-        if settings.model_quantity == "1 Format":
-            settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} ⇒ {models_to_import} {settings.export_file_1}"
-        elif settings.model_quantity == "2 Formats":
-            settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} ⇒ {models_to_import} {settings.export_file_1} + {models_to_import} {settings.export_file_2}"
-    elif not models_to_import:
-        settings.batch_convert_info_message = f"{models_to_import} {settings.import_file} files detected."

@@ -57,8 +57,12 @@ from . import Functions
 
 # Groups together all the addon settings that are saved in each .blend file
 class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
-    # Preset Settings:
-    # Option to select Transmogrifier presets
+    advanced_ui: BoolProperty(
+        name="Advanced UI",
+        description="Toggle simple/advanced user interface options",
+        default=False,
+    )
+    # Transmogrifier Presets (aka Workflows)
     transmogrifier_preset: StringProperty(default='FBX_to_GLB')
     transmogrifier_preset_enum: EnumProperty(
         name="", options={'SKIP_SAVE'},
@@ -66,142 +70,132 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         items=lambda self, context: Functions.get_transmogrifier_presets('transmogrifier'),
         get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
         set=lambda self, value: setattr(self, 'transmogrifier_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
-        update=Functions.refresh_ui
-    )
-    # UI Setting
-    ui_toggle: EnumProperty(
-        name="UI",
-        items=[
-            ('Simple', "Simple", "Show only basic conversion options", 1),
-            ('Advanced', "Advanced", "Show all conversion options", 2),
-        ],
-        description="Toggle simple or advanced user interface options",
-        default='Simple', 
+        update=Functions.set_settings
     )
     # Import Settings
-    directory: StringProperty(
+    sync_import_directories: BoolProperty(
+        name="Sync Directories",
+        description="Synchronize import directories for all import file formats",
+        default=False,
+        update=Functions.update_import_directories,
+    )
+    import_directory: StringProperty(
         name="Directory",
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=Functions.update_batch_convert_info_message,
+        update=Functions.update_import_directories,
     )
-    import_file: EnumProperty(
-        name="Format",
-        description="Which file format to import",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10)
-        ],
-        default="FBX",
-        update=Functions.update_batch_convert_info_message,
-    )
-    # Batch Convert Info Message
-    batch_convert_info_message: StringProperty(
-        name="Batch Convert Info Message",
-        default="",
-    )
-    # Import Format specific options:
-    import_usd_extension: EnumProperty(
-        name="Extension",
-        description="Which type of USD to import",
-        items=[
-            (".usd", "Plain (.usd)",
-             "Can be either binary or ASCII\nIn Blender this imports to binary", 1),
-            (".usdc", "Binary Crate (default) (.usdc)",
-             "Binary, fast, hard to edit", 2),
-            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
-            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
-        ],
-        default=".usdz",
-    )
-    import_gltf_extension: EnumProperty(
-        name="Extension",
-        description="Which type of glTF to import",
-        items=[
-            (".glb", "glTF Binary (.glb)", "", 1),
-            (".gltf", "glTF Embedded or Separate (.gltf)", "", 2),
-        ],
-        default=".glb",
-    )
-    ply_ascii: BoolProperty(name="ASCII Format", default=False)
-    stl_ascii: BoolProperty(name="ASCII Format", default=False)
+    # import_file: EnumProperty(
+    #     name="Format",
+    #     description="Which file format to import",
+    #     items=[
+    #         ("DAE", "Collada (.dae)", "", 1),
+    #         ("ABC", "Alembic (.abc)", "", 2),
+    #         ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+    #         ("OBJ", "Wavefront (.obj)", "", 4),
+    #         ("PLY", "Stanford (.ply)", "", 5),
+    #         ("STL", "STL (.stl)", "", 6),
+    #         ("FBX", "FBX (.fbx)", "", 7),
+    #         ("glTF", "glTF (.glb/.gltf)", "", 8),
+    #         ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+    #         ("BLEND", "Blender (.blend)", "", 10)
+    #     ],
+    #     default="FBX",
+    # )
+    # # Import Format specific options:
+    # import_usd_extension: EnumProperty(
+    #     name="Extension",
+    #     description="Which type of USD to import",
+    #     items=[
+    #         (".usd", "Plain (.usd)",
+    #          "Can be either binary or ASCII\nIn Blender this imports to binary", 1),
+    #         (".usdc", "Binary Crate (default) (.usdc)",
+    #          "Binary, fast, hard to edit", 2),
+    #         (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
+    #         (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
+    #     ],
+    #     default=".usdz",
+    # )
+    # import_gltf_extension: EnumProperty(
+    #     name="Extension",
+    #     description="Which type of glTF to import",
+    #     items=[
+    #         (".glb", "glTF Binary (.glb)", "", 1),
+    #         (".gltf", "glTF Embedded or Separate (.gltf)", "", 2),
+    #     ],
+    #     default=".glb",
+    # )
+    # ply_ascii: BoolProperty(name="ASCII Format", default=False)
+    # stl_ascii: BoolProperty(name="ASCII Format", default=False)
 
-    # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
-    import_abc_preset: StringProperty(default='NO_PRESET')
-    import_abc_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > Alembic (.abc))",
-        items=lambda self, context: Functions.get_operator_presets('wm.alembic_import'),
-        get=lambda self: Functions.get_preset_index(
-            'wm.alembic_import', self.import_abc_preset),
-        set=lambda self, value: setattr(
-            self, 'import_abc_preset', Functions.preset_enum_items_refs['wm.alembic_import'][value][0]),
-    )
-    import_dae_preset: StringProperty(default='NO_PRESET')
-    import_dae_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > Collada (.dae))",
-        items=lambda self, context: Functions.get_operator_presets('wm.collada_import'),
-        get=lambda self: Functions.get_preset_index(
-            'wm.collada_import', self.import_dae_preset),
-        set=lambda self, value: setattr(
-            self, 'import_dae_preset', Functions.preset_enum_items_refs['wm.collada_import'][value][0]),
-    )
-    import_usd_preset: StringProperty(default='NO_PRESET')
-    import_usd_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
-        items=lambda self, context: Functions.get_operator_presets('wm.usd_import'),
-        get=lambda self: Functions.get_preset_index('wm.usd_import', self.import_usd_preset),
-        set=lambda self, value: setattr(
-            self, 'import_usd_preset', Functions.preset_enum_items_refs['wm.usd_import'][value][0]),
-    )
-    import_obj_preset: StringProperty(default='NO_PRESET')
-    import_obj_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > Wavefront (.obj))",
-        items=lambda self, context: Functions.get_operator_presets('wm.obj_import'),
-        get=lambda self: Functions.get_preset_index('wm.obj_import', self.import_obj_preset),
-        set=lambda self, value: setattr(
-            self, 'import_obj_preset', Functions.preset_enum_items_refs['wm.obj_import'][value][0]),
-    )
-    import_fbx_preset: StringProperty(default='NO_PRESET')
-    import_fbx_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > FBX (.fbx))",
-        items=lambda self, context: Functions.get_operator_presets('import_scene.fbx'),
-        get=lambda self: Functions.get_preset_index('import_scene.fbx', self.import_fbx_preset),
-        set=lambda self, value: setattr(
-            self, 'import_fbx_preset', Functions.preset_enum_items_refs['import_scene.fbx'][value][0]),
-    )
-    import_gltf_preset: StringProperty(default='NO_PRESET')
-    import_gltf_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > glTF (.glb/.gltf))",
-        items=lambda self, context: Functions.get_operator_presets('import_scene.gltf'),
-        get=lambda self: Functions.get_preset_index(
-            'import_scene.gltf', self.import_gltf_preset),
-        set=lambda self, value: setattr(
-            self, 'import_gltf_preset', Functions.preset_enum_items_refs['import_scene.gltf'][value][0]),
-    )
-    import_x3d_preset: StringProperty(default='NO_PRESET')
-    import_x3d_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use import settings from a preset.\n(Create in the import settings from the File > import > X3D Extensible 3D (.x3d))",
-        items=lambda self, context: Functions.get_operator_presets('import_scene.x3d'),
-        get=lambda self: Functions.get_preset_index('import_scene.x3d', self.import_x3d_preset),
-        set=lambda self, value: setattr(
-            self, 'import_x3d_preset', Functions.preset_enum_items_refs['import_scene.x3d'][value][0]),
-    )
+    # # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
+    # import_abc_preset: StringProperty(default='NO_PRESET')
+    # import_abc_preset_enum: EnumProperty(
+    #     name="Preset", options={'SKIP_SAVE'},
+    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Alembic (.abc))",
+    #     items=lambda self, context: Functions.get_operator_presets('wm.alembic_import'),
+    #     get=lambda self: Functions.get_preset_index(
+    #         'wm.alembic_import', self.import_abc_preset),
+    #     set=lambda self, value: setattr(
+    #         self, 'import_abc_preset', Functions.preset_enum_items_refs['wm.alembic_import'][value][0]),
+    # )
+    # import_dae_preset: StringProperty(default='NO_PRESET')
+    # import_dae_preset_enum: EnumProperty(
+    #     name="Preset", options={'SKIP_SAVE'},
+    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Collada (.dae))",
+    #     items=lambda self, context: Functions.get_operator_presets('wm.collada_import'),
+    #     get=lambda self: Functions.get_preset_index(
+    #         'wm.collada_import', self.import_dae_preset),
+    #     set=lambda self, value: setattr(
+    #         self, 'import_dae_preset', Functions.preset_enum_items_refs['wm.collada_import'][value][0]),
+    # )
+    # import_usd_preset: StringProperty(default='NO_PRESET')
+    # import_usd_preset_enum: EnumProperty(
+    #     name="Preset", options={'SKIP_SAVE'},
+    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
+    #     items=lambda self, context: Functions.get_operator_presets('wm.usd_import'),
+    #     get=lambda self: Functions.get_preset_index('wm.usd_import', self.import_usd_preset),
+    #     set=lambda self, value: setattr(
+    #         self, 'import_usd_preset', Functions.preset_enum_items_refs['wm.usd_import'][value][0]),
+    # )
+    # import_obj_preset: StringProperty(default='NO_PRESET')
+    # import_obj_preset_enum: EnumProperty(
+    #     name="Preset", options={'SKIP_SAVE'},
+    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Wavefront (.obj))",
+    #     items=lambda self, context: Functions.get_operator_presets('wm.obj_import'),
+    #     get=lambda self: Functions.get_preset_index('wm.obj_import', self.import_obj_preset),
+    #     set=lambda self, value: setattr(
+    #         self, 'import_obj_preset', Functions.preset_enum_items_refs['wm.obj_import'][value][0]),
+    # )
+    # import_fbx_preset: StringProperty(default='NO_PRESET')
+    # import_fbx_preset_enum: EnumProperty(
+    #     name="Preset", options={'SKIP_SAVE'},
+    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > FBX (.fbx))",
+    #     items=lambda self, context: Functions.get_operator_presets('import_scene.fbx'),
+    #     get=lambda self: Functions.get_preset_index('import_scene.fbx', self.import_fbx_preset),
+    #     set=lambda self, value: setattr(
+    #         self, 'import_fbx_preset', Functions.preset_enum_items_refs['import_scene.fbx'][value][0]),
+    # )
+    # import_gltf_preset: StringProperty(default='NO_PRESET')
+    # import_gltf_preset_enum: EnumProperty(
+    #     name="Preset", options={'SKIP_SAVE'},
+    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > glTF (.glb/.gltf))",
+    #     items=lambda self, context: Functions.get_operator_presets('import_scene.gltf'),
+    #     get=lambda self: Functions.get_preset_index(
+    #         'import_scene.gltf', self.import_gltf_preset),
+    #     set=lambda self, value: setattr(
+    #         self, 'import_gltf_preset', Functions.preset_enum_items_refs['import_scene.gltf'][value][0]),
+    # )
+    # import_x3d_preset: StringProperty(default='NO_PRESET')
+    # import_x3d_preset_enum: EnumProperty(
+    #     name="Preset", options={'SKIP_SAVE'},
+    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > X3D Extensible 3D (.x3d))",
+    #     items=lambda self, context: Functions.get_operator_presets('import_scene.x3d'),
+    #     get=lambda self: Functions.get_preset_index('import_scene.x3d', self.import_x3d_preset),
+    #     set=lambda self, value: setattr(
+    #         self, 'import_x3d_preset', Functions.preset_enum_items_refs['import_scene.x3d'][value][0]),
+    # )
 
 
     # Export Settings:
@@ -221,7 +215,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="glTF",
-        update=Functions.update_batch_convert_info_message,
     )
     # File 1 scale.
     export_file_1_scale: FloatProperty(
@@ -249,7 +242,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10),
         ],
         default="USD",
-        update=Functions.update_batch_convert_info_message,
     )
     # File 2 scale.
     export_file_2_scale: FloatProperty(
@@ -396,7 +388,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
         ],
         default="1 Format",
-        update=Functions.update_batch_convert_info_message,
     )
     prefix: StringProperty(
         name="Prefix",
@@ -1011,24 +1002,97 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             'Objects',
         },
     )
-    
+
+
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
+class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
+
+    name: StringProperty(
+        name="Name", 
+        default="FBX",
+    )
+
+    directory: StringProperty(
+        name="Directory",
+        description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
+        default="//",
+        subtype='DIR_PATH',
+    )
+
+    format: EnumProperty(
+        name="Format",
+        description="Which file format to import",
+        items=[
+            ("DAE", "Collada (.dae)", "", 1),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10)
+        ],
+        default="FBX",
+        update=Functions.update_import_settings,
+    )
+
+    # A string property for saving User option (without new presets changing User choice),...
+    preset: StringProperty(
+        name="Preset",
+        default='NO_PRESET',
+    )
+
+    # ... and enum property for choosing.
+    preset_enum: EnumProperty(
+        name="Preset", 
+        options={'SKIP_SAVE'},
+        description="Use import settings from a preset.\n(Create in the import settings from the File > Import menu",
+        items=lambda self, context: Functions.get_operator_presets(Functions.import_dict[self.format][0]),
+        get=lambda self: Functions.get_preset_index(Functions.import_dict[self.format][0], self.preset),
+        set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[Functions.import_dict[self.format][0]][value][0]),
+        update=Functions.update_import_settings,
+    )
+
+    extension: EnumProperty(
+        name="Extension", 
+        options={'SKIP_SAVE'},
+        description="Format extension",
+        items=lambda self, context: Functions.get_format_extensions(self.format),
+        update=Functions.update_import_settings,
+    )
+
+    operator: StringProperty(
+        name="Operator",
+        description="Import operator string",
+        default="bpy.ops.import_scene.fbx(**",
+    )
+
+    options: StringProperty(
+        name="Options",
+        description="Dictionary of import operator options from preset",
+        default="{}",
+    )
+
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
 class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
-    script_name: StringProperty(
+    
+    name: StringProperty(
         name="Name", 
         default="Script",
     )
 
-    script_filepath: StringProperty(
-        name="File Path",
+    file: StringProperty(
+        name="Python File",
         description="Path to a Python script file",
         default="*.py",
         subtype='FILE_PATH',
-        update=Functions.update_customscript_names,
+        update=Functions.update_custom_script_names,
     )
 
-    script_trigger: EnumProperty(
+    trigger: EnumProperty(
         name="Trigger",
         description="Set when custom script should be triggered",
         items=[
@@ -1054,6 +1118,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
 
 classes = (
     TRANSMOGRIFIER_PG_TransmogrifierSettings,
+    TRANSMOGRIFIER_PG_TransmogrifierImports,
     TRANSMOGRIFIER_PG_TransmogrifierScripts,
 )
 
@@ -1064,7 +1129,9 @@ def register():
 
     # Add settings to Scene type.
     bpy.types.Scene.transmogrifier_settings = PointerProperty(type=TRANSMOGRIFIER_PG_TransmogrifierSettings)
+    bpy.types.Scene.transmogrifier_imports = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierImports)
     bpy.types.Scene.transmogrifier_scripts = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierScripts)
+    
 
 # Unregister Classes.
 def unregister():
@@ -1072,5 +1139,5 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     # Delete the settings from Scene type (Doesn't actually remove existing ones from scenes).
+    del bpy.types.Scene.transmogrifier_imports
     del bpy.types.Scene.transmogrifier_settings
-    del bpy.types.Scene.transmogrifier_scripts

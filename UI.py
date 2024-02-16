@@ -60,6 +60,7 @@ from . import Functions
 # Popover panel or Side Panel panel
 def draw_settings_general(self, context):
     settings = bpy.context.scene.transmogrifier_settings
+    imports = bpy.context.scene.transmogrifier_imports
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
 
@@ -69,30 +70,18 @@ def draw_settings_general(self, context):
         version = version + "." + str(num)
     version = version.lstrip(".")
     title = bl_info["name"] + " " + version
-    self.layout.label(text = title)
+    row = self.layout.row(align=True)
+    row.label(text=title)
+    row.prop(settings, 'advanced_ui', expand=False, text="", icon="OPTIONS")
 
     # Batch Convert button
-    row = self.layout.row()
-    row = row.row(align=True)
-    row.operator('transmogrifier.transmogrify', icon='FILE_CACHE')
+    row = self.layout.row(align=True)   
+    row.operator('transmogrifier.transmogrify', icon='PLAY')
+    row.scale_x = 1.25
+    row.operator('transmogrifier.forecast', text='', icon='INFO')
     row.scale_y = 1.5
 
-    # Info box about how many items will be converted.
-    if settings.batch_convert_info_message != "":
-        custom_script_box = self.layout.box()
-        box = custom_script_box.column()
-        box.label(text=settings.batch_convert_info_message, icon="INFO")
-
-    # UI settings
-    # self.layout.separator()
-    col = self.layout.column(align=True)
-    col.label(text="User Interface:", icon='WORKSPACE')
-    self.layout.use_property_split = False
-    grid = self.layout.grid_flow(columns=2, align=True)
-    grid.prop(settings, 'ui_toggle', expand=True)
-
     # Transmogrifier Presets Menu
-    # self.layout.separator()
     col = self.layout.column(align=True)
     col.label(text="Workflow:", icon='DRIVER')
     layout = self.layout
@@ -105,35 +94,48 @@ def draw_settings_general(self, context):
 
     # Import Settings
     self.layout.use_property_split = True
-    # self.layout.separator()
     col = self.layout.column(align=True)
-    col.label(text="Import:", icon='IMPORT')
-    # Directory input
-    col.prop(settings, 'directory')
-    col.prop(settings, 'import_file')
-    # self.layout.separator()
-    # col = self.layout.column()
+    col.label(text="Imports:", icon='IMPORT')
 
-    # col.label(text=settings.import_file + " Settings:")
-    if settings.import_file == 'DAE':
-        col.prop(settings, 'import_dae_preset_enum')
-    elif settings.import_file == 'ABC':
-        col.prop(settings, 'import_abc_preset_enum')
-    elif settings.import_file == 'USD':
-        col.prop(settings, 'import_usd_extension')
-        col.prop(settings, 'import_usd_preset_enum')
-    elif settings.import_file == 'OBJ':
-        col.prop(settings, 'import_obj_preset_enum')
-    elif settings.import_file == 'PLY':
-        col.prop(settings, 'import_ply_ascii')
-    elif settings.import_file == 'STL':
-        col.prop(settings, 'import_stl_ascii')
-    elif settings.import_file == 'FBX':
-        col.prop(settings, 'import_fbx_preset_enum')
-    elif settings.import_file == 'glTF':
-        col.prop(settings, 'import_gltf_extension')
-    elif settings.import_file == 'X3D':
-        col.prop(settings, 'import_x3d_preset_enum')
+    # Add Import button
+    col = self.layout.column(align=True)
+    col.operator('transmogrifier.add_import', icon="ADD")
+
+    # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
+    for index, import_file in enumerate(context.scene.transmogrifier_imports):   
+        layout = self.layout
+        import_file_box = layout.box()
+        row = import_file_box.row()
+        col = import_file_box.column()
+        
+        # Import file name
+        row.label(text=import_file.name, icon='IMPORT')
+
+        # Remove import button
+        props = row.operator('transmogrifier.remove_import', text = "", icon = 'PANEL_CLOSE')
+        props.index = index
+
+        # Format
+        col.prop(import_file, "format")
+
+        # Extension options for USD and glTF formats.
+        if import_file.format == 'USD' or import_file.format == "glTF":
+            col.prop(import_file, 'extension') 
+
+        # Preset
+        if Functions.import_dict[import_file.format][0] != "NO_OPERATOR":
+            col.prop(import_file, "preset_enum")
+
+        # Directory
+        if not settings.sync_import_directories:
+            col.prop(import_file, "directory")
+
+    # Directory Sync
+    col = self.layout.column(align=True)
+    if len(imports) > 1 or (len(imports) == 1 and settings.sync_import_directories):
+        col.prop(settings, 'sync_import_directories')
+        if settings.sync_import_directories:
+            col.prop(settings, 'import_directory')
 
     # Export Settings
     col = self.layout.column(align=True)
@@ -144,13 +146,13 @@ def draw_settings_general(self, context):
         col.prop(settings, "directory_output_custom")
         if settings.directory_output_custom:
             col.prop(settings, "use_subdirectories")
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui:
             if settings.use_subdirectories:
                 col.prop(settings, "copy_item_dir_contents")
             col = self.layout.column(align=True)
     
     # Quantity
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col.prop(settings, "model_quantity")
 
     # Align menu items to the right.
@@ -187,7 +189,7 @@ def draw_settings_general(self, context):
                 col.prop(settings, 'make_paths_relative')
         
         # Set scale
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui == "Advanced":
             # col = self.layout.column(align=True)
             col.prop(settings, 'export_file_1_scale')
             # self.layout.separator()
@@ -223,7 +225,7 @@ def draw_settings_general(self, context):
                     col.prop(settings, 'make_paths_relative')
             
             # Set scale
-            if settings.ui_toggle == "Advanced":
+            if settings.advanced_ui:
                 # col = self.layout.column(align=True)
                 col.prop(settings, 'export_file_2_scale')
 
@@ -234,7 +236,7 @@ def draw_settings_general(self, context):
     col.label(text="Names:", icon='SORTALPHA')
     col.prop(settings, 'prefix')
     col.prop(settings, 'suffix')
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col = self.layout.column(align=True)
         col.prop(settings, 'set_data_names')
 
@@ -252,25 +254,26 @@ def draw_settings_textures(self, context):
     col.prop(settings, 'use_textures')
 
     if settings.use_textures:
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui:
             col.prop(settings, 'regex_textures')
             col.prop(settings, 'keep_modified_textures')
             self.layout.use_property_split = True
             col = self.layout.column(align=True)
         col.prop(settings, 'textures_source')
-        if settings.ui_toggle == "Advanced":
-            if settings.import_file == "BLEND" and settings.textures_source == "External":
+        if settings.advanced_ui:
+            import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
+            if "BLEND" in import_formats and settings.textures_source == "External":
                 col.prop(settings, 'use_linked_blend_textures')
                 col = self.layout.column(align=True)
         if settings.textures_source == "Custom":
             col.prop(settings, 'textures_custom_dir')
-            if settings.ui_toggle == "Advanced":
+            if settings.advanced_ui:
                 col.prop(settings, 'copy_textures_custom_dir')
                 if settings.copy_textures_custom_dir:
                     col.prop(settings, 'replace_textures')
                 col = self.layout.column(align=True)
         
-        if settings.ui_toggle == "Advanced":
+        if settings.advanced_ui:
             # col = self.layout.column(align=True)
             col.prop(settings, 'texture_resolution')
 
@@ -296,7 +299,7 @@ def draw_settings_textures(self, context):
                 grid = self.layout.grid_flow(columns=3, align=True)
                 grid.prop(settings, 'image_format_include')
         
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         self.layout.use_property_split = True
         col = self.layout.column(align=True)
         col.label(text="UVs:", icon='UV')
@@ -329,7 +332,7 @@ def draw_settings_transforms(self, context):
     # Transformation options.
     self.layout.use_property_split = True
     # col = self.layout.column(align=True)
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col.label(text="Transformations:", icon='CON_PIVOT')
         col.prop(settings, 'set_transforms')
         if settings.set_transforms:
@@ -386,7 +389,7 @@ def draw_settings_optimize_files(self, context):
     col.label(text="Auto-Optimize:", icon='TRIA_DOWN_BAR')
     col.prop(settings, 'auto_resize_files')
     self.layout.use_property_split = True
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         if settings.auto_resize_files != "None":
             col.prop(settings, 'file_size_maximum')
             grid = self.layout.grid_flow(columns=1, align=True)
@@ -413,7 +416,7 @@ def draw_settings_archive(self, context):
     col.prop(settings, 'save_conversion_log')
     col.prop(settings, 'archive_assets')
 
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         if settings.archive_assets:
             self.layout.use_property_split = False
             col.label(text="Mark Assets:")
@@ -434,7 +437,8 @@ def draw_settings_archive(self, context):
                 col = self.layout.column(align=True)
                         
             self.layout.use_property_split = False
-            if "Collections" in settings.asset_types_to_mark and settings.import_file == "BLEND":
+            import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
+            if "Collections" in settings.asset_types_to_mark and "BLEND" in import_formats:
                 col.label(text="Collections:")
                 col.prop(settings, 'mark_only_master_collection')
                 col = self.layout.column(align=True)
@@ -478,7 +482,7 @@ def draw_settings_scripts(self, context):
     grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
     grid.label(text="Custom Scripts:", icon='FILE_SCRIPT')
 
-    if settings.ui_toggle == "Advanced":
+    if settings.advanced_ui:
         col = self.layout.column(align=True)
         col.operator('transmogrifier.add_custom_script', icon="ADD")
 
@@ -487,40 +491,40 @@ def draw_settings_scripts(self, context):
             layout = self.layout
             # layout.separator(factor = 1.0)
             custom_script_box = layout.box()
-            col = custom_script_box.column()
-            grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
 
-            script_filepath = Path(bpy.path.abspath(custom_script.script_filepath))
+            file = Path(bpy.path.abspath(custom_script.file))
             
             # Added a new custom script (default name is "*.py")
-            if custom_script.script_filepath == "*.py"  and script_filepath.name == "*.py":
-                script_icon = "FILE_SCRIPT"
+            if custom_script.file == "*.py"  and file.name == "*.py":
+                icon = "FILE_SCRIPT"
 
             # File is not a Python file.
-            elif script_filepath.suffix != ".py":
-                script_icon = "ERROR"
+            elif file.suffix != ".py":
+                icon = "ERROR"
 
             # File is a Python file but doesn't exist.
-            elif not script_filepath.is_file() and script_filepath.suffix == ".py":
-                script_icon = "ERROR"
+            elif not file.is_file() and file.suffix == ".py":
+                icon = "ERROR"
 
             # File is a Python file and might exist, but path is relative and current Blend session is unsaved.
-            elif script_filepath != Path(custom_script.script_filepath) and not bpy.data.is_saved:
-                script_icon = "ERROR"
+            elif file != Path(custom_script.file) and not bpy.data.is_saved:
+                icon = "ERROR"
 
             # File is a Python file and exists.
-            elif script_filepath.is_file() and script_filepath.suffix == ".py":
-                script_icon = "FILE_SCRIPT"
+            elif file.is_file() and file.suffix == ".py":
+                icon = "FILE_SCRIPT"
             
-            grid.label(text=custom_script.script_name, icon=script_icon)
-
-            props = grid.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
+            row = custom_script_box.row()
+            row.label(text=custom_script.name, icon=icon)
+            props = row.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
             props.custom_script_index = index
-            col.prop(custom_script, "script_filepath")  
-            col.prop(custom_script, "script_trigger")
+
+            col = custom_script_box.column()
+            col.prop(custom_script, "file")  
+            col.prop(custom_script, "trigger")
     
-    elif settings.ui_toggle == "Simple":
-        col.label(text="(Toggle 'Advanced' UI to view settings)")
+    elif not settings.advanced_ui:# == "Simple":
+        col.label(text="(Toggle 'Advanced UI' to view)")
         
 
 # Draws the button and popover dropdown button used in the
