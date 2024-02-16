@@ -189,59 +189,88 @@ def get_transmogrifier_preset_index(operator, preset_name):
 
 
 
-# ░▀█▀░█▄█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
-# ░░█░░█░█░█▀▀░█░█░█▀▄░░█░░▀▀█
-# ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
+# ░█▀█░█▀█░█▀▀░█▀▄░█▀█░▀█▀░█▀█░█▀▄░█▀▀░░░▀█▀░█▀█
+# ░█░█░█▀▀░█▀▀░█▀▄░█▀█░░█░░█░█░█▀▄░▀▀█░░░░█░░█░█
+# ░▀▀▀░▀░░░▀▀▀░▀░▀░▀░▀░░▀░░▀▀▀░▀░▀░▀▀▀░░░▀▀▀░▀▀▀
 
 # Import format dictionary containing [operator preset directory name, operator, options dictionary].
-import_dict = {
-    "DAE": ["wm.collada_import", "bpy.ops.wm.collada_import(**", {}],
-    "ABC": ["wm.alembic_import", "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **", {}], 
-    "USD": ["wm.usd_import", "bpy.ops.wm.usd_import(**", {}],
-    "OBJ": ["wm.obj_import", "bpy.ops.wm.obj_import(**", {}],
-    "PLY": ["NO_OPERATOR", "bpy.ops.import_mesh.ply(**", {}], 
-    "STL": ["NO_OPERATOR", "bpy.ops.import_mesh.stl(**", {}],
-    "FBX": ["import_scene.fbx", "bpy.ops.import_scene.fbx(**", {}],
-    "glTF": ["NO_OPERATOR", "bpy.ops.import_scene.gltf(**", {}],
-    "X3D": ["import_scene.x3d", "bpy.ops.import_scene.x3d(**", {}],
-    "BLEND": ["NO_OPERATOR", "bpy.ops.wm.append(**", {
-        "filepath": "",
-        "directory": "\\Object\\",
-        "autoselect": True,
-        "active_collection": True,
-        "instance_collections": False,
-        "instance_object_data": True,
-        "set_fake": False,
-        "use_recursive": True,
-    }],
+operator_dict = {
+    "DAE": [["wm.collada_import", "bpy.ops.wm.collada_import(**", {}], ["wm.collada_export", "bpy.ops.wm.collada_export(**", {}]],
+    "ABC": [["wm.alembic_import", "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **", {}], ["wm.alembic_export", "bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **", {}]], 
+    "USD": [["wm.usd_import", "bpy.ops.wm.usd_import(**", {}], ["wm.usd_export", "bpy.ops.wm.usd_export(**", {}]],
+    "OBJ": [["wm.obj_import", "bpy.ops.wm.obj_import(**", {}], ["wm.obj_export", "bpy.ops.wm.obj_export(**", {}]],
+    "PLY": [["NO_OPERATOR", "bpy.ops.import_mesh.ply(**", {}], ["NO_OPERATOR", "bpy.ops.export_mesh.ply(**", {}]], 
+    "STL": [["NO_OPERATOR", "bpy.ops.import_mesh.stl(**", {}], ["NO_OPERATOR", "bpy.ops.export_mesh.stl(**", {}]],
+    "FBX": [["import_scene.fbx", "bpy.ops.import_scene.fbx(**", {}], ["export_scene.fbx", "bpy.ops.export_scene.fbx(**", {}]],
+    "glTF": [["NO_OPERATOR", "bpy.ops.import_scene.gltf(**", {}], ["export_scene.gltf", "bpy.ops.export_scene.gltf(**", {}]],
+    "X3D": [["import_scene.x3d", "bpy.ops.import_scene.x3d(**", {}], ["export_scene.x3d", "bpy.ops.export_scene.x3d(**", {}]],
+    "BLEND": [
+        [
+            "NO_OPERATOR", "bpy.ops.wm.append(**", 
+            {
+                "filepath": "",
+                "directory": "\\Object\\",
+                "autoselect": True,
+                "active_collection": True,
+                "instance_collections": False,
+                "instance_object_data": True,
+                "set_fake": False,
+                "use_recursive": True,
+            }
+        ], 
+        [
+            "NO_OPERATOR", "bpy.ops.wm.save_as_mainfile(**", 
+            {
+                "filepath": "",
+                "compress": False,
+                "relative_remap": True,
+                "copy": False
+            }
+        ]
+    ],
 }
 
 
 # Get operator options for a given preset for a given format.
 def get_operator_options(format, preset):
-    options = import_dict[format][2]
-    if import_dict[format][0] == "NO_OPERATOR":
+    options = operator_dict[format][0][2]
+    if operator_dict[format][0][0] == "NO_OPERATOR":
         return options
     
-    options = load_operator_preset(import_dict[format][0], preset)
+    options = load_operator_preset(operator_dict[format][0][0], preset)
     return options
 
 
-# Update import file names and operators based on file formats.
-def update_import_settings(self, context):
-    for index, import_file in enumerate(context.scene.transmogrifier_imports):
+# Update file names and operators based on file formats.
+def update_import_export_settings(self, context, imports_or_exports):
+    imports = context.scene.transmogrifier_imports
+    exports = context.scene.transmogrifier_exports 
+
+    if imports_or_exports == "imports":
+        collection_property = imports
+        index = 0
+    elif imports_or_exports == "exports":
+        collection_property = exports
+        index = 1
+
+    for index, instance in enumerate(collection_property):
         # Update box name from import extension.
-        import_file.name = import_file.extension.upper()[1:]
+        instance.name = instance.extension.upper()[1:]
         
         # Update import preset from current preset_enum.
-        import_file.preset = import_file.preset_enum
+        instance.preset = instance.preset_enum
 
         # Update import operator and options
-        format = import_file.format
-        preset = import_file.preset
-        import_file.operator = f"{import_dict[format][1]}"
-        import_file.options = str(get_operator_options(format, preset))
+        format = instance.format
+        preset = instance.preset
+        instance.operator = f"{operator_dict[format][index][1]}"
+        instance.options = str(get_operator_options(format, preset))
 
+
+
+# ░▀█▀░█▄█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
+# ░░█░░█░█░█▀▀░█░█░█▀▄░░█░░▀▀█
+# ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
 # Synchronize import directories with master directory.
 def update_import_directories(self, context):
