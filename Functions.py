@@ -595,7 +595,7 @@ def load_propertygroup_settings(property_groups, properties, group):
         if key in property_groups:
             continue
         
-        # Since "files" is a property added to imports/exports instance dictionaries but is not a part of their properties, skip.
+        # Since "files" is a property added to imports/exports instance dictionaries but is not a part of their PropertyGroups, skip.
         elif key == "files":
             continue
         

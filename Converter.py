@@ -3484,13 +3484,6 @@ def batch_converter():
         # Run custom scripts with triggers "Before Batch".
         run_custom_scripts("Before_Batch")
 
-        # Get a dictionary of imports from Imports.json
-        # imports_json = Path(__file__).parent.resolve() / "Imports.json"
-        # imports_dict = read_json(imports_json)
-
-        # Identify duplicate import formats.
-        # duplicates = identify_duplicate_imports()
-        
         # Loop through every import instance dictionary defined in Settings.json > "imports" setting.
         for import_settings_dict in imports:
 

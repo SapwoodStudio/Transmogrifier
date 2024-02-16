@@ -137,8 +137,6 @@ def draw_settings_general(self, context):
         if settings.sync_import_directories:
             col.prop(settings, 'import_directory')
 
-
-
     # Export Settings
     col = self.layout.column(align=True)
     col.label(text="Export:", icon='EXPORT')
