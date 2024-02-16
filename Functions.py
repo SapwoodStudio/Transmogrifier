@@ -246,12 +246,13 @@ def update_import_export_settings(self, context, imports_or_exports):
     imports = context.scene.transmogrifier_imports
     exports = context.scene.transmogrifier_exports 
 
+    # Determine which settings to update.
     if imports_or_exports == "imports":
         collection_property = imports
-        index = 0
+        collection_property_index = 0
     elif imports_or_exports == "exports":
         collection_property = exports
-        index = 1
+        collection_property_index = 1
 
     for index, instance in enumerate(collection_property):
         # Update box name from import extension.
@@ -263,7 +264,7 @@ def update_import_export_settings(self, context, imports_or_exports):
         # Update import operator and options
         format = instance.format
         preset = instance.preset
-        instance.operator = f"{operator_dict[format][index][1]}"
+        instance.operator = f"{operator_dict[format][collection_property_index][1]}"
         instance.options = str(get_operator_options(format, preset))
 
 
