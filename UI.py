@@ -348,8 +348,6 @@ def draw_settings_transforms(self, context):
             self.layout.use_property_split = False
             grid = self.layout.grid_flow(columns=3, align=True)
             grid.prop(settings, 'apply_transforms_filter')
-            # col = self.layout.column(align=True)
-        # col = self.layout.column(align=True)
 
         # Set animation options.
         self.layout.use_property_split = True
@@ -358,16 +356,10 @@ def draw_settings_transforms(self, context):
         col.prop(settings, 'delete_animations')
 
     # Set scene unit options.
-    # self.layout.use_property_split = True
-    # col = self.layout.column(align=True)
     col.label(text="Scene:", icon='SCENE_DATA')
     col.prop(settings, 'unit_system')
-    if settings.unit_system == "METRIC":
-        col.prop(settings, 'length_unit_metric')
-    elif settings.unit_system == "IMPERIAL":
-        col.prop(settings, 'length_unit_imperial')
-
-    # self.layout.separator()
+    if settings.unit_system != "NONE":
+        col.prop(settings, 'length_unit')
     
 # Set max file size options.
 def draw_settings_optimize_files(self, context):

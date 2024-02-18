@@ -535,6 +535,40 @@ def update_custom_script_names(self, context):
 
 
 
+# ░█░█░█▀█░▀█▀░▀█▀░░░█▀▀░█░█░█▀▀░▀█▀░█▀▀░█▄█░█▀▀
+# ░█░█░█░█░░█░░░█░░░░▀▀█░░█░░▀▀█░░█░░█▀▀░█░█░▀▀█
+# ░▀▀▀░▀░▀░▀▀▀░░▀░░░░▀▀▀░░▀░░▀▀▀░░▀░░▀▀▀░▀░▀░▀▀▀
+
+# Dictionary of length unit by system.
+length_unit_enum_items_refs = {
+    "METRIC": [
+        ("MICROMETERS", "Micrometers", "", 4),
+        ("MILLIMETERS", "Millimeters", "", 3),
+        ("CENTIMETERS", "Centimeters", "", 0),
+        ("METERS", "Meters", "", 1),
+        ("KILOMETERS", "Kilometers", "", 2),
+        ("ADAPTIVE", "Adaptive", "", 5),
+    ],
+    "IMPERIAL": [
+        ("THOU", "Thousandths", "", 3),
+        ("INCHES", "Inches", "", 0),
+        ("FEET", "Feet", "", 1),
+        ("MILES", "Miles", "", 2),
+        ("ADAPTIVE", "Adaptive", "", 4),
+    ],
+    "NONE": [
+        ("NONE", "None", "", 0),   
+    ]
+}
+
+
+# Get length units for a given system.
+def get_length_unit(unit_system):
+    
+    return length_unit_enum_items_refs[unit_system]
+
+
+
 # ░█▀█░█▀▄░█▀█░█▀█░█▀▀░█▀▄░▀█▀░█░█░░░█▀▀░█▀▄░█▀█░█░█░█▀█░█▀▀
 # ░█▀▀░█▀▄░█░█░█▀▀░█▀▀░█▀▄░░█░░░█░░░░█░█░█▀▄░█░█░█░█░█▀▀░▀▀█
 # ░▀░░░▀░▀░▀▀▀░▀░░░▀▀▀░▀░▀░░▀░░░▀░░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░░░▀▀▀

@@ -70,10 +70,23 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         collection_properties_to_check = [imports, exports]
         for collection_property in collection_properties_to_check:
             for index, instance in enumerate(collection_property):
+                if collection_property == exports and settings.export_adjacent:  # Skip if models are getting exported adjacent to their respective imports.
+                    continue
                 directory_checks_out, message = Functions.check_directory_path(self, context, instance.directory)
                 if not directory_checks_out:
                     self.report({'ERROR'}, message)
                     return {'FINISHED'}
+        
+        custom_menu_options_to_check = [settings.textures_source, settings.uv_export_location]
+        directories_to_check = [settings.textures_custom_dir, settings.uv_directory_custom]
+        for index, menu in enumerate(custom_menu_options_to_check):
+            if menu != "Custom":
+                continue
+            directory_checks_out, message = Functions.check_directory_path(self, context, directories_to_check[index])
+            if not directory_checks_out:
+                self.report({'ERROR'}, message)
+                return {'FINISHED'}
+                
         for index, custom_script in enumerate(scripts):
             custom_script_checks_out, message = Functions.check_custom_script_path(self, context, custom_script.file, custom_script.name)
             if not custom_script_checks_out:
@@ -85,8 +98,10 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
         self.file_count = 0
 
+        # Transmogrify! (aka Batch Convert)
         self.transmogrify(context)
 
+        # Report batch conversion results.
         if self.file_count == 0:
             self.report({'ERROR'}, "Could not convert.")
         else:
@@ -111,13 +126,8 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
 
     def transmogrify(self, context):
-        settings = bpy.context.scene.transmogrifier_settings
-
         # Create settings_dict dictionary from transmogrifier_settings to pass to write_json function later.
         settings_dict = Functions.get_settings_dict(self, context, True, True)
-
-        # Create path to StartConverter.cmd
-        start_converter_file = Path(__file__).parent.resolve() / "StartConverter.cmd"
 
         # Create path to blender.exe
         blender_dir = bpy.app.binary_path
@@ -130,31 +140,6 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         
         # Create path to Transmogrifier directory
         transmogrifier_dir = Path(__file__).parent.resolve()
-
-        # Check directories and stop converter if they're not right.
-        custom_menu_options_to_check = [settings.textures_source, settings.uv_export_location]
-        directories_to_check = [settings.textures_custom_dir, settings.uv_directory_custom]
-        for index, menu in enumerate(custom_menu_options_to_check):
-            if menu != "Custom":
-                continue
-            directory_checks_out, message = Functions.check_directory_path(context, directories_to_check[index])
-            if not directory_checks_out:
-                return {'FINISHED'}
-
-        # Set length unit according to unit system.
-        unit_system = settings.unit_system
-        if unit_system == "METRIC":
-            length_unit = settings.length_unit_metric
-        elif unit_system == "IMPERIAL":
-            length_unit = settings.length_unit_imperial
-        elif unit_system == "NONE":
-            length_unit = "NONE"
-
-        # Update settings_dict with additional import/export options
-        additional_settings_dict = {
-            "length_unit": length_unit
-        }
-        settings_dict.update(additional_settings_dict)
 
         # Write settings to JSON file.
         settings_json = Path(__file__).parent.resolve() / "Settings.json"

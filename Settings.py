@@ -466,7 +466,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Remove all animation data from all objects",
         default=True,
     )
-    # Set unit system:
+    # Set unit system.
     unit_system: EnumProperty(
         name="Unit System",
         description="Set the unit system to use for export",
@@ -477,32 +477,11 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         ],
         default="METRIC",
     )
-    # Set length unit if metric system was selected.
-    length_unit_metric: EnumProperty(
+    # Set length unit.
+    length_unit: EnumProperty(
         name="Length",
         description="Set the length unit to use for export",
-        items=[
-            ("ADAPTIVE", "Adaptive", "", 1),
-            ("KILOMETERS", "Kilometers", "", 2),
-            ("METERS", "Meters", "", 3),
-            ("CENTIMETERS", "Centimeters", "", 4),
-            ("MILLIMETERS", "Millimeters", "", 5),
-            ("MICROMETERS", "Micrometers", "", 6),
-        ],
-        default="CENTIMETERS",
-    )
-    # Set length unit if imperial system was selected.
-    length_unit_imperial: EnumProperty(
-        name="Length",
-        description="Set the length unit to use for export",
-        items=[
-            ("ADAPTIVE", "Adaptive", "", 1),
-            ("MILES", "Miles", "", 2),
-            ("FEET", "Feet", "", 3),
-            ("INCHES", "Inches", "", 4),
-            ("THOU", "Thousandths", "", 5),
-        ],
-        default="INCHES",
+        items=lambda self, context: Functions.get_length_unit(self.unit_system),
     )
     # Option to set file size maximum.
     auto_resize_files: EnumProperty(
