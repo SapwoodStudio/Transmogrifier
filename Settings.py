@@ -122,7 +122,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     use_subdirectories: BoolProperty(
         name="Subdirectories",
         description="Export models to their own subdirectories within the given export directory",
-        default=False,
+        default=True,
         update=Functions.link_export_settings,
     )
     # Option to include only models or also copy original folder contents to custom directory
@@ -897,7 +897,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
     use_subdirectories: BoolProperty(
         name="Subdirectories",
         description="Export models to their own subdirectories within the given export directory",
-        default=False,
+        default=True,
     )
 
     copy_original_contents: BoolProperty(

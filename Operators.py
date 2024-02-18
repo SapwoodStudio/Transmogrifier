@@ -442,13 +442,18 @@ class TRANSMOGRIFIER_OT_forecast(Operator):
     def execute(self, context):
         settings = bpy.context.scene.transmogrifier_settings
         imports = bpy.context.scene.transmogrifier_imports
+        exports = bpy.context.scene.transmogrifier_exports
         
         # Check if any imports exist.
-        if not imports:
-            message = "Please Add Import"
+        if not imports or not exports:
+            if not imports:
+                message = "Please Add Import"
+            elif not exports:
+                message = "Please Add Export"
             self.popup_message(context, message=message, title="Forecast", icon='INFO')
             self.report({'INFO'}, message)
             return {'FINISHED'}
+
 
         # Check to make sure import directories exist.
         for i in imports:
@@ -462,15 +467,23 @@ class TRANSMOGRIFIER_OT_forecast(Operator):
 
         # Concatenate import formats with the respective number of files found for each.
         imports_string = ""
+        count_total = 0
         for key, value in import_files_dict.items():
             count = len(import_files_dict[key])
+            count_total += count
             imports_string += f"{count} {key}, "
 
+        # Concatenate exports formats with the total count.
+        exports_string = ""
+        for index, instance in enumerate(exports):
+            exports_string += f"{count_total} {instance.name}, "
+
         # Trim off ending space and comma.
-        imports_string = imports_string [:-2]
+        imports_string = imports_string[:-2]
+        exports_string = exports_string[:-2]
 
         # Info message.
-        message = f"{imports_string}  ⇒  "
+        message = f"{imports_string}  ⇒  {exports_string}"
 
         # Report message.
         self.popup_message(context, message=message, title="Forecast", icon='INFO')
