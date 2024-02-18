@@ -120,7 +120,7 @@ def draw_settings_general(self, context):
         layout = self.layout
         import_file_box = layout.box()
         row = import_file_box.row()
-        col = import_file_box.column()
+        col = import_file_box.column(align=True)
         
         # Import file name
         row.label(text=import_file.name, icon='IMPORT')
@@ -142,6 +142,7 @@ def draw_settings_general(self, context):
 
         # Directory
         if not settings.link_import_directories:
+            col = import_file_box.column(align=True)
             col.prop(import_file, "directory")
 
     # Import Directory (synced)

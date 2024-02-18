@@ -244,12 +244,12 @@ operator_dict = {
 
 
 # Get operator options for a given preset for a given format.
-def get_operator_options(format, preset):
-    options = operator_dict[format][0][2]
-    if operator_dict[format][0][0] == "NO_OPERATOR":
+def get_operator_options(format, collection_property_index, preset):
+    options = operator_dict[format][collection_property_index][2]
+    if operator_dict[format][collection_property_index][0] == "NO_OPERATOR":
         return options
     
-    options = load_operator_preset(operator_dict[format][0][0], preset)
+    options = load_operator_preset(operator_dict[format][collection_property_index][0], preset)
     return options
 
 
@@ -277,7 +277,7 @@ def update_import_export_settings(self, context, imports_or_exports):
         format = instance.format
         preset = instance.preset
         instance.operator = f"{operator_dict[format][collection_property_index][1]}"
-        instance.options = str(get_operator_options(format, preset))
+        instance.options = str(get_operator_options(format, collection_property_index, preset))
 
 
 
@@ -691,6 +691,7 @@ def instantiate_propertygroups(property_groups, properties_list, propertygroup, 
 def set_settings(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     imports = bpy.context.scene.transmogrifier_imports
+    exports = bpy.context.scene.transmogrifier_exports
     scripts = bpy.context.scene.transmogrifier_scripts
 
     # Get PropertyGroups.
@@ -702,6 +703,9 @@ def set_settings(self, context):
 
         # Clear any existing imports instances.
         imports.clear()
+
+        # Clear any existing exports instances.
+        exports.clear()
         
         # Clear any existing custom script instances.
         scripts.clear()

@@ -62,14 +62,18 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
     def execute(self, context):
         settings = bpy.context.scene.transmogrifier_settings
+        imports = bpy.context.scene.transmogrifier_imports
+        exports = bpy.context.scene.transmogrifier_exports
         scripts = bpy.context.scene.transmogrifier_scripts
-        base_dir = settings.import_directory
         
         # Check directory and file paths.  Stop batch converter if they don't check-out.
-        directory_checks_out, message = Functions.check_directory_path(self, context, settings.import_directory)
-        if not directory_checks_out:
-            self.report({'ERROR'}, message)
-            return {'FINISHED'}
+        collection_properties_to_check = [imports, exports]
+        for collection_property in collection_properties_to_check:
+            for index, instance in enumerate(collection_property):
+                directory_checks_out, message = Functions.check_directory_path(self, context, instance.directory)
+                if not directory_checks_out:
+                    self.report({'ERROR'}, message)
+                    return {'FINISHED'}
         for index, custom_script in enumerate(scripts):
             custom_script_checks_out, message = Functions.check_custom_script_path(self, context, custom_script.file, custom_script.name)
             if not custom_script_checks_out:
@@ -81,7 +85,7 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
         self.file_count = 0
 
-        self.export_selection(context, base_dir)
+        self.transmogrify(context)
 
         if self.file_count == 0:
             self.report({'ERROR'}, "Could not convert.")
@@ -106,7 +110,7 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
             self.select_children_recursive(c, context)
 
 
-    def export_selection(self, context, base_dir):
+    def transmogrify(self, context):
         settings = bpy.context.scene.transmogrifier_settings
 
         # Create settings_dict dictionary from transmogrifier_settings to pass to write_json function later.
@@ -128,266 +132,14 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         transmogrifier_dir = Path(__file__).parent.resolve()
 
         # Check directories and stop converter if they're not right.
-        custom_menu_options_to_check = [settings.directory_output_location, settings.textures_source, settings.uv_export_location]
-        directories_to_check = [settings.directory_output_custom, settings.textures_custom_dir, settings.uv_directory_custom]
-        index = 0
-        for menu in custom_menu_options_to_check:
+        custom_menu_options_to_check = [settings.textures_source, settings.uv_export_location]
+        directories_to_check = [settings.textures_custom_dir, settings.uv_directory_custom]
+        for index, menu in enumerate(custom_menu_options_to_check):
             if menu != "Custom":
-                index += 1
                 continue
-            directory_checks_out = Functions.check_directory_path(context, directories_to_check[index])
+            directory_checks_out, message = Functions.check_directory_path(context, directories_to_check[index])
             if not directory_checks_out:
                 return {'FINISHED'}
-            index += 1
-
-
-        # Determine options and export command for Export File Format 1
-
-        if settings.export_file_1 == "DAE":
-            options = Functions.load_operator_preset(
-                'wm.collada_export', settings.dae_preset)
-            options["filepath"] = "export_file_1"
-            options["selected"] = True
-            #bpy.ops.wm.collada_export(**options)
-            export_file_1_command = "bpy.ops.wm.collada_export(**"
-            
-        elif settings.export_file_1 == "ABC":
-            options = Functions.load_operator_preset(
-                'wm.alembic_export', settings.abc_preset)
-            options["filepath"] = "export_file_1"
-            options["selected"] = True
-            # By default, alembic_export operator runs in the background, this messes up batch
-            # export though. alembic_export has an "as_background_job" arg that can be set to
-            # false to disable it, but its marked deprecated, saying that if you EXECUTE the
-            # operator rather than INVOKE it it runs in the foreground. Here I change the
-            # execution context to EXEC_REGION_WIN.
-            # docs.blender.org/api/current/bpy.ops.html?highlight=exec_default#execution-context
-            #bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **options)
-            export_file_1_command = "bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **"
-
-        elif settings.export_file_1 == "USD":
-            options = Functions.load_operator_preset(
-                'wm.usd_export', settings.usd_preset)
-            options["filepath"] = "export_file_1"
-            options["selected_objects_only"] = True
-            #bpy.ops.wm.usd_export(**options)
-            export_file_1_command = "bpy.ops.wm.usd_export(**"
-
-        elif settings.export_file_1 == "SVG":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.wm.gpencil_export_svg(
-            #     filepath="export_file_1", selected_object_type='SELECTED')
-            export_file_1_command = "bpy.ops.wm.gpencil_export_svg(**"
-
-        elif settings.export_file_1 == "PDF":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.wm.gpencil_export_pdf(
-            #     filepath="export_file_1", selected_object_type='SELECTED')
-            export_file_1_command = "bpy.ops.wm.gpencil_export_pdf(**"
-
-        elif settings.export_file_1 == "OBJ":
-            options = Functions.load_operator_preset(
-                'wm.obj_export', settings.obj_preset)
-            options["filepath"] = "export_file_1"
-            options["export_selected_objects"] = True
-            #bpy.ops.wm.obj_export(**options)
-            export_file_1_command = "bpy.ops.wm.obj_export(**"
-
-        elif settings.export_file_1 == "PLY":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.export_mesh.ply(
-            #     filepath="export_file_1", use_ascii=settings.ply_ascii, use_selection=True)
-            export_file_1_command = "bpy.ops.export_mesh.ply(**"
-
-        elif settings.export_file_1 == "STL":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.export_mesh.stl(
-            #     filepath="export_file_1", ascii=settings.stl_ascii, use_selection=True)
-            export_file_1_command = "bpy.ops.export_mesh.stl(**"
-
-        elif settings.export_file_1 == "FBX":
-            options = Functions.load_operator_preset(
-                'export_scene.fbx', settings.fbx_preset)
-            options["filepath"] = "export_file_1"
-            options["use_selection"] = True
-            #bpy.ops.export_scene.fbx(**options)
-            export_file_1_command = "bpy.ops.export_scene.fbx(**"
-
-        elif settings.export_file_1 == "glTF":
-            options = Functions.load_operator_preset(
-                'export_scene.gltf', settings.gltf_preset)
-            options["filepath"] = "export_file_1"
-            options["use_selection"] = True
-            #bpy.ops.export_scene.gltf(**options)
-            export_file_1_command = "bpy.ops.export_scene.gltf(**" 
-
-        elif settings.export_file_1 == "X3D":
-            options = Functions.load_operator_preset(
-                'export_scene.x3d', settings.x3d_preset)
-            options["filepath"] = "export_file_1"
-            options["use_selection"] = True
-            #bpy.ops.export_scene.x3d(**options)
-            export_file_1_command = "bpy.ops.export_scene.x3d(**"
-
-        elif settings.export_file_1 == "BLEND":
-            options = {
-                "filepath": "",
-                "compress": False,
-                "relative_remap": True,
-                "copy": False
-            }
-            export_file_1_command = "bpy.ops.wm.save_as_mainfile(**"
-
-        # Set export variables to write to JSON
-        
-        # Set export file 1 extension
-        if settings.export_file_1 == "glTF":
-            try:
-                if options["export_format"] == 'GLB':
-                    export_file_1_ext = ".glb"
-                else:
-                    export_file_1_ext = ".gltf"
-            except:
-                export_file_1_ext = ".glb"
-        elif settings.export_file_1 == "USD":
-            export_file_1_ext = settings.usd_extension
-        else:
-            export_file_1_ext = "." + settings.export_file_1.lower()
-        
-        # Set export file options
-        export_file_1_options = options
-
-
-
-        # Determine options and import command for Export File Format 2
-
-        if settings.export_file_2 == "DAE":
-            options = Functions.load_operator_preset(
-                'wm.collada_export', settings.dae_preset)
-            options["filepath"] = "export_file_2"
-            options["selected"] = True
-            #bpy.ops.wm.collada_export(**options)
-            export_file_2_command = "bpy.ops.wm.collada_export(**"
-            
-        elif settings.export_file_2 == "ABC":
-            options = Functions.load_operator_preset(
-                'wm.alembic_export', settings.abc_preset)
-            options["filepath"] = "export_file_2"
-            options["selected"] = True
-            # By default, alembic_export operator runs in the background, this messes up batch
-            # export though. alembic_export has an "as_background_job" arg that can be set to
-            # false to disable it, but its marked deprecated, saying that if you EXECUTE the
-            # operator rather than INVOKE it it runs in the foreground. Here I change the
-            # execution context to EXEC_REGION_WIN.
-            # docs.blender.org/api/current/bpy.ops.html?highlight=exec_default#execution-context
-            #bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **options)
-            export_file_2_command = "bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **"
-
-        elif settings.export_file_2 == "USD":
-            options = Functions.load_operator_preset(
-                'wm.usd_export', settings.usd_preset)
-            options["filepath"] = "export_file_2"
-            options["selected_objects_only"] = True
-            #bpy.ops.wm.usd_export(**options)
-            export_file_2_command = "bpy.ops.wm.usd_export(**"
-
-        elif settings.export_file_2 == "SVG":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.wm.gpencil_export_svg(
-            #     filepath="export_file_2", selected_object_type='SELECTED')
-            export_file_2_command = "bpy.ops.wm.gpencil_export_svg(**"
-
-        elif settings.export_file_2 == "PDF":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.wm.gpencil_export_pdf(
-            #     filepath="export_file_2", selected_object_type='SELECTED')
-            export_file_2_command = "bpy.ops.wm.gpencil_export_pdf(**"
-
-        elif settings.export_file_2 == "OBJ":
-            options = Functions.load_operator_preset(
-                'wm.obj_export', settings.obj_preset)
-            options["filepath"] = "export_file_2"
-            options["export_selected_objects"] = True
-            #bpy.ops.wm.obj_export(**options)
-            export_file_2_command = "bpy.ops.wm.obj_export(**"
-
-        elif settings.export_file_2 == "PLY":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.export_mesh.ply(
-            #     filepath="export_file_2", use_ascii=settings.ply_ascii, use_selection=True)
-            export_file_2_command = "bpy.ops.export_mesh.ply(**"      
-
-        elif settings.export_file_2 == "STL":
-            options = {
-                'filepath': '',
-            }
-            # bpy.ops.export_mesh.stl(
-            #     filepath="export_file_2", ascii=settings.stl_ascii, use_selection=True)
-            export_file_2_command = "bpy.ops.export_mesh.stl(**"
-
-        elif settings.export_file_2 == "FBX":
-            options = Functions.load_operator_preset(
-                'export_scene.fbx', settings.fbx_preset)
-            options["filepath"] = "export_file_2"
-            options["use_selection"] = True
-            #bpy.ops.export_scene.fbx(**options)
-            export_file_2_command = "bpy.ops.export_scene.fbx(**"
-
-        elif settings.export_file_2 == "glTF":
-            options = Functions.load_operator_preset(
-                'export_scene.gltf', settings.gltf_preset)
-            options["filepath"] = "export_file_2"
-            options["use_selection"] = True
-            #bpy.ops.export_scene.gltf(**options)
-            export_file_2_command = "bpy.ops.export_scene.gltf(**"
-
-        elif settings.export_file_2 == "X3D":
-            options = Functions.load_operator_preset(
-                'export_scene.x3d', settings.x3d_preset)
-            options["filepath"] = "export_file_2"
-            options["use_selection"] = True
-            #bpy.ops.export_scene.x3d(**options)
-            export_file_2_command = "bpy.ops.export_scene.x3d(**"
-       
-        elif settings.export_file_2 == "BLEND":
-            options = {
-                "filepath": "",
-                "compress": False,
-                "relative_remap": True,
-                "copy": False
-            }
-            export_file_2_command = "bpy.ops.wm.save_as_mainfile(**"
-
-        # Set export file 2 extension
-        if settings.export_file_2 == "glTF":
-            try:
-                if options["export_format"] == 'GLB':
-                    export_file_2_ext = ".glb"
-                else:
-                    export_file_2_ext = ".gltf"
-            except:
-                export_file_2_ext = ".glb"
-        elif settings.export_file_2 == "USD":
-            export_file_2_ext = settings.usd_extension
-        else:
-            export_file_2_ext = "." + settings.export_file_2.lower()
-        
-        # Set export file options
-        export_file_2_options = options
 
         # Set length unit according to unit system.
         unit_system = settings.unit_system
@@ -400,15 +152,6 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
         # Update settings_dict with additional import/export options
         additional_settings_dict = {
-            # "import_file_ext": import_file_ext,
-            # "import_file_command": import_file_command, 
-            # "import_file_options": import_file_options, 
-            "export_file_1_ext": export_file_1_ext, 
-            "export_file_1_command": export_file_1_command, 
-            "export_file_1_options": export_file_1_options, 
-            "export_file_2_ext": export_file_2_ext, 
-            "export_file_2_command": export_file_2_command, 
-            "export_file_2_options": export_file_2_options, 
             "length_unit": length_unit
         }
         settings_dict.update(additional_settings_dict)
@@ -419,15 +162,15 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
 
         # Run Converter.py
-        subprocess.call(
-            [
-                blender_dir,
-                converter_blend,
-                "--python",
-                converter_py,
-            ],
-            cwd=transmogrifier_dir
-        ) 
+        # subprocess.call(
+        #     [
+        #         blender_dir,
+        #         converter_blend,
+        #         "--python",
+        #         converter_py,
+        #     ],
+        #     cwd=transmogrifier_dir
+        # ) 
         
 
         print("Conversion Complete")
