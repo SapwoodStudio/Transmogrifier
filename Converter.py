@@ -3362,7 +3362,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             make_directory(destination.parent, destination.name)
             
             # Copy original subfolders and files.
-            if copy_item_dir_contents and original_contents:  # Don't bother trying to copy original files if none exist.
+            if copy_orignal_contents and original_contents:  # Don't bother trying to copy original files if none exist.
                 for file in original_contents: 
                     copy_file(destination, file)  # Copy original files to custom item subdirectory.
                         

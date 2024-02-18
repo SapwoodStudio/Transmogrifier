@@ -198,8 +198,12 @@ def draw_settings_general(self, context):
         # Directory
         if not settings.link_export_settings:
             if not settings.export_adjacent:
-                col = export_file_box.column(align=True)
-                col.prop(export_file, "directory")
+                row = export_file_box.row()
+                row.prop(export_file, "directory")
+                if settings.advanced_ui:
+                    if export_file.use_subdirectories:
+                        row.prop(export_file, "copy_original_contents", text='', icon='COPYDOWN')
+                    row.prop(export_file, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
             col = export_file_box.column(align=True)
             col.prop(export_file, 'prefix')
             col.prop(export_file, 'suffix')
@@ -208,34 +212,25 @@ def draw_settings_general(self, context):
                 col.prop(export_file, 'set_data_names')                
             
     
-    # Additional import settings
-    if len(exports) > 1 or (len(exports) == 1 and settings.link_export_settings):
-        if settings.link_export_settings:
-            if not settings.export_adjacent:
-                col = self.layout.column(align=True)
-                col.prop(settings, 'export_directory')
-            
-            col = self.layout.column(align=True)
-            col.prop(settings, 'prefix')
-            col.prop(settings, 'suffix')
+    # Additional export settings
+    if settings.link_export_settings and (len(exports) > 1 or (len(exports) == 1 and settings.link_export_settings)):
+        if not settings.export_adjacent:
+            row = self.layout.row(align=True)
+            row.prop(settings, 'export_directory')
             if settings.advanced_ui:
-                col = self.layout.column(align=True)
-                col.prop(settings, 'set_data_names')
+                if settings.use_subdirectories:
+                    row.prop(settings, "copy_original_contents", text='', icon='COPYDOWN')
+                row.prop(settings, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
+        
+        col = self.layout.column(align=True)
+        col.prop(settings, 'prefix')
+        col.prop(settings, 'suffix')
+        if settings.advanced_ui:
+            col = self.layout.column(align=True)
+            col.prop(settings, 'set_data_names')
 
     self.layout.separator(factor = separator_factor)
     
-    # col = self.layout.column(align=True)
-    # col.prop(settings, "directory_output_location")
-    # if settings.directory_output_location == "Custom":
-    #     col.prop(settings, "directory_output_custom")
-    #     if settings.directory_output_custom:
-    #         col.prop(settings, "use_subdirectories")
-    #     if settings.advanced_ui:
-    #         if settings.use_subdirectories:
-    #             col.prop(settings, "copy_item_dir_contents")
-    #         col = self.layout.column(align=True)
-
-
 
 # Texture Settings
 def draw_settings_textures(self, context):

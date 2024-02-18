@@ -106,7 +106,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         subtype='DIR_PATH',
         update=lambda self, context: Functions.update_import_export_directories(self, context, "exports"),
     )
-    
     # Pack resources into .blend.
     pack_resources: BoolProperty(
         name="Pack Resources",
@@ -119,46 +118,18 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Use relative paths for textures",
         default=True,
         )
-    # Option for to where models should be exported.
-    directory_output_location: EnumProperty(
-        name="Location(s)",
-        description="Select where models should be exported.",
-        items=[
-            ("Adjacents", "Adjacents", "Export each converted model to the same directory from which it was imported", 'FILE_FOLDER', 1),
-            ("Custom", "Custom", "Export each converted model to a custom directory", 'NEWFOLDER', 2),
-        ],
-        default="Adjacents",
-    )
-    # Custom export directory
-    directory_output_custom: StringProperty(
-        name="Directory",
-        description="Set a custom directory to which each converted model will be exported\nDefault of // will export to same directory as the blend file (only works if the blend file is saved)",
-        default="//",
-        subtype='DIR_PATH',
-    )
     # Option to export models to subdirectories in custom directory
     use_subdirectories: BoolProperty(
         name="Subdirectories",
-        description="Export models to their own subdirectories within the given directory",
+        description="Export models to their own subdirectories within the given export directory",
         default=False,
     )
     # Option to include only models or also copy original folder contents to custom directory
-    copy_item_dir_contents: BoolProperty(
+    copy_original_contents: BoolProperty(
         name="Copy Original Contents",
-        description="Include original contents of each item's directory to its custom subdirectory",
+        description="Copy original contents of each import item's directory to each export item's subdirectory",
         default=False,
     )
-    # # Option for how many models to export at a time.
-    # model_quantity: EnumProperty(
-    #     name="Quantity",
-    #     description="Choose whether to export one, two, or no model formats at a time",
-    #     items=[
-    #         ("1 Format", "1 Format", "Export one 3D model format for every model imported", 1),
-    #         ("2 Formats", "2 Formats", "Export two 3D model formats for every model imported", 2),
-    #         ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
-    #     ],
-    #     default="1 Format",
-    # )
     prefix: StringProperty(
         name="Prefix",
         description="Text to put at the beginning of all the exported file names",
@@ -855,13 +826,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         default="GLB",
     )
 
-    directory: StringProperty(
-        name="Directory",
-        description="Custom output directory. \nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
-        default="//",
-        subtype='DIR_PATH',
-    )
-
     format: EnumProperty(
         name="Format",
         description="Which file format to import",
@@ -918,15 +882,36 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         default="{}",
     )
 
+    directory: StringProperty(
+        name="Directory",
+        description="Custom output directory. \nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
+        default="//",
+        subtype='DIR_PATH',
+    )
+
+
+    use_subdirectories: BoolProperty(
+        name="Subdirectories",
+        description="Export models to their own subdirectories within the given export directory",
+        default=False,
+    )
+
+    copy_original_contents: BoolProperty(
+        name="Copy Original Contents",
+        description="Copy original contents of each import item's directory to each export item's subdirectory",
+        default=False,
+    )
+
     prefix: StringProperty(
         name="Prefix",
         description="Text to put at the beginning of all the exported file names",
     )
+
     suffix: StringProperty(
         name="Suffix",
         description="Text to put at the end of all the exported file names",
     )
-    # Set data names from object names.
+
     set_data_names: BoolProperty(
         name="Data Names from Objects",
         description="Rename object data names according to their corresponding object names",
