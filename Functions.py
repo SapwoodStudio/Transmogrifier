@@ -521,7 +521,7 @@ def get_propertygroups():
             "transmogrifier_preset",
             ]
         ],
-        "imports": [bpy.context.scene.transmogrifier_imports, True, []],
+        "imports": [bpy.context.scene.transmogrifier_imports, True, ["files"]],
         "scripts": [bpy.context.scene.transmogrifier_scripts, True, []],
     }
     
@@ -544,7 +544,7 @@ def is_int(x):
 
 
 # Get properties of an individual PropertyGroup instance.
-def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths):
+def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths, write_imports_list):
     keys = [key for key in propertygroup.__annotations__ if key not in properties_to_ignore and "_enum" not in key]  # Eventually remove the need for "_enum" condition.
     values = []
 
@@ -572,15 +572,15 @@ def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths
     
     settings_dict = dict(zip(keys, values))
 
-    # Add list of imports to each imports instance.
-    if name == "imports":
+    # Add list of imports to each imports instance when batch converting, but not when writing a Transmogrifier Preset.
+    if name == "imports" and write_imports_list:
         settings_dict.update({"files": get_import_files_list(propertygroup)})
 
     return settings_dict
 
 
 # Loop through instances in a CollectionProperty group and return dictionary of them.
-def get_propertygroups_properties(name, propertygroup, is_collection_property, properties_to_ignore, use_absolute_paths, settings_dict):
+def get_propertygroups_properties(name, propertygroup, is_collection_property, properties_to_ignore, use_absolute_paths, write_imports_list, settings_dict):
     # If PropertyGroup is a CollectionProperty, list the existing instances.
     if is_collection_property: 
         propertygroups = [instance for index, instance in enumerate(propertygroup)]
@@ -588,26 +588,26 @@ def get_propertygroups_properties(name, propertygroup, is_collection_property, p
         
         # Loop through each instance, get a dictionary of properties for each, and add each set of properties to the list.
         for propertygroup in propertygroups:
-            collection_of_settings.append(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
+            collection_of_settings.append(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths, write_imports_list))
         
         # Update the settings dictionary with every instance.
         settings_dict.update({name: collection_of_settings})
     
     # If PropertyGroup is a PointerProperty, simply get a dictionary of properties from it.
     elif not is_collection_property:
-        settings_dict.update(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
+        settings_dict.update(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths, write_imports_list))
 
     return settings_dict
 
 
 # Create settings_dict dictionary from PropertyGroups to pass to write_json function later.
-def get_settings_dict(self, context, use_absolute_paths):
+def get_settings_dict(self, context, use_absolute_paths, write_imports_list):
     settings_dict = {}
     property_groups = get_propertygroups()
 
     # Loop through each PropertyGroup and update the dictionary of settings.
     for key, value in property_groups.items():
-        settings_dict.update(get_propertygroups_properties(key, value[0], value[1], value[2], use_absolute_paths, settings_dict))
+        settings_dict.update(get_propertygroups_properties(key, value[0], value[1], value[2], use_absolute_paths, write_imports_list, settings_dict))
 
     return settings_dict
     
@@ -618,7 +618,7 @@ def get_settings_dict(self, context, use_absolute_paths):
 # ░▀▀▀░▀▀▀░░▀░░░░▀▀▀░▀▀▀░░▀░░░▀░░▀▀▀░▀░▀░▀▀▀░▀▀▀
 
 # Load/set each property within a given PropertyGroup.
-def load_propertygroup_settings(property_groups, properties, group):
+def load_propertygroup_settings(property_groups, properties, group, properties_to_ignore):
     # Loop through each property in the PropertyGroup and load/set value from the given Transmogrifier preset.
     for key, value in properties.items():
         # If a property name shares the same name of a PropertyGroup, skip.  The value is a list of dictionaries of properties of each instance that will be looped through later.
@@ -626,7 +626,7 @@ def load_propertygroup_settings(property_groups, properties, group):
             continue
         
         # Since "files" is a property added to imports/exports instance dictionaries but is not a part of their PropertyGroups, skip.
-        elif key == "files":
+        elif key in properties_to_ignore:
             continue
         
         # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.
@@ -649,13 +649,13 @@ def load_propertygroup_settings(property_groups, properties, group):
 
 
 # If PropertyGroup is a CollectionProperty, instantiate and load settings for each instance.
-def instantiate_propertygroups(property_groups, properties_list, propertygroup):
+def instantiate_propertygroups(property_groups, properties_list, propertygroup, properties_to_ignore):
     for properties in properties_list:
         # Add new instance.
         group = propertygroup.add()
 
         # Load/set properties for that group.
-        load_propertygroup_settings(property_groups, properties, group)
+        load_propertygroup_settings(property_groups, properties, group, properties_to_ignore)
         
 
 # Update settings when a Transmogrifier preset is selected.
@@ -682,11 +682,11 @@ def set_settings(self, context):
             try:
                 # If PropertyGroup is not a CollectionProperty, go straight to loading/setting the properties from the preset.
                 if value[1] == False:
-                    load_propertygroup_settings(property_groups, transmogrifier_preset_dict, value[0])
+                    load_propertygroup_settings(property_groups, transmogrifier_preset_dict, value[0], value[2])
                 
                 # If PropertyGroup is a CollectionProperty, instantiate and load settings for each instance.
                 else:
-                    instantiate_propertygroups(property_groups, transmogrifier_preset_dict[key], value[0])
+                    instantiate_propertygroups(property_groups, transmogrifier_preset_dict[key], value[0], value[2])
 
             # If using an old Transmogrifier preset (i.e. without new properties such as "imports" and "scripts"), skip.
             except KeyError:

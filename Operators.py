@@ -110,7 +110,7 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         settings = bpy.context.scene.transmogrifier_settings
 
         # Create settings_dict dictionary from transmogrifier_settings to pass to write_json function later.
-        settings_dict = Functions.get_settings_dict(self, context, True)
+        settings_dict = Functions.get_settings_dict(self, context, True, True)
 
         # Create path to StartConverter.cmd
         start_converter_file = Path(__file__).parent.resolve() / "StartConverter.cmd"
@@ -539,7 +539,7 @@ class TRANSMOGRIFIER_OT_add_preset(Operator):
         preset_json = transmogrifier_preset_dir / add_preset_name
 
         # Get current Transmogrifier settings.
-        settings_dict = Functions.get_settings_dict(self, context, False)
+        settings_dict = Functions.get_settings_dict(self, context, False, False)
 
         # Save new Transmogrifier operator preset as JSON file.
         Functions.write_json(settings_dict, preset_json)
