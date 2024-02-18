@@ -92,10 +92,16 @@ def draw_settings_general(self, context):
     row.operator("transmogrifier.add_preset", text="", icon="ADD")
     row.operator("transmogrifier.remove_preset", text="", icon="REMOVE")
 
+
     # Import Settings
     self.layout.use_property_split = True
-    col = self.layout.column(align=True)
-    col.label(text="Imports:", icon='IMPORT')
+    row = self.layout.row(align=True)
+    row.label(text="Imports:", icon='IMPORT')
+    if settings.sync_import_directories:
+        icon = "LINKED"
+    elif not settings.sync_import_directories:
+        icon = "UNLINKED"
+    row.prop(settings, 'sync_import_directories', expand=False, text="", icon=icon)
 
     # Add Import button
     col = self.layout.column(align=True)
@@ -131,11 +137,11 @@ def draw_settings_general(self, context):
             col.prop(import_file, "directory")
 
     # Directory Sync
-    col = self.layout.column(align=True)
     if len(imports) > 1 or (len(imports) == 1 and settings.sync_import_directories):
-        col.prop(settings, 'sync_import_directories')
         if settings.sync_import_directories:
+            col = self.layout.column(align=True)
             col.prop(settings, 'import_directory')
+            
 
     # Export Settings
     col = self.layout.column(align=True)

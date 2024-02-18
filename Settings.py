@@ -997,7 +997,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
             ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
             ("BLEND", "Blender (.blend)", "", 10)
         ],
-        default="FBX",
+        default="glTF",
         update=lambda self, context: Functions.update_import_export_settings(self, context, "exports"),
     )
 
