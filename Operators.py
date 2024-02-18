@@ -590,7 +590,7 @@ class TRANSMOGRIFIER_OT_add_import(Operator):
     def execute(self, context):
         new_import = context.scene.transmogrifier_imports.add()
         new_import.name = new_import.format
-        Functions.update_import_export_directories(self, context, "imports")
+        Functions.link_import_directories(self, context)
         return {'FINISHED'}
 
 
@@ -622,7 +622,7 @@ class TRANSMOGRIFIER_OT_add_export(Operator):
 
     def execute(self, context):
         new_export = context.scene.transmogrifier_exports.add()
-        Functions.update_import_export_directories(self, context, "exports")
+        Functions.link_export_settings(self, context)
         return {'FINISHED'}
 
 

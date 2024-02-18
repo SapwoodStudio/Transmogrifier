@@ -286,21 +286,10 @@ def update_import_export_settings(self, context, imports_or_exports):
 # ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
 # Synchronize import directories with master directory.
-def update_import_export_directories(self, context, imports_or_exports):
+def link_import_directories(self, context):
     settings = bpy.context.scene.transmogrifier_settings
-    imports = bpy.context.scene.transmogrifier_imports
-    exports = bpy.context.scene.transmogrifier_exports
-    
-    if imports_or_exports == "imports":
-        collection_property = imports
-        directory = settings.import_directory
-
-    elif imports_or_exports == "exports":
-        collection_property = exports
-        directory = settings.export_directory
-
-    for index, instance in enumerate(collection_property):
-        instance.directory = directory
+    for index, import_file in enumerate(context.scene.transmogrifier_imports):
+        import_file.directory = settings.import_directory
 
 
 # Get a list of files to be imported for a given instance of the transmogrifier_imports CollectionProperty.
@@ -329,6 +318,22 @@ def get_import_files(self, context):
             import_files_dict[i.name] = files
             
     return import_files_dict
+
+
+
+# ░█▀▀░█░█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
+# ░█▀▀░▄▀▄░█▀▀░█░█░█▀▄░░█░░▀▀█
+# ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
+
+def link_export_settings(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    for index, instance in enumerate(context.scene.transmogrifier_exports):
+        instance.directory = settings.export_directory
+        instance.use_subdirectories = settings.use_subdirectories
+        instance.copy_original_contents = settings.copy_original_contents
+        instance.prefix = settings.prefix
+        instance.suffix = settings.suffix
+        instance.set_data_names = settings.set_data_names
 
 
 
@@ -545,6 +550,7 @@ def get_propertygroups():
             ]
         ],
         "imports": [bpy.context.scene.transmogrifier_imports, True, ["files"]],
+        "exports": [bpy.context.scene.transmogrifier_exports, True, []],
         "scripts": [bpy.context.scene.transmogrifier_scripts, True, []],
     }
     

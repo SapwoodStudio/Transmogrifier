@@ -70,21 +70,21 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         items=lambda self, context: Functions.get_transmogrifier_presets('transmogrifier'),
         get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
         set=lambda self, value: setattr(self, 'transmogrifier_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
-        update=Functions.set_settings
+        update=Functions.set_settings,
     )
     # Import Settings
     link_import_directories: BoolProperty(
         name="Link Directories",
         description="Synchronize import directories between all import file formats",
         default=True,
-        update=lambda self, context: Functions.update_import_export_directories(self, context, "imports"),
+        update=Functions.link_import_directories,
     )
     import_directory: StringProperty(
         name="Directory",
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=lambda self, context: Functions.update_import_export_directories(self, context, "imports"),
+        update=Functions.link_import_directories,
     )
    
     # Export Settings
@@ -97,22 +97,22 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Link Export Settings",
         description="Synchronize some export settings between all export file formats",
         default=True,
-        update=lambda self, context: Functions.update_import_export_directories(self, context, "exports"),
+        update=Functions.link_export_settings,
     )
     export_directory: StringProperty(
         name="Directory",
         description="Directory to export files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=lambda self, context: Functions.update_import_export_directories(self, context, "exports"),
+        update=Functions.link_export_settings,
     )
-    # Pack resources into .blend.
+    # Pack resources into Blend.
     pack_resources: BoolProperty(
         name="Pack Resources",
         description="Pack all used external files into this .blend",
         default=True,
         )
-    # Pack resources into .blend.
+    # Make Blend paths relative.
     make_paths_relative: BoolProperty(
         name="Relative Paths",
         description="Use relative paths for textures",
@@ -123,26 +123,31 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Subdirectories",
         description="Export models to their own subdirectories within the given export directory",
         default=False,
+        update=Functions.link_export_settings,
     )
     # Option to include only models or also copy original folder contents to custom directory
     copy_original_contents: BoolProperty(
         name="Copy Original Contents",
         description="Copy original contents of each import item's directory to each export item's subdirectory",
         default=False,
+        update=Functions.link_export_settings,
     )
     prefix: StringProperty(
         name="Prefix",
         description="Text to put at the beginning of all the exported file names",
+        update=Functions.link_export_settings,
     )
     suffix: StringProperty(
         name="Suffix",
         description="Text to put at the end of all the exported file names",
+        update=Functions.link_export_settings,
     )
     # Set data names from object names.
     set_data_names: BoolProperty(
         name="Data Names from Objects",
         description="Rename object data names according to their corresponding object names",
         default=True,
+        update=Functions.link_export_settings,
     )
     use_textures: BoolProperty(
         name="Use Textures", 
@@ -888,7 +893,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         default="//",
         subtype='DIR_PATH',
     )
-
 
     use_subdirectories: BoolProperty(
         name="Subdirectories",
