@@ -56,13 +56,25 @@ from mathutils import Vector, Euler
 # cause crashs and weird issues.
 # Also useful for the get_preset_index function.
 preset_enum_items_refs = {
+    # Import operators with presets
     "wm.collada_import": [],
     "wm.alembic_import": [], 
     "wm.usd_import": [],
     "wm.obj_import": [],
     "import_scene.fbx": [],
     "import_scene.x3d": [],
+
+    # Export operators with presets
+    "wm.collada_export": [],
+    "wm.alembic_export": [],
+    "wm.usd_export": [],
+    "wm.obj_export": [],
+    "export_scene.fbx": [],
+    "export_scene.gltf": [],
+    "export_scene.x3d": [],
+
     "NO_OPERATOR": [],
+
 }
 
 
@@ -274,10 +286,21 @@ def update_import_export_settings(self, context, imports_or_exports):
 # ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
 # Synchronize import directories with master directory.
-def update_import_directories(self, context):
+def update_import_export_directories(self, context, imports_or_exports):
     settings = bpy.context.scene.transmogrifier_settings
-    for index, import_file in enumerate(context.scene.transmogrifier_imports):
-        import_file.directory = settings.import_directory
+    imports = bpy.context.scene.transmogrifier_imports
+    exports = bpy.context.scene.transmogrifier_exports
+    
+    if imports_or_exports == "imports":
+        collection_property = imports
+        directory = settings.import_directory
+
+    elif imports_or_exports == "exports":
+        collection_property = exports
+        directory = settings.export_directory
+
+    for index, instance in enumerate(collection_property):
+        instance.directory = directory
 
 
 # Get a list of files to be imported for a given instance of the transmogrifier_imports CollectionProperty.

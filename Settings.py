@@ -73,160 +73,40 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         update=Functions.set_settings
     )
     # Import Settings
-    sync_import_directories: BoolProperty(
-        name="Sync Directories",
-        description="Synchronize import directories for all import file formats",
-        default=False,
-        update=Functions.update_import_directories,
+    link_import_directories: BoolProperty(
+        name="Link Directories",
+        description="Synchronize import directories between all import file formats",
+        default=True,
+        update=lambda self, context: Functions.update_import_export_directories(self, context, "imports"),
     )
     import_directory: StringProperty(
         name="Directory",
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=Functions.update_import_directories,
+        update=lambda self, context: Functions.update_import_export_directories(self, context, "imports"),
     )
    
-
-    # Export Settings:
-    export_file_1: EnumProperty(
-        name="Format 1",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="glTF",
+    # Export Settings
+    export_adjacent: BoolProperty(
+        name="Export Adjacent",
+        description="Export models adjacent to imports",
+        default=True,
     )
-    # File 1 scale.
-    export_file_1_scale: FloatProperty(
-        name="Scale", 
-        description="Set the scale of the model before exporting",
-        default=1.0,
-        soft_min=0.0,
-        soft_max=10000.0,
-        step=500,
+    link_export_settings: BoolProperty(
+        name="Link Export Settings",
+        description="Synchronize some export settings between all export file formats",
+        default=True,
+        update=lambda self, context: Functions.update_import_export_directories(self, context, "exports"),
     )
-    # Export Settings 2:
-    export_file_2: EnumProperty(
-        name="Format 2",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="USD",
+    export_directory: StringProperty(
+        name="Directory",
+        description="Directory to export files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
+        default="//",
+        subtype='DIR_PATH',
+        update=lambda self, context: Functions.update_import_export_directories(self, context, "exports"),
     )
-    # File 2 scale.
-    export_file_2_scale: FloatProperty(
-        name="Scale", 
-        description="Set the scale of the model before exporting",
-        default=1.0,
-        soft_min=0.0,
-        soft_max=10000.0,
-        step=500,
-    )
-    # Export format specific options:
-    usd_extension: EnumProperty(
-        name="Extension",
-        items=[
-            (".usd", "Plain (.usd)",
-             "Can be either binary or ASCII\nIn Blender this exports to binary", 1),
-            (".usdc", "Binary Crate (default) (.usdc)",
-             "Binary, fast, hard to edit", 2),
-            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
-            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
-        ],
-        default=".usdz",
-    )
-    ply_ascii: BoolProperty(name="ASCII Format", default=False)
-    stl_ascii: BoolProperty(name="ASCII Format", default=False)
-
-    # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
-    abc_preset: StringProperty(default='NO_PRESET')
-    abc_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Alembic (.abc))",
-        items=lambda self, context: Functions.get_operator_presets('wm.alembic_export'),
-        get=lambda self: Functions.get_preset_index(
-            'wm.alembic_export', self.abc_preset),
-        set=lambda self, value: setattr(
-            self, 'abc_preset', Functions.preset_enum_items_refs['wm.alembic_export'][value][0]),
-    )
-    dae_preset: StringProperty(default='NO_PRESET')
-    dae_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Collada (.dae))",
-        items=lambda self, context: Functions.get_operator_presets('wm.collada_export'),
-        get=lambda self: Functions.get_preset_index(
-            'wm.collada_export', self.dae_preset),
-        set=lambda self, value: setattr(
-            self, 'dae_preset', Functions.preset_enum_items_refs['wm.collada_export'][value][0]),
-    )
-    usd_preset: StringProperty(default='USDZ_Preset_Example')
-    usd_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
-        items=lambda self, context: Functions.get_operator_presets('wm.usd_export'),
-        get=lambda self: Functions.get_preset_index('wm.usd_export', self.usd_preset),
-        set=lambda self, value: setattr(
-            self, 'usd_preset', Functions.preset_enum_items_refs['wm.usd_export'][value][0]),
-    )
-    obj_preset: StringProperty(default='NO_PRESET')
-    obj_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Wavefront (.obj))",
-        items=lambda self, context: Functions.get_operator_presets('wm.obj_export'),
-        get=lambda self: Functions.get_preset_index('wm.obj_export', self.obj_preset),
-        set=lambda self, value: setattr(
-            self, 'obj_preset', Functions.preset_enum_items_refs['wm.obj_export'][value][0]),
-    )
-    fbx_preset: StringProperty(default='NO_PRESET')
-    fbx_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > FBX (.fbx))",
-        items=lambda self, context: Functions.get_operator_presets('export_scene.fbx'),
-        get=lambda self: Functions.get_preset_index('export_scene.fbx', self.fbx_preset),
-        set=lambda self, value: setattr(
-            self, 'fbx_preset', Functions.preset_enum_items_refs['export_scene.fbx'][value][0]),
-    )
-    gltf_preset: StringProperty(default='GLB_Preset_Example')
-    gltf_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > glTF (.glb/.gltf))",
-        items=lambda self, context: Functions.get_operator_presets('export_scene.gltf'),
-        get=lambda self: Functions.get_preset_index(
-            'export_scene.gltf', self.gltf_preset),
-        set=lambda self, value: setattr(
-            self, 'gltf_preset', Functions.preset_enum_items_refs['export_scene.gltf'][value][0]),
-    )
-    x3d_preset: StringProperty(default='NO_PRESET')
-    x3d_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > X3D Extensible 3D (.x3d))",
-        items=lambda self, context: Functions.get_operator_presets('export_scene.x3d'),
-        get=lambda self: Functions.get_preset_index('export_scene.x3d', self.x3d_preset),
-        set=lambda self, value: setattr(
-            self, 'x3d_preset', Functions.preset_enum_items_refs['export_scene.x3d'][value][0]),
-    )
-
-
+    
     # Pack resources into .blend.
     pack_resources: BoolProperty(
         name="Pack Resources",
@@ -268,17 +148,17 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Include original contents of each item's directory to its custom subdirectory",
         default=False,
     )
-    # Option for how many models to export at a time.
-    model_quantity: EnumProperty(
-        name="Quantity",
-        description="Choose whether to export one, two, or no model formats at a time",
-        items=[
-            ("1 Format", "1 Format", "Export one 3D model format for every model imported", 1),
-            ("2 Formats", "2 Formats", "Export two 3D model formats for every model imported", 2),
-            ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
-        ],
-        default="1 Format",
-    )
+    # # Option for how many models to export at a time.
+    # model_quantity: EnumProperty(
+    #     name="Quantity",
+    #     description="Choose whether to export one, two, or no model formats at a time",
+    #     items=[
+    #         ("1 Format", "1 Format", "Export one 3D model format for every model imported", 1),
+    #         ("2 Formats", "2 Formats", "Export two 3D model formats for every model imported", 2),
+    #         ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
+    #     ],
+    #     default="1 Format",
+    # )
     prefix: StringProperty(
         name="Prefix",
         description="Text to put at the beginning of all the exported file names",
@@ -1013,7 +893,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         options={'SKIP_SAVE'},
         description="Use import settings from a preset.\n(Create in the import settings from the File > Import menu",
         items=lambda self, context: Functions.get_operator_presets(Functions.operator_dict[self.format][1][0]),
-        get=lambda self: Functions.get_preset_index(Functions.operator_dict[self.format][1], self.preset),
+        get=lambda self: Functions.get_preset_index(Functions.operator_dict[self.format][1][0], self.preset),
         set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[Functions.operator_dict[self.format][1][0]][value][0]),
         update=lambda self, context: Functions.update_import_export_settings(self, context, "exports"),
     )
@@ -1036,6 +916,21 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         name="Options",
         description="Dictionary of export operator options from preset",
         default="{}",
+    )
+
+    prefix: StringProperty(
+        name="Prefix",
+        description="Text to put at the beginning of all the exported file names",
+    )
+    suffix: StringProperty(
+        name="Suffix",
+        description="Text to put at the end of all the exported file names",
+    )
+    # Set data names from object names.
+    set_data_names: BoolProperty(
+        name="Data Names from Objects",
+        description="Rename object data names according to their corresponding object names",
+        default=True,
     )
 
 

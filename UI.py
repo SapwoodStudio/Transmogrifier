@@ -61,6 +61,9 @@ from . import Functions
 def draw_settings_general(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     imports = bpy.context.scene.transmogrifier_imports
+    exports = bpy.context.scene.transmogrifier_exports
+
+    separator_factor = 0.25
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
 
@@ -81,6 +84,8 @@ def draw_settings_general(self, context):
     row.operator('transmogrifier.forecast', text='', icon='INFO')
     row.scale_y = 1.5
 
+    self.layout.separator(factor = separator_factor)
+
     # Transmogrifier Presets Menu
     col = self.layout.column(align=True)
     col.label(text="Workflow:", icon='DRIVER')
@@ -92,16 +97,19 @@ def draw_settings_general(self, context):
     row.operator("transmogrifier.add_preset", text="", icon="ADD")
     row.operator("transmogrifier.remove_preset", text="", icon="REMOVE")
 
+    self.layout.separator(factor = separator_factor)
 
     # Import Settings
     self.layout.use_property_split = True
     row = self.layout.row(align=True)
     row.label(text="Imports:", icon='IMPORT')
-    if settings.sync_import_directories:
-        icon = "LINKED"
-    elif not settings.sync_import_directories:
-        icon = "UNLINKED"
-    row.prop(settings, 'sync_import_directories', expand=False, text="", icon=icon)
+    
+    if len(imports) > 1:
+        if settings.link_import_directories:
+            icon = "LINKED"
+        elif not settings.link_import_directories:
+            icon = "UNLINKED"
+        row.prop(settings, 'link_import_directories', expand=False, text="", icon=icon)
 
     # Add Import button
     col = self.layout.column(align=True)
@@ -133,118 +141,100 @@ def draw_settings_general(self, context):
             col.prop(import_file, "preset_enum")
 
         # Directory
-        if not settings.sync_import_directories:
+        if not settings.link_import_directories:
             col.prop(import_file, "directory")
 
-    # Directory Sync
-    if len(imports) > 1 or (len(imports) == 1 and settings.sync_import_directories):
-        if settings.sync_import_directories:
+    # Import Directory (synced)
+    if len(imports) > 1 or (len(imports) == 1 and settings.link_import_directories):
+        if settings.link_import_directories:
             col = self.layout.column(align=True)
             col.prop(settings, 'import_directory')
-            
+    
+    self.layout.separator(factor = separator_factor)
 
     # Export Settings
-    col = self.layout.column(align=True)
-    col.label(text="Export:", icon='EXPORT')
-
-    col.prop(settings, "directory_output_location")
-    if settings.directory_output_location == "Custom":
-        col.prop(settings, "directory_output_custom")
-        if settings.directory_output_custom:
-            col.prop(settings, "use_subdirectories")
-        if settings.advanced_ui:
-            if settings.use_subdirectories:
-                col.prop(settings, "copy_item_dir_contents")
-            col = self.layout.column(align=True)
-    
-    # Quantity
-    if settings.advanced_ui:
-        col.prop(settings, "model_quantity")
-
-    # Align menu items to the right.
     self.layout.use_property_split = True
-    col = self.layout.column(align=True)
+    row = self.layout.row(align=True)
+    row.label(text="Exports:", icon='EXPORT')
+    
+    if len(exports) > 0:
+        row.prop(settings, 'export_adjacent', expand=False, text="", icon='UV_SYNC_SELECT')
+        if len(exports) > 1:
+            if settings.link_export_settings:
+                icon = "LINKED"
+            elif not settings.link_export_settings:
+                icon = "UNLINKED"
+            row.prop(settings, 'link_export_settings', expand=False, text="", icon=icon)
 
-    # File Format 1
+    # Add Export button
     col = self.layout.column(align=True)
-    if settings.model_quantity != "No Formats":
-        col.prop(settings, 'export_file_1')
+    col.operator('transmogrifier.add_export', icon="ADD")
 
-        if settings.export_file_1 == 'DAE':
-            col.prop(settings, 'dae_preset_enum')
-        elif settings.export_file_1 == 'ABC':
-            col.prop(settings, 'abc_preset_enum')
-        elif settings.export_file_1 == 'USD':
-            col.prop(settings, 'usd_extension')
-            col.prop(settings, 'usd_preset_enum')
-        elif settings.export_file_1 == 'OBJ':
-            col.prop(settings, 'obj_preset_enum')
-        elif settings.export_file_1 == 'PLY':
-            col.prop(settings, 'ply_ascii')
-        elif settings.export_file_1 == 'STL':
-            col.prop(settings, 'stl_ascii')
-        elif settings.export_file_1 == 'FBX':
-            col.prop(settings, 'fbx_preset_enum')
-        elif settings.export_file_1 == 'glTF':
-            col.prop(settings, 'gltf_preset_enum')
-        elif settings.export_file_1 == 'X3D':
-            col.prop(settings, 'x3d_preset_enum')
-        elif settings.export_file_1 == "BLEND":
-            col.prop(settings, 'pack_resources')
-            if not settings.pack_resources:
-                col.prop(settings, 'make_paths_relative')
+    # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
+    for index, export_file in enumerate(context.scene.transmogrifier_exports):   
+        layout = self.layout
+        export_file_box = layout.box()
+        row = export_file_box.row()
+        col = export_file_box.column(align=True)
         
-        # Set scale
-        if settings.advanced_ui == "Advanced":
-            # col = self.layout.column(align=True)
-            col.prop(settings, 'export_file_1_scale')
-            # self.layout.separator()
+        # Export file name
+        row.label(text=export_file.name, icon='EXPORT')
 
-        # File Format 2
-        if settings.model_quantity == "2 Formats":
-            col = self.layout.column(align=True)
-            col = self.layout.column(align=True)
-            col.prop(settings, 'export_file_2')
+        # Remove export button
+        props = row.operator('transmogrifier.remove_export', text = "", icon = 'PANEL_CLOSE')
+        props.index = index
 
-            if settings.export_file_2 == 'DAE':
-                col.prop(settings, 'dae_preset_enum')
-            elif settings.export_file_2 == 'ABC':
-                col.prop(settings, 'abc_preset_enum')
-            elif settings.export_file_2 == 'USD':
-                col.prop(settings, 'usd_extension')
-                col.prop(settings, 'usd_preset_enum')
-            elif settings.export_file_2 == 'OBJ':
-                col.prop(settings, 'obj_preset_enum')
-            elif settings.export_file_2 == 'PLY':
-                col.prop(settings, 'ply_ascii')
-            elif settings.export_file_2 == 'STL':
-                col.prop(settings, 'stl_ascii')
-            elif settings.export_file_2 == 'FBX':
-                col.prop(settings, 'fbx_preset_enum')
-            elif settings.export_file_2 == 'glTF':
-                col.prop(settings, 'gltf_preset_enum')
-            elif settings.export_file_2 == 'X3D':
-                col.prop(settings, 'x3d_preset_enum')
-            elif settings.export_file_2 == "BLEND":
-                col.prop(settings, 'pack_resources')
-                if not settings.pack_resources:
-                    col.prop(settings, 'make_paths_relative')
-            
-            # Set scale
+        # Format
+        col.prop(export_file, "format")
+
+        # Extension options for USD and glTF formats.
+        if export_file.format == 'USD' or export_file.format == "glTF":
+            col.prop(export_file, 'extension') 
+
+        # Preset
+        if Functions.operator_dict[export_file.format][1][0] != "NO_OPERATOR":
+            col.prop(export_file, "preset_enum")
+
+        # Directory
+        if not settings.link_export_settings:
+            if not settings.export_adjacent:
+                col = export_file_box.column(align=True)
+                col.prop(export_file, "directory")
+            col = export_file_box.column(align=True)
+            col.prop(export_file, 'prefix')
+            col.prop(export_file, 'suffix')
             if settings.advanced_ui:
-                # col = self.layout.column(align=True)
-                col.prop(settings, 'export_file_2_scale')
+                col = export_file_box.column(align=True)
+                col.prop(export_file, 'set_data_names')                
+            
+    
+    # Additional import settings
+    if len(exports) > 1 or (len(exports) == 1 and settings.link_export_settings):
+        if settings.link_export_settings:
+            if not settings.export_adjacent:
+                col = self.layout.column(align=True)
+                col.prop(settings, 'export_directory')
+            
+            col = self.layout.column(align=True)
+            col.prop(settings, 'prefix')
+            col.prop(settings, 'suffix')
+            if settings.advanced_ui:
+                col = self.layout.column(align=True)
+                col.prop(settings, 'set_data_names')
 
+    self.layout.separator(factor = separator_factor)
+    
+    # col = self.layout.column(align=True)
+    # col.prop(settings, "directory_output_location")
+    # if settings.directory_output_location == "Custom":
+    #     col.prop(settings, "directory_output_custom")
+    #     if settings.directory_output_custom:
+    #         col.prop(settings, "use_subdirectories")
+    #     if settings.advanced_ui:
+    #         if settings.use_subdirectories:
+    #             col.prop(settings, "copy_item_dir_contents")
+    #         col = self.layout.column(align=True)
 
-        col = self.layout.column(align=True)
-
-    # Name Settings
-    col.label(text="Names:", icon='SORTALPHA')
-    col.prop(settings, 'prefix')
-    col.prop(settings, 'suffix')
-    if settings.advanced_ui:
-        col = self.layout.column(align=True)
-        col.prop(settings, 'set_data_names')
 
 
 # Texture Settings

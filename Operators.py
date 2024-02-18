@@ -590,7 +590,7 @@ class TRANSMOGRIFIER_OT_add_import(Operator):
     def execute(self, context):
         new_import = context.scene.transmogrifier_imports.add()
         new_import.name = new_import.format
-        Functions.update_import_directories(self, context)
+        Functions.update_import_export_directories(self, context, "imports")
         return {'FINISHED'}
 
 
@@ -598,7 +598,7 @@ class TRANSMOGRIFIER_OT_remove_import(Operator):
     '''Remove import from UI'''
 
     bl_idname = "transmogrifier.remove_import"
-    bl_label = "Remove import file"
+    bl_label = "Remove Import"
     bl_description = "Remove import from UI"
 
     index: IntProperty(
@@ -609,6 +609,38 @@ class TRANSMOGRIFIER_OT_remove_import(Operator):
 
     def execute(self, context):
         context.scene.transmogrifier_imports.remove(self.index)
+        return {'FINISHED'}
+
+
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
+class TRANSMOGRIFIER_OT_add_export(Operator):
+    '''Add new export to UI'''
+
+    bl_idname = "transmogrifier.add_export"
+    bl_label = "Add Export"
+    bl_description = "Add new export to UI"
+
+    def execute(self, context):
+        new_export = context.scene.transmogrifier_exports.add()
+        Functions.update_import_export_directories(self, context, "exports")
+        return {'FINISHED'}
+
+
+class TRANSMOGRIFIER_OT_remove_export(Operator):
+    '''Remove export from UI'''
+
+    bl_idname = "transmogrifier.remove_export"
+    bl_label = "Remove Export"
+    bl_description = "Remove export from UI"
+
+    index: IntProperty(
+        name="Index to remove",
+        description="Index of the export to remove",
+        min=0, 
+    )   
+
+    def execute(self, context):
+        context.scene.transmogrifier_exports.remove(self.index)
         return {'FINISHED'}
 
 
@@ -665,6 +697,8 @@ classes = (
     TRANSMOGRIFIER_OT_remove_preset,
     TRANSMOGRIFIER_OT_add_import, 
     TRANSMOGRIFIER_OT_remove_import,
+    TRANSMOGRIFIER_OT_add_export, 
+    TRANSMOGRIFIER_OT_remove_export, 
     TRANSMOGRIFIER_OT_add_custom_script,
     TRANSMOGRIFIER_OT_remove_custom_script,
 )
