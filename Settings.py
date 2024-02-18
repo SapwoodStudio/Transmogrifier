@@ -106,6 +106,14 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         subtype='DIR_PATH',
         update=Functions.link_export_settings,
     )
+    scale: FloatProperty(
+        name="Scale", 
+        description="Set the scale of the model before exporting",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=100,
+    )
     # Pack resources into Blend.
     pack_resources: BoolProperty(
         name="Pack Resources",
@@ -864,6 +872,15 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         name="Options",
         description="Dictionary of export operator options from preset",
         default="{}",
+    )
+
+    scale: FloatProperty(
+        name="Scale", 
+        description="Set the scale of the model before exporting",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=500,
     )
 
     directory: StringProperty(

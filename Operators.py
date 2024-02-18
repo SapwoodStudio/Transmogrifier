@@ -147,15 +147,15 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 
 
         # Run Converter.py
-        # subprocess.call(
-        #     [
-        #         blender_dir,
-        #         converter_blend,
-        #         "--python",
-        #         converter_py,
-        #     ],
-        #     cwd=transmogrifier_dir
-        # ) 
+        subprocess.call(
+            [
+                blender_dir,
+                converter_blend,
+                "--python",
+                converter_py,
+            ],
+            cwd=transmogrifier_dir
+        ) 
         
 
         print("Conversion Complete")

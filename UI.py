@@ -205,6 +205,10 @@ def draw_settings_general(self, context):
                     if export_file.use_subdirectories:
                         row.prop(export_file, "copy_original_contents", text='', icon='COPYDOWN')
                     row.prop(export_file, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
+            
+            col = export_file_box.column(align=True)
+            col.prop(export_file, 'scale')
+
             col = export_file_box.column(align=True)
             col.prop(export_file, 'prefix')
             col.prop(export_file, 'suffix')
@@ -223,6 +227,9 @@ def draw_settings_general(self, context):
                     row.prop(settings, "copy_original_contents", text='', icon='COPYDOWN')
                 row.prop(settings, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
         
+        col = self.layout.column(align=True)
+        col.prop(settings, 'scale')
+
         col = self.layout.column(align=True)
         col.prop(settings, 'prefix')
         col.prop(settings, 'suffix')

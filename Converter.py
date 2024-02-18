@@ -124,10 +124,7 @@ def get_settings(json_files):
 def make_log_file():
     # Set path to log file with timestamp
     timestamp = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-    if directory_output_location == "Custom":
-        log_file = Path(directory_output_custom, f"Transmogrifier_Log_{timestamp}.txt")
-    elif directory_output_location != "Custom":
-        log_file = Path(import_directory, f"Transmogrifier_Log_{timestamp}.txt")
+    log_file = Path(import_directory, f"Transmogrifier_Log_{timestamp}.txt")
     
     # Create log file.
     logging.basicConfig(
@@ -2072,68 +2069,95 @@ def set_scene_units(unit_system, length_unit):
 		
 
 # Export a model.
-def export_a_model(export_file_scale, export_file_command, export_file_options, export_file):
+def export_a_model(item, item_dir, export_settings_dict):
     try:
         # Set scale
-        transform_resize([export_file_scale, export_file_scale, export_file_scale])
-        print(f"Scaled models: {export_file_scale}")
-        logging.info(f"Scaled models: {export_file_scale}")
+        export_scale = export_settings_dict["scale"]
+        transform_resize([export_scale, export_scale, export_scale])
+        print(f"Scaled models: {export_scale}")
+        logging.info(f"Scaled models: {export_scale}")
+        
         # Apply transforms if requested
         if apply_transforms:
             apply_transformations(apply_transforms_filter)
         
-        # Export the model.
-        export_file_options["filepath"] = export_file  # Set filepath to the location of the model to be exported.
-        export_file_command = f"{export_file_command}{export_file_options})"  # Concatenate the export command with the export options dictionary.
+        # Define the export file.
+        extension = export_settings_dict["extension"]
+        export_file = Path(f"{prefix}{item}{suffix}{extension}")
 
-        # Run export_file_command, which is stored as a string and won't run otherwise.
-        if Path(export_file).suffix == ".blend":
-            save_blend_file(Path(export_file))  # Use save_blend_file function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
+        # Determine where to export the model.
+        if export_adjacent:
+            filepath = item_dir / export_file
+        
+        elif not export_adjacent:
+            directory = Path(export_settings_dict["directory"])
+            
+            if export_settings_dict["use_subdirectories"]:
+                directory = directory / export_file.stem
+            
+            filepath = directory / export_file
+            
+            if not directory.exists():
+                Path.mkdir(directory)
+
+        # Get export options as a dictionary.
+        options = eval(export_settings_dict["options"])
+
+        # Set filepath to the location of the model to be exported.
+        options["filepath"] = str(filepath)
+        
+        # Get export operator.
+        operator = export_settings_dict["operator"]
+        operator = f"{operator}{options})"  # Concatenate the export command with the export options dictionary.
+
+        # Use save_blend_file function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
+        if filepath.suffix == ".blend":
+            save_blend_file(filepath)
+
+        # Run operator, which is stored as a string and won't run otherwise.
         else:
-            exec(export_file_command)
-            print(export_file_command)
-            logging.info(export_file_command)
+            exec(operator)
+            print(operator)
+            logging.info(operator)
 
         # Reset scale
-        export_file_scale = 1 / export_file_scale
-        
-        # Apply transforms if requested
-        if apply_transforms:
-            apply_transformations(apply_transforms_filter)
-        transform_resize([export_file_scale, export_file_scale, export_file_scale])
-        print(f"Reset model scale: {export_file_scale}")
-        logging.info(f"Reset model scale: {export_file_scale}")
+        export_scale_reset = 1 / export_scale
+        transform_resize([export_scale_reset, export_scale_reset, export_scale_reset])
+        print(f"Reset model scale: {export_scale_reset}")
+        logging.info(f"Reset model scale: {export_scale_reset}")
        
         # Apply transforms if requested
         if apply_transforms:
             apply_transformations(apply_transforms_filter)
         
-        print(f"Exported a model: {Path(export_file).name}")
-        logging.info(f"Exported a model: {Path(export_file).name}")
+        print(f"Exported a model: {filepath.name}")
+        logging.info(f"Exported a model: {filepath.name}")
 
     except Exception as Argument:
         logging.exception("Could not export a model")
 
 
 # Determine how many, if any, models to export.
-def export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2):
+def export_models(item, item_dir):
     try:
-        if model_quantity == "2 Formats":
-            # Export file 1
-            export_a_model(export_file_1_scale, export_file_1_command, export_file_1_options, export_file_1)
-            # Export file 2
-            export_a_model(export_file_2_scale, export_file_2_command, export_file_2_options, export_file_2)
+        for export_settings_dict in exports:
+            export_a_model(item, item_dir, export_settings_dict)
+        # if model_quantity == "2 Formats":
+        #     # Export file 1
+        #     export_a_model(export_file_1_scale, export_file_1_command, export_file_1_options, export_file_1)
+        #     # Export file 2
+        #     export_a_model(export_file_2_scale, export_file_2_command, export_file_2_options, export_file_2)
             
-        elif model_quantity == "1 Format":
-            # Export file 1
-            export_a_model(export_file_1_scale, export_file_1_command, export_file_1_options, export_file_1)
+        # elif model_quantity == "1 Format":
+        #     # Export file 1
+        #     export_a_model(export_file_1_scale, export_file_1_command, export_file_1_options, export_file_1)
             
-        elif model_quantity == "No Formats":
-            print("No models will be exported")
-            logging.info("No models will be exported")
+        # elif model_quantity == "No Formats":
+        #     print("No models will be exported")
+        #     logging.info("No models will be exported")
 
-        print("Exported models")
-        logging.info("Exported Models")
+        # print("Exported models")
+        # logging.info("Exported Models")
 
     except Exception as Argument:
         logging.exception("Could not export models")
@@ -3153,7 +3177,7 @@ def archive_assets_to_library(item, export_name, blend):
 
 
 # Convert the file for every file found inside the given directory.
-def converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count):
+def converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, blend, conversion_count):
     try:
         print("-------------------------------------------------------------------")
         print(f"CONVERTER START: {Path(import_file).name}")
@@ -3220,14 +3244,15 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
         run_custom_scripts("Before_Export")
 
         # Decide whether to export files or not based on auto_resize_files menu.
-        determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+        # determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+        export_models(item, item_dir)
 
         # Run custom scripts with triggers "After Export".
         run_custom_scripts("After_Export")
 
         # Modified or copied textures can now be deleted after the conversion is over.
-        if use_textures:
-            determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
+        # if use_textures:
+        #     determine_keep_modified_textures(item_dir, blend, import_file, export_file_1, export_file_2, textures_dir, textures_temp_dir)
 
         # Export UV Layout(s).
         if export_uv_layout:
@@ -3501,12 +3526,16 @@ def batch_converter():
                 textures_temp_dir = item_dir / f"{textures_dir}_{export_name}"
                 if textures_source == "Custom":  
                     textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
-                export_file_1 = str(item_dir / f"{export_name}{export_file_1_ext}")
-                export_file_2 = str(item_dir / f"{export_name}{export_file_2_ext}")
+                # for export_file in exports:
+                #     export_file_1 = str(item_dir / f"{export_name}{export_file_1_ext}")
+                # export_file_2 = str(item_dir / f"{export_name}{export_file_2_ext}")
                 blend = item_dir / f"{export_name}.blend"
 
                 # Determine which models to import, then convert the ones that are eligible for import.
-                conversion_list, conversion_count = determine_imports(item, item_dir, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count, conversion_list)
+                # conversion_list, conversion_count = determine_imports(item, item_dir, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, export_file_1, export_file_2, blend, conversion_count, conversion_list)
+                converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, export_name, blend, conversion_count)
+
+                conversion_count += 1
 
         # If using custom textures, delete temporary textures directory only after all items have been converted.
         if use_textures and textures_source == "Custom" and not keep_modified_textures:
@@ -3527,9 +3556,9 @@ def batch_converter():
         # Report list of files converted and their corresponding file sizes.
         print("ITEMS EXPORTED:")
         logging.info("ITEMS EXPORTED:")
-        for i in conversion_list:
-            print(f"{i[0]} = {i[1]} MB.")
-            logging.info(f"{i[0]} = {i[1]} MB.")
+        # for i in conversion_list:
+        #     print(f"{i[0]} = {i[1]} MB.")
+        #     logging.info(f"{i[0]} = {i[1]} MB.")
 
         print("-----------------------------------------------------------------")
         print("---------------------  BATCH CONVERTER END  ---------------------")
