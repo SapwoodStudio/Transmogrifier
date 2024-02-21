@@ -2628,7 +2628,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
         logging.exception("Could not apply textures to objects")
 		
 
-# Decide whether to export files (again) or not based on auto_resize_files menu.
+# Decide whether to export files (again) or not based on auto_optimize_filter menu.
 def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2):
     try:
         # Force global variables to reset to original settings, specifically export_file_1(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
@@ -2637,7 +2637,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
         export_file_1_options = settings_dict["export_file_1_options"]
         export_file_2_options = settings_dict["export_file_2_options"]
 
-        if auto_resize_files == "All":
+        if auto_optimize_filter == "All":
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
             
@@ -2654,7 +2654,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
             elif export_file_1_file_size > file_size_maximum:
                 auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
 
-        elif auto_resize_files == "Only Above Max":
+        elif auto_optimize_filter == "Only Above Max":
             # Get current file size (in MB)
             export_file_1_file_size = get_export_file_1_size(export_file_1)
 
@@ -2680,7 +2680,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
                 auto_resize_exported_files(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2)
 
-        elif auto_resize_files == "None":
+        elif auto_optimize_filter == "None":
             # Determine how many 3D files to export, then export.
             export_models(export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
 
@@ -3243,7 +3243,7 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
         # Run custom scripts with triggers "Before Export".
         run_custom_scripts("Before_Export")
 
-        # Decide whether to export files or not based on auto_resize_files menu.
+        # Decide whether to export files or not based on auto_optimize_filter menu.
         # determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file_1_command, export_file_1_options, export_file_1_scale, export_file_1, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
         export_models(item, item_dir)
 
@@ -3409,7 +3409,7 @@ def determine_imports(item, item_dir, import_file, import_settings_dict, texture
         original_contents = [file for file in Path.iterdir(item_dir)]
 
         # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
-        if auto_resize_files == "Only Above Max":
+        if auto_optimize_filter == "Only Above Max":
             # Get current file size (in MB) in order to determine whether to import the current item at all.
             # Get current file size (in MB) of export_file_1 in the custom location
             if directory_output_location == "Custom":
@@ -3424,7 +3424,7 @@ def determine_imports(item, item_dir, import_file, import_settings_dict, texture
             else: 
                 export_file_1_file_size = get_export_file_1_size(export_file_1)
 
-            # If export_file_1 exists and is above maximum when auto_resize_files is set to "Only Above Max", convert item.
+            # If export_file_1 exists and is above maximum when auto_optimize_filter is set to "Only Above Max", convert item.
             if export_file_1_file_size > file_size_maximum:
                 print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
@@ -3440,7 +3440,7 @@ def determine_imports(item, item_dir, import_file, import_settings_dict, texture
                     move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, export_file_1, export_file_2, blend, original_contents)
                 return conversion_list, conversion_count
             
-            # If export_file_1 already exists and is already below maximum when auto_resize_files is set to "Only Above Max", skip item.
+            # If export_file_1 already exists and is already below maximum when auto_optimize_filter is set to "Only Above Max", skip item.
             elif export_file_1_file_size > 0 and export_file_1_file_size < file_size_maximum:
                 print(f"Skipped Converter: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
                 logging.info(f"Skipped Converter: {Path(export_file_1).name} already exists and file size ({export_file_1_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
@@ -3463,7 +3463,7 @@ def determine_imports(item, item_dir, import_file, import_settings_dict, texture
                 return conversion_list, conversion_count
 
         # Always convert files if auto file resizing "All" or not auto file resizing at all ("None").
-        elif auto_resize_files != "Only Above Max":
+        elif auto_optimize_filter != "Only Above Max":
             print(f"Initiating Converter: {Path(import_file).name}")
             logging.info(f"Initiating Converter: {Path(import_file).name}")
             # Run the converter on the item that was found.
