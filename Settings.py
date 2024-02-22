@@ -498,11 +498,11 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default=False,
     )
     auto_optimize_filter: EnumProperty(
-        name="Files Included",
-        description="Filter models to be automatically optimized.",
+        name="Files",
+        description="Filter models to be automatically optimized",
         items=[
-            ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target maximum", 1),
-            ("Only Above Max", "Only Above Max", "Only auto-optimize exported files are still above the threshold. Ignore previously exported files that are already below the target maximum", 2),
+            ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target threshold", "SELECT_EXTEND", 1),
+            ("Above Target", "Above Target", "Only auto-optimize exported files are still above the target threshold. Ignore previously exported files that are already below the target maximum", "SELECT_SUBTRACT", 2),
         ],
         default="All",
     )
@@ -515,23 +515,13 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         soft_max=1000.0,
         step=10,
     )
-    # Filter file size reduction methods.
-    auto_optimize_methods: EnumProperty(
-        name="Methods",
-        options={'ENUM_FLAG'},
-        items=[
-            ('Draco-Compress', "", "(Only for GLB export). Try Draco-compression to lower the exported file size.", 'FULLSCREEN_EXIT', 1),
-            ('Resize Textures', "", "Try resizing textures to lower the exported file size.", 'NODE_TEXTURE', 2),
-            ('Reformat Textures', "", "Try reformatting all textures except the normal map to JPEG's to lower the exported file size.", 'IMAGE_DATA', 4),
-            ('Decimate Meshes', "", "Try decimating objects to lower the exported file size.", 'MOD_DECIM', 16),
-        ],
-        description="Filter file size reduction methods to use for automatic export file size reduction",
-        default={
-            'Resize Textures', 
-            'Reformat Textures', 
-            'Draco-Compress', 
-        },
+
+    auto_optimize_show_methods: BoolProperty(
+        name="Methods", 
+        description="Filter methods to use for auto-optimize file size reduction",
+        default=False,
     )
+
     auto_optimize_draco: BoolProperty(
         name="Draco", 
         description="(Only for GLB export). Try Draco-compression to lower the exported file size",
@@ -539,13 +529,13 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
 
     auto_optimize_texture_resize: BoolProperty(
-        name="Resize", 
+        name="Resize Tex.", 
         description="Try resizing textures to lower the exported file size",
         default=True,
     )
 
     auto_optimize_texture_reformat: BoolProperty(
-        name="Reformat", 
+        name="Reformat Tex.", 
         description="Try reformatting all textures except the normal map to JPEG's to lower the exported file size",
         default=True,
     )
@@ -555,7 +545,16 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Try decimating objects to lower the exported file size",
         default=False,
     )
-    
+
+    # Draco compression level.
+    compression_level: IntProperty(
+        name="Compression Level", 
+        description="Draco compression level (0 = most speed, 6 = most compression, higher values currently not supported)",
+        default=6,
+        soft_min=0,
+        soft_max=6,
+        step=1,
+    )    
     # Limit resolution that auto resize files should not go below.
     resize_textures_limit: EnumProperty(
         name="Resize Limit",

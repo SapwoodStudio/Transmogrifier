@@ -370,6 +370,7 @@ def draw_settings_transforms(self, context):
 
 
 # Set max file size options.
+# Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
 def draw_settings_optimize_files(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     exports = bpy.context.scene.transmogrifier_exports
@@ -377,71 +378,59 @@ def draw_settings_optimize_files(self, context):
     self.layout.use_property_decorate = False
     row = self.layout.row(align=True)
     row.label(text="Auto-Optimize:", icon='TRIA_DOWN_BAR')
+
     row.prop(settings, 'auto_optimize', text='')
+
     if settings.auto_optimize:
+        
         col = self.layout.column(align=True)
         col.prop(settings, 'auto_optimize_filter')
         col.prop(settings, 'auto_optimize_target_file_size')
-				
 
-def draw_settings_optimize_files_draco(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    self.layout.use_property_split = True
-    self.layout.use_property_decorate = False
-    col = self.layout.column(align=True)
-    col.enabled = settings.auto_optimize_draco
-    # col.prop(settings, 'resize_textures_limit') # Add Draco settings
+        if settings.advanced_ui:
 
-def draw_settings_optimize_files_resize_textures(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    self.layout.use_property_split = True
-    self.layout.use_property_decorate = False
-    col = self.layout.column(align=True)
-    col.enabled = settings.auto_optimize_texture_resize
-    col.prop(settings, 'resize_textures_limit')
+            self.layout.use_property_split = False
+            col = self.layout.column(align=True)
+            box = col.box()
+            col = box.column(align=True)
+            row = col.row(align=True)
+            row.alignment = "LEFT"
+            row.prop(
+                settings,
+                "auto_optimize_show_methods",
+                icon="DOWNARROW_HLT" if settings.auto_optimize_show_methods else "RIGHTARROW_THIN",
+                emboss=False,
+                toggle=True,
+            )
 
-def draw_settings_optimize_files_reformat_textures(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    self.layout.use_property_split = True
-    self.layout.use_property_decorate = False
-    col = self.layout.column(align=True)
-    col.enabled = settings.auto_optimize_texture_reformat
-    col.prop(settings, 'include_normal_maps')
+            if settings.auto_optimize_show_methods:
+                col.separator()
+                
+                check_for_gltf = [export.format for export in exports if export.format == "glTF"]
+                if check_for_gltf:
+                    row = col.row(align=True)
+                    row.prop(settings, "auto_optimize_draco", icon='FULLSCREEN_EXIT', toggle=True)
+                    sub = row.row(align=True)
+                    sub.active = settings.auto_optimize_draco
+                    sub.prop(settings, "compression_level", text='')
 
-def draw_settings_optimize_files_decimate(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    self.layout.use_property_split = True
-    self.layout.use_property_decorate = False
-    col = self.layout.column(align=True)
-    col.enabled = settings.auto_optimize_decimate
-    col.prop(settings, 'decimate_limit')
+                row = col.row(align=True)
+                row.prop(settings, "auto_optimize_texture_resize", icon='NODE_TEXTURE', toggle=True)
+                sub = row.row(align=True)
+                sub.active = settings.auto_optimize_texture_resize
+                sub.prop(settings, "resize_textures_limit", text='')
 
-def draw_settings_optimize_files_methods_popover(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    exports = bpy.context.scene.transmogrifier_exports
-    
-    if settings.advanced_ui and settings.auto_optimize:
-        self.layout.use_property_split = True
-        self.layout.use_property_decorate = False
+                row = col.row(align=True)
+                row.prop(settings, "auto_optimize_texture_reformat", icon='IMAGE_DATA', toggle=True)
+                sub = row.row(align=True)
+                sub.active = settings.auto_optimize_texture_reformat
+                sub.prop(settings, "include_normal_maps", icon='NORMALS_FACE')
 
-        grid = self.layout.grid_flow(columns=4, align=True)
-        col = self.layout.column(align=True)
-
-        check_for_gltf = [export.format for export in exports if export.format == "glTF"]
-        if check_for_gltf:
-            grid.prop(settings, 'auto_optimize_draco', text='', icon='FULLSCREEN_EXIT')
-
-        grid.prop(settings, 'auto_optimize_texture_resize', text='', icon='NODE_TEXTURE')
-        if settings.auto_optimize_texture_resize:
-            col.prop(settings, 'resize_textures_limit')
-        
-        grid.prop(settings, 'auto_optimize_texture_reformat', text='', icon='IMAGE_DATA')
-        if settings.auto_optimize_texture_reformat:
-            col.prop(settings, 'include_normal_maps')
-        
-        grid.prop(settings, 'auto_optimize_decimate', text='', icon='MOD_DECIM')
-        if settings.auto_optimize_decimate:
-            col.prop(settings, 'decimate_limit', text='Decim. Limit')
+                row = col.row(align=True)
+                row.prop(settings, "auto_optimize_decimate", icon='MOD_DECIM', toggle=True)
+                sub = row.row(align=True)
+                sub.active = settings.auto_optimize_decimate
+                sub.prop(settings, "decimate_limit", text='')
 
 
 # Archive options
@@ -605,7 +594,6 @@ class VIEW3D_PT_transmogrifier_scene(Panel):
     def draw(self, context):
         draw_settings_transforms(self, context)
 
-
 class VIEW3D_PT_transmogrifier_optimize_files(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -614,63 +602,6 @@ class VIEW3D_PT_transmogrifier_optimize_files(Panel):
 
     def draw(self, context):
         draw_settings_optimize_files(self, context)
-
-class VIEW3D_PT_transmogrifier_optimize_files_draco(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_parent_id = "VIEW3D_PT_transmogrifier_optimize_files"
-    bl_label = "Draco-Compress"
-    bl_options = {"DEFAULT_CLOSED"}
-
-    def draw_header(self, context):
-        settings = bpy.context.scene.transmogrifier_settings
-        self.layout.prop(settings, 'auto_optimize_draco', text='')
-
-    def draw(self, context):
-        draw_settings_optimize_files_draco(self, context)
-
-class VIEW3D_PT_transmogrifier_optimize_files_resize_textures(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_parent_id = "VIEW3D_PT_transmogrifier_optimize_files"
-    bl_label = "Resize Textures"
-    bl_options = {"DEFAULT_CLOSED"}
-
-    def draw_header(self, context):
-        settings = bpy.context.scene.transmogrifier_settings
-        self.layout.prop(settings, 'auto_optimize_texture_resize', text='')
-
-    def draw(self, context):
-        draw_settings_optimize_files_resize_textures(self, context)
-
-class VIEW3D_PT_transmogrifier_optimize_files_reformat_textures(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_parent_id = "VIEW3D_PT_transmogrifier_optimize_files"
-    bl_label = "Reformat Textures"
-    bl_options = {"DEFAULT_CLOSED"}
-
-    def draw_header(self, context):
-        settings = bpy.context.scene.transmogrifier_settings
-        self.layout.prop(settings, 'auto_optimize_texture_reformat', text='')
-
-    def draw(self, context):
-        draw_settings_optimize_files_reformat_textures(self, context)
-
-class VIEW3D_PT_transmogrifier_optimize_files_decimate(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_parent_id = "VIEW3D_PT_transmogrifier_optimize_files"
-    bl_label = "Decimate Meshes"
-    bl_options = {"DEFAULT_CLOSED"}
-
-    def draw_header(self, context):
-        settings = bpy.context.scene.transmogrifier_settings
-        self.layout.prop(settings, 'auto_optimize_decimate', text='')
-
-    def draw(self, context):
-        draw_settings_optimize_files_decimate(self, context)
-
 
 class VIEW3D_PT_transmogrifier_archive(Panel):
     bl_space_type = 'VIEW_3D'
@@ -702,7 +633,6 @@ class POPOVER_PT_transmogrifier(Panel):
         draw_settings_textures(self, context)
         draw_settings_transforms(self, context)
         draw_settings_optimize_files(self, context)
-        draw_settings_optimize_files_methods_popover(self, context)
         draw_settings_archive(self, context)
         if settings.advanced_ui:
             draw_settings_scripts(self, context)
@@ -720,10 +650,6 @@ class TransmogrifierPreferences(AddonPreferences):
             bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
             bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
             bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_draco)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_resize_textures)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_reformat_textures)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_decimate)
             bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_archive)
             bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
         if self.addon_location == 'TOPBAR':
@@ -735,10 +661,6 @@ class TransmogrifierPreferences(AddonPreferences):
             bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
             bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
             bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_draco)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_resize_textures)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_reformat_textures)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_decimate)
             bpy.utils.register_class(VIEW3D_PT_transmogrifier_archive)
             bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
 
@@ -802,10 +724,6 @@ def register():
         bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
         bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
         bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_draco)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_resize_textures)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_reformat_textures)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files_decimate)
         bpy.utils.register_class(VIEW3D_PT_transmogrifier_archive)
         bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
 
@@ -822,9 +740,5 @@ def unregister():
         bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
         bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
         bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_draco)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_resize_textures)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_reformat_textures)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files_decimate)
         bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_archive)
         bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
