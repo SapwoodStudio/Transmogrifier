@@ -493,7 +493,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
     # Option to set file size maximum.
     auto_optimize: BoolProperty(
-        name="Auto-Optimize", 
+        name="Optimize Exports", 
         description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size. If exporting 2 formats at once, it only takes the first file format into account",
         default=False,
     )
@@ -965,6 +965,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
     name: StringProperty(
         name="Name", 
         default="Script",
+    )
+    
+    show_settings: BoolProperty(
+        name="Show/Hide custom script settings",
+        description="",
+        default=True,
     )
 
     file: StringProperty(

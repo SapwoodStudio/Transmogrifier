@@ -105,11 +105,7 @@ def draw_settings_general(self, context):
     row.label(text="Imports", icon='IMPORT')
     
     if len(imports) > 1:
-        if settings.link_import_directories:
-            icon = "LINKED"
-        elif not settings.link_import_directories:
-            icon = "UNLINKED"
-        row.prop(settings, 'link_import_directories', expand=False, text="", icon=icon)
+        row.prop(settings, 'link_import_directories', expand=False, text="", icon="LINKED" if settings.link_import_directories else "UNLINKED")
 
     # Add Import button
     col = self.layout.column(align=True)
@@ -177,11 +173,7 @@ def draw_settings_general(self, context):
     if len(exports) > 0:
         row.prop(settings, 'export_adjacent', expand=False, text="", icon='UV_SYNC_SELECT')
         if len(exports) > 1:
-            if settings.link_export_settings:
-                icon = "LINKED"
-            elif not settings.link_export_settings:
-                icon = "UNLINKED"
-            row.prop(settings, 'link_export_settings', expand=False, text="", icon=icon)
+            row.prop(settings, 'link_export_settings', expand=False, text="", icon="LINKED" if settings.link_export_settings else "UNLINKED")
 
     # Add Export button
     col = self.layout.column(align=True)
@@ -273,21 +265,19 @@ def draw_settings_general(self, context):
 # Texture Settings
 def draw_settings_textures(self, context):
     settings = bpy.context.scene.transmogrifier_settings
-    self.layout.use_property_split = True
+    self.layout.use_property_split = False
     self.layout.use_property_decorate = False
-    col = self.layout.column(align=True)
-    # Align menu items to the left.
-    self.layout.use_property_split = True
-    # col = self.layout.column(align=True)
-    col.label(text="Textures", icon='TEXTURE')
-    col.prop(settings, 'use_textures')
+    row = self.layout.row(align=True)
+    row.label(text="Textures", icon='TEXTURE')
+    row = self.layout.row(align=True)
+    row.prop(settings, 'use_textures', icon="CHECKBOX_HLT" if settings.use_textures else "CHECKBOX_DEHLT")
+    if settings.use_textures and settings.advanced_ui:
+        row.prop(settings, 'regex_textures', text='', icon='OUTLINER_OB_FONT')
+        row.prop(settings, 'keep_modified_textures', text='', icon="FAKE_USER_ON" if settings.keep_modified_textures else "FAKE_USER_OFF")
 
-    if settings.use_textures:
-        if settings.advanced_ui:
-            col.prop(settings, 'regex_textures')
-            col.prop(settings, 'keep_modified_textures')
-            self.layout.use_property_split = True
-            col = self.layout.column(align=True)
+    col = self.layout.column(align=True)
+    col.use_property_split = True
+    if settings.use_textures:        
         col.prop(settings, 'textures_source')
         if settings.advanced_ui:
             import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
@@ -404,16 +394,18 @@ def draw_settings_transforms(self, context):
 def draw_settings_optimize_files(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     exports = bpy.context.scene.transmogrifier_exports
-    self.layout.use_property_split = True
+    self.layout.use_property_split = False
     self.layout.use_property_decorate = False
     row = self.layout.row(align=True)
     row.label(text="Auto-Optimize", icon='TRIA_DOWN_BAR')
 
-    row.prop(settings, 'auto_optimize', text='')
+    row = self.layout.row(align=True)
+    row.prop(settings, 'auto_optimize', icon="CHECKBOX_HLT" if settings.auto_optimize else "CHECKBOX_DEHLT")
 
     if settings.auto_optimize:
         
         col = self.layout.column(align=True)
+        col.use_property_split = True
         col.prop(settings, 'auto_optimize_filter')
         col.prop(settings, 'auto_optimize_target_file_size')
 
@@ -547,43 +539,59 @@ def draw_settings_scripts(self, context):
         col.operator('transmogrifier.add_custom_script', icon="ADD")
 
         # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
-        for index, custom_script in enumerate(context.scene.transmogrifier_scripts):   
-            layout = self.layout
-            # layout.separator(factor = 1.0)
-            custom_script_box = layout.box()
-
-            file = Path(bpy.path.abspath(custom_script.file))
+        for index, instance in enumerate(context.scene.transmogrifier_scripts):   
+            box = self.layout.box()
+            grid = box.grid_flow(columns=2, align=True)
+            row = grid.row()
+            row.use_property_split = False
+            row.alignment = "LEFT"
             
-            # Added a new custom script (default name is "*.py")
-            if custom_script.file == "*.py"  and file.name == "*.py":
-                icon = "FILE_SCRIPT"
+            row.prop(
+                instance,
+                "show_settings",
+                icon="DOWNARROW_HLT" if instance.show_settings else "RIGHTARROW_THIN",
+                emboss=False,
+                toggle=True,
+                text=instance.name
+            )
 
-            # File is not a Python file.
-            elif file.suffix != ".py":
-                icon = "ERROR"
-
-            # File is a Python file but doesn't exist.
-            elif not file.is_file() and file.suffix == ".py":
-                icon = "ERROR"
-
-            # File is a Python file and might exist, but path is relative and current Blend session is unsaved.
-            elif file != Path(custom_script.file) and not bpy.data.is_saved:
-                icon = "ERROR"
-
-            # File is a Python file and exists.
-            elif file.is_file() and file.suffix == ".py":
-                icon = "FILE_SCRIPT"
-            
-            row = custom_script_box.row()
-            row.label(text=custom_script.name, icon=icon)
+            # Remove import button
+            row = grid.row()
+            row.alignment = "RIGHT"
             props = row.operator('transmogrifier.remove_custom_script', text = "", icon = 'PANEL_CLOSE')
             props.custom_script_index = index
 
-            col = custom_script_box.column()
-            col.prop(custom_script, "file")  
-            col.prop(custom_script, "trigger")
-    
+            if instance.show_settings:
+                col = box.column(align=True)
+                self.layout.use_property_split = True
+
+                file = Path(bpy.path.abspath(instance.file))
+                
+                # Added a new custom script (default name is "*.py")
+                if instance.file == "*.py"  and file.name == "*.py":
+                    icon = "FILE_SCRIPT"
+
+                # File is not a Python file.
+                elif file.suffix != ".py":
+                    icon = "ERROR"
+
+                # File is a Python file but doesn't exist.
+                elif not file.is_file() and file.suffix == ".py":
+                    icon = "ERROR"
+
+                # File is a Python file and might exist, but path is relative and current Blend session is unsaved.
+                elif file != Path(instance.file) and not bpy.data.is_saved:
+                    icon = "ERROR"
+
+                # File is a Python file and exists.
+                elif file.is_file() and file.suffix == ".py":
+                    icon = "FILE_SCRIPT"
+
+                col.prop(instance, "file")  
+                col.prop(instance, "trigger")
+        
     elif not settings.advanced_ui:# == "Simple":
+        col = self.layout.column(align=True)
         col.label(text="(Toggle 'Advanced UI' to view)")
         
 
@@ -592,7 +600,7 @@ def draw_settings_scripts(self, context):
 def draw_popover(self, context):
     row = self.layout.row()
     row = row.row(align=True)
-    row.operator('transmogrifier.transmogrify', text='', icon='FILE_CACHE')
+    row.operator('transmogrifier.transmogrify', text='', icon='PLAY')
     row.popover(panel='POPOVER_PT_transmogrifier', text='')
 
 
