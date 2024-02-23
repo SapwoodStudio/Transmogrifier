@@ -88,7 +88,7 @@ def draw_settings_general(self, context):
 
     # Transmogrifier Presets Menu
     col = self.layout.column(align=True)
-    col.label(text="Workflow:", icon='DRIVER')
+    col.label(text="Workflow", icon='DRIVER')
     layout = self.layout
     # Align menu items to the left.
     self.layout.use_property_split = False
@@ -102,7 +102,7 @@ def draw_settings_general(self, context):
     # Import Settings
     self.layout.use_property_split = True
     row = self.layout.row(align=True)
-    row.label(text="Imports:", icon='IMPORT')
+    row.label(text="Imports", icon='IMPORT')
     
     if len(imports) > 1:
         if settings.link_import_directories:
@@ -172,7 +172,7 @@ def draw_settings_general(self, context):
     # Export Settings
     self.layout.use_property_split = True
     row = self.layout.row(align=True)
-    row.label(text="Exports:", icon='EXPORT')
+    row.label(text="Exports", icon='EXPORT')
     
     if len(exports) > 0:
         row.prop(settings, 'export_adjacent', expand=False, text="", icon='UV_SYNC_SELECT')
@@ -279,7 +279,7 @@ def draw_settings_textures(self, context):
     # Align menu items to the left.
     self.layout.use_property_split = True
     # col = self.layout.column(align=True)
-    col.label(text="Textures:", icon='TEXTURE')
+    col.label(text="Textures", icon='TEXTURE')
     col.prop(settings, 'use_textures')
 
     if settings.use_textures:
@@ -331,7 +331,7 @@ def draw_settings_textures(self, context):
     if settings.advanced_ui:
         self.layout.use_property_split = True
         col = self.layout.column(align=True)
-        col.label(text="UVs:", icon='UV')
+        col.label(text="UVs", icon='UV')
         col.prop(settings, 'rename_uvs')
         if settings.rename_uvs:
             col.prop(settings, 'rename_uvs_name')
@@ -362,7 +362,7 @@ def draw_settings_transforms(self, context):
     self.layout.use_property_split = True
     # col = self.layout.column(align=True)
     if settings.advanced_ui:
-        col.label(text="Transformations:", icon='CON_PIVOT')
+        col.label(text="Transformations", icon='CON_PIVOT')
         col.prop(settings, 'set_transforms')
         if settings.set_transforms:
             self.layout.use_property_split = False
@@ -389,11 +389,11 @@ def draw_settings_transforms(self, context):
         # Set animation options.
         self.layout.use_property_split = True
         col = self.layout.column(align=True)
-        col.label(text="Animations:", icon='ANIM')
+        col.label(text="Animations", icon='ANIM')
         col.prop(settings, 'delete_animations')
 
     # Set scene unit options.
-    col.label(text="Scene:", icon='SCENE_DATA')
+    col.label(text="Scene", icon='SCENE_DATA')
     col.prop(settings, 'unit_system')
     if settings.unit_system != "NONE":
         col.prop(settings, 'length_unit')
@@ -407,7 +407,7 @@ def draw_settings_optimize_files(self, context):
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
     row = self.layout.row(align=True)
-    row.label(text="Auto-Optimize:", icon='TRIA_DOWN_BAR')
+    row.label(text="Auto-Optimize", icon='TRIA_DOWN_BAR')
 
     row.prop(settings, 'auto_optimize', text='')
 
@@ -472,7 +472,7 @@ def draw_settings_archive(self, context):
 
     # Align menu items to the Right.
     self.layout.use_property_split = True
-    col.label(text="Archive:", icon='ASSET_MANAGER')
+    col.label(text="Archive", icon='ASSET_MANAGER')
     col.prop(settings, 'save_conversion_log')
     col.prop(settings, 'archive_assets')
 
@@ -540,7 +540,7 @@ def draw_settings_scripts(self, context):
     col = self.layout.column(align=True)
     col.scale_y = 1.0
     grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
-    grid.label(text="Custom Scripts:", icon='FILE_SCRIPT')
+    grid.label(text="Custom Scripts", icon='FILE_SCRIPT')
 
     if settings.advanced_ui:
         col = self.layout.column(align=True)
