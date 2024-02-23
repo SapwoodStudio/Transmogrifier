@@ -116,34 +116,48 @@ def draw_settings_general(self, context):
     col.operator('transmogrifier.add_import', icon="ADD")
 
     # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
-    for index, import_file in enumerate(context.scene.transmogrifier_imports):   
-        layout = self.layout
-        import_file_box = layout.box()
-        row = import_file_box.row()
-        col = import_file_box.column(align=True)
+    # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
+    for index, instance in enumerate(context.scene.transmogrifier_imports):   
+        box = self.layout.box()
+        grid = box.grid_flow(columns=2, align=True)
+        row = grid.row()
+        row.use_property_split = False
+        row.alignment = "LEFT"
         
-        # Import file name
-        row.label(text=import_file.name, icon='IMPORT')
+        row.prop(
+            instance,
+            "show_settings",
+            icon="DOWNARROW_HLT" if instance.show_settings else "RIGHTARROW_THIN",
+            emboss=False,
+            toggle=True,
+            text=instance.name
+        )
 
         # Remove import button
+        row = grid.row()
+        row.alignment = "RIGHT"
         props = row.operator('transmogrifier.remove_import', text = "", icon = 'PANEL_CLOSE')
         props.index = index
 
-        # Format
-        col.prop(import_file, "format")
+        if instance.show_settings:
+            col = box.column(align=True)
+            self.layout.use_property_split = True
 
-        # Extension options for USD and glTF formats.
-        if import_file.format == 'USD' or import_file.format == "glTF":
-            col.prop(import_file, 'extension') 
+            # Format
+            col.prop(instance, "format")
 
-        # Preset
-        if Functions.operator_dict[import_file.format][0][0] != "NO_OPERATOR":
-            col.prop(import_file, "preset_enum")
+            # Extension options for USD and glTF formats.
+            if instance.format == 'USD' or instance.format == "glTF":
+                col.prop(instance, 'extension') 
 
-        # Directory
-        if not settings.link_import_directories:
-            col = import_file_box.column(align=True)
-            col.prop(import_file, "directory")
+            # Preset
+            if Functions.operator_dict[instance.format][0][0] != "NO_OPERATOR":
+                col.prop(instance, "preset_enum")
+
+            # Directory
+            if not settings.link_import_directories:
+                col = box.column(align=True)
+                col.prop(instance, "directory")
 
     # Import Directory (synced)
     if len(imports) > 1 or (len(imports) == 1 and settings.link_import_directories):
@@ -151,7 +165,9 @@ def draw_settings_general(self, context):
             col = self.layout.column(align=True)
             col.prop(settings, 'import_directory')
     
+
     self.layout.separator(factor = separator_factor)
+
 
     # Export Settings
     self.layout.use_property_split = True
@@ -172,49 +188,63 @@ def draw_settings_general(self, context):
     col.operator('transmogrifier.add_export', icon="ADD")
 
     # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
-    for index, export_file in enumerate(context.scene.transmogrifier_exports):   
-        layout = self.layout
-        export_file_box = layout.box()
-        row = export_file_box.row()
-        col = export_file_box.column(align=True)
+    # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
+    for index, instance in enumerate(context.scene.transmogrifier_exports):   
+        box = self.layout.box()
+        grid = box.grid_flow(columns=2, align=True)
+        row = grid.row()
+        row.use_property_split = False
+        row.alignment = "LEFT"
         
-        # Export file name
-        row.label(text=export_file.name, icon='EXPORT')
+        row.prop(
+            instance,
+            "show_settings",
+            icon="DOWNARROW_HLT" if instance.show_settings else "RIGHTARROW_THIN",
+            emboss=False,
+            toggle=True,
+            text=instance.name
+        )
 
-        # Remove export button
+        # Remove import button
+        row = grid.row()
+        row.alignment = "RIGHT"
         props = row.operator('transmogrifier.remove_export', text = "", icon = 'PANEL_CLOSE')
         props.index = index
 
-        # Format
-        col.prop(export_file, "format")
+        if instance.show_settings:
+            col = box.column(align=True)
+            self.layout.use_property_split = True
 
-        # Extension options for USD and glTF formats.
-        if export_file.format == 'USD' or export_file.format == "glTF":
-            col.prop(export_file, 'extension') 
+            # Format
+            col.prop(instance, "format")
 
-        # Preset
-        if Functions.operator_dict[export_file.format][1][0] != "NO_OPERATOR":
-            col.prop(export_file, "preset_enum")
+            # Extension options for USD and glTF formats.
+            if instance.format == 'USD' or instance.format == "glTF":
+                col.prop(instance, 'extension') 
 
-        # Directory
-        if not settings.link_export_settings:
-            if not settings.export_adjacent:
-                row = export_file_box.row()
-                row.prop(export_file, "directory")
+            # Preset
+            if Functions.operator_dict[instance.format][1][0] != "NO_OPERATOR":
+                col.prop(instance, "preset_enum")
+
+            # Directory
+            if not settings.link_export_settings:
+                if not settings.export_adjacent:
+                    row = box.row()
+                    row.prop(instance, "directory")
+                    if settings.advanced_ui:
+                        if instance.use_subdirectories:
+                            row.prop(instance, "copy_original_contents", text='', icon='COPYDOWN')
+                        row.prop(instance, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
+                
+                col = box.column(align=True)
+                col.prop(instance, 'scale')
+
+                col = box.column(align=True)
+                col.prop(instance, 'prefix')
+                col.prop(instance, 'suffix')
                 if settings.advanced_ui:
-                    if export_file.use_subdirectories:
-                        row.prop(export_file, "copy_original_contents", text='', icon='COPYDOWN')
-                    row.prop(export_file, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
-            
-            col = export_file_box.column(align=True)
-            col.prop(export_file, 'scale')
-
-            col = export_file_box.column(align=True)
-            col.prop(export_file, 'prefix')
-            col.prop(export_file, 'suffix')
-            if settings.advanced_ui:
-                col = export_file_box.column(align=True)
-                col.prop(export_file, 'set_data_names')                
+                    col = box.column(align=True)
+                    col.prop(instance, 'set_data_names')                
             
     
     # Additional export settings

@@ -772,6 +772,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
         default="FBX",
     )
 
+    show_settings: BoolProperty(
+        name="Show/Hide import settings",
+        description="",
+        default=True,
+    )
+
     directory: StringProperty(
         name="Directory",
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
@@ -843,6 +849,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
     name: StringProperty(
         name="Name", 
         default="GLB",
+    )
+
+    show_settings: BoolProperty(
+        name="Show/Hide export settings",
+        description="",
+        default=True,
     )
 
     format: EnumProperty(
