@@ -100,21 +100,22 @@ def draw_settings_general(self, context):
     self.layout.separator(factor = separator_factor)
 
     # Import Settings
-    self.layout.use_property_split = True
-    row = self.layout.row(align=True)
+    box_imports = self.layout.box()
+    box_imports.use_property_split = True
+    row = box_imports.row(align=True)
     row.label(text="Imports", icon='IMPORT')
     
     if len(imports) > 1:
         row.prop(settings, 'link_import_directories', expand=False, text="", icon="LINKED" if settings.link_import_directories else "UNLINKED")
 
     # Add Import button
-    col = self.layout.column(align=True)
+    col = box_imports.column(align=True)
     col.operator('transmogrifier.add_import', icon="ADD")
 
     # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
     # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
     for index, instance in enumerate(context.scene.transmogrifier_imports):   
-        box = self.layout.box()
+        box = box_imports.box()
         grid = box.grid_flow(columns=2, align=True)
         row = grid.row()
         row.use_property_split = False
@@ -158,7 +159,7 @@ def draw_settings_general(self, context):
     # Import Directory (synced)
     if len(imports) > 1 or (len(imports) == 1 and settings.link_import_directories):
         if settings.link_import_directories:
-            col = self.layout.column(align=True)
+            col = box_imports.column(align=True)
             col.prop(settings, 'import_directory')
     
 
@@ -167,7 +168,8 @@ def draw_settings_general(self, context):
 
     # Export Settings
     self.layout.use_property_split = True
-    row = self.layout.row(align=True)
+    box_exports = self.layout.box()
+    row = box_exports.row(align=True)
     row.label(text="Exports", icon='EXPORT')
     
     if len(exports) > 0:
@@ -176,13 +178,13 @@ def draw_settings_general(self, context):
             row.prop(settings, 'link_export_settings', expand=False, text="", icon="LINKED" if settings.link_export_settings else "UNLINKED")
 
     # Add Export button
-    col = self.layout.column(align=True)
+    col = box_exports.column(align=True)
     col.operator('transmogrifier.add_export', icon="ADD")
 
     # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
     # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
     for index, instance in enumerate(context.scene.transmogrifier_exports):   
-        box = self.layout.box()
+        box = box_exports.box()
         grid = box.grid_flow(columns=2, align=True)
         row = grid.row()
         row.use_property_split = False
@@ -242,21 +244,21 @@ def draw_settings_general(self, context):
     # Additional export settings
     if settings.link_export_settings and (len(exports) > 1 or (len(exports) == 1 and settings.link_export_settings)):
         if not settings.export_adjacent:
-            row = self.layout.row(align=True)
+            row = box_exports.row(align=True)
             row.prop(settings, 'export_directory')
             if settings.advanced_ui:
                 if settings.use_subdirectories:
                     row.prop(settings, "copy_original_contents", text='', icon='COPYDOWN')
                 row.prop(settings, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
         
-        col = self.layout.column(align=True)
+        col = box_exports.column(align=True)
         col.prop(settings, 'scale')
 
-        col = self.layout.column(align=True)
+        col = box_exports.column(align=True)
         col.prop(settings, 'prefix')
         col.prop(settings, 'suffix')
         if settings.advanced_ui:
-            col = self.layout.column(align=True)
+            col = box_exports.column(align=True)
             col.prop(settings, 'set_data_names')
 
     self.layout.separator(factor = separator_factor)
@@ -605,59 +607,22 @@ def draw_popover(self, context):
 
 
 # Side Panel panel (used with Side Panel option)
-class VIEW3D_PT_transmogrifier_general(Panel):
+class VIEW3D_PT_transmogrifier(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Transmogrifier"
-    bl_label = "⚙  General"
+    bl_label = "Transmogrifier"
 
     def draw(self, context):
+        settings = bpy.context.scene.transmogrifier_settings
         draw_settings_general(self, context)
-        
-class VIEW3D_PT_transmogrifier_textures(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "Transmogrifier"
-    bl_label = "🏁  Textures"
-
-    def draw(self, context):
         draw_settings_textures(self, context)
-
-class VIEW3D_PT_transmogrifier_scene(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "Transmogrifier"
-    bl_label = "📐  Scene"
-
-    def draw(self, context):
         draw_settings_transforms(self, context)
-
-class VIEW3D_PT_transmogrifier_optimize_files(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "Transmogrifier"
-    bl_label = "⏬  Optimize"
-
-    def draw(self, context):
         draw_settings_optimize_files(self, context)
-
-class VIEW3D_PT_transmogrifier_archive(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "Transmogrifier"
-    bl_label = "🗄  Archive"
-
-    def draw(self, context):
         draw_settings_archive(self, context)
-
-class VIEW3D_PT_transmogrifier_scripts(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "Transmogrifier"
-    bl_label = "🐍  Scripts"
-
-    def draw(self, context):
-        draw_settings_scripts(self, context)
+        if settings.advanced_ui:
+            draw_settings_scripts(self, context)
+        
 
 # Popover panel (used on 3D Viewport Header or Top Bar option)
 class POPOVER_PT_transmogrifier(Panel):
@@ -683,24 +648,14 @@ class TransmogrifierPreferences(AddonPreferences):
     def addon_location_updated(self, context):
         bpy.types.TOPBAR_MT_editor_menus.remove(draw_popover)
         bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
-        if hasattr(bpy.types, "VIEW3D_PT_transmogrifier_general"):
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_general)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_archive)
-            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
+        if hasattr(bpy.types, "VIEW3D_PT_transmogrifier"):
+            bpy.utils.unregister_class(VIEW3D_PT_transmogrifier)
         if self.addon_location == 'TOPBAR':
             bpy.types.TOPBAR_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DHEADER':
             bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DSIDE':
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_general)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_archive)
-            bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
+            bpy.utils.register_class(VIEW3D_PT_transmogrifier)
 
 
     addon_location: EnumProperty(
@@ -758,12 +713,7 @@ def register():
     if prefs.addon_location == '3DHEADER':
         bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
     elif prefs.addon_location == '3DSIDE':
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_general)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize_files)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_archive)
-        bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
+        bpy.utils.register_class(VIEW3D_PT_transmogrifier)
 
 # Unregister Classes.
 def unregister():
@@ -773,10 +723,5 @@ def unregister():
     # Remove UI
     bpy.types.TOPBAR_MT_editor_menus.remove(draw_popover)
     bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
-    if hasattr(bpy.types, "VIEW3D_PT_transmogrifier_general"):
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_general)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize_files)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_archive)
-        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
+    if hasattr(bpy.types, "VIEW3D_PT_transmogrifier"):
+        bpy.utils.unregister_class(VIEW3D_PT_transmogrifier)
