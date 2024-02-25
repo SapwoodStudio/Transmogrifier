@@ -492,11 +492,11 @@ def select_by_material(material):
 		
 
 # Copy textures from custom directory to item directory.
-def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures):
+def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures):
     try:
         if Path(textures_custom_dir).exists():
             if Path(textures_dir).exists():  # Cannot create another textures folder if one already exists.
-                if replace_textures and copy_textures_custom_dir:  # If User elected to replace an existing textures directory that might be inside the item folder, then delete it.
+                if copy_textures_custom_dir and not preserve_original_textures:  # If User elected to replace an existing textures directory that might be inside the item folder, then delete it.
                     shutil.rmtree(textures_dir)
                 else:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
                     textures_dir_name = [d.name for d in Path.iterdir(item_dir) if "textures" in d.name.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
@@ -2472,7 +2472,7 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
 
         # Copy original custom textures to item directory if elected.
         if copy_textures_custom_dir:
-            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, replace_textures)
+            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures)
         
         print("Applied custom textures to objects")
         logging.info("Applied custom textures to objects")
@@ -3035,7 +3035,7 @@ def extract_preview_to_disk(asset, asset_type, export_name, blend):
 # Mark asset.
 def mark_asset(asset, asset_type, assets_in_library, export_name, blend):
     try:
-        if assets_ignore_duplicates and asset_type in assets_ignore_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
+        if not assets_allow_duplicates and asset_type not in assets_allow_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
             print(f"Skipped Mark Asset: {asset.name}.  Asset already exists in Library: {asset_library}")
             logging.info(f"Skipped Mark Asset: {asset.name}.  Asset already exists in Library: {asset_library}")
             return
@@ -3064,7 +3064,7 @@ def mark_asset(asset, asset_type, assets_in_library, export_name, blend):
 # Get a dictionary of asset names by data-block type that exist in a given asset library.
 def get_assets_in_library(library_name):
     try:
-        keys = assets_ignore_duplicates_filter  # Keys are the asset types for which duplicates should be ignored.
+        keys = assets_allow_duplicates_filter  # Keys are the asset types for which duplicates should be allow.
         values = [[] for key in keys]  # Placeholder lists to be filled later.
         assets_in_library = dict(zip(keys, values))  # Create an template dictionary to fill.
         
@@ -3204,7 +3204,7 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
         move_objects_and_collections_to_item_collection(item)
 
         # Delete animations.
-        if delete_animations:
+        if not use_animations:
             clear_animation_data()
         
         # Apply transformations.

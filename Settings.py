@@ -57,6 +57,13 @@ from . import Functions
 
 # Groups together all the addon settings that are saved in each .blend file
 class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
+    # Save conversion log.
+    save_conversion_log: BoolProperty(
+        name="Save Conversion Log",
+        description="Save a log of the batch conversion in the given import directory. This can help troubleshoot conversion errors",
+        default=False,
+    )
+    # Advanced UI toggle.
     advanced_ui: BoolProperty(
         name="Advanced UI",
         description="Toggle simple/advanced user interface options",
@@ -90,7 +97,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     # Export Settings
     export_adjacent: BoolProperty(
         name="Export Adjacent",
-        description="Export models adjacent to imports",
+        description="Export models adjacent to their respective imports",
         default=True,
     )
     link_export_settings: BoolProperty(
@@ -117,7 +124,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     # Pack resources into Blend.
     pack_resources: BoolProperty(
         name="Pack Resources",
-        description="Pack all used external files into this .blend",
+        description="Pack all used external files into .blend",
         default=True,
         )
     # Make Blend paths relative.
@@ -193,10 +200,10 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Copy textures from custom directory to every folder from which a model is imported",
         default=False,
     )
-    replace_textures: BoolProperty(
-        name="Replace Textures", 
-        description="Replace any existing textures folders with textures from custom directory",
-        default=False,
+    preserve_original_textures: BoolProperty(
+        name="Preserve Original Textures", 
+        description="If toggled off, original textures will be replaced with textures from custom directory per model converted",
+        default=True,
     )
     use_linked_blend_textures: BoolProperty(
         name="Linked to .blend", 
@@ -324,7 +331,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default="UVMap"
     )
     export_uv_layout: BoolProperty(
-        name="Export UV Maps",
+        name="Export UVs",
         description="Export UV layout to file",
         default=False,
     )
@@ -334,12 +341,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default=False,
     )
     uv_export_location: EnumProperty(
-        name="Location(s)",
-        description="Select where UV layouts should be exported",
+        name="Destination",
+        description="Select directory into which UV layouts will be exported",
         items=[
             ("Textures", "Textures", "Export UVs to a Textures subfolder for each item. If none exists, create one", 'TEXTURE', 1),
             ("UV", "UV", "Export UVs to a 'UV' subfolder for each item. If none exists, create one", 'UV', 2),
-            ("Adjacents", "Adjacents", "Export UVs to the same directories as converted models for each item", 'FILE_FOLDER', 3),
+            ("Model", "Model", "Export UVs to the same directories as converted models for each item", 'FILE_3D', 3),
             ("Custom", "Custom", "Export all UVs to a custom directory of choice", 'NEWFOLDER', 4),
         ],
         default="UV",
@@ -469,10 +476,10 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         },
     )
     # Clear animation data.
-    delete_animations: BoolProperty(
-        name="Delete", 
-        description="Remove all animation data from all objects",
-        default=True,
+    use_animations: BoolProperty(
+        name="Use Animations", 
+        description="Use animations.  If toggled off, animations will be deleted",
+        default=False,
     )
     # Set unit system.
     unit_system: EnumProperty(
@@ -498,7 +505,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default=False,
     )
     auto_optimize_filter: EnumProperty(
-        name="Files",
+        name="Include",
         description="Filter models to be automatically optimized",
         items=[
             ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target threshold", "SELECT_EXTEND", 1),
@@ -585,21 +592,15 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         soft_max=10,
         step=1,
     )
-    # Save conversion log.
-    save_conversion_log: BoolProperty(
-        name="Save Log",
-        description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
+    # Mark data blocks as assets.
+    mark_as_assets: BoolProperty(
+        name="Mark as Assets",
+        description="Mark converted models as assets.\n(Saves a Blend file for each model converted)",
         default=False,
     )
-    # Mark data blocks as assets.
-    archive_assets: BoolProperty(
-        name="Archive Assets",
-        description="Archive specified assets to Asset Library",
-        default=False,
-        )
     # Mark asset data filter.
     asset_types_to_mark: EnumProperty(
-        name="Mark Assets",
+        name="Mark Assets Filter",
         options={'ENUM_FLAG'},
         items=[
             ('Actions', "", "Mark individual actions (animations) as assets.", "ACTION", 1),
@@ -612,41 +613,55 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Select asset types to archive",
         default={
             'Collections',
-            "Materials",
         },
     )
-    # Ignore duplicate assets.
-    assets_ignore_duplicates: BoolProperty(
-        name="Ignore Duplicates",
-        description="Ignore duplicate assets that already exist in the selected asset library.\n(i.e. Don't mark duplicates as assets)",
-        default=True,
+    # Extract asset preview images to disk.
+    asset_extract_previews: BoolProperty(
+        name="Save Previews to Disk",
+        description="Extract a preview image thumbnail for each asset type and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
+        default=False,
     )
-    # Filter asset types to ignore duplicates.
-    assets_ignore_duplicates_filter: EnumProperty(
-        name="Ignore Duplicates Filter",
+    # Filter asset previews to extract.
+    asset_extract_previews_filter: EnumProperty(
+        name="Extract Previews Filter",
         options={'ENUM_FLAG'},
         items=[
-            ('Actions', "", "Ignore duplicate actions. Actions with the same as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
-            ('Collections', "", "Ignore duplicate collections. Collections with the same as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
-            ('Materials', "", "Ignore duplicate materials. Materials with the same as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
-            ('Node_Groups', "", "Ignore duplicate node trees. Node Trees with the same as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
-            ('Objects', "", "Ignore duplicate objects. Objects with the same as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
-            ('Worlds', "", "Ignore duplicate worlds. Worlds with the same as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
+            ('Actions', "", "Extract previews of Actions assets.", "ACTION", 1),
+            ('Collections', "", "Extract previews of Collections assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Extract previews of Materials assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Extract previews of Node_Groups assets.", "NODETREE", 8),
+            ('Objects', "", "Extract previews of Objects assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Extract previews of Worlds assets.", "WORLD", 32),
         ],
-        description="Filter which asset types to ignore when an asset\nof that type already exists in the selected asset library",
+        description="Filter asset types from which to extract image previews to disk.",
         default={
-            'Actions',
             'Collections',
-            "Materials",
-            'Node_Groups',
-            'Objects',
-            'Worlds',
         },
+    )
+    # Allow duplicate assets.
+    assets_allow_duplicates: BoolProperty(
+        name="Allow Duplicates",
+        description="Allow duplicate assets that already exist in the selected asset library.\n(i.e. Mark duplicates as assets)",
+        default=False,
+    )
+    # Filter asset types to allow duplicates.
+    assets_allow_duplicates_filter: EnumProperty(
+        name="Allow Duplicates Filter",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Actions', "", "Allow duplicate actions. Actions with the same as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
+            ('Collections', "", "Allow duplicate collections. Collections with the same as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Allow duplicate materials. Materials with the same as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Allow duplicate node trees. Node Trees with the same as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
+            ('Objects', "", "Allow duplicate objects. Objects with the same as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Allow duplicate worlds. Worlds with the same as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
+        ],
+        description="Filter which asset types to allow when an asset\nof that type already exists in the selected asset library",
     )
     # Only mark master collection as asset when importing a Blend (if Collections are to be marked as assets).
     mark_only_master_collection: BoolProperty(
         name="Mark Only Master",
-        description="Mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
+        description="When importing a blend file, mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
         default=True,
     )
     # Filter object types when marking objects as assets.
@@ -654,16 +669,16 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Object Types",
         options={'ENUM_FLAG'},
         items=[
-            ('MESH', "Mesh", "", 1),
-            ('CURVE', "Curve", "", 2),
-            ('SURFACE', "Surface", "", 4),
-            ('META', "Metaball", "", 8),
-            ('FONT', "Text", "", 16),
-            ('GPENCIL', "Grease Pencil", "", 32),
-            ('ARMATURE', "Armature", "", 64),
-            ('EMPTY', "Empty", "", 128),
-            ('LIGHT', "Lamp", "", 256),
-            ('CAMERA', "Camera", "", 512),
+            ('MESH', "Mesh", "", "MESH_DATA", 1),
+            ('CURVE', "Curve", "", "CURVE_DATA", 2),
+            ('SURFACE', "Surface", "", "SURFACE_DATA", 4),
+            ('META', "Metaball", "", "META_DATA", 8),
+            ('FONT', "Text", "", "FONT_DATA", 16),
+            ('GPENCIL', "Grease Pencil", "", "OUTLINER_OB_GREASEPENCIL", 32),
+            ('ARMATURE', "Armature", "", "ARMATURE_DATA", 64),
+            ('EMPTY', "Empty", "", "EMPTY_DATA", 128),
+            ('LIGHT', "Lamp", "", "LIGHT_DATA", 256),
+            ('CAMERA', "Camera", "", "CAMERA_DATA", 512),
         ],
         description="Filter which object types to mark as assets.\nNot all will be able to have preview images generated",
         default={
@@ -737,30 +752,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     asset_tags: StringProperty(
         name="Tags",
         description="Add new keyword tags to assets. Separate tags with a space",
-    )
-    # Extract asset preview images to disk.
-    asset_extract_previews: BoolProperty(
-        name="Save Previews to Disk",
-        description="Extract preview image thumbnail for every asset marked and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
-        default=False,
-    )
-    # Filter asset previews to extract.
-    asset_extract_previews_filter: EnumProperty(
-        name="Extract Previews Filter",
-        options={'ENUM_FLAG'},
-        items=[
-            ('Actions', "", "Extract previews of Actions assets.", "ACTION", 1),
-            ('Collections', "", "Extract previews of Collections assets.", "OUTLINER_COLLECTION", 2),
-            ('Materials', "", "Extract previews of Materials assets.", "MATERIAL", 4),
-            ('Node_Groups', "", "Extract previews of Node_Groups assets.", "NODETREE", 8),
-            ('Objects', "", "Extract previews of Objects assets.", "OBJECT_DATA", 16),
-            ('Worlds', "", "Extract previews of Worlds assets.", "WORLD", 32),
-        ],
-        description="Filter asset types from which to extract image previews to disk.",
-        default={
-            'Collections',
-            'Objects',
-        },
     )
 
 

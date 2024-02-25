@@ -65,7 +65,17 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         imports = bpy.context.scene.transmogrifier_imports
         exports = bpy.context.scene.transmogrifier_exports
         scripts = bpy.context.scene.transmogrifier_scripts
-        
+
+        # Check if there are imports and exports. Stop batch converter if there is not at least one of each.
+        if not imports or not exports:
+            if not imports:
+                message = "Please Add Import"
+            elif not exports: 
+                message = "Please Add Export"
+
+            self.report({'ERROR'}, message)
+            return {'FINISHED'}
+
         # Check directory and file paths.  Stop batch converter if they don't check-out.
         collection_properties_to_check = [imports, exports]
         for collection_property in collection_properties_to_check:
