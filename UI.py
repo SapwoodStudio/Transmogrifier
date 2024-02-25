@@ -75,7 +75,8 @@ def draw_settings_general(self, context):
     title = bl_info["name"] + " " + version
     row = self.layout.row(align=False)
     row.label(text=title)
-    row.prop(settings, 'save_conversion_log', expand=False, text="", icon="TEXT")
+    if settings.advanced_ui:
+        row.prop(settings, 'save_conversion_log', expand=False, text="", icon="TEXT")
     row.prop(settings, 'advanced_ui', expand=False, text="", icon="OPTIONS")
 
     # Batch Convert button
@@ -331,38 +332,39 @@ def draw_settings_textures(self, context):
 # UV Settings
 def draw_settings_uvs(self, context):
     settings = bpy.context.scene.transmogrifier_settings
-    box_uvs = self.layout.box()
-    box_uvs.use_property_split = False
-    box_uvs.use_property_decorate = False
-    
-    row = box_uvs.row(align=False)
-    row.label(text="UVs", icon='UV')
-    if settings.rename_uvs and settings.advanced_ui:
-        row.prop(settings, 'rename_uvs_name', text='')
     if settings.advanced_ui:
-        row.prop(settings, 'rename_uvs', text='', icon='OUTLINER_OB_FONT')
-    row.prop(settings, 'export_uv_layout', text='', icon="CHECKBOX_HLT" if settings.export_uv_layout else "CHECKBOX_DEHLT")
-    
-    if settings.export_uv_layout:
-        box_uvs.use_property_split = True
-        col = box_uvs.column(align=True)
-        col.prop(settings, 'uv_export_location')
-        if settings.uv_export_location == "Custom":
-            col = box_uvs.column(align=True)
-            col.prop(settings, 'uv_directory_custom')
-
+        box_uvs = self.layout.box()
+        box_uvs.use_property_split = False
+        box_uvs.use_property_decorate = False
+        
+        row = box_uvs.row(align=False)
+        row.label(text="UVs", icon='UV')
+        if settings.rename_uvs and settings.advanced_ui:
+            row.prop(settings, 'rename_uvs_name', text='')
         if settings.advanced_ui:
+            row.prop(settings, 'rename_uvs', text='', icon='OUTLINER_OB_FONT')
+        row.prop(settings, 'export_uv_layout', text='', icon="CHECKBOX_HLT" if settings.export_uv_layout else "CHECKBOX_DEHLT")
+        
+        if settings.export_uv_layout:
+            box_uvs.use_property_split = True
             col = box_uvs.column(align=True)
-            col.prop(settings, 'modified_uvs')
-            col.prop(settings, 'uv_combination')
-            col.prop(settings, 'uv_resolution')
-            col.prop(settings, 'uv_format')
-            lossy_compression_support = ("JPEG", "WEBP")
-            if settings.uv_format in lossy_compression_support:
-                col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
-            col.prop(settings, 'uv_fill_opacity')
+            col.prop(settings, 'uv_export_location')
+            if settings.uv_export_location == "Custom":
+                col = box_uvs.column(align=True)
+                col.prop(settings, 'uv_directory_custom')
 
-    self.layout.separator(factor = 0.25)
+            if settings.advanced_ui:
+                col = box_uvs.column(align=True)
+                col.prop(settings, 'modified_uvs')
+                col.prop(settings, 'uv_combination')
+                col.prop(settings, 'uv_resolution')
+                col.prop(settings, 'uv_format')
+                lossy_compression_support = ("JPEG", "WEBP")
+                if settings.uv_format in lossy_compression_support:
+                    col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
+                col.prop(settings, 'uv_fill_opacity')
+
+        self.layout.separator(factor = 0.25)
 
 
 def draw_settings_transforms(self, context):
@@ -425,17 +427,18 @@ def draw_settings_animations(self, context):
 
 def draw_settings_scene(self, context):
     settings = bpy.context.scene.transmogrifier_settings
-    self.layout.use_property_split = True
-    self.layout.use_property_decorate = False
-    box_scene = self.layout.box()
-    col = box_scene.column(align=True)
-    # Set scene unit options.
-    col.label(text="Scene", icon='SCENE_DATA')
-    col.prop(settings, 'unit_system')
-    if settings.unit_system != "NONE":
-        col.prop(settings, 'length_unit')
+    if settings.advanced_ui:
+        self.layout.use_property_split = True
+        self.layout.use_property_decorate = False
+        box_scene = self.layout.box()
+        col = box_scene.column(align=True)
+        # Set scene unit options.
+        col.label(text="Scene", icon='SCENE_DATA')
+        col.prop(settings, 'unit_system')
+        if settings.unit_system != "NONE":
+            col.prop(settings, 'length_unit')
 
-    self.layout.separator(factor = 0.25)
+        self.layout.separator(factor = 0.25)
 
 
 # Set max file size options.
@@ -455,7 +458,8 @@ def draw_settings_optimize_exports(self, context):
         
         col = box_optimize.column(align=True)
         col.use_property_split = True
-        col.prop(settings, 'auto_optimize_filter')
+        if settings.advanced_ui:
+            col.prop(settings, 'auto_optimize_filter')
         col.prop(settings, 'auto_optimize_target_file_size')
 
         if settings.advanced_ui:
@@ -556,26 +560,28 @@ def draw_settings_assets(self, context):
                 grid = box_objects.grid_flow(columns=3, align=True)
                 grid.prop(settings, 'asset_object_types_filter')
 
-            box_assets.use_property_split = True
-            box_library = box_assets.box()        
+    if settings.mark_as_assets:
+        box_assets.use_property_split = True
+        box_library = box_assets.box()        
+        row = box_library.row(align=False)
+        row.label(text='Library', icon='HOME')
+        col = box_library.column(align=True)
+        col.prop(settings, 'asset_library_enum')
+        col.prop(settings, 'asset_catalog_enum')
+        if settings.asset_library != "NO_LIBRARY" and settings.advanced_ui:
             row = box_library.row(align=False)
-            row.label(text='Library', icon='HOME')
+            row.prop(settings, 'asset_blend_location')
             row.prop(settings, 'pack_resources', text='', icon="PACKAGE" if settings.pack_resources else "UGLYPACKAGE")
 
-            col = box_library.column(align=True)
-            col.prop(settings, 'asset_library_enum')
-            col.prop(settings, 'asset_catalog_enum')
-            if settings.asset_library != "NO_LIBRARY":
-                col.prop(settings, 'asset_blend_location')
+    if settings.asset_extract_previews:
+        box_assets.use_property_split = False
+        box_previews = box_assets.box()
+        col = box_previews.column(align=True)
+        col.label(text='Save Previews', icon='IMAGE_PLANE')
+        grid = box_previews.grid_flow(columns=6, align=True)
+        grid.prop(settings, 'asset_extract_previews_filter')
 
-        if settings.asset_extract_previews:
-            box_assets.use_property_split = False
-            box_previews = box_assets.box()
-            col = box_previews.column(align=True)
-            col.label(text='Save Previews', icon='IMAGE_PLANE')
-            grid = box_previews.grid_flow(columns=6, align=True)
-            grid.prop(settings, 'asset_extract_previews_filter')
-
+    if settings.advanced_ui:
         self.layout.separator(factor = 0.25)
         
 

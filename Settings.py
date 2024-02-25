@@ -479,7 +479,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     use_animations: BoolProperty(
         name="Use Animations", 
         description="Use animations.  If toggled off, animations will be deleted",
-        default=False,
+        default=True,
     )
     # Set unit system.
     unit_system: EnumProperty(
@@ -713,7 +713,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
     # Set location of Blend containing assets.
     asset_blend_location: EnumProperty(
-        name="Blend Location",
+        name="Blend Files",
         description="Set where the blend files containing assets will be stored",
         items=[
             ("Move", "Move to Library", "Move blend files and associated textures to selected asset library.", 1),
