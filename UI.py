@@ -77,7 +77,7 @@ def draw_settings_general(self, context):
     row.label(text=title)
     if settings.advanced_ui:
         row.prop(settings, 'save_conversion_log', expand=False, text="", icon="TEXT")
-    row.prop(settings, 'advanced_ui', expand=False, text="", icon="OPTIONS")
+    row.operator('transmogrifier.advanced_ui', text="", icon="OPTIONS", depress=True if settings.advanced_ui else False)
 
     # Batch Convert button
     row = self.layout.row(align=True)   
@@ -677,16 +677,65 @@ class VIEW3D_PT_transmogrifier(Panel):
     def draw(self, context):
         settings = bpy.context.scene.transmogrifier_settings
         draw_settings_general(self, context)
+        if not settings.advanced_ui:
+            draw_settings_textures(self, context)
+            draw_settings_uvs(self, context)
+            draw_settings_transforms(self, context)
+            draw_settings_animations(self, context)
+            draw_settings_scene(self, context)
+            draw_settings_optimize_exports(self, context)
+            draw_settings_assets(self, context)
+
+
+class VIEW3D_PT_transmogrifier_textures(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Textures"
+
+    def draw(self, context):
         draw_settings_textures(self, context)
         draw_settings_uvs(self, context)
+
+class VIEW3D_PT_transmogrifier_scene(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Scene"
+
+    def draw(self, context):
         draw_settings_transforms(self, context)
         draw_settings_animations(self, context)
         draw_settings_scene(self, context)
+
+class VIEW3D_PT_transmogrifier_optimize(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Optimize"
+
+    def draw(self, context):
         draw_settings_optimize_exports(self, context)
+
+class VIEW3D_PT_transmogrifier_assets(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Assets"
+
+    def draw(self, context):
         draw_settings_assets(self, context)
-        if settings.advanced_ui:
-            draw_settings_scripts(self, context)
-        
+
+class VIEW3D_PT_transmogrifier_scripts(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Scripts"
+
+    def draw(self, context):
+        draw_settings_scripts(self, context)
+
+
 
 # Popover panel (used on 3D Viewport Header or Top Bar option)
 class POPOVER_PT_transmogrifier(Panel):
@@ -696,14 +745,15 @@ class POPOVER_PT_transmogrifier(Panel):
 
     def draw(self, context):
         settings = bpy.context.scene.transmogrifier_settings
+
         draw_settings_general(self, context)
         draw_settings_textures(self, context)
+        draw_settings_optimize_exports(self, context)
+        draw_settings_assets(self, context)
         draw_settings_uvs(self, context)
         draw_settings_transforms(self, context)
         draw_settings_animations(self, context)
         draw_settings_scene(self, context)
-        draw_settings_optimize_exports(self, context)
-        draw_settings_assets(self, context)
         if settings.advanced_ui:
             draw_settings_scripts(self, context)
 
@@ -715,14 +765,27 @@ class TransmogrifierPreferences(AddonPreferences):
     def addon_location_updated(self, context):
         bpy.types.TOPBAR_MT_editor_menus.remove(draw_popover)
         bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
+        settings = bpy.context.scene.transmogrifier_settings
         if hasattr(bpy.types, "VIEW3D_PT_transmogrifier"):
             bpy.utils.unregister_class(VIEW3D_PT_transmogrifier)
+            if settings.advanced_ui:
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
         if self.addon_location == 'TOPBAR':
             bpy.types.TOPBAR_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DHEADER':
             bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DSIDE':
             bpy.utils.register_class(VIEW3D_PT_transmogrifier)
+            if settings.advanced_ui:
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
 
 
     addon_location: EnumProperty(
@@ -753,6 +816,38 @@ class TransmogrifierPreferences(AddonPreferences):
         col.operator("transmogrifier.copy_assets", text="Copy Assets to Preferences", icon="DUPLICATE")
 
 
+# Toggles Advanced UI setting.  Registers and unregisters additional panels when the addon's UI is in the 3D Viewport Side Menu.
+class TRANSMOGRIFIER_OT_advanced_ui(Operator):
+    '''Toggle advanced settings'''
+
+    bl_idname = "transmogrifier.advanced_ui"
+    bl_label = "Advanced UI"
+    bl_description = "Toggle simple/advanced user interface options"
+
+    def execute(self, context):
+        settings = bpy.context.scene.transmogrifier_settings
+        prefs = bpy.context.preferences.addons[bl_info["name"]].preferences
+        if settings.advanced_ui:
+            if prefs.addon_location == '3DSIDE':
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
+            settings.advanced_ui = False
+
+        elif not settings.advanced_ui:
+            if prefs.addon_location == '3DSIDE':
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
+            settings.advanced_ui = True
+            
+        return {'FINISHED'}
+        
+
 
 #  ███████████   ██████████   █████████  █████  █████████  ███████████ ███████████   █████ █████
 # ░░███░░░░░███ ░░███░░░░░█  ███░░░░░███░░███  ███░░░░░███░█░░░███░░░█░░███░░░░░███ ░░███ ░░███ 
@@ -766,6 +861,7 @@ class TransmogrifierPreferences(AddonPreferences):
 classes = (
     TransmogrifierPreferences,
     POPOVER_PT_transmogrifier,
+    TRANSMOGRIFIER_OT_advanced_ui,
 )
 
 # Register Classes.
@@ -781,6 +877,7 @@ def register():
         bpy.types.VIEW3D_MT_editor_menus.append(draw_popover)
     elif prefs.addon_location == '3DSIDE':
         bpy.utils.register_class(VIEW3D_PT_transmogrifier)
+
 
 # Unregister Classes.
 def unregister():
