@@ -41,6 +41,7 @@ import subprocess
 import shutil
 from pathlib import Path
 from bpy_extras.io_utils import ImportHelper
+import webbrowser
 import json
 from . import Functions
 
@@ -54,6 +55,26 @@ from . import Functions
 # ░░███     ███  ░███         ░███ ░   █ ░███    ░███  ░███    ░███     ░███    ░░███     ███  ░███    ░███  ███    ░███
 #  ░░░███████░   █████        ██████████ █████   █████ █████   █████    █████    ░░░███████░   █████   █████░░█████████ 
 #    ░░░░░░░    ░░░░░        ░░░░░░░░░░ ░░░░░   ░░░░░ ░░░░░   ░░░░░    ░░░░░       ░░░░░░░    ░░░░░   ░░░░░  ░░░░░░░░░  
+
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), addon.py, Line 638
+class TRANSMOGRIFIER_OT_help(Operator):
+    """Open online documentation in web browser"""
+    bl_idname = "transmogrifier.help"
+    bl_label = "Help"
+    bl_description = "Open online documentation in a web browser"
+    
+    link: StringProperty(
+        name="Help",
+        default="https://github.com/SapwoodStudio/Transmogrifier"
+    )    
+
+    def execute(self, context):   
+        try:
+            webbrowser.open(self.link)
+        except:
+            self.report({'ERROR'}, "Could not open online documentation")
+        return {'FINISHED'}   
+
 
 # Operator called when pressing the Batch Convert button.
 class TRANSMOGRIFIER_OT_transmogrify(Operator):
@@ -488,6 +509,7 @@ class TRANSMOGRIFIER_OT_remove_custom_script(Operator):
 # ░░░░░   ░░░░░ ░░░░░░░░░░   ░░░░░░░░░  ░░░░░  ░░░░░░░░░     ░░░░░    ░░░░░   ░░░░░    ░░░░░    
 
 classes = (
+    TRANSMOGRIFIER_OT_help,
     TRANSMOGRIFIER_OT_transmogrify,
     TRANSMOGRIFIER_OT_forecast,
     TRANSMOGRIFIER_OT_copy_assets,

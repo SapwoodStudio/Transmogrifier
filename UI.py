@@ -78,6 +78,8 @@ def draw_settings_general(self, context):
     if settings.advanced_ui:
         row.prop(settings, 'save_conversion_log', expand=False, text="", icon="TEXT")
     row.operator('transmogrifier.advanced_ui', text="", icon="OPTIONS", depress=True if settings.advanced_ui else False)
+    help = row.operator('transmogrifier.help', text="", icon="QUESTION")
+    help.link = "https://github.com/SapwoodStudio/Transmogrifier"
 
     # Batch Convert button
     row = self.layout.row(align=True)   
