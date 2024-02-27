@@ -90,7 +90,7 @@ def draw_settings_general(self, context):
 
     # Transmogrifier Presets Menu
     col = self.layout.column(align=True)
-    col.label(text="Workflow", icon='DRIVER')
+    col.label(text="Workflow Preset", icon='DRIVER')
     layout = self.layout
     # Align menu items to the left.
     self.layout.use_property_split = False
@@ -98,6 +98,7 @@ def draw_settings_general(self, context):
     row.prop(settings, 'transmogrifier_preset_enum')
     row.operator("transmogrifier.add_preset", text="", icon="ADD")
     row.operator("transmogrifier.remove_preset", text="", icon="REMOVE")
+    row.operator("transmogrifier.load_preset", text="", icon="FILE_FOLDER")
 
     self.layout.separator(factor = separator_factor)
 
@@ -534,17 +535,11 @@ def draw_settings_assets(self, context):
             grid = box_mark_assets.grid_flow(columns=6, align=True)
             grid.prop(settings, 'asset_types_to_mark')
 
-            if settings.assets_allow_duplicates:
-                box_duplicates = box_mark_assets.box()
-                col = box_duplicates.column(align=True)
-                col.label(text='Allow Duplicates', icon='DUPLICATE')
-                grid = box_duplicates.grid_flow(columns=6, align=True)
-                grid.prop(settings, 'assets_allow_duplicates_filter')
-
             if settings.asset_add_metadata:
                 box_metadata = box_mark_assets.box()
                 col = box_metadata.column(align=True)
                 col.label(text='Metadata', icon='COLOR')
+                col = box_metadata.column(align=True)
                 col.use_property_split = True
                 col.prop(settings, 'asset_description')
                 col.prop(settings, 'asset_license')
@@ -556,15 +551,22 @@ def draw_settings_assets(self, context):
             if "Objects" in settings.asset_types_to_mark:
                 box_objects = box_mark_assets.box()
                 col = box_objects.column(align=True)
-                col.label(text="Object Types:", icon='OBJECT_DATA')
-                grid = box_objects.grid_flow(columns=3, align=True)
-                grid.prop(settings, 'asset_object_types_filter')
+                col.label(text="Object Types", icon='OBJECT_DATA')
+                grid = box_objects.grid_flow(columns=5, align=True)
+                grid.prop(settings, 'asset_object_types_filter', text='')
+
+            if settings.assets_allow_duplicates:
+                box_duplicates = box_mark_assets.box()
+                col = box_duplicates.column(align=True)
+                col.label(text='Allow Duplicates', icon='DUPLICATE')
+                grid = box_duplicates.grid_flow(columns=6, align=True)
+                grid.prop(settings, 'assets_allow_duplicates_filter')
 
     if settings.mark_as_assets:
         box_assets.use_property_split = True
         box_library = box_assets.box()        
         row = box_library.row(align=False)
-        row.label(text='Library', icon='HOME')
+        row.label(text='Asset Libraries', icon='HOME')
         col = box_library.column(align=True)
         col.prop(settings, 'asset_library_enum')
         col.prop(settings, 'asset_catalog_enum')
@@ -588,21 +590,26 @@ def draw_settings_assets(self, context):
 # Custom Script Settings
 def draw_settings_scripts(self, context):
     settings = bpy.context.scene.transmogrifier_settings
+    scripts = bpy.context.scene.transmogrifier_scripts
     self.layout.use_property_split = True
     self.layout.use_property_decorate = False
 
     box_scripts = self.layout.box()
-    col = box_scripts.column(align=True)
-    col.scale_y = 1.0
-    grid = col.grid_flow(row_major = True, columns = 2, even_columns = False)
-    grid.label(text="Custom Scripts", icon='FILE_SCRIPT')
+    # col = box_scripts.column(align=True)
+    # col.scale_y = 1.0
+    row = box_scripts.row(align=False)
+    
+    row.label(text="Custom Scripts", icon='FILE_SCRIPT')
+
+    if len(scripts) > 1:
+        row.prop(settings, 'link_script_settings', text='', icon="LINKED" if settings.link_script_settings else "UNLINKED")
 
     if settings.advanced_ui:
-        col = box_scripts.column(align=True)
-        col.operator('transmogrifier.add_custom_script', icon="ADD")
+        row = box_scripts.row(align=False)
+        row.operator('transmogrifier.add_custom_script', icon="ADD")
 
         # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
-        for index, instance in enumerate(context.scene.transmogrifier_scripts):   
+        for index, instance in enumerate(scripts):   
             box = box_scripts.box()
             grid = box.grid_flow(columns=2, align=True)
             row = grid.row()
@@ -651,9 +658,15 @@ def draw_settings_scripts(self, context):
                     icon = "FILE_SCRIPT"
 
                 col.prop(instance, "file")  
-                col.prop(instance, "trigger")
+                
+                if not settings.link_script_settings:
+                    col.prop(instance, "trigger")
         
-    elif not settings.advanced_ui:# == "Simple":
+        if settings.link_script_settings:
+            col = box_scripts.column(align=True)
+            col.prop(settings, "trigger")
+        
+    elif not settings.advanced_ui:
         col = self.layout.column(align=True)
         col.label(text="(Toggle 'Advanced UI' to view)")
         
@@ -695,18 +708,7 @@ class VIEW3D_PT_transmogrifier_textures(Panel):
 
     def draw(self, context):
         draw_settings_textures(self, context)
-        draw_settings_uvs(self, context)
 
-class VIEW3D_PT_transmogrifier_scene(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "Transmogrifier"
-    bl_label = "Scene"
-
-    def draw(self, context):
-        draw_settings_transforms(self, context)
-        draw_settings_animations(self, context)
-        draw_settings_scene(self, context)
 
 class VIEW3D_PT_transmogrifier_optimize(Panel):
     bl_space_type = 'VIEW_3D'
@@ -717,6 +719,7 @@ class VIEW3D_PT_transmogrifier_optimize(Panel):
     def draw(self, context):
         draw_settings_optimize_exports(self, context)
 
+
 class VIEW3D_PT_transmogrifier_assets(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -725,6 +728,38 @@ class VIEW3D_PT_transmogrifier_assets(Panel):
 
     def draw(self, context):
         draw_settings_assets(self, context)
+
+
+class VIEW3D_PT_transmogrifier_uvs(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "UVs"
+
+    def draw(self, context):
+        draw_settings_uvs(self, context)
+
+
+class VIEW3D_PT_transmogrifier_scene(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Scene"
+
+    def draw(self, context):
+        draw_settings_scene(self, context)
+        draw_settings_animations(self, context)
+
+
+class VIEW3D_PT_transmogrifier_transformations(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Transformations"
+
+    def draw(self, context):
+        draw_settings_transforms(self, context)
+
 
 class VIEW3D_PT_transmogrifier_scripts(Panel):
     bl_space_type = 'VIEW_3D'
@@ -772,7 +807,9 @@ class TransmogrifierPreferences(AddonPreferences):
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_uvs)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
         if self.addon_location == 'TOPBAR':
             bpy.types.TOPBAR_MT_editor_menus.append(draw_popover)
@@ -784,7 +821,9 @@ class TransmogrifierPreferences(AddonPreferences):
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_uvs)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
 
 
@@ -832,7 +871,9 @@ class TRANSMOGRIFIER_OT_advanced_ui(Operator):
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_uvs)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
             settings.advanced_ui = False
 
@@ -841,7 +882,9 @@ class TRANSMOGRIFIER_OT_advanced_ui(Operator):
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_assets)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_uvs)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
             settings.advanced_ui = True
             

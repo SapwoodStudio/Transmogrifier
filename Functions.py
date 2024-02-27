@@ -504,6 +504,13 @@ def get_asset_catalog_index(catalog_name):
 # ░█░░░█░█░▀▀█░░█░░█░█░█░█░░░▀▀█░█░░░█▀▄░░█░░█▀▀░░█░░▀▀█
 # ░▀▀▀░▀▀▀░▀▀▀░░▀░░▀▀▀░▀░▀░░░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░░░░▀░░▀▀▀
 
+# Link custom script triggers.
+def link_script_settings(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    for index, instance in enumerate(context.scene.transmogrifier_scripts):
+        instance.trigger = settings.trigger
+
+
 # Add a custom script.
 def add_custom_script(self, context):
     new_script = context.scene.transmogrifier_scripts.add()

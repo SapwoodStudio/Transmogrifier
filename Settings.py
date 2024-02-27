@@ -669,16 +669,16 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Object Types",
         options={'ENUM_FLAG'},
         items=[
-            ('MESH', "Mesh", "", "MESH_DATA", 1),
-            ('CURVE', "Curve", "", "CURVE_DATA", 2),
-            ('SURFACE', "Surface", "", "SURFACE_DATA", 4),
-            ('META', "Metaball", "", "META_DATA", 8),
-            ('FONT', "Text", "", "FONT_DATA", 16),
+            ('MESH', "Mesh", "", "OUTLINER_OB_MESH", 1),
+            ('CURVE', "Curve", "", "OUTLINER_OB_CURVE", 2),
+            ('SURFACE', "Surface", "", "OUTLINER_OB_SURFACE", 4),
+            ('META', "Metaball", "", "OUTLINER_OB_META", 8),
+            ('FONT', "Text", "", "OUTLINER_OB_FONT", 16),
             ('GPENCIL', "Grease Pencil", "", "OUTLINER_OB_GREASEPENCIL", 32),
-            ('ARMATURE', "Armature", "", "ARMATURE_DATA", 64),
-            ('EMPTY', "Empty", "", "EMPTY_DATA", 128),
-            ('LIGHT', "Lamp", "", "LIGHT_DATA", 256),
-            ('CAMERA', "Camera", "", "CAMERA_DATA", 512),
+            ('ARMATURE', "Armature", "", "OUTLINER_OB_ARMATURE", 64),
+            ('EMPTY', "Empty", "", "OUTLINER_OB_EMPTY", 128),
+            ('LIGHT', "Lamp", "", "OUTLINER_OB_LIGHT", 256),
+            ('CAMERA', "Camera", "", "OUTLINER_OB_CAMERA", 512),
         ],
         description="Filter which object types to mark as assets.\nNot all will be able to have preview images generated",
         default={
@@ -696,7 +696,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     # Asset Library.
     asset_library: StringProperty(default='(no library)')
     asset_library_enum: EnumProperty(
-        name="Asset Library", options={'SKIP_SAVE'},
+        name="Library", options={'SKIP_SAVE'},
         description="Archive converted assets to selected library",
         items=lambda self, context: Functions.get_asset_libraries(),
         get=lambda self: Functions.get_asset_library_index(self.asset_library),
@@ -752,6 +752,24 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     asset_tags: StringProperty(
         name="Tags",
         description="Add new keyword tags to assets. Separate tags with a space",
+    )
+    link_script_settings: BoolProperty(
+        name="Link Script Settings",
+        description="Synchronize some trigger settings between all custom scripts",
+        default=False,
+        update=Functions.link_script_settings,
+    )
+    trigger: EnumProperty(
+        name="Trigger",
+        description="Set when custom script should be triggered",
+        items=[
+            ("Before_Batch", "Before Batch", "Run script before the batch conversion begins.", 1),
+            ("Before_Import", "Before Import", "Run script immediately before importing a model.", 2),
+            ("Before_Export", "Before Export", "Run script immediately before exporting a model.", 3),
+            ("After_Export", "After Export", "Run script immediately after exporting a model.", 4),
+            ("After_Batch", "After Batch", "Run script after the batch conversion ends.", 5),
+        ],
+        default="Before_Export",
     )
 
 

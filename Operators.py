@@ -34,11 +34,13 @@ from bpy.types import (
 ) 
 from bpy.props import (
     IntProperty,
+    StringProperty
 )
 import os
 import subprocess
 import shutil
 from pathlib import Path
+from bpy_extras.io_utils import ImportHelper
 import json
 from . import Functions
 
@@ -330,6 +332,51 @@ class TRANSMOGRIFIER_OT_remove_preset(Operator):
         return {'FINISHED'}
 
 
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), preset_manager.py, Line 124
+class TRANSMOGRIFIER_OT_load_preset(Operator, ImportHelper):
+    """Load a Transmogrifier preset from a JSON file"""
+    bl_idname = "transmogrifier.load_preset"
+    bl_label = "Load Preset"
+    bl_options = {'UNDO'}
+
+    filename_ext = '.json'
+
+    filter_glob: StringProperty(
+        default='*.json',
+        options={'HIDDEN'}
+    )
+
+    def execute(self, context):
+        settings = bpy.context.scene.transmogrifier_settings
+        
+        # Get filepath from browser.
+        preset_src = Path(self.filepath)
+
+        # Get preset name.
+        preset_name = preset_src.name
+        
+        # Check if Transmogrifier preset directory exists.
+        transmogrifier_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier"
+        if not Path(transmogrifier_preset_dir).exists():  # Check if operator preset directory exists.
+            Path(transmogrifier_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Transmogrifier operator preset directory.
+        preset_dest = transmogrifier_preset_dir / preset_name
+        
+        # Copy preset file to preset directory.  Overwrite existing.
+        shutil.copy(preset_src, preset_dest)
+        
+        # Concatenate the current property assignment.
+        property_assignment = f"settings.transmogrifier_preset = {repr(preset_src.stem)}"
+
+        # Make the property (key) equal to the preset (value).
+        exec(property_assignment)
+        
+        # Load preset (Update settings and UI from preset file).
+        Functions.set_settings(self, context)
+
+        self.report({'INFO'}, f"Added Transmogrifier preset: {preset_name}")
+        return {'FINISHED'}
+
+
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
 class TRANSMOGRIFIER_OT_add_import(Operator):
     '''Add new import to UI'''
@@ -446,6 +493,7 @@ classes = (
     TRANSMOGRIFIER_OT_copy_assets,
     TRANSMOGRIFIER_OT_add_preset,
     TRANSMOGRIFIER_OT_remove_preset,
+    TRANSMOGRIFIER_OT_load_preset,
     TRANSMOGRIFIER_OT_add_import, 
     TRANSMOGRIFIER_OT_remove_import,
     TRANSMOGRIFIER_OT_add_export, 
