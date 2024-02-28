@@ -57,6 +57,13 @@ from . import Functions
 
 # Groups together all the addon settings that are saved in each .blend file
 class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
+    # Save conversion log.
+    save_conversion_log: BoolProperty(
+        name="Save Conversion Log",
+        description="Save a log of the batch conversion in the given import directory. This can help troubleshoot conversion errors",
+        default=False,
+    )
+    # Advanced UI toggle.
     advanced_ui: BoolProperty(
         name="Advanced UI",
         description="Toggle simple/advanced user interface options",
@@ -70,338 +77,92 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         items=lambda self, context: Functions.get_transmogrifier_presets('transmogrifier'),
         get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
         set=lambda self, value: setattr(self, 'transmogrifier_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
-        update=Functions.set_settings
+        update=Functions.set_settings,
     )
     # Import Settings
-    sync_import_directories: BoolProperty(
-        name="Sync Directories",
-        description="Synchronize import directories for all import file formats",
-        default=False,
-        update=Functions.update_import_directories,
+    link_import_directories: BoolProperty(
+        name="Link Directories",
+        description="Synchronize import directories between all import file formats",
+        default=True,
+        update=Functions.link_import_directories,
     )
     import_directory: StringProperty(
         name="Directory",
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=Functions.update_import_directories,
+        update=Functions.link_import_directories,
     )
-    # import_file: EnumProperty(
-    #     name="Format",
-    #     description="Which file format to import",
-    #     items=[
-    #         ("DAE", "Collada (.dae)", "", 1),
-    #         ("ABC", "Alembic (.abc)", "", 2),
-    #         ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-    #         ("OBJ", "Wavefront (.obj)", "", 4),
-    #         ("PLY", "Stanford (.ply)", "", 5),
-    #         ("STL", "STL (.stl)", "", 6),
-    #         ("FBX", "FBX (.fbx)", "", 7),
-    #         ("glTF", "glTF (.glb/.gltf)", "", 8),
-    #         ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-    #         ("BLEND", "Blender (.blend)", "", 10)
-    #     ],
-    #     default="FBX",
-    # )
-    # # Import Format specific options:
-    # import_usd_extension: EnumProperty(
-    #     name="Extension",
-    #     description="Which type of USD to import",
-    #     items=[
-    #         (".usd", "Plain (.usd)",
-    #          "Can be either binary or ASCII\nIn Blender this imports to binary", 1),
-    #         (".usdc", "Binary Crate (default) (.usdc)",
-    #          "Binary, fast, hard to edit", 2),
-    #         (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
-    #         (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
-    #     ],
-    #     default=".usdz",
-    # )
-    # import_gltf_extension: EnumProperty(
-    #     name="Extension",
-    #     description="Which type of glTF to import",
-    #     items=[
-    #         (".glb", "glTF Binary (.glb)", "", 1),
-    #         (".gltf", "glTF Embedded or Separate (.gltf)", "", 2),
-    #     ],
-    #     default=".glb",
-    # )
-    # ply_ascii: BoolProperty(name="ASCII Format", default=False)
-    # stl_ascii: BoolProperty(name="ASCII Format", default=False)
-
-    # # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
-    # import_abc_preset: StringProperty(default='NO_PRESET')
-    # import_abc_preset_enum: EnumProperty(
-    #     name="Preset", options={'SKIP_SAVE'},
-    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Alembic (.abc))",
-    #     items=lambda self, context: Functions.get_operator_presets('wm.alembic_import'),
-    #     get=lambda self: Functions.get_preset_index(
-    #         'wm.alembic_import', self.import_abc_preset),
-    #     set=lambda self, value: setattr(
-    #         self, 'import_abc_preset', Functions.preset_enum_items_refs['wm.alembic_import'][value][0]),
-    # )
-    # import_dae_preset: StringProperty(default='NO_PRESET')
-    # import_dae_preset_enum: EnumProperty(
-    #     name="Preset", options={'SKIP_SAVE'},
-    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Collada (.dae))",
-    #     items=lambda self, context: Functions.get_operator_presets('wm.collada_import'),
-    #     get=lambda self: Functions.get_preset_index(
-    #         'wm.collada_import', self.import_dae_preset),
-    #     set=lambda self, value: setattr(
-    #         self, 'import_dae_preset', Functions.preset_enum_items_refs['wm.collada_import'][value][0]),
-    # )
-    # import_usd_preset: StringProperty(default='NO_PRESET')
-    # import_usd_preset_enum: EnumProperty(
-    #     name="Preset", options={'SKIP_SAVE'},
-    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
-    #     items=lambda self, context: Functions.get_operator_presets('wm.usd_import'),
-    #     get=lambda self: Functions.get_preset_index('wm.usd_import', self.import_usd_preset),
-    #     set=lambda self, value: setattr(
-    #         self, 'import_usd_preset', Functions.preset_enum_items_refs['wm.usd_import'][value][0]),
-    # )
-    # import_obj_preset: StringProperty(default='NO_PRESET')
-    # import_obj_preset_enum: EnumProperty(
-    #     name="Preset", options={'SKIP_SAVE'},
-    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > Wavefront (.obj))",
-    #     items=lambda self, context: Functions.get_operator_presets('wm.obj_import'),
-    #     get=lambda self: Functions.get_preset_index('wm.obj_import', self.import_obj_preset),
-    #     set=lambda self, value: setattr(
-    #         self, 'import_obj_preset', Functions.preset_enum_items_refs['wm.obj_import'][value][0]),
-    # )
-    # import_fbx_preset: StringProperty(default='NO_PRESET')
-    # import_fbx_preset_enum: EnumProperty(
-    #     name="Preset", options={'SKIP_SAVE'},
-    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > FBX (.fbx))",
-    #     items=lambda self, context: Functions.get_operator_presets('import_scene.fbx'),
-    #     get=lambda self: Functions.get_preset_index('import_scene.fbx', self.import_fbx_preset),
-    #     set=lambda self, value: setattr(
-    #         self, 'import_fbx_preset', Functions.preset_enum_items_refs['import_scene.fbx'][value][0]),
-    # )
-    # import_gltf_preset: StringProperty(default='NO_PRESET')
-    # import_gltf_preset_enum: EnumProperty(
-    #     name="Preset", options={'SKIP_SAVE'},
-    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > glTF (.glb/.gltf))",
-    #     items=lambda self, context: Functions.get_operator_presets('import_scene.gltf'),
-    #     get=lambda self: Functions.get_preset_index(
-    #         'import_scene.gltf', self.import_gltf_preset),
-    #     set=lambda self, value: setattr(
-    #         self, 'import_gltf_preset', Functions.preset_enum_items_refs['import_scene.gltf'][value][0]),
-    # )
-    # import_x3d_preset: StringProperty(default='NO_PRESET')
-    # import_x3d_preset_enum: EnumProperty(
-    #     name="Preset", options={'SKIP_SAVE'},
-    #     description="Use import settings from a preset.\n(Create in the import settings from the File > import > X3D Extensible 3D (.x3d))",
-    #     items=lambda self, context: Functions.get_operator_presets('import_scene.x3d'),
-    #     get=lambda self: Functions.get_preset_index('import_scene.x3d', self.import_x3d_preset),
-    #     set=lambda self, value: setattr(
-    #         self, 'import_x3d_preset', Functions.preset_enum_items_refs['import_scene.x3d'][value][0]),
-    # )
-
-
-    # Export Settings:
-    export_file_1: EnumProperty(
-        name="Format 1",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="glTF",
+   
+    # Export Settings
+    export_adjacent: BoolProperty(
+        name="Export Adjacent",
+        description="Export models adjacent to their respective imports",
+        default=True,
     )
-    # File 1 scale.
-    export_file_1_scale: FloatProperty(
+    link_export_settings: BoolProperty(
+        name="Link Export Settings",
+        description="Synchronize some export settings between all export file formats",
+        default=True,
+        update=Functions.link_export_settings,
+    )
+    export_directory: StringProperty(
+        name="Directory",
+        description="Directory to export files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
+        default="//",
+        subtype='DIR_PATH',
+        update=Functions.link_export_settings,
+    )
+    scale: FloatProperty(
         name="Scale", 
         description="Set the scale of the model before exporting",
         default=1.0,
         soft_min=0.0,
         soft_max=10000.0,
-        step=500,
+        step=100,
     )
-    # Export Settings 2:
-    export_file_2: EnumProperty(
-        name="Format 2",
-        description="Which file format to export to",
-        items=[
-            ("DAE", "Collada (.dae)", "", 1),
-            ("ABC", "Alembic (.abc)", "", 2),
-            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
-            ("OBJ", "Wavefront (.obj)", "", 4),
-            ("PLY", "Stanford (.ply)", "", 5),
-            ("STL", "STL (.stl)", "", 6),
-            ("FBX", "FBX (.fbx)", "", 7),
-            ("glTF", "glTF (.glb/.gltf)", "", 8),
-            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
-            ("BLEND", "Blender (.blend)", "", 10),
-        ],
-        default="USD",
-    )
-    # File 2 scale.
-    export_file_2_scale: FloatProperty(
-        name="Scale", 
-        description="Set the scale of the model before exporting",
-        default=1.0,
-        soft_min=0.0,
-        soft_max=10000.0,
-        step=500,
-    )
-    # Export format specific options:
-    usd_extension: EnumProperty(
-        name="Extension",
-        items=[
-            (".usd", "Plain (.usd)",
-             "Can be either binary or ASCII\nIn Blender this exports to binary", 1),
-            (".usdc", "Binary Crate (default) (.usdc)",
-             "Binary, fast, hard to edit", 2),
-            (".usda", "ASCII (.usda)", "ASCII Text, slow, easy to edit", 3),
-            (".usdz", "Zipped (.usdz)", "Packs textures and references into one file", 4),
-        ],
-        default=".usdz",
-    )
-    ply_ascii: BoolProperty(name="ASCII Format", default=False)
-    stl_ascii: BoolProperty(name="ASCII Format", default=False)
-
-    # Presets: A string property for saving your option (without new presets changing your choice), and enum property for choosing
-    abc_preset: StringProperty(default='NO_PRESET')
-    abc_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Alembic (.abc))",
-        items=lambda self, context: Functions.get_operator_presets('wm.alembic_export'),
-        get=lambda self: Functions.get_preset_index(
-            'wm.alembic_export', self.abc_preset),
-        set=lambda self, value: setattr(
-            self, 'abc_preset', Functions.preset_enum_items_refs['wm.alembic_export'][value][0]),
-    )
-    dae_preset: StringProperty(default='NO_PRESET')
-    dae_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Collada (.dae))",
-        items=lambda self, context: Functions.get_operator_presets('wm.collada_export'),
-        get=lambda self: Functions.get_preset_index(
-            'wm.collada_export', self.dae_preset),
-        set=lambda self, value: setattr(
-            self, 'dae_preset', Functions.preset_enum_items_refs['wm.collada_export'][value][0]),
-    )
-    usd_preset: StringProperty(default='USDZ_Preset_Example')
-    usd_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Universal Scene Description (.usd, .usdc, .usda, .usdz))",
-        items=lambda self, context: Functions.get_operator_presets('wm.usd_export'),
-        get=lambda self: Functions.get_preset_index('wm.usd_export', self.usd_preset),
-        set=lambda self, value: setattr(
-            self, 'usd_preset', Functions.preset_enum_items_refs['wm.usd_export'][value][0]),
-    )
-    obj_preset: StringProperty(default='NO_PRESET')
-    obj_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > Wavefront (.obj))",
-        items=lambda self, context: Functions.get_operator_presets('wm.obj_export'),
-        get=lambda self: Functions.get_preset_index('wm.obj_export', self.obj_preset),
-        set=lambda self, value: setattr(
-            self, 'obj_preset', Functions.preset_enum_items_refs['wm.obj_export'][value][0]),
-    )
-    fbx_preset: StringProperty(default='NO_PRESET')
-    fbx_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > FBX (.fbx))",
-        items=lambda self, context: Functions.get_operator_presets('export_scene.fbx'),
-        get=lambda self: Functions.get_preset_index('export_scene.fbx', self.fbx_preset),
-        set=lambda self, value: setattr(
-            self, 'fbx_preset', Functions.preset_enum_items_refs['export_scene.fbx'][value][0]),
-    )
-    gltf_preset: StringProperty(default='GLB_Preset_Example')
-    gltf_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > glTF (.glb/.gltf))",
-        items=lambda self, context: Functions.get_operator_presets('export_scene.gltf'),
-        get=lambda self: Functions.get_preset_index(
-            'export_scene.gltf', self.gltf_preset),
-        set=lambda self, value: setattr(
-            self, 'gltf_preset', Functions.preset_enum_items_refs['export_scene.gltf'][value][0]),
-    )
-    x3d_preset: StringProperty(default='NO_PRESET')
-    x3d_preset_enum: EnumProperty(
-        name="Preset", options={'SKIP_SAVE'},
-        description="Use export settings from a preset.\n(Create in the export settings from the File > Export > X3D Extensible 3D (.x3d))",
-        items=lambda self, context: Functions.get_operator_presets('export_scene.x3d'),
-        get=lambda self: Functions.get_preset_index('export_scene.x3d', self.x3d_preset),
-        set=lambda self, value: setattr(
-            self, 'x3d_preset', Functions.preset_enum_items_refs['export_scene.x3d'][value][0]),
-    )
-
-
-    # Pack resources into .blend.
+    # Pack resources into Blend.
     pack_resources: BoolProperty(
         name="Pack Resources",
-        description="Pack all used external files into this .blend",
+        description="Pack all used external files into .blend",
         default=True,
         )
-    # Pack resources into .blend.
+    # Make Blend paths relative.
     make_paths_relative: BoolProperty(
         name="Relative Paths",
         description="Use relative paths for textures",
         default=True,
         )
-    # Option for to where models should be exported.
-    directory_output_location: EnumProperty(
-        name="Location(s)",
-        description="Select where models should be exported.",
-        items=[
-            ("Adjacents", "Adjacents", "Export each converted model to the same directory from which it was imported", 'FILE_FOLDER', 1),
-            ("Custom", "Custom", "Export each converted model to a custom directory", 'NEWFOLDER', 2),
-        ],
-        default="Adjacents",
-    )
-    # Custom export directory
-    directory_output_custom: StringProperty(
-        name="Directory",
-        description="Set a custom directory to which each converted model will be exported\nDefault of // will export to same directory as the blend file (only works if the blend file is saved)",
-        default="//",
-        subtype='DIR_PATH',
-    )
     # Option to export models to subdirectories in custom directory
     use_subdirectories: BoolProperty(
         name="Subdirectories",
-        description="Export models to their own subdirectories within the given directory",
-        default=False,
+        description="Export models to their own subdirectories within the given export directory",
+        default=True,
+        update=Functions.link_export_settings,
     )
     # Option to include only models or also copy original folder contents to custom directory
-    copy_item_dir_contents: BoolProperty(
+    copy_original_contents: BoolProperty(
         name="Copy Original Contents",
-        description="Include original contents of each item's directory to its custom subdirectory",
+        description="Copy original contents of each import item's directory to each export item's subdirectory",
         default=False,
-    )
-    # Option for how many models to export at a time.
-    model_quantity: EnumProperty(
-        name="Quantity",
-        description="Choose whether to export one, two, or no model formats at a time",
-        items=[
-            ("1 Format", "1 Format", "Export one 3D model format for every model imported", 1),
-            ("2 Formats", "2 Formats", "Export two 3D model formats for every model imported", 2),
-            ("No Formats", "No Formats", "Don't export any 3D models (Useful if only batch texture conversion is desired)", 3),
-        ],
-        default="1 Format",
+        update=Functions.link_export_settings,
     )
     prefix: StringProperty(
         name="Prefix",
         description="Text to put at the beginning of all the exported file names",
+        update=Functions.link_export_settings,
     )
     suffix: StringProperty(
         name="Suffix",
         description="Text to put at the end of all the exported file names",
+        update=Functions.link_export_settings,
     )
     # Set data names from object names.
     set_data_names: BoolProperty(
         name="Data Names from Objects",
         description="Rename object data names according to their corresponding object names",
         default=True,
+        update=Functions.link_export_settings,
     )
     use_textures: BoolProperty(
         name="Use Textures", 
@@ -439,10 +200,10 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Copy textures from custom directory to every folder from which a model is imported",
         default=False,
     )
-    replace_textures: BoolProperty(
-        name="Replace Textures", 
-        description="Replace any existing textures folders with textures from custom directory",
-        default=False,
+    preserve_original_textures: BoolProperty(
+        name="Preserve Original Textures", 
+        description="If toggled off, original textures will be replaced with textures from custom directory per model converted",
+        default=True,
     )
     use_linked_blend_textures: BoolProperty(
         name="Linked to .blend", 
@@ -570,7 +331,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default="UVMap"
     )
     export_uv_layout: BoolProperty(
-        name="Export UV Maps",
+        name="Export UVs",
         description="Export UV layout to file",
         default=False,
     )
@@ -580,12 +341,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default=False,
     )
     uv_export_location: EnumProperty(
-        name="Location(s)",
-        description="Select where UV layouts should be exported",
+        name="Destination",
+        description="Select directory into which UV layouts will be exported",
         items=[
             ("Textures", "Textures", "Export UVs to a Textures subfolder for each item. If none exists, create one", 'TEXTURE', 1),
             ("UV", "UV", "Export UVs to a 'UV' subfolder for each item. If none exists, create one", 'UV', 2),
-            ("Adjacents", "Adjacents", "Export UVs to the same directories as converted models for each item", 'FILE_FOLDER', 3),
+            ("Model", "Model", "Export UVs to the same directories as converted models for each item", 'FILE_3D', 3),
             ("Custom", "Custom", "Export all UVs to a custom directory of choice", 'NEWFOLDER', 4),
         ],
         default="UV",
@@ -715,12 +476,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         },
     )
     # Clear animation data.
-    delete_animations: BoolProperty(
-        name="Delete", 
-        description="Remove all animation data from all objects",
+    use_animations: BoolProperty(
+        name="Use Animations", 
+        description="Use animations.  If toggled off, animations will be deleted",
         default=True,
     )
-    # Set unit system:
+    # Set unit system.
     unit_system: EnumProperty(
         name="Unit System",
         description="Set the unit system to use for export",
@@ -731,70 +492,76 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         ],
         default="METRIC",
     )
-    # Set length unit if metric system was selected.
-    length_unit_metric: EnumProperty(
+    # Set length unit.
+    length_unit: EnumProperty(
         name="Length",
         description="Set the length unit to use for export",
-        items=[
-            ("ADAPTIVE", "Adaptive", "", 1),
-            ("KILOMETERS", "Kilometers", "", 2),
-            ("METERS", "Meters", "", 3),
-            ("CENTIMETERS", "Centimeters", "", 4),
-            ("MILLIMETERS", "Millimeters", "", 5),
-            ("MICROMETERS", "Micrometers", "", 6),
-        ],
-        default="CENTIMETERS",
-    )
-    # Set length unit if imperial system was selected.
-    length_unit_imperial: EnumProperty(
-        name="Length",
-        description="Set the length unit to use for export",
-        items=[
-            ("ADAPTIVE", "Adaptive", "", 1),
-            ("MILES", "Miles", "", 2),
-            ("FEET", "Feet", "", 3),
-            ("INCHES", "Inches", "", 4),
-            ("THOU", "Thousandths", "", 5),
-        ],
-        default="INCHES",
+        items=lambda self, context: Functions.get_length_unit(self.unit_system),
     )
     # Option to set file size maximum.
-    auto_resize_files: EnumProperty(
-        name="Files Included",
+    auto_optimize: BoolProperty(
+        name="Optimize Exports", 
         description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size. If exporting 2 formats at once, it only takes the first file format into account",
+        default=False,
+    )
+    auto_optimize_filter: EnumProperty(
+        name="Include",
+        description="Filter models to be automatically optimized",
         items=[
-            ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target maximum", 1),
-            ("Only Above Max", "Only Above Max", "Only auto-optimize exported files are still above the threshold. Ignore previously exported files that are already below the target maximum", 2),
-            ("None", "None", "Don't auto-optimize any exported files", 3),
+            ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target threshold", "SELECT_EXTEND", 1),
+            ("Above Target", "Above Target", "Only auto-optimize exported files are still above the target threshold. Ignore previously exported files that are already below the target maximum", "SELECT_SUBTRACT", 2),
         ],
-        default="None",
+        default="All",
     )
     # File size maximum target.
-    file_size_maximum: FloatProperty(
-        name="Limit (MB)", 
-        description="Set the threshold below which Transmogrifier should attempt to reduce the file size (Megabytes)",
+    auto_optimize_target_file_size: FloatProperty(
+        name="Target (MB)", 
+        description="Set the threshold below which Transmogrifier should attempt to reduce each converted file's size (Megabytes)",
         default=15.0,
         soft_min=0.0,
         soft_max=1000.0,
         step=10,
     )
-    # Filter file size reduction methods.
-    file_size_methods: EnumProperty(
-        name="Methods",
-        options={'ENUM_FLAG'},
-        items=[
-            ('Draco-Compress', "Draco-Compress", "(Only for GLB export). Try Draco-compression to lower the exported file size.", 'FULLSCREEN_EXIT', 1),
-            ('Resize Textures', "Resize Textures", "Try resizing textures to lower the exported file size.", 'NODE_TEXTURE', 2),
-            ('Reformat Textures', "Reformat Textures", "Try reformatting all textures except the normal map to JPEG's to lower the exported file size.", 'IMAGE_DATA', 4),
-            ('Decimate Meshes', "Decimate Meshes", "Try decimating objects to lower the exported file size.", 'MOD_DECIM', 16),
-        ],
-        description="Filter file size reduction methods to use for automatic export file size reduction",
-        default={
-            'Resize Textures', 
-            'Reformat Textures', 
-            'Draco-Compress', 
-        },
+
+    auto_optimize_show_methods: BoolProperty(
+        name="Methods", 
+        description="Filter methods to use for auto-optimize file size reduction",
+        default=False,
     )
+
+    auto_optimize_draco: BoolProperty(
+        name="Draco", 
+        description="(Only for GLB export). Try Draco-compression to lower the exported file size",
+        default=True,
+    )
+
+    auto_optimize_texture_resize: BoolProperty(
+        name="Resize Tex.", 
+        description="Try resizing textures to lower the exported file size",
+        default=True,
+    )
+
+    auto_optimize_texture_reformat: BoolProperty(
+        name="Reformat Tex.", 
+        description="Try reformatting all textures except the normal map to JPEG's to lower the exported file size",
+        default=True,
+    )
+
+    auto_optimize_decimate: BoolProperty(
+        name="Decimate", 
+        description="Try decimating objects to lower the exported file size",
+        default=False,
+    )
+
+    # Draco compression level.
+    compression_level: IntProperty(
+        name="Compression Level", 
+        description="Draco compression level (0 = most speed, 6 = most compression, higher values currently not supported)",
+        default=6,
+        soft_min=0,
+        soft_max=6,
+        step=1,
+    )    
     # Limit resolution that auto resize files should not go below.
     resize_textures_limit: EnumProperty(
         name="Resize Limit",
@@ -811,9 +578,9 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default="512",
     )
     # Include normal map in auto-reformatting.
-    reformat_normal_maps: BoolProperty(
-        name="Reformat Normal Maps",
-        description="Determine whether normal maps should be included in 'Reformat Textures' (to JPG's)",
+    include_normal_maps: BoolProperty(
+        name="Normal Maps",
+        description="Include normal maps in 'Reformat Textures' (to JPG's)",
         default=False,
         )
     # Limit how many time a mesh can be decimated during auto resize files.
@@ -825,21 +592,15 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         soft_max=10,
         step=1,
     )
-    # Save conversion log.
-    save_conversion_log: BoolProperty(
-        name="Save Log",
-        description="Save a log of the batch conversion in the given directory. This can help troubleshoot conversion errors",
+    # Mark data blocks as assets.
+    mark_as_assets: BoolProperty(
+        name="Mark as Assets",
+        description="Mark converted models as assets.\n(Saves a Blend file for each model converted)",
         default=False,
     )
-    # Mark data blocks as assets.
-    archive_assets: BoolProperty(
-        name="Archive Assets",
-        description="Archive specified assets to Asset Library",
-        default=False,
-        )
     # Mark asset data filter.
     asset_types_to_mark: EnumProperty(
-        name="Mark Assets",
+        name="Mark Assets Filter",
         options={'ENUM_FLAG'},
         items=[
             ('Actions', "", "Mark individual actions (animations) as assets.", "ACTION", 1),
@@ -852,41 +613,55 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Select asset types to archive",
         default={
             'Collections',
-            "Materials",
         },
     )
-    # Ignore duplicate assets.
-    assets_ignore_duplicates: BoolProperty(
-        name="Ignore Duplicates",
-        description="Ignore duplicate assets that already exist in the selected asset library.\n(i.e. Don't mark duplicates as assets)",
-        default=True,
+    # Extract asset preview images to disk.
+    asset_extract_previews: BoolProperty(
+        name="Save Previews to Disk",
+        description="Extract a preview image thumbnail for each asset type and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
+        default=False,
     )
-    # Filter asset types to ignore duplicates.
-    assets_ignore_duplicates_filter: EnumProperty(
-        name="Ignore Duplicates Filter",
+    # Filter asset previews to extract.
+    asset_extract_previews_filter: EnumProperty(
+        name="Extract Previews Filter",
         options={'ENUM_FLAG'},
         items=[
-            ('Actions', "", "Ignore duplicate actions. Actions with the same as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
-            ('Collections', "", "Ignore duplicate collections. Collections with the same as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
-            ('Materials', "", "Ignore duplicate materials. Materials with the same as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
-            ('Node_Groups', "", "Ignore duplicate node trees. Node Trees with the same as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
-            ('Objects', "", "Ignore duplicate objects. Objects with the same as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
-            ('Worlds', "", "Ignore duplicate worlds. Worlds with the same as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
+            ('Actions', "", "Extract previews of Actions assets.", "ACTION", 1),
+            ('Collections', "", "Extract previews of Collections assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Extract previews of Materials assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Extract previews of Node_Groups assets.", "NODETREE", 8),
+            ('Objects', "", "Extract previews of Objects assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Extract previews of Worlds assets.", "WORLD", 32),
         ],
-        description="Filter which asset types to ignore when an asset\nof that type already exists in the selected asset library",
+        description="Filter asset types from which to extract image previews to disk.",
         default={
-            'Actions',
             'Collections',
-            "Materials",
-            'Node_Groups',
-            'Objects',
-            'Worlds',
         },
+    )
+    # Allow duplicate assets.
+    assets_allow_duplicates: BoolProperty(
+        name="Allow Duplicates",
+        description="Allow duplicate assets that already exist in the selected asset library.\n(i.e. Mark duplicates as assets)",
+        default=False,
+    )
+    # Filter asset types to allow duplicates.
+    assets_allow_duplicates_filter: EnumProperty(
+        name="Allow Duplicates Filter",
+        options={'ENUM_FLAG'},
+        items=[
+            ('Actions', "", "Allow duplicate actions. Actions with the same as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
+            ('Collections', "", "Allow duplicate collections. Collections with the same as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Allow duplicate materials. Materials with the same as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Allow duplicate node trees. Node Trees with the same as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
+            ('Objects', "", "Allow duplicate objects. Objects with the same as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Allow duplicate worlds. Worlds with the same as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
+        ],
+        description="Filter which asset types to allow when an asset\nof that type already exists in the selected asset library",
     )
     # Only mark master collection as asset when importing a Blend (if Collections are to be marked as assets).
     mark_only_master_collection: BoolProperty(
         name="Mark Only Master",
-        description="Mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
+        description="When importing a blend file, mark only the master collection as an asset and ignore other collections.\n(For each item converted, all objects are moved to a master collection matching the item name.\nThis option is only relevant when importing .blend files that may already contain collections.)",
         default=True,
     )
     # Filter object types when marking objects as assets.
@@ -894,16 +669,16 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Object Types",
         options={'ENUM_FLAG'},
         items=[
-            ('MESH', "Mesh", "", 1),
-            ('CURVE', "Curve", "", 2),
-            ('SURFACE', "Surface", "", 4),
-            ('META', "Metaball", "", 8),
-            ('FONT', "Text", "", 16),
-            ('GPENCIL', "Grease Pencil", "", 32),
-            ('ARMATURE', "Armature", "", 64),
-            ('EMPTY', "Empty", "", 128),
-            ('LIGHT', "Lamp", "", 256),
-            ('CAMERA', "Camera", "", 512),
+            ('MESH', "Mesh", "", "OUTLINER_OB_MESH", 1),
+            ('CURVE', "Curve", "", "OUTLINER_OB_CURVE", 2),
+            ('SURFACE', "Surface", "", "OUTLINER_OB_SURFACE", 4),
+            ('META', "Metaball", "", "OUTLINER_OB_META", 8),
+            ('FONT', "Text", "", "OUTLINER_OB_FONT", 16),
+            ('GPENCIL', "Grease Pencil", "", "OUTLINER_OB_GREASEPENCIL", 32),
+            ('ARMATURE', "Armature", "", "OUTLINER_OB_ARMATURE", 64),
+            ('EMPTY', "Empty", "", "OUTLINER_OB_EMPTY", 128),
+            ('LIGHT', "Lamp", "", "OUTLINER_OB_LIGHT", 256),
+            ('CAMERA', "Camera", "", "OUTLINER_OB_CAMERA", 512),
         ],
         description="Filter which object types to mark as assets.\nNot all will be able to have preview images generated",
         default={
@@ -921,7 +696,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     # Asset Library.
     asset_library: StringProperty(default='(no library)')
     asset_library_enum: EnumProperty(
-        name="Asset Library", options={'SKIP_SAVE'},
+        name="Library", options={'SKIP_SAVE'},
         description="Archive converted assets to selected library",
         items=lambda self, context: Functions.get_asset_libraries(),
         get=lambda self: Functions.get_asset_library_index(self.asset_library),
@@ -938,7 +713,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
     # Set location of Blend containing assets.
     asset_blend_location: EnumProperty(
-        name="Blend Location",
+        name="Blend Files",
         description="Set where the blend files containing assets will be stored",
         items=[
             ("Move", "Move to Library", "Move blend files and associated textures to selected asset library.", 1),
@@ -978,29 +753,23 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Tags",
         description="Add new keyword tags to assets. Separate tags with a space",
     )
-    # Extract asset preview images to disk.
-    asset_extract_previews: BoolProperty(
-        name="Save Previews to Disk",
-        description="Extract preview image thumbnail for every asset marked and save to disk as PNG.\n(Only works for assets that can have previews generated.)",
+    link_script_settings: BoolProperty(
+        name="Link Script Settings",
+        description="Synchronize some trigger settings between all custom scripts",
         default=False,
+        update=Functions.link_script_settings,
     )
-    # Filter asset previews to extract.
-    asset_extract_previews_filter: EnumProperty(
-        name="Extract Previews Filter",
-        options={'ENUM_FLAG'},
+    trigger: EnumProperty(
+        name="Trigger",
+        description="Set when custom script should be triggered",
         items=[
-            ('Actions', "", "Extract previews of Actions assets.", "ACTION", 1),
-            ('Collections', "", "Extract previews of Collections assets.", "OUTLINER_COLLECTION", 2),
-            ('Materials', "", "Extract previews of Materials assets.", "MATERIAL", 4),
-            ('Node_Groups', "", "Extract previews of Node_Groups assets.", "NODETREE", 8),
-            ('Objects', "", "Extract previews of Objects assets.", "OBJECT_DATA", 16),
-            ('Worlds', "", "Extract previews of Worlds assets.", "WORLD", 32),
+            ("Before_Batch", "Before Batch", "Run script before the batch conversion begins.", 1),
+            ("Before_Import", "Before Import", "Run script immediately before importing a model.", 2),
+            ("Before_Export", "Before Export", "Run script immediately before exporting a model.", 3),
+            ("After_Export", "After Export", "Run script immediately after exporting a model.", 4),
+            ("After_Batch", "After Batch", "Run script after the batch conversion ends.", 5),
         ],
-        description="Filter asset types from which to extract image previews to disk.",
-        default={
-            'Collections',
-            'Objects',
-        },
+        default="Before_Export",
     )
 
 
@@ -1010,6 +779,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
     name: StringProperty(
         name="Name", 
         default="FBX",
+    )
+
+    show_settings: BoolProperty(
+        name="Show/Hide import settings",
+        description="",
+        default=True,
     )
 
     directory: StringProperty(
@@ -1035,7 +810,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
             ("BLEND", "Blender (.blend)", "", 10)
         ],
         default="FBX",
-        update=Functions.update_import_settings,
+        update=lambda self, context: Functions.update_import_export_settings(self, context, "imports"),
     )
 
     # A string property for saving User option (without new presets changing User choice),...
@@ -1049,10 +824,10 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
         name="Preset", 
         options={'SKIP_SAVE'},
         description="Use import settings from a preset.\n(Create in the import settings from the File > Import menu",
-        items=lambda self, context: Functions.get_operator_presets(Functions.import_dict[self.format][0]),
-        get=lambda self: Functions.get_preset_index(Functions.import_dict[self.format][0], self.preset),
-        set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[Functions.import_dict[self.format][0]][value][0]),
-        update=Functions.update_import_settings,
+        items=lambda self, context: Functions.get_operator_presets(Functions.operator_dict[self.format][0][0]),
+        get=lambda self: Functions.get_preset_index(Functions.operator_dict[self.format][0][0], self.preset),
+        set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[Functions.operator_dict[self.format][0][0]][value][0]),
+        update=lambda self, context: Functions.update_import_export_settings(self, context, "imports"),
     )
 
     extension: EnumProperty(
@@ -1060,7 +835,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
         options={'SKIP_SAVE'},
         description="Format extension",
         items=lambda self, context: Functions.get_format_extensions(self.format),
-        update=Functions.update_import_settings,
+        update=lambda self, context: Functions.update_import_export_settings(self, context, "imports"),
     )
 
     operator: StringProperty(
@@ -1076,12 +851,135 @@ class TRANSMOGRIFIER_PG_TransmogrifierImports(PropertyGroup):
     )
 
 
+
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
+class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
+
+    name: StringProperty(
+        name="Name", 
+        default="GLB",
+    )
+
+    show_settings: BoolProperty(
+        name="Show/Hide export settings",
+        description="",
+        default=True,
+    )
+
+    format: EnumProperty(
+        name="Format",
+        description="Which file format to import",
+        items=[
+            ("DAE", "Collada (.dae)", "", 1),
+            ("ABC", "Alembic (.abc)", "", 2),
+            ("USD", "Universal Scene Description (.usd/.usdc/.usda/.usdz)", "", 3),
+            ("OBJ", "Wavefront (.obj)", "", 4),
+            ("PLY", "Stanford (.ply)", "", 5),
+            ("STL", "STL (.stl)", "", 6),
+            ("FBX", "FBX (.fbx)", "", 7),
+            ("glTF", "glTF (.glb/.gltf)", "", 8),
+            ("X3D", "X3D Extensible 3D (.x3d)", "", 9),
+            ("BLEND", "Blender (.blend)", "", 10)
+        ],
+        default="glTF",
+        update=lambda self, context: Functions.update_import_export_settings(self, context, "exports"),
+    )
+
+    # A string property for saving User option (without new presets changing User choice),...
+    preset: StringProperty(
+        name="Preset",
+        default='NO_PRESET',
+    )
+
+    # ... and enum property for choosing.
+    preset_enum: EnumProperty(
+        name="Preset", 
+        options={'SKIP_SAVE'},
+        description="Use import settings from a preset.\n(Create in the import settings from the File > Import menu",
+        items=lambda self, context: Functions.get_operator_presets(Functions.operator_dict[self.format][1][0]),
+        get=lambda self: Functions.get_preset_index(Functions.operator_dict[self.format][1][0], self.preset),
+        set=lambda self, value: setattr(self, 'preset', Functions.preset_enum_items_refs[Functions.operator_dict[self.format][1][0]][value][0]),
+        update=lambda self, context: Functions.update_import_export_settings(self, context, "exports"),
+    )
+
+    extension: EnumProperty(
+        name="Extension", 
+        options={'SKIP_SAVE'},
+        description="Format extension",
+        items=lambda self, context: Functions.get_format_extensions(self.format),
+        update=lambda self, context: Functions.update_import_export_settings(self, context, "exports"),
+    )
+
+    operator: StringProperty(
+        name="Operator",
+        description="Import operator string",
+        default="bpy.ops.export_scene.gltf(**",
+    )
+
+    options: StringProperty(
+        name="Options",
+        description="Dictionary of export operator options from preset",
+        default="{}",
+    )
+
+    scale: FloatProperty(
+        name="Scale", 
+        description="Set the scale of the model before exporting",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=500,
+    )
+
+    directory: StringProperty(
+        name="Directory",
+        description="Custom output directory. \nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
+        default="//",
+        subtype='DIR_PATH',
+    )
+
+    use_subdirectories: BoolProperty(
+        name="Subdirectories",
+        description="Export models to their own subdirectories within the given export directory",
+        default=True,
+    )
+
+    copy_original_contents: BoolProperty(
+        name="Copy Original Contents",
+        description="Copy original contents of each import item's directory to each export item's subdirectory",
+        default=False,
+    )
+
+    prefix: StringProperty(
+        name="Prefix",
+        description="Text to put at the beginning of all the exported file names",
+    )
+
+    suffix: StringProperty(
+        name="Suffix",
+        description="Text to put at the end of all the exported file names",
+    )
+
+    set_data_names: BoolProperty(
+        name="Data Names from Objects",
+        description="Rename object data names according to their corresponding object names",
+        default=True,
+    )
+
+
+
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
 class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
     
     name: StringProperty(
         name="Name", 
         default="Script",
+    )
+    
+    show_settings: BoolProperty(
+        name="Show/Hide custom script settings",
+        description="",
+        default=True,
     )
 
     file: StringProperty(
@@ -1119,6 +1017,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
 classes = (
     TRANSMOGRIFIER_PG_TransmogrifierSettings,
     TRANSMOGRIFIER_PG_TransmogrifierImports,
+    TRANSMOGRIFIER_PG_TransmogrifierExports,
     TRANSMOGRIFIER_PG_TransmogrifierScripts,
 )
 
@@ -1130,6 +1029,7 @@ def register():
     # Add settings to Scene type.
     bpy.types.Scene.transmogrifier_settings = PointerProperty(type=TRANSMOGRIFIER_PG_TransmogrifierSettings)
     bpy.types.Scene.transmogrifier_imports = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierImports)
+    bpy.types.Scene.transmogrifier_exports = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierExports)
     bpy.types.Scene.transmogrifier_scripts = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierScripts)
     
 
@@ -1140,4 +1040,5 @@ def unregister():
 
     # Delete the settings from Scene type (Doesn't actually remove existing ones from scenes).
     del bpy.types.Scene.transmogrifier_imports
+    del bpy.types.Scene.transmogrifier_exports
     del bpy.types.Scene.transmogrifier_settings

@@ -56,13 +56,25 @@ from mathutils import Vector, Euler
 # cause crashs and weird issues.
 # Also useful for the get_preset_index function.
 preset_enum_items_refs = {
+    # Import operators with presets
     "wm.collada_import": [],
     "wm.alembic_import": [], 
     "wm.usd_import": [],
     "wm.obj_import": [],
     "import_scene.fbx": [],
     "import_scene.x3d": [],
+
+    # Export operators with presets
+    "wm.collada_export": [],
+    "wm.alembic_export": [],
+    "wm.usd_export": [],
+    "wm.obj_export": [],
+    "export_scene.fbx": [],
+    "export_scene.gltf": [],
+    "export_scene.x3d": [],
+
     "NO_OPERATOR": [],
+
 }
 
 
@@ -189,62 +201,92 @@ def get_transmogrifier_preset_index(operator, preset_name):
 
 
 
-# ░▀█▀░█▄█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
-# ░░█░░█░█░█▀▀░█░█░█▀▄░░█░░▀▀█
-# ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
+# ░█▀█░█▀█░█▀▀░█▀▄░█▀█░▀█▀░█▀█░█▀▄░█▀▀░░░▀█▀░█▀█
+# ░█░█░█▀▀░█▀▀░█▀▄░█▀█░░█░░█░█░█▀▄░▀▀█░░░░█░░█░█
+# ░▀▀▀░▀░░░▀▀▀░▀░▀░▀░▀░░▀░░▀▀▀░▀░▀░▀▀▀░░░▀▀▀░▀▀▀
 
 # Import format dictionary containing [operator preset directory name, operator, options dictionary].
-import_dict = {
-    "DAE": ["wm.collada_import", "bpy.ops.wm.collada_import(**", {}],
-    "ABC": ["wm.alembic_import", "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **", {}], 
-    "USD": ["wm.usd_import", "bpy.ops.wm.usd_import(**", {}],
-    "OBJ": ["wm.obj_import", "bpy.ops.wm.obj_import(**", {}],
-    "PLY": ["NO_OPERATOR", "bpy.ops.import_mesh.ply(**", {}], 
-    "STL": ["NO_OPERATOR", "bpy.ops.import_mesh.stl(**", {}],
-    "FBX": ["import_scene.fbx", "bpy.ops.import_scene.fbx(**", {}],
-    "glTF": ["NO_OPERATOR", "bpy.ops.import_scene.gltf(**", {}],
-    "X3D": ["import_scene.x3d", "bpy.ops.import_scene.x3d(**", {}],
-    "BLEND": ["NO_OPERATOR", "bpy.ops.wm.append(**", {
-        "filepath": "",
-        "directory": "\\Object\\",
-        "autoselect": True,
-        "active_collection": True,
-        "instance_collections": False,
-        "instance_object_data": True,
-        "set_fake": False,
-        "use_recursive": True,
-    }],
+operator_dict = {
+    "DAE": [["wm.collada_import", "bpy.ops.wm.collada_import(**", {}], ["wm.collada_export", "bpy.ops.wm.collada_export(**", {}]],
+    "ABC": [["wm.alembic_import", "bpy.ops.wm.alembic_import('EXEC_REGION_WIN', **", {}], ["wm.alembic_export", "bpy.ops.wm.alembic_export('EXEC_REGION_WIN', **", {}]], 
+    "USD": [["wm.usd_import", "bpy.ops.wm.usd_import(**", {}], ["wm.usd_export", "bpy.ops.wm.usd_export(**", {}]],
+    "OBJ": [["wm.obj_import", "bpy.ops.wm.obj_import(**", {}], ["wm.obj_export", "bpy.ops.wm.obj_export(**", {}]],
+    "PLY": [["NO_OPERATOR", "bpy.ops.import_mesh.ply(**", {}], ["NO_OPERATOR", "bpy.ops.export_mesh.ply(**", {}]], 
+    "STL": [["NO_OPERATOR", "bpy.ops.import_mesh.stl(**", {}], ["NO_OPERATOR", "bpy.ops.export_mesh.stl(**", {}]],
+    "FBX": [["import_scene.fbx", "bpy.ops.import_scene.fbx(**", {}], ["export_scene.fbx", "bpy.ops.export_scene.fbx(**", {}]],
+    "glTF": [["NO_OPERATOR", "bpy.ops.import_scene.gltf(**", {}], ["export_scene.gltf", "bpy.ops.export_scene.gltf(**", {}]],
+    "X3D": [["import_scene.x3d", "bpy.ops.import_scene.x3d(**", {}], ["export_scene.x3d", "bpy.ops.export_scene.x3d(**", {}]],
+    "BLEND": [
+        [
+            "NO_OPERATOR", "bpy.ops.wm.append(**", 
+            {
+                "filepath": "",
+                "directory": "\\Object\\",
+                "autoselect": True,
+                "active_collection": True,
+                "instance_collections": False,
+                "instance_object_data": True,
+                "set_fake": False,
+                "use_recursive": True,
+            }
+        ], 
+        [
+            "NO_OPERATOR", "bpy.ops.wm.save_as_mainfile(**", 
+            {
+                "filepath": "",
+                "compress": False,
+                "relative_remap": True,
+                "copy": False
+            }
+        ]
+    ],
 }
 
 
 # Get operator options for a given preset for a given format.
-def get_operator_options(format, preset):
-    options = import_dict[format][2]
-    if import_dict[format][0] == "NO_OPERATOR":
+def get_operator_options(format, collection_property_index, preset):
+    options = operator_dict[format][collection_property_index][2]
+    if operator_dict[format][collection_property_index][0] == "NO_OPERATOR":
         return options
     
-    options = load_operator_preset(import_dict[format][0], preset)
+    options = load_operator_preset(operator_dict[format][collection_property_index][0], preset)
     return options
 
 
-# Update import file names and operators based on file formats.
-def update_import_settings(self, context):
-    for index, import_file in enumerate(context.scene.transmogrifier_imports):
+# Update file names and operators based on file formats.
+def update_import_export_settings(self, context, imports_or_exports):
+    imports = context.scene.transmogrifier_imports
+    exports = context.scene.transmogrifier_exports 
+
+    # Determine which settings to update.
+    if imports_or_exports == "imports":
+        collection_property = imports
+        collection_property_index = 0
+    elif imports_or_exports == "exports":
+        collection_property = exports
+        collection_property_index = 1
+
+    for index, instance in enumerate(collection_property):
         # Update box name from import extension.
-        import_file.name = import_file.extension.upper()[1:]
+        instance.name = instance.extension.upper()[1:]
         
         # Update import preset from current preset_enum.
-        import_file.preset = import_file.preset_enum
+        instance.preset = instance.preset_enum
 
         # Update import operator and options
-        format = import_file.format
-        preset = import_file.preset
-        import_file.operator = f"{import_dict[format][1]}"
-        import_file.options = str(get_operator_options(format, preset))
+        format = instance.format
+        preset = instance.preset
+        instance.operator = f"{operator_dict[format][collection_property_index][1]}"
+        instance.options = str(get_operator_options(format, collection_property_index, preset))
 
+
+
+# ░▀█▀░█▄█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
+# ░░█░░█░█░█▀▀░█░█░█▀▄░░█░░▀▀█
+# ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
 # Synchronize import directories with master directory.
-def update_import_directories(self, context):
+def link_import_directories(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     for index, import_file in enumerate(context.scene.transmogrifier_imports):
         import_file.directory = settings.import_directory
@@ -276,6 +318,23 @@ def get_import_files(self, context):
             import_files_dict[i.name] = files
             
     return import_files_dict
+
+
+
+# ░█▀▀░█░█░█▀█░█▀█░█▀▄░▀█▀░█▀▀
+# ░█▀▀░▄▀▄░█▀▀░█░█░█▀▄░░█░░▀▀█
+# ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
+
+def link_export_settings(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    for index, instance in enumerate(context.scene.transmogrifier_exports):
+        instance.directory = settings.export_directory
+        instance.use_subdirectories = settings.use_subdirectories
+        instance.copy_original_contents = settings.copy_original_contents
+        instance.scale = settings.scale
+        instance.prefix = settings.prefix
+        instance.suffix = settings.suffix
+        instance.set_data_names = settings.set_data_names
 
 
 
@@ -445,6 +504,13 @@ def get_asset_catalog_index(catalog_name):
 # ░█░░░█░█░▀▀█░░█░░█░█░█░█░░░▀▀█░█░░░█▀▄░░█░░█▀▀░░█░░▀▀█
 # ░▀▀▀░▀▀▀░▀▀▀░░▀░░▀▀▀░▀░▀░░░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░░░░▀░░▀▀▀
 
+# Link custom script triggers.
+def link_script_settings(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    for index, instance in enumerate(context.scene.transmogrifier_scripts):
+        instance.trigger = settings.trigger
+
+
 # Add a custom script.
 def add_custom_script(self, context):
     new_script = context.scene.transmogrifier_scripts.add()
@@ -477,6 +543,40 @@ def update_custom_script_names(self, context):
 
 
 
+# ░█░█░█▀█░▀█▀░▀█▀░░░█▀▀░█░█░█▀▀░▀█▀░█▀▀░█▄█░█▀▀
+# ░█░█░█░█░░█░░░█░░░░▀▀█░░█░░▀▀█░░█░░█▀▀░█░█░▀▀█
+# ░▀▀▀░▀░▀░▀▀▀░░▀░░░░▀▀▀░░▀░░▀▀▀░░▀░░▀▀▀░▀░▀░▀▀▀
+
+# Dictionary of length unit by system.
+length_unit_enum_items_refs = {
+    "METRIC": [
+        ("MICROMETERS", "Micrometers", "", 4),
+        ("MILLIMETERS", "Millimeters", "", 3),
+        ("CENTIMETERS", "Centimeters", "", 0),
+        ("METERS", "Meters", "", 1),
+        ("KILOMETERS", "Kilometers", "", 2),
+        ("ADAPTIVE", "Adaptive", "", 5),
+    ],
+    "IMPERIAL": [
+        ("THOU", "Thousandths", "", 3),
+        ("INCHES", "Inches", "", 0),
+        ("FEET", "Feet", "", 1),
+        ("MILES", "Miles", "", 2),
+        ("ADAPTIVE", "Adaptive", "", 4),
+    ],
+    "NONE": [
+        ("NONE", "None", "", 0),   
+    ]
+}
+
+
+# Get length units for a given system.
+def get_length_unit(unit_system):
+    
+    return length_unit_enum_items_refs[unit_system]
+
+
+
 # ░█▀█░█▀▄░█▀█░█▀█░█▀▀░█▀▄░▀█▀░█░█░░░█▀▀░█▀▄░█▀█░█░█░█▀█░█▀▀
 # ░█▀▀░█▀▄░█░█░█▀▀░█▀▀░█▀▄░░█░░░█░░░░█░█░█▀▄░█░█░█░█░█▀▀░▀▀█
 # ░▀░░░▀░▀░▀▀▀░▀░░░▀▀▀░▀░▀░░▀░░░▀░░░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀░░░▀▀▀
@@ -491,7 +591,8 @@ def get_propertygroups():
             "transmogrifier_preset",
             ]
         ],
-        "imports": [bpy.context.scene.transmogrifier_imports, True, []],
+        "imports": [bpy.context.scene.transmogrifier_imports, True, ["files"]],
+        "exports": [bpy.context.scene.transmogrifier_exports, True, []],
         "scripts": [bpy.context.scene.transmogrifier_scripts, True, []],
     }
     
@@ -514,7 +615,7 @@ def is_int(x):
 
 
 # Get properties of an individual PropertyGroup instance.
-def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths):
+def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths, write_imports_list):
     keys = [key for key in propertygroup.__annotations__ if key not in properties_to_ignore and "_enum" not in key]  # Eventually remove the need for "_enum" condition.
     values = []
 
@@ -542,15 +643,15 @@ def get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths
     
     settings_dict = dict(zip(keys, values))
 
-    # Add list of imports to each imports instance.
-    if name == "imports":
+    # Add list of imports to each imports instance when batch converting, but not when writing a Transmogrifier Preset.
+    if name == "imports" and write_imports_list:
         settings_dict.update({"files": get_import_files_list(propertygroup)})
 
     return settings_dict
 
 
 # Loop through instances in a CollectionProperty group and return dictionary of them.
-def get_propertygroups_properties(name, propertygroup, is_collection_property, properties_to_ignore, use_absolute_paths, settings_dict):
+def get_propertygroups_properties(name, propertygroup, is_collection_property, properties_to_ignore, use_absolute_paths, write_imports_list, settings_dict):
     # If PropertyGroup is a CollectionProperty, list the existing instances.
     if is_collection_property: 
         propertygroups = [instance for index, instance in enumerate(propertygroup)]
@@ -558,26 +659,26 @@ def get_propertygroups_properties(name, propertygroup, is_collection_property, p
         
         # Loop through each instance, get a dictionary of properties for each, and add each set of properties to the list.
         for propertygroup in propertygroups:
-            collection_of_settings.append(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
+            collection_of_settings.append(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths, write_imports_list))
         
         # Update the settings dictionary with every instance.
         settings_dict.update({name: collection_of_settings})
     
     # If PropertyGroup is a PointerProperty, simply get a dictionary of properties from it.
     elif not is_collection_property:
-        settings_dict.update(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths))
+        settings_dict.update(get_properties(name, propertygroup, properties_to_ignore, use_absolute_paths, write_imports_list))
 
     return settings_dict
 
 
 # Create settings_dict dictionary from PropertyGroups to pass to write_json function later.
-def get_settings_dict(self, context, use_absolute_paths):
+def get_settings_dict(self, context, use_absolute_paths, write_imports_list):
     settings_dict = {}
     property_groups = get_propertygroups()
 
     # Loop through each PropertyGroup and update the dictionary of settings.
     for key, value in property_groups.items():
-        settings_dict.update(get_propertygroups_properties(key, value[0], value[1], value[2], use_absolute_paths, settings_dict))
+        settings_dict.update(get_propertygroups_properties(key, value[0], value[1], value[2], use_absolute_paths, write_imports_list, settings_dict))
 
     return settings_dict
     
@@ -588,7 +689,7 @@ def get_settings_dict(self, context, use_absolute_paths):
 # ░▀▀▀░▀▀▀░░▀░░░░▀▀▀░▀▀▀░░▀░░░▀░░▀▀▀░▀░▀░▀▀▀░▀▀▀
 
 # Load/set each property within a given PropertyGroup.
-def load_propertygroup_settings(property_groups, properties, group):
+def load_propertygroup_settings(property_groups, properties, group, properties_to_ignore):
     # Loop through each property in the PropertyGroup and load/set value from the given Transmogrifier preset.
     for key, value in properties.items():
         # If a property name shares the same name of a PropertyGroup, skip.  The value is a list of dictionaries of properties of each instance that will be looped through later.
@@ -596,7 +697,7 @@ def load_propertygroup_settings(property_groups, properties, group):
             continue
         
         # Since "files" is a property added to imports/exports instance dictionaries but is not a part of their PropertyGroups, skip.
-        elif key == "files":
+        elif key in properties_to_ignore:
             continue
         
         # Wrap strings in quotations to ensure they're interpreted as strings in exec() function below.
@@ -619,19 +720,20 @@ def load_propertygroup_settings(property_groups, properties, group):
 
 
 # If PropertyGroup is a CollectionProperty, instantiate and load settings for each instance.
-def instantiate_propertygroups(property_groups, properties_list, propertygroup):
+def instantiate_propertygroups(property_groups, properties_list, propertygroup, properties_to_ignore):
     for properties in properties_list:
         # Add new instance.
         group = propertygroup.add()
 
         # Load/set properties for that group.
-        load_propertygroup_settings(property_groups, properties, group)
+        load_propertygroup_settings(property_groups, properties, group, properties_to_ignore)
         
 
 # Update settings when a Transmogrifier preset is selected.
 def set_settings(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     imports = bpy.context.scene.transmogrifier_imports
+    exports = bpy.context.scene.transmogrifier_exports
     scripts = bpy.context.scene.transmogrifier_scripts
 
     # Get PropertyGroups.
@@ -643,6 +745,9 @@ def set_settings(self, context):
 
         # Clear any existing imports instances.
         imports.clear()
+
+        # Clear any existing exports instances.
+        exports.clear()
         
         # Clear any existing custom script instances.
         scripts.clear()
@@ -652,11 +757,11 @@ def set_settings(self, context):
             try:
                 # If PropertyGroup is not a CollectionProperty, go straight to loading/setting the properties from the preset.
                 if value[1] == False:
-                    load_propertygroup_settings(property_groups, transmogrifier_preset_dict, value[0])
+                    load_propertygroup_settings(property_groups, transmogrifier_preset_dict, value[0], value[2])
                 
                 # If PropertyGroup is a CollectionProperty, instantiate and load settings for each instance.
                 else:
-                    instantiate_propertygroups(property_groups, transmogrifier_preset_dict[key], value[0])
+                    instantiate_propertygroups(property_groups, transmogrifier_preset_dict[key], value[0], value[2])
 
             # If using an old Transmogrifier preset (i.e. without new properties such as "imports" and "scripts"), skip.
             except KeyError:
