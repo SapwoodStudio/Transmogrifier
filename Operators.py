@@ -65,7 +65,7 @@ class TRANSMOGRIFIER_OT_help(Operator):
     
     link: StringProperty(
         name="Help",
-        default="https://github.com/SapwoodStudio/Transmogrifier"
+        default="https://sapwoodstudio.github.io/transmogrifier"
     )    
 
     def execute(self, context):   
