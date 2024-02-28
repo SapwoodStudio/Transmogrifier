@@ -1,0 +1,84 @@
+site_name: Transmogrifier
+site_url: https://sapwoodstudio.github.io/transmogrifier
+repo_url: https://github.com/sapwoodstudio/transmogrifier
+
+nav:
+  - Home: 'index.md'
+
+markdown_extensions:
+  - toc:
+    permalink: "#"
+
+theme:
+  name: material
+
+  logo: Transmogrifier_Logo_128.png
+
+  favicon: Transmogrifier_Logo_64.png
+
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.path
+    - navigation.indexes
+    - navigation.footer
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+      primary: brown
+      accent: light blue
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+      primary: brown
+      accent: light blue
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - sane_lists
+  - pymdownx.highlight:
+      auto_title: false
+  - pymdownx.superfences
+  - pymdownx.keys
+  - attr_list
+
+extra:
+  social:
+    - icon: fontawesome/brands/mastodon
+      link: https://mastodon.social/@sapwoodstudio
+
+    - icon: fontawesome/brands/x-twitter
+      link: https://twitter.com/sapwoodstudio
+
+    - icon: fontawesome/brands/github
+      link: https://github.com/SapwoodStudio
+
+extra_css:
+  - stylesheets/extra.css
+
+copyright: Copyright &copy; 2024 Sapwood Studio
+
+
+docs_dir: src
+edit_uri: edit/main/src/
+site_dir: docs
