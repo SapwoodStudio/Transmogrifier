@@ -50,8 +50,8 @@ bl_info = {
     "category": "Import-Export",
     "location": "Set in preferences below. Default: 3D Viewport Side Panel (Transmogrifier Tab)",
     "description": "Batch converts 3D files and associated textures into other formats.",
-    "doc_url": "github.com/SapwoodStudio/Transmogrifier",
-    "tracker_url": "github.com/sapwoodstudio/Transmogrifier/issues",
+    "doc_url": "https://sapwoodstudio.github.io/Transmogrifier",
+    "tracker_url": "https://github.com/sapwoodstudio/Transmogrifier/issues",
 }
 
 
