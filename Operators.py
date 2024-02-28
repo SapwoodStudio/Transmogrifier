@@ -61,7 +61,7 @@ class TRANSMOGRIFIER_OT_help(Operator):
     """Open online documentation in web browser"""
     bl_idname = "transmogrifier.help"
     bl_label = "Help"
-    bl_description = "Open online documentation in a web browser"
+    bl_description = "Open online documentation in a web browser\n(https://sapwoodstudio.github.io/transmogrifier)"
     
     link: StringProperty(
         name="Help",
