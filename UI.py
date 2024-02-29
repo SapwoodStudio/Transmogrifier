@@ -41,6 +41,7 @@ from bpy.props import (
     StringProperty,
 )
 from pathlib import Path
+from bpy.utils import previews
 from . import bl_info
 from . import Functions
 
@@ -82,8 +83,8 @@ def draw_settings_general(self, context):
     help.link = "https://sapwoodstudio.github.io/Transmogrifier"
 
     # Batch Convert button
-    row = self.layout.row(align=True)   
-    row.operator('transmogrifier.transmogrify', icon='PLAY')
+    row = self.layout.row(align=True)
+    row.operator('transmogrifier.transmogrify', icon_value=custom_icons['Transmogrifier_Icon'].icon_id)
     row.scale_x = 1.25
     row.operator('transmogrifier.forecast', text='', icon='INFO')
     row.scale_y = 1.5
@@ -678,7 +679,7 @@ def draw_settings_scripts(self, context):
 def draw_popover(self, context):
     row = self.layout.row()
     row = row.row(align=True)
-    row.operator('transmogrifier.transmogrify', text='', icon='PLAY')
+    row.operator('transmogrifier.transmogrify', text='', icon_value=custom_icons['Transmogrifier_Icon'].icon_id)
     row.popover(panel='POPOVER_PT_transmogrifier', text='')
 
 
@@ -923,6 +924,13 @@ def register():
     elif prefs.addon_location == '3DSIDE':
         bpy.utils.register_class(VIEW3D_PT_transmogrifier)
 
+    # Custom icons    
+    global custom_icons
+    custom_icons = previews.new()
+    icons_dir = Path(__file__).parent.resolve() / "icons"
+    
+    custom_icons.load("Transmogrifier_Icon", str(icons_dir / "Transmogrifier_Icon.png"), 'IMAGE')
+
 
 # Unregister Classes.
 def unregister():
@@ -934,3 +942,7 @@ def unregister():
     bpy.types.VIEW3D_MT_editor_menus.remove(draw_popover)
     if hasattr(bpy.types, "VIEW3D_PT_transmogrifier"):
         bpy.utils.unregister_class(VIEW3D_PT_transmogrifier)
+
+    # Remove icons
+    global custom_icons
+    previews.remove(custom_icons)

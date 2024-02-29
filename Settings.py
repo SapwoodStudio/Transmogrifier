@@ -501,7 +501,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     # Option to set file size maximum.
     auto_optimize: BoolProperty(
         name="Optimize Exports", 
-        description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size. If exporting 2 formats at once, it only takes the first file format into account",
+        description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size",
         default=False,
     )
     auto_optimize_filter: EnumProperty(
