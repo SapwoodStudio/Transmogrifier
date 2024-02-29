@@ -4,6 +4,11 @@ repo_url: https://github.com/sapwoodstudio/transmogrifier
 
 nav:
   - Home: 'index.md'
+  - Installation: 'installation.md'
+  - Quickstart: 'quickstart.md'
+  - Usage Guide: 'usage.md'
+  - FAQ: 'faq.md'
+  - Credits: 'credits.md'
 
 markdown_extensions:
   - toc:
