@@ -111,7 +111,7 @@ def draw_settings_general(self, context):
     row = box_imports.row(align=True)
     row.label(text="Imports", icon='IMPORT')
     
-    if len(imports) > 1:
+    if len(imports) > 0:
         row.prop(settings, 'link_import_directories', expand=False, text="", icon="LINKED" if settings.link_import_directories else "UNLINKED")
 
     # Add Import button
@@ -178,10 +178,12 @@ def draw_settings_general(self, context):
     row = box_exports.row(align=False)
     row.label(text="Exports", icon='EXPORT')
     
+    
     if len(exports) > 0:
-        row.prop(settings, 'export_adjacent', expand=False, text="", icon='UV_SYNC_SELECT')
-        if len(exports) > 1:
-            row.prop(settings, 'link_export_settings', expand=False, text="", icon="LINKED" if settings.link_export_settings else "UNLINKED")
+        if settings.link_export_settings and settings.advanced_ui:
+            row.prop(settings, 'preserve_existing_files', text='', icon="FAKE_USER_ON" if settings.preserve_existing_files else "FAKE_USER_OFF")
+            row.prop(settings, 'export_adjacent', expand=False, text="", icon='DECORATE_OVERRIDE')
+        row.prop(settings, 'link_export_settings', expand=False, text="", icon="LINKED" if settings.link_export_settings else "UNLINKED")
 
     # Add Export button
     col = box_exports.column(align=True)
@@ -208,6 +210,9 @@ def draw_settings_general(self, context):
         # Remove import button
         row = grid.row()
         row.alignment = "RIGHT"
+        if not settings.link_export_settings and settings.advanced_ui:
+            row.prop(instance, 'preserve_existing_files', text='', icon="FAKE_USER_ON" if instance.preserve_existing_files else "FAKE_USER_OFF")
+            row.prop(instance, 'export_adjacent', expand=False, text="", icon='DECORATE_OVERRIDE')
         props = row.operator('transmogrifier.remove_export', text = "", icon = 'PANEL_CLOSE')
         props.index = index
 

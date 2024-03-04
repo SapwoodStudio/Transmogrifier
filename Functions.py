@@ -331,6 +331,8 @@ def link_export_settings(self, context):
         instance.directory = settings.export_directory
         instance.use_subdirectories = settings.use_subdirectories
         instance.copy_original_contents = settings.copy_original_contents
+        instance.preserve_existing_files = settings.preserve_existing_files
+        instance.export_adjacent = settings.export_adjacent
         instance.scale = settings.scale
         instance.prefix = settings.prefix
         instance.suffix = settings.suffix
@@ -591,9 +593,9 @@ def get_propertygroups():
             "transmogrifier_preset",
             ]
         ],
-        "imports": [bpy.context.scene.transmogrifier_imports, True, ["files"]],
-        "exports": [bpy.context.scene.transmogrifier_exports, True, []],
-        "scripts": [bpy.context.scene.transmogrifier_scripts, True, []],
+        "imports": [bpy.context.scene.transmogrifier_imports, True, ["files", "show_settings"]],
+        "exports": [bpy.context.scene.transmogrifier_exports, True, ["show_settings"]],
+        "scripts": [bpy.context.scene.transmogrifier_scripts, True, ["show_settings"]],
     }
     
     return property_groups

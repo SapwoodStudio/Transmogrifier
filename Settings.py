@@ -100,6 +100,11 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Export models adjacent to their respective imports",
         default=True,
     )
+    preserve_existing_files: BoolProperty(
+        name="Preserve Existing Files",
+        description="Preserve existing files of the given export format(s) that have already been converted\n(In other words, don't overwrite files)",
+        default=False,
+    )
     link_export_settings: BoolProperty(
         name="Link Export Settings",
         description="Synchronize some export settings between all export file formats",
@@ -948,6 +953,18 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         name="Copy Original Contents",
         description="Copy original contents of each import item's directory to each export item's subdirectory",
         default=False,
+    )
+
+    preserve_existing_files: BoolProperty(
+        name="Preserve Existing Files",
+        description="Preserve existing files of the given export format(s) that have already been converted\n(In other words, don't overwrite files)",
+        default=False,
+    )
+
+    export_adjacent: BoolProperty(
+        name="Export Adjacent",
+        description="Export models adjacent to their respective imports",
+        default=True,
     )
 
     prefix: StringProperty(

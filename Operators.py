@@ -179,16 +179,16 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
         Functions.write_json(settings_dict, settings_json)
 
 
-        # Run Converter.py
-        subprocess.call(
-            [
-                blender_dir,
-                converter_blend,
-                "--python",
-                converter_py,
-            ],
-            cwd=transmogrifier_dir
-        ) 
+        # # Run Converter.py
+        # subprocess.call(
+        #     [
+        #         blender_dir,
+        #         converter_blend,
+        #         "--python",
+        #         converter_py,
+        #     ],
+        #     cwd=transmogrifier_dir
+        # ) 
         
 
         print("Conversion Complete")
