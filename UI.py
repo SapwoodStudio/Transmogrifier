@@ -233,7 +233,7 @@ def draw_settings_general(self, context):
 
             # Directory
             if not settings.link_export_settings:
-                if not settings.export_adjacent:
+                if not instance.export_adjacent:
                     row = box.row()
                     row.prop(instance, "directory")
                     if settings.advanced_ui:
@@ -609,7 +609,7 @@ def draw_settings_scripts(self, context):
     
     row.label(text="Custom Scripts", icon='FILE_SCRIPT')
 
-    if len(scripts) > 1:
+    if len(scripts) > 0:
         row.prop(settings, 'link_script_settings', text='', icon="LINKED" if settings.link_script_settings else "UNLINKED")
 
     if settings.advanced_ui:
