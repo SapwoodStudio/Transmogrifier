@@ -100,10 +100,10 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Export models adjacent to their respective imports",
         default=True,
     )
-    preserve_existing_files: BoolProperty(
-        name="Preserve Existing Files",
-        description="Preserve existing files of the given export format(s) that have already been converted\n(In other words, don't overwrite files)",
-        default=False,
+    overwrite_files: BoolProperty(
+        name="Overwrite Files",
+        description="Overwrite files of the given export format(s) that may already exist",
+        default=True,
     )
     link_export_settings: BoolProperty(
         name="Link Export Settings",
@@ -181,7 +181,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
     keep_modified_textures: BoolProperty(
         name="Keep Modified Textures", 
-        description="Don't delete the textures directory used to modify image textures by regex and resolution and/or format",
+        description="Don't delete the temporary textures directory used to modify image textures by regex, resolution, and/or format",
         default=False,
     )
     textures_source: EnumProperty(
@@ -504,22 +504,27 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         items=lambda self, context: Functions.get_length_unit(self.unit_system),
     )
     # Option to set file size maximum.
-    auto_optimize: BoolProperty(
+    optimize: BoolProperty(
         name="Optimize Exports", 
         description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size",
         default=False,
     )
-    auto_optimize_filter: EnumProperty(
-        name="Include",
+    optimize_skip_existing_below_target: BoolProperty(
+        name="Skip Existing if Below Target", 
+        description="Skip optimizing models that 1) already exist and 2) are already below the target file size",
+        default=False,
+    )
+    optimize_filter: EnumProperty(
+        name="Overwrite Files",
         description="Filter models to be automatically optimized",
         items=[
-            ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target threshold", "SELECT_EXTEND", 1),
-            ("Above Target", "Above Target", "Only auto-optimize exported files are still above the target threshold. Ignore previously exported files that are already below the target maximum", "SELECT_SUBTRACT", 2),
+            ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target threshold", "", 1),
+            ("Above Target", "Only Above Target", "Only auto-optimize exported files are still above the target threshold. Ignore previously exported files that are already below the target maximum", "", 2),
         ],
         default="All",
     )
     # File size maximum target.
-    auto_optimize_target_file_size: FloatProperty(
+    optimize_target_file_size: FloatProperty(
         name="Target (MB)", 
         description="Set the threshold below which Transmogrifier should attempt to reduce each converted file's size (Megabytes)",
         default=15.0,
@@ -528,31 +533,31 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         step=10,
     )
 
-    auto_optimize_show_methods: BoolProperty(
+    optimize_show_methods: BoolProperty(
         name="Methods", 
         description="Filter methods to use for auto-optimize file size reduction",
         default=False,
     )
 
-    auto_optimize_draco: BoolProperty(
+    optimize_draco: BoolProperty(
         name="Draco", 
-        description="(Only for GLB export). Try Draco-compression to lower the exported file size",
+        description="(Only for glTF/GLB export). Try Draco-compression to lower the exported file size",
         default=True,
     )
 
-    auto_optimize_texture_resize: BoolProperty(
+    optimize_texture_resize: BoolProperty(
         name="Resize Tex.", 
         description="Try resizing textures to lower the exported file size",
         default=True,
     )
 
-    auto_optimize_texture_reformat: BoolProperty(
+    optimize_texture_reformat: BoolProperty(
         name="Reformat Tex.", 
         description="Try reformatting all textures except the normal map to JPEG's to lower the exported file size",
         default=True,
     )
 
-    auto_optimize_decimate: BoolProperty(
+    optimize_decimate: BoolProperty(
         name="Decimate", 
         description="Try decimating objects to lower the exported file size",
         default=False,
@@ -955,10 +960,10 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         default=False,
     )
 
-    preserve_existing_files: BoolProperty(
-        name="Preserve Existing Files",
-        description="Preserve existing files of the given export format(s) that have already been converted\n(In other words, don't overwrite files)",
-        default=False,
+    overwrite_files: BoolProperty(
+        name="Overwrite Files",
+        description="Overwrite files of the given export format(s) that may already exist",
+        default=True,
     )
 
     export_adjacent: BoolProperty(

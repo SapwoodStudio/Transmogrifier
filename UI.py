@@ -181,8 +181,9 @@ def draw_settings_general(self, context):
     
     if len(exports) > 0:
         if settings.link_export_settings and settings.advanced_ui:
-            row.prop(settings, 'preserve_existing_files', text='', icon="FAKE_USER_ON" if settings.preserve_existing_files else "FAKE_USER_OFF")
+            row.prop(settings, 'overwrite_files', text='', icon="FILE_TICK")
             row.prop(settings, 'export_adjacent', expand=False, text="", icon='DECORATE_OVERRIDE')
+            row.prop(settings, 'set_data_names', text='', icon_value=custom_icons['Data_Names_From_Objects_Icon'].icon_id)
         row.prop(settings, 'link_export_settings', expand=False, text="", icon="LINKED" if settings.link_export_settings else "UNLINKED")
 
     # Add Export button
@@ -207,12 +208,13 @@ def draw_settings_general(self, context):
             text=instance.name
         )
 
-        # Remove import button
+        # Remove Export button
         row = grid.row()
         row.alignment = "RIGHT"
         if not settings.link_export_settings and settings.advanced_ui:
-            row.prop(instance, 'preserve_existing_files', text='', icon="FAKE_USER_ON" if instance.preserve_existing_files else "FAKE_USER_OFF")
+            row.prop(instance, 'overwrite_files', text='', icon="FILE_TICK")
             row.prop(instance, 'export_adjacent', expand=False, text="", icon='DECORATE_OVERRIDE')
+            row.prop(instance, 'set_data_names', text='', icon_value=custom_icons['Data_Names_From_Objects_Icon'].icon_id)
         props = row.operator('transmogrifier.remove_export', text = "", icon = 'PANEL_CLOSE')
         props.index = index
 
@@ -233,27 +235,31 @@ def draw_settings_general(self, context):
 
             # Directory
             if not settings.link_export_settings:
+                col = box.column(align=True)
+                col.prop(instance, 'scale')
+
+                col = box.column(align=True)
+                col.prop(instance, 'prefix')
+                col.prop(instance, 'suffix')            
+
                 if not instance.export_adjacent:
                     row = box.row()
                     row.prop(instance, "directory")
                     if settings.advanced_ui:
                         if instance.use_subdirectories:
                             row.prop(instance, "copy_original_contents", text='', icon='COPYDOWN')
-                        row.prop(instance, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
-                
-                col = box.column(align=True)
-                col.prop(instance, 'scale')
-
-                col = box.column(align=True)
-                col.prop(instance, 'prefix')
-                col.prop(instance, 'suffix')
-                if settings.advanced_ui:
-                    col = box.column(align=True)
-                    col.prop(instance, 'set_data_names')                
+                        row.prop(instance, "use_subdirectories", text='', icon='FOLDER_REDIRECT')      
             
     
     # Additional export settings
     if settings.link_export_settings and (len(exports) > 1 or (len(exports) == 1 and settings.link_export_settings)):
+        col = box_exports.column(align=True)
+        col.prop(settings, 'scale')
+
+        col = box_exports.column(align=True)
+        col.prop(settings, 'prefix')
+        col.prop(settings, 'suffix')
+
         if not settings.export_adjacent:
             row = box_exports.row(align=True)
             row.prop(settings, 'export_directory')
@@ -261,16 +267,6 @@ def draw_settings_general(self, context):
                 if settings.use_subdirectories:
                     row.prop(settings, "copy_original_contents", text='', icon='COPYDOWN')
                 row.prop(settings, "use_subdirectories", text='', icon='FOLDER_REDIRECT')
-        
-        col = box_exports.column(align=True)
-        col.prop(settings, 'scale')
-
-        col = box_exports.column(align=True)
-        col.prop(settings, 'prefix')
-        col.prop(settings, 'suffix')
-        if settings.advanced_ui:
-            col = box_exports.column(align=True)
-            col.prop(settings, 'set_data_names')
 
     self.layout.separator(factor = separator_factor)
     
@@ -285,7 +281,7 @@ def draw_settings_textures(self, context):
     row.label(text="Textures", icon='TEXTURE')
     if settings.use_textures and settings.advanced_ui:
         row.prop(settings, 'keep_modified_textures', text='', icon="FAKE_USER_ON" if settings.keep_modified_textures else "FAKE_USER_OFF")
-        row.prop(settings, 'regex_textures', text='', icon='OUTLINER_OB_FONT')
+        row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
 
     row.prop(settings, 'use_textures', text='', icon="CHECKBOX_HLT" if settings.use_textures else "CHECKBOX_DEHLT")
 
@@ -458,21 +454,20 @@ def draw_settings_optimize_exports(self, context):
     self.layout.use_property_split = False
     self.layout.use_property_decorate = False
     box_optimize = self.layout.box()
-    row = box_optimize.row(align=True)
-    row.label(text="Optimize", icon='TRIA_DOWN_BAR')
-    row.prop(settings, 'auto_optimize', text='', icon="CHECKBOX_HLT" if settings.auto_optimize else "CHECKBOX_DEHLT")
+    row = box_optimize.row(align=False)
+    row.label(text="Optimize File Size", icon='TRIA_DOWN_BAR')
+    row.prop(settings, 'optimize', text='', icon="CHECKBOX_HLT" if settings.optimize else "CHECKBOX_DEHLT")
 
 
-    if settings.auto_optimize:
-        
+    if settings.optimize:
         col = box_optimize.column(align=True)
         col.use_property_split = True
-        if settings.advanced_ui:
-            col.prop(settings, 'auto_optimize_filter')
-        col.prop(settings, 'auto_optimize_target_file_size')
+        col.prop(settings, 'optimize_target_file_size')
+        if (settings.link_export_settings and settings.overwrite_files) or (not settings.link_export_settings and len(exports) > 0 and any(instance.overwrite_files == True for instance in exports)):
+            col.prop(settings, 'optimize_filter')
+
 
         if settings.advanced_ui:
-
             self.layout.use_property_split = False
             col = box_optimize.column(align=True)
             box = col.box()
@@ -481,39 +476,39 @@ def draw_settings_optimize_exports(self, context):
             row.alignment = "LEFT"
             row.prop(
                 settings,
-                "auto_optimize_show_methods",
-                icon="DOWNARROW_HLT" if settings.auto_optimize_show_methods else "RIGHTARROW_THIN",
+                "optimize_show_methods",
+                icon="DOWNARROW_HLT" if settings.optimize_show_methods else "RIGHTARROW_THIN",
                 emboss=False,
                 toggle=True,
             )
 
-            if settings.auto_optimize_show_methods:
+            if settings.optimize_show_methods:
                 col.separator()
                 
                 check_for_gltf = [export.format for export in exports if export.format == "glTF"]
                 if check_for_gltf:
                     row = col.row(align=True)
-                    row.prop(settings, "auto_optimize_draco", icon='FULLSCREEN_EXIT', toggle=True)
+                    row.prop(settings, "optimize_draco", icon='FULLSCREEN_EXIT', toggle=True)
                     sub = row.row(align=True)
-                    sub.active = settings.auto_optimize_draco
+                    sub.active = settings.optimize_draco
                     sub.prop(settings, "compression_level", text='')
 
                 row = col.row(align=True)
-                row.prop(settings, "auto_optimize_texture_resize", icon='NODE_TEXTURE', toggle=True)
+                row.prop(settings, "optimize_texture_resize", icon='NODE_TEXTURE', toggle=True)
                 sub = row.row(align=True)
-                sub.active = settings.auto_optimize_texture_resize
+                sub.active = settings.optimize_texture_resize
                 sub.prop(settings, "resize_textures_limit", text='')
 
                 row = col.row(align=True)
-                row.prop(settings, "auto_optimize_texture_reformat", icon='IMAGE_DATA', toggle=True)
+                row.prop(settings, "optimize_texture_reformat", icon='IMAGE_DATA', toggle=True)
                 sub = row.row(align=True)
-                sub.active = settings.auto_optimize_texture_reformat
+                sub.active = settings.optimize_texture_reformat
                 sub.prop(settings, "include_normal_maps", icon='NORMALS_FACE')
 
                 row = col.row(align=True)
-                row.prop(settings, "auto_optimize_decimate", icon='MOD_DECIM', toggle=True)
+                row.prop(settings, "optimize_decimate", icon='MOD_DECIM', toggle=True)
                 sub = row.row(align=True)
-                sub.active = settings.auto_optimize_decimate
+                sub.active = settings.optimize_decimate
                 sub.prop(settings, "decimate_limit", text='')
     
     self.layout.separator(factor = 0.25)
@@ -670,7 +665,7 @@ def draw_settings_scripts(self, context):
                 if not settings.link_script_settings:
                     col.prop(instance, "trigger")
         
-        if settings.link_script_settings:
+        if len(scripts) > 0 and settings.link_script_settings:
             col = box_scripts.column(align=True)
             col.prop(settings, "trigger")
         
@@ -935,6 +930,8 @@ def register():
     icons_dir = Path(__file__).parent.resolve() / "icons"
     
     custom_icons.load("Transmogrifier_Icon", str(icons_dir / "Transmogrifier_Icon.png"), 'IMAGE')
+    custom_icons.load("Data_Names_From_Objects_Icon", str(icons_dir / "Data_Names_From_Objects_Icon.png"), 'IMAGE')
+    custom_icons.load("Regex_Textures_Icon", str(icons_dir / "Regex_Textures_Icon.png"), 'IMAGE')
 
 
 # Unregister Classes.

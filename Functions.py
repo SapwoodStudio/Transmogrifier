@@ -331,7 +331,7 @@ def link_export_settings(self, context):
         instance.directory = settings.export_directory
         instance.use_subdirectories = settings.use_subdirectories
         instance.copy_original_contents = settings.copy_original_contents
-        instance.preserve_existing_files = settings.preserve_existing_files
+        instance.overwrite_files = settings.overwrite_files
         instance.export_adjacent = settings.export_adjacent
         instance.scale = settings.scale
         instance.prefix = settings.prefix
