@@ -274,6 +274,8 @@ def draw_settings_general(self, context):
 # Texture Settings
 def draw_settings_textures(self, context):
     settings = bpy.context.scene.transmogrifier_settings
+    imports = bpy.context.scene.transmogrifier_imports
+
     self.layout.use_property_split = False
     self.layout.use_property_decorate = False
     box_textures = self.layout.box()
@@ -291,8 +293,7 @@ def draw_settings_textures(self, context):
         row.prop(settings, 'textures_source')
         
         if settings.advanced_ui:
-            import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
-            if "BLEND" in import_formats and settings.textures_source == "External":
+            if settings.textures_source == "External" and any(instance.format == "BLEND" for instance in imports):
                 row.prop(settings, 'use_linked_blend_textures', text='', icon="LINKED" if settings.use_linked_blend_textures else "UNLINKED")
         
         if settings.textures_source == "Custom":
@@ -301,38 +302,209 @@ def draw_settings_textures(self, context):
             row.prop(settings, 'textures_custom_dir')
             if settings.advanced_ui:
                 if settings.copy_textures_custom_dir:
-                    row.prop(settings, 'preserve_original_textures', text='', icon="FAKE_USER_ON" if settings.preserve_original_textures else "FAKE_USER_OFF")
+                    row.prop(settings, 'overwrite_textures', text='', icon="FILE_TICK")
                 row.prop(settings, 'copy_textures_custom_dir', text='', icon='COPYDOWN')
         
         if settings.advanced_ui:
-            col = box_textures.column(align=True)
-            col.use_property_split = True
-            col.prop(settings, 'texture_resolution')
-
-            if settings.texture_resolution != "Default":
-                # Align menu items to the left.
-                box_textures.use_property_split = False
-
-                grid = box_textures.grid_flow(columns=3, align=True)
+            box_resolution = box_textures.box()
+            box_resolution.use_property_split = False
+            row = box_resolution.row(align=True)
+            row.alignment = "LEFT"
+            row.prop(
+                settings,
+                "texture_resolution_show_settings",
+                icon="DOWNARROW_HLT" if settings.texture_resolution_show_settings else "RIGHTARROW_THIN",
+                emboss=False,
+                toggle=True,
+            )
+            if settings.texture_resolution_show_settings:
+                col = box_resolution.column(align=True)
+                col.use_property_split = True
+                col.prop(settings, 'texture_resolution')
+                grid = box_resolution.grid_flow(columns=3, align=True)
+                if settings.texture_resolution == "Default":
+                    grid.active = False
+                else:
+                    grid.active = True
                 grid.prop(settings, 'texture_resolution_include')
-        
-            # Align menu items to the right.
-            box_textures.use_property_split = True
 
-            col = box_textures.column(align=True)
-            col.prop(settings, 'image_format')
-            lossy_compression_support = ("JPEG", "WEBP")
-            if settings.image_format != "Default":
-                if settings.image_format in lossy_compression_support:
+
+                # sub = row.row(align=True)
+                # sub.active = settings.optimize_texture_resize
+                # sub.prop(settings, "resize_textures_limit", text='')
+
+
+            box_format = box_textures.box()
+            box_format.use_property_split = False
+            row = box_format.row(align=True)
+            row.alignment = "LEFT"
+            row.prop(
+                settings,
+                "texture_format_show_settings",
+                icon="DOWNARROW_HLT" if settings.texture_format_show_settings else "RIGHTARROW_THIN",
+                emboss=False,
+                toggle=True,
+            )
+            if settings.texture_format_show_settings:
+                col = box_format.column(align=True)
+                col.use_property_split = True
+                col.prop(settings, 'texture_format')
+                lossy_compression_support = ("JPEG", "WEBP")
+                if settings.texture_format in lossy_compression_support:
                     col.prop(settings, 'image_quality')
-                # Align menu items to the left.
-                box_textures.use_property_split = False
-
-                grid = box_textures.grid_flow(columns=3, align=True)
-                grid.prop(settings, 'image_format_include')
+                box_format.use_property_split = False
+                grid = box_format.grid_flow(columns=3, align=True)
+                if settings.texture_format == "Default":
+                    grid.active = False
+                else:
+                    grid.active = True
+                grid.prop(settings, 'texture_format_include')
 
     self.layout.separator(factor = 0.25)
 
+
+# Set max file size options.
+def draw_settings_optimize_exports(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    exports = bpy.context.scene.transmogrifier_exports
+    self.layout.use_property_split = False
+    self.layout.use_property_decorate = False
+    box_optimize = self.layout.box()
+    row = box_optimize.row(align=False)
+    row.label(text="Optimize File Size", icon='TRIA_DOWN_BAR')
+    row.prop(settings, 'optimize', text='', icon="CHECKBOX_HLT" if settings.optimize else "CHECKBOX_DEHLT")
+
+
+    if settings.optimize:
+        col = box_optimize.column(align=True)
+        col.use_property_split = True
+        col.prop(settings, 'optimize_target_file_size')
+        if settings.advanced_ui and len(exports) > 0 and ((settings.link_export_settings and settings.overwrite_files) or (not settings.link_export_settings and len(exports) > 0 and any(instance.overwrite_files == True for instance in exports))):
+            col.prop(settings, 'optimize_filter')
+
+        # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
+        if settings.advanced_ui:
+            self.layout.use_property_split = False
+            col = box_optimize.column(align=True)
+            box = col.box()
+            col = box.column(align=True)
+            row = col.row(align=True)
+            row.alignment = "LEFT"
+            row.prop(
+                settings,
+                "optimize_show_methods",
+                icon="DOWNARROW_HLT" if settings.optimize_show_methods else "RIGHTARROW_THIN",
+                emboss=False,
+                toggle=True,
+            )
+            
+            if settings.optimize_show_methods:
+                col.separator()
+                
+                check_for_gltf = [export.format for export in exports if export.format == "glTF"]
+                if check_for_gltf:
+                    row = col.row(align=True)
+                    row.prop(settings, "optimize_draco", icon='FULLSCREEN_EXIT', toggle=True)
+                    sub = row.row(align=True)
+                    sub.active = settings.optimize_draco
+                    sub.prop(settings, "compression_level", text='')
+
+                row = col.row(align=True)
+                row.prop(settings, "optimize_texture_resize", icon='NODE_TEXTURE', toggle=True)
+                sub = row.row(align=True)
+                sub.active = settings.optimize_texture_resize
+                sub.prop(settings, "resize_textures_limit", text='')
+
+                row = col.row(align=True)
+                row.prop(settings, "optimize_texture_reformat", icon='IMAGE_DATA', toggle=True)
+                sub = row.row(align=True)
+                sub.active = settings.optimize_texture_reformat
+                sub.prop(settings, "include_normal_maps", icon='NORMALS_FACE')
+
+                row = col.row(align=True)
+                row.prop(settings, "optimize_decimate", icon='MOD_DECIM', toggle=True)
+                sub = row.row(align=True)
+                sub.active = settings.optimize_decimate
+                sub.prop(settings, "decimate_limit", text='')
+    
+    self.layout.separator(factor = 0.25)
+
+
+# Archive options
+def draw_settings_assets(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    self.layout.use_property_split = False
+    self.layout.use_property_decorate = False
+    box_assets = self.layout.box()
+    row = box_assets.row(align=False)
+    row.label(text="Assets", icon='ASSET_MANAGER')        
+    row.prop(settings, 'asset_extract_previews', text='', icon='IMAGE_PLANE')
+    row.prop(settings, 'mark_as_assets', text='', icon='ASSET_MANAGER')
+
+    if settings.advanced_ui:
+        if settings.mark_as_assets:
+            box_mark_assets = box_assets.box()
+            row = box_mark_assets.row(align=False)
+            row.label(text='Mark Assets', icon='ASSET_MANAGER')
+            import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
+            if "Collections" in settings.asset_types_to_mark and "BLEND" in import_formats:
+                row.prop(settings, 'mark_only_master_collection', text='', icon='GROUP')
+            row.prop(settings, 'asset_add_metadata', text='', icon='COLOR')
+            row.prop(settings, 'assets_allow_duplicates', text='', icon='DUPLICATE')
+            grid = box_mark_assets.grid_flow(columns=6, align=True)
+            grid.prop(settings, 'asset_types_to_mark')
+
+            if settings.asset_add_metadata:
+                box_metadata = box_mark_assets.box()
+                col = box_metadata.column(align=True)
+                col.label(text='Metadata', icon='COLOR')
+                col = box_metadata.column(align=True)
+                col.use_property_split = True
+                col.prop(settings, 'asset_description')
+                col.prop(settings, 'asset_license')
+                col.prop(settings, 'asset_copyright')
+                col.prop(settings, 'asset_author')
+                col.prop(settings, 'asset_tags')
+            
+            box_assets.use_property_split = False
+            if "Objects" in settings.asset_types_to_mark:
+                box_objects = box_mark_assets.box()
+                col = box_objects.column(align=True)
+                col.label(text="Object Types", icon='OBJECT_DATA')
+                grid = box_objects.grid_flow(columns=5, align=True)
+                grid.prop(settings, 'asset_object_types_filter', text='')
+
+            if settings.assets_allow_duplicates:
+                box_duplicates = box_mark_assets.box()
+                col = box_duplicates.column(align=True)
+                col.label(text='Allow Duplicates', icon='DUPLICATE')
+                grid = box_duplicates.grid_flow(columns=6, align=True)
+                grid.prop(settings, 'assets_allow_duplicates_filter')
+
+    if settings.mark_as_assets:
+        box_assets.use_property_split = True
+        box_library = box_assets.box()        
+        row = box_library.row(align=False)
+        row.label(text='Asset Libraries', icon='HOME')
+        col = box_library.column(align=True)
+        col.prop(settings, 'asset_library_enum')
+        col.prop(settings, 'asset_catalog_enum')
+        if settings.asset_library != "NO_LIBRARY" and settings.advanced_ui:
+            row = box_library.row(align=False)
+            row.prop(settings, 'asset_blend_location')
+            row.prop(settings, 'pack_resources', text='', icon="PACKAGE" if settings.pack_resources else "UGLYPACKAGE")
+
+    if settings.asset_extract_previews:
+        box_assets.use_property_split = False
+        box_previews = box_assets.box()
+        col = box_previews.column(align=True)
+        col.label(text='Save Previews', icon='IMAGE_PLANE')
+        grid = box_previews.grid_flow(columns=6, align=True)
+        grid.prop(settings, 'asset_extract_previews_filter')
+
+    if settings.advanced_ui:
+        self.layout.separator(factor = 0.25)
+        
 
 # UV Settings
 def draw_settings_uvs(self, context):
@@ -445,150 +617,6 @@ def draw_settings_scene(self, context):
 
         self.layout.separator(factor = 0.25)
 
-
-# Set max file size options.
-# Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
-def draw_settings_optimize_exports(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    exports = bpy.context.scene.transmogrifier_exports
-    self.layout.use_property_split = False
-    self.layout.use_property_decorate = False
-    box_optimize = self.layout.box()
-    row = box_optimize.row(align=False)
-    row.label(text="Optimize File Size", icon='TRIA_DOWN_BAR')
-    row.prop(settings, 'optimize', text='', icon="CHECKBOX_HLT" if settings.optimize else "CHECKBOX_DEHLT")
-
-
-    if settings.optimize:
-        col = box_optimize.column(align=True)
-        col.use_property_split = True
-        col.prop(settings, 'optimize_target_file_size')
-        if (settings.link_export_settings and settings.overwrite_files) or (not settings.link_export_settings and len(exports) > 0 and any(instance.overwrite_files == True for instance in exports)):
-            col.prop(settings, 'optimize_filter')
-
-
-        if settings.advanced_ui:
-            self.layout.use_property_split = False
-            col = box_optimize.column(align=True)
-            box = col.box()
-            col = box.column(align=True)
-            row = col.row(align=True)
-            row.alignment = "LEFT"
-            row.prop(
-                settings,
-                "optimize_show_methods",
-                icon="DOWNARROW_HLT" if settings.optimize_show_methods else "RIGHTARROW_THIN",
-                emboss=False,
-                toggle=True,
-            )
-
-            if settings.optimize_show_methods:
-                col.separator()
-                
-                check_for_gltf = [export.format for export in exports if export.format == "glTF"]
-                if check_for_gltf:
-                    row = col.row(align=True)
-                    row.prop(settings, "optimize_draco", icon='FULLSCREEN_EXIT', toggle=True)
-                    sub = row.row(align=True)
-                    sub.active = settings.optimize_draco
-                    sub.prop(settings, "compression_level", text='')
-
-                row = col.row(align=True)
-                row.prop(settings, "optimize_texture_resize", icon='NODE_TEXTURE', toggle=True)
-                sub = row.row(align=True)
-                sub.active = settings.optimize_texture_resize
-                sub.prop(settings, "resize_textures_limit", text='')
-
-                row = col.row(align=True)
-                row.prop(settings, "optimize_texture_reformat", icon='IMAGE_DATA', toggle=True)
-                sub = row.row(align=True)
-                sub.active = settings.optimize_texture_reformat
-                sub.prop(settings, "include_normal_maps", icon='NORMALS_FACE')
-
-                row = col.row(align=True)
-                row.prop(settings, "optimize_decimate", icon='MOD_DECIM', toggle=True)
-                sub = row.row(align=True)
-                sub.active = settings.optimize_decimate
-                sub.prop(settings, "decimate_limit", text='')
-    
-    self.layout.separator(factor = 0.25)
-
-
-# Archive options
-def draw_settings_assets(self, context):
-    settings = bpy.context.scene.transmogrifier_settings
-    self.layout.use_property_split = False
-    self.layout.use_property_decorate = False
-    box_assets = self.layout.box()
-    row = box_assets.row(align=False)
-    row.label(text="Assets", icon='ASSET_MANAGER')        
-    row.prop(settings, 'asset_extract_previews', text='', icon='IMAGE_PLANE')
-    row.prop(settings, 'mark_as_assets', text='', icon='ASSET_MANAGER')
-
-    if settings.advanced_ui:
-        if settings.mark_as_assets:
-            box_mark_assets = box_assets.box()
-            row = box_mark_assets.row(align=False)
-            row.label(text='Mark Assets', icon='ASSET_MANAGER')
-            import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
-            if "Collections" in settings.asset_types_to_mark and "BLEND" in import_formats:
-                row.prop(settings, 'mark_only_master_collection', text='', icon='GROUP')
-            row.prop(settings, 'asset_add_metadata', text='', icon='COLOR')
-            row.prop(settings, 'assets_allow_duplicates', text='', icon='DUPLICATE')
-            grid = box_mark_assets.grid_flow(columns=6, align=True)
-            grid.prop(settings, 'asset_types_to_mark')
-
-            if settings.asset_add_metadata:
-                box_metadata = box_mark_assets.box()
-                col = box_metadata.column(align=True)
-                col.label(text='Metadata', icon='COLOR')
-                col = box_metadata.column(align=True)
-                col.use_property_split = True
-                col.prop(settings, 'asset_description')
-                col.prop(settings, 'asset_license')
-                col.prop(settings, 'asset_copyright')
-                col.prop(settings, 'asset_author')
-                col.prop(settings, 'asset_tags')
-            
-            box_assets.use_property_split = False
-            if "Objects" in settings.asset_types_to_mark:
-                box_objects = box_mark_assets.box()
-                col = box_objects.column(align=True)
-                col.label(text="Object Types", icon='OBJECT_DATA')
-                grid = box_objects.grid_flow(columns=5, align=True)
-                grid.prop(settings, 'asset_object_types_filter', text='')
-
-            if settings.assets_allow_duplicates:
-                box_duplicates = box_mark_assets.box()
-                col = box_duplicates.column(align=True)
-                col.label(text='Allow Duplicates', icon='DUPLICATE')
-                grid = box_duplicates.grid_flow(columns=6, align=True)
-                grid.prop(settings, 'assets_allow_duplicates_filter')
-
-    if settings.mark_as_assets:
-        box_assets.use_property_split = True
-        box_library = box_assets.box()        
-        row = box_library.row(align=False)
-        row.label(text='Asset Libraries', icon='HOME')
-        col = box_library.column(align=True)
-        col.prop(settings, 'asset_library_enum')
-        col.prop(settings, 'asset_catalog_enum')
-        if settings.asset_library != "NO_LIBRARY" and settings.advanced_ui:
-            row = box_library.row(align=False)
-            row.prop(settings, 'asset_blend_location')
-            row.prop(settings, 'pack_resources', text='', icon="PACKAGE" if settings.pack_resources else "UGLYPACKAGE")
-
-    if settings.asset_extract_previews:
-        box_assets.use_property_split = False
-        box_previews = box_assets.box()
-        col = box_previews.column(align=True)
-        col.label(text='Save Previews', icon='IMAGE_PLANE')
-        grid = box_previews.grid_flow(columns=6, align=True)
-        grid.prop(settings, 'asset_extract_previews_filter')
-
-    if settings.advanced_ui:
-        self.layout.separator(factor = 0.25)
-        
 
 # Custom Script Settings
 def draw_settings_scripts(self, context):

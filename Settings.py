@@ -205,15 +205,20 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Copy textures from custom directory to every folder from which a model is imported",
         default=False,
     )
-    preserve_original_textures: BoolProperty(
-        name="Preserve Original Textures", 
-        description="If toggled off, original textures will be replaced with textures from custom directory per model converted",
+    overwrite_textures: BoolProperty(
+        name="Overwrite Textures", 
+        description="If toggled on, original textures (should they exist) will be replaced with textures from custom directory per model converted",
         default=True,
     )
     use_linked_blend_textures: BoolProperty(
         name="Linked to .blend", 
         description="Use textures already linked to .blend file",
         default=False,
+    )
+    texture_resolution_show_settings: BoolProperty(
+        name="Resolution", 
+        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
+        default=True,
     )
     texture_resolution: EnumProperty(
         name="Resolution",
@@ -262,7 +267,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             'Occlusion'
         },
     )
-    image_format: EnumProperty(
+    texture_format_show_settings: BoolProperty(
+        name="Format", 
+        description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
+        default=True,
+    )
+    texture_format: EnumProperty(
         name="Format",
         description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
         items=[
@@ -290,7 +300,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         step=5,
     )
     # Which textures to include in converting.
-    image_format_include: EnumProperty(
+    texture_format_include: EnumProperty(
         name="Included Textures",
         options={'ENUM_FLAG'},
         items=[

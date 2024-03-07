@@ -328,15 +328,15 @@ def get_import_files(self, context):
 def link_export_settings(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     for index, instance in enumerate(context.scene.transmogrifier_exports):
-        instance.directory = settings.export_directory
-        instance.use_subdirectories = settings.use_subdirectories
-        instance.copy_original_contents = settings.copy_original_contents
         instance.overwrite_files = settings.overwrite_files
         instance.export_adjacent = settings.export_adjacent
+        instance.set_data_names = settings.set_data_names
         instance.scale = settings.scale
         instance.prefix = settings.prefix
         instance.suffix = settings.suffix
-        instance.set_data_names = settings.set_data_names
+        instance.directory = settings.export_directory
+        instance.use_subdirectories = settings.use_subdirectories
+        instance.copy_original_contents = settings.copy_original_contents
 
 
 

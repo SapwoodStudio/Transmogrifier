@@ -198,7 +198,7 @@ class TRANSMOGRIFIER_OT_transmogrify(Operator):
 class TRANSMOGRIFIER_OT_forecast(Operator):
     """Calculate batch conversion and display info message of the forecast"""
     bl_idname = "transmogrifier.forecast"
-    bl_label = "Forecast Conversion"
+    bl_label = "Conversion Forecast"
 
     def execute(self, context):
         settings = bpy.context.scene.transmogrifier_settings

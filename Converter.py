@@ -1241,7 +1241,7 @@ def get_image_ext_key(val):
 
 # Change scene color management. Needed for converting image texture formats
 def set_color_management(
-    image_format, 
+    texture_format, 
     image_quality,
     display_device, 
     view_transform, 
@@ -1254,7 +1254,7 @@ def set_color_management(
     try:
         # Output-specific settings.
         image_settings = bpy.context.scene.render.image_settings
-        image_settings.file_format = image_format
+        image_settings.file_format = texture_format
         image_settings.quality = image_quality
         image_settings.color_management = 'FOLLOW_SCENE'
 
@@ -1276,14 +1276,14 @@ def set_color_management(
 		
 
 # Convert images to specified format.
-def reformat_images(image_format, image_quality, image_format_include):
+def reformat_images(texture_format, image_quality, texture_format_include):
     try:
         # Get dictionary.
         ext_dict = image_texture_ext_dict()
 
         # Set color management to sRGB Standard.
         set_color_management(
-            image_format=image_format, 
+            texture_format=texture_format, 
             image_quality=image_quality,
             display_device='sRGB', 
             view_transform='Standard', 
@@ -1302,7 +1302,7 @@ def reformat_images(image_format, image_quality, image_format_include):
                 continue
             
             # Include only the images specified by the User.
-            for pbr_tag in image_format_include:
+            for pbr_tag in texture_format_include:
                 if pbr_tag in image.name:
                     image_path = str(Path.resolve(Path(bpy.path.abspath(image.filepath))))
 
@@ -1311,13 +1311,13 @@ def reformat_images(image_format, image_quality, image_format_include):
 
                     # Change image extension and pathing.
                     image_ext = "." + image.name.split(".")[-1].lower()
-                    image_ext_new = ext_dict[image_format]
+                    image_ext_new = ext_dict[texture_format]
                     image_path_new = str(Path.resolve(Path(bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new)))))
                     
                     # Don't reformat image if converting between identical formats.
                     if image_ext == image_ext_new:
-                        print(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({image_format})")
-                        logging.info(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({image_format})")
+                        print(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({texture_format})")
+                        logging.info(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({texture_format})")
                         continue
 
                     # Change image name.
@@ -1334,7 +1334,7 @@ def reformat_images(image_format, image_quality, image_format_include):
                     bpy.data.images[image.name].filepath = image_path_new
 
                     # Ensure alpha modes and color spaces are set appropriately for EXR format.
-                    if image_format == "OPEN_EXR":
+                    if texture_format == "OPEN_EXR":
                         image.alpha_mode = 'PREMUL'
                         print(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
                         logging.info(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
@@ -1344,7 +1344,7 @@ def reformat_images(image_format, image_quality, image_format_include):
                             logging.info(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
 
                     # Ensure alpha modes and color spaces are set appropriately for non-EXR formats.
-                    elif image_format != "OPEN_EXR" and image_ext == ".exr":
+                    elif texture_format != "OPEN_EXR" and image_ext == ".exr":
                         image.alpha_mode = 'STRAIGHT'
                         print(f"{image.name}'s alpha mode was set to 'Straight'.")
                         logging.info(f"{image.name}'s alpha mode was set to 'Straight'.")
@@ -1353,8 +1353,8 @@ def reformat_images(image_format, image_quality, image_format_include):
                             print(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
                             logging.info(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
 
-                    print(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {image_format}")
-                    logging.info(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {image_format}")
+                    print(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {texture_format}")
+                    logging.info(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {texture_format}")
 
                 else:
                     continue
@@ -1371,7 +1371,7 @@ def save_blend_file(blend):
     try:
         # Reset color management to the default Blender file, sRGB Filmic.
         set_color_management(
-            image_format='PNG', 
+            texture_format='PNG', 
             image_quality=90,
             display_device='sRGB', 
             view_transform='Filmic', 
@@ -1675,7 +1675,7 @@ def separate_gltf_maps(textures_temp_dir):
     try:
         # Set color management to sRGB Standard. If view_transform is set to Filmic, then BaseColor images containing transparency will separate as at least a 5MB file. 
         set_color_management(
-            image_format='PNG', 
+            texture_format='PNG', 
             image_quality=90,
             display_device='sRGB', 
             view_transform='Standard', 
@@ -2261,14 +2261,14 @@ def reformat_textures_and_export(export_file, export_file_2):
         if "Reformat Textures" in file_size_methods:
             print("#################  Reformat Textures  #################")
             logging.info("#################  Reformat Textures  #################")
-            image_format = 'JPEG'
+            texture_format = 'JPEG'
             image_quality = 90
-            # Override image_format_include for normal maps with reformat_normal_maps setting.
-            if reformat_normal_maps == True and "Normal" not in image_format_include:
-                image_format_include.append("Normal")
-            elif reformat_normal_maps == False and "Normal" in image_format_include:
-                image_format_include.remove("Normal")
-            reformat_images(image_format, image_quality, image_format_include)
+            # Override texture_format_include for normal maps with reformat_normal_maps setting.
+            if reformat_normal_maps == True and "Normal" not in texture_format_include:
+                texture_format_include.append("Normal")
+            elif reformat_normal_maps == False and "Normal" in texture_format_include:
+                texture_format_include.remove("Normal")
+            reformat_images(texture_format, image_quality, texture_format_include)
             
             # Determine how many 3D files to export, then export.
             export_models(export_file_command, export_file_options, export_file_scale, export_file, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
@@ -2379,8 +2379,8 @@ def determine_modify_textures():
     try:
         if texture_resolution != "Default":
             resize_textures(texture_resolution, texture_resolution_include)
-        if image_format != "Default":
-            reformat_images(image_format, image_quality, image_format_include)
+        if texture_format != "Default":
+            reformat_images(texture_format, image_quality, texture_format_include)
 
         print("Determined whether to modify textures")
         logging.info("Determined whether to modify textures")
