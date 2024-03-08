@@ -2745,7 +2745,7 @@ def determine_uv_directory(textures_dir):
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item.
-def determine_keep_modified_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir):
+def determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir):
     try:
         # If saving a .blend, don't delete the textures upon which the model inside depends.
         if Path(export_file).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets:
@@ -2766,7 +2766,7 @@ def determine_keep_modified_textures(item_dir, blend, import_file, export_file, 
             logging.info("Preserved modified textures for blend")
         
         # Delete temporary textures directory (local copy for Custom textures scenario) if elected.
-        if not keep_modified_textures:
+        if not keep_edited_textures:
             textures_temp_dir = item_dir / (f"textures_{blend.stem}")
             delete_textures_temp(textures_temp_dir)
         
@@ -3220,7 +3220,7 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
 
         # Modified or copied textures can now be deleted after the conversion is over.
         if use_textures:
-            determine_keep_modified_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir)
+            determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir)
 
         # Export UV Layout(s).
         if export_uv_layout:
@@ -3317,7 +3317,7 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         files_to_move.append(export_file)
         if copy_textures_custom_dir:  # If custom textures scenario and User elected to copy textures to model folders, then include the textures_dir in files_to_move.
             files_to_move.append(textures_dir)
-        if keep_modified_textures:  # Include temporary texures directory.
+        if keep_edited_textures:  # Include temporary texures directory.
             if textures_source == "Custom":
                 textures_temp_dir = item_dir / (f"textures_{blend.stem}")  # Make sure only the local copy of textures_temp_dir for custom textures gets moved.
             files_to_move.append(textures_temp_dir)
@@ -3498,7 +3498,7 @@ def batch_converter():
                     conversion_count += 1
 
         # If using custom textures, delete temporary textures directory only after all items have been converted.
-        if use_textures and textures_source == "Custom" and not keep_modified_textures:
+        if use_textures and textures_source == "Custom" and not keep_edited_textures:
             textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
             if Path(textures_temp_dir).exists():
                 delete_textures_temp(textures_temp_dir)

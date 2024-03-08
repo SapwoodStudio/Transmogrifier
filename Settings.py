@@ -174,15 +174,25 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Texture models with images from a selected source",
         default=True,
     )
+    edit_textures: BoolProperty(
+        name="Edit Textures", 
+        description="Modify image textures with regular expressions, resizing, and/or reformatting.",
+        default=True,
+    )
+    keep_edited_textures: BoolProperty(
+        name="Keep Edited Textures", 
+        description="Don't delete the temporary textures directory used to modify image textures by regex, resolution, and/or format\nEspecially useful when troubleshooting errors",
+        default=False,
+    )
+    edit_textures_show_settings: BoolProperty(
+        name="Edit Textures", 
+        description="Modify image textures with regular expressions, resizing, and/or reformatting.",
+        default=True,
+    )
     regex_textures: BoolProperty(
         name="Regex Textures", 
         description="Use regex to correct misspellings and inconsistencies in texture PBR names. This helps to guarantee their detection and import by Transmogrifier",
         default=True,
-    )
-    keep_modified_textures: BoolProperty(
-        name="Keep Modified Textures", 
-        description="Don't delete the temporary textures directory used to modify image textures by regex, resolution, and/or format",
-        default=False,
     )
     textures_source: EnumProperty(
         name="Source", 
@@ -215,25 +225,24 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Use textures already linked to .blend file",
         default=False,
     )
-    texture_resolution_show_settings: BoolProperty(
-        name="Resolution", 
-        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
+    resize_textures: BoolProperty(
+        name="Resize Textures", 
+        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files\nTextures will not be upscaled",
         default=True,
     )
     texture_resolution: EnumProperty(
         name="Resolution",
         description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
         items=[
-            ("Default", "Default", "Don't resize, use imported resolution", 1),
-            ("8192", "8192", "Square aspect ratio", 2),
-            ("4096", "4096", "Square aspect ratio", 3),
-            ("2048", "2048", "Square aspect ratio", 4),
-            ("1024", "1024", "Square aspect ratio", 5),
-            ("512", "512", "Square aspect ratio", 6),
-            ("256", "256", "Square aspect ratio", 7),
-            ("128", "128", "Square aspect ratio", 8),
+            ("8192", "8192", "Square aspect ratio", 1),
+            ("4096", "4096", "Square aspect ratio", 2),
+            ("2048", "2048", "Square aspect ratio", 3),
+            ("1024", "1024", "Square aspect ratio", 4),
+            ("512", "512", "Square aspect ratio", 5),
+            ("256", "256", "Square aspect ratio", 6),
+            ("128", "128", "Square aspect ratio", 7),
         ],
-        default="Default",
+        default="1024",
     )
     # Which textures to include in resizing.
     texture_resolution_include: EnumProperty(
@@ -267,8 +276,8 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             'Occlusion'
         },
     )
-    texture_format_show_settings: BoolProperty(
-        name="Format", 
+    reformat_textures: BoolProperty(
+        name="Reformat Textures", 
         description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
         default=True,
     )
@@ -276,20 +285,15 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Format",
         description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
         items=[
-            ("Default", "Default", "Don't convert image textures", 1),
-            ("PNG", "PNG", "Save image textures in PNG format", 2),
-            ("JPEG", "JPEG", "Save image textures in JPEG format", 3),
-            ("TARGA", "TARGA", "Save image textures in TARGA format", 4),
-            ("TIFF", "TIFF", "Save image textures in TIFF format", 5),
-            ("WEBP", "WEBP", "Save image textures in WEBP format", 6),
-            ("BMP", "BMP", "Save image textures in BMP format", 7),
-            ("OPEN_EXR", "OPEN_EXR", "Save image textures in OpenEXR format", 8),
-            # ("JPEG2000", "JPEG2000", "Save image textures in JPEG2000 format", 9),
-            # ("CINEON", "CINEON", "Save image textures in CINEON format", 10),
-            # ("DPX", "DPX", "Save image textures in DPX format", 11),
-            # ("HDR", "HDR", "Save image textures in HDR format", 12),
+            ("PNG", "PNG", "Save image textures in PNG format", 1),
+            ("JPEG", "JPEG", "Save image textures in JPEG format", 2),
+            ("TARGA", "TARGA", "Save image textures in TARGA format", 3),
+            ("TIFF", "TIFF", "Save image textures in TIFF format", 4),
+            ("WEBP", "WEBP", "Save image textures in WEBP format", 5),
+            ("BMP", "BMP", "Save image textures in BMP format", 6),
+            ("OPEN_EXR", "OPEN_EXR", "Save image textures in OpenEXR format", 7),
         ],
-        default="Default",
+        default="JPEG",
     )
     image_quality: IntProperty(
         name="Quality", 
@@ -546,7 +550,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     optimize_show_methods: BoolProperty(
         name="Methods", 
         description="Filter methods to use for auto-optimize file size reduction",
-        default=False,
+        default=True,
     )
 
     optimize_draco: BoolProperty(
@@ -669,14 +673,14 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Allow Duplicates Filter",
         options={'ENUM_FLAG'},
         items=[
-            ('Actions', "", "Allow duplicate actions. Actions with the same as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
-            ('Collections', "", "Allow duplicate collections. Collections with the same as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
-            ('Materials', "", "Allow duplicate materials. Materials with the same as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
-            ('Node_Groups', "", "Allow duplicate node trees. Node Trees with the same as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
-            ('Objects', "", "Allow duplicate objects. Objects with the same as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
-            ('Worlds', "", "Allow duplicate worlds. Worlds with the same as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
+            ('Actions', "", "Allow duplicate actions. Actions with the same name as one already\nin the selected asset library will not be marked as assets.", "ACTION", 1),
+            ('Collections', "", "Allow duplicate collections. Collections with the same name as one already\nin the selected asset library will not be marked as assets.", "OUTLINER_COLLECTION", 2),
+            ('Materials', "", "Allow duplicate materials. Materials with the same name as one already\nin the selected asset library will not be marked as assets.", "MATERIAL", 4),
+            ('Node_Groups', "", "Allow duplicate node trees. Node Trees with the same name as one already\nin the selected asset library will not be marked as assets.", "NODETREE", 8),
+            ('Objects', "", "Allow duplicate objects. Objects with the same name as one already\nin the selected asset library will not be marked as assets.", "OBJECT_DATA", 16),
+            ('Worlds', "", "Allow duplicate worlds. Worlds with the same name as one already\nin the selected asset library will not be marked as assets.", "WORLD", 32),
         ],
-        description="Filter which asset types to allow when an asset\nof that type already exists in the selected asset library",
+        description="Filter which asset types can have duplicates be marked when assets of those types already exists in the selected asset library",
     )
     # Only mark master collection as asset when importing a Blend (if Collections are to be marked as assets).
     mark_only_master_collection: BoolProperty(

@@ -79,7 +79,7 @@ def draw_settings_general(self, context):
     if settings.advanced_ui:
         row.prop(settings, 'save_conversion_log', expand=False, text="", icon="TEXT")
     row.operator('transmogrifier.advanced_ui', text="", icon="OPTIONS", depress=True if settings.advanced_ui else False)
-    help = row.operator('transmogrifier.help', text="", icon="HELP")
+    help = row.operator('transmogrifier.help', text="", icon="QUESTION")
     help.link = "https://sapwoodstudio.github.io/Transmogrifier"
 
     # Batch Convert button
@@ -282,83 +282,80 @@ def draw_settings_textures(self, context):
     row = box_textures.row(align=False)
     row.label(text="Textures", icon='TEXTURE')
     if settings.use_textures and settings.advanced_ui:
-        row.prop(settings, 'keep_modified_textures', text='', icon="FAKE_USER_ON" if settings.keep_modified_textures else "FAKE_USER_OFF")
-        row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
-
+        if settings.edit_textures:
+            row.prop(settings, 'keep_edited_textures', text='', icon="FAKE_USER_ON" if settings.keep_edited_textures else "FAKE_USER_OFF")
+        row.prop(settings, 'edit_textures', text='', icon_value=custom_icons['Edit_Textures_Icon'].icon_id)
     row.prop(settings, 'use_textures', text='', icon="CHECKBOX_HLT" if settings.use_textures else "CHECKBOX_DEHLT")
 
     if settings.use_textures:
-        row = box_textures.row(align=True)
-        row.use_property_split = True
-        row.prop(settings, 'textures_source')
-        
-        if settings.advanced_ui:
-            if settings.textures_source == "External" and any(instance.format == "BLEND" for instance in imports):
-                row.prop(settings, 'use_linked_blend_textures', text='', icon="LINKED" if settings.use_linked_blend_textures else "UNLINKED")
-        
-        if settings.textures_source == "Custom":
+        if settings.textures_source != "Custom":
             row = box_textures.row(align=True)
+            row.use_property_split = True
+            row.prop(settings, 'textures_source')
+
+            if settings.advanced_ui and settings.textures_source == "External" and any(instance.format == "BLEND" for instance in imports):
+                row.prop(settings, 'use_linked_blend_textures', text='', icon="LINKED" if settings.use_linked_blend_textures else "UNLINKED")
+
+        elif settings.textures_source == "Custom":
+            col = box_textures.column(align=True)
+            col.use_property_split = True
+            col.prop(settings, 'textures_source')
+            row = col.row(align=True)
             row.use_property_split = True
             row.prop(settings, 'textures_custom_dir')
             if settings.advanced_ui:
                 if settings.copy_textures_custom_dir:
                     row.prop(settings, 'overwrite_textures', text='', icon="FILE_TICK")
                 row.prop(settings, 'copy_textures_custom_dir', text='', icon='COPYDOWN')
-        
-        if settings.advanced_ui:
-            box_resolution = box_textures.box()
-            box_resolution.use_property_split = False
-            row = box_resolution.row(align=True)
+
+        if settings.advanced_ui and settings.edit_textures:
+            box_edit_textures = box_textures.box()
+            box_edit_textures.use_property_split = False
+            grid = box_edit_textures.grid_flow(columns=2, align=True)
+            row = grid.row()
+            row.use_property_split = False
             row.alignment = "LEFT"
             row.prop(
                 settings,
-                "texture_resolution_show_settings",
-                icon="DOWNARROW_HLT" if settings.texture_resolution_show_settings else "RIGHTARROW_THIN",
+                "edit_textures_show_settings",
+                icon="DOWNARROW_HLT" if settings.edit_textures_show_settings else "RIGHTARROW_THIN",
                 emboss=False,
                 toggle=True,
             )
-            if settings.texture_resolution_show_settings:
-                col = box_resolution.column(align=True)
-                col.use_property_split = True
-                col.prop(settings, 'texture_resolution')
-                grid = box_resolution.grid_flow(columns=3, align=True)
-                if settings.texture_resolution == "Default":
-                    grid.active = False
-                else:
-                    grid.active = True
-                grid.prop(settings, 'texture_resolution_include')
 
+            row = grid.row()
+            row.alignment = "RIGHT"
+            row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
+            row.prop(settings, 'reformat_textures', text='', icon="IMAGE_DATA")
+            row.prop(settings, 'resize_textures', text='', icon="NODE_TEXTURE")
 
-                # sub = row.row(align=True)
-                # sub.active = settings.optimize_texture_resize
-                # sub.prop(settings, "resize_textures_limit", text='')
+            if settings.edit_textures_show_settings:
+                if settings.resize_textures:
+                    box_resolution = box_edit_textures.box()
+                    box_resolution.use_property_split = False
+                    col = box_resolution.column(align=True)
+                    col.label(text="Resize Textures", icon="NODE_TEXTURE")
+                    col = box_resolution.column(align=True)
+                    col.use_property_split = True
+                    col.prop(settings, 'texture_resolution')
 
+                    grid = box_resolution.grid_flow(columns=3, align=True)
+                    grid.prop(settings, 'texture_resolution_include')
 
-            box_format = box_textures.box()
-            box_format.use_property_split = False
-            row = box_format.row(align=True)
-            row.alignment = "LEFT"
-            row.prop(
-                settings,
-                "texture_format_show_settings",
-                icon="DOWNARROW_HLT" if settings.texture_format_show_settings else "RIGHTARROW_THIN",
-                emboss=False,
-                toggle=True,
-            )
-            if settings.texture_format_show_settings:
-                col = box_format.column(align=True)
-                col.use_property_split = True
-                col.prop(settings, 'texture_format')
-                lossy_compression_support = ("JPEG", "WEBP")
-                if settings.texture_format in lossy_compression_support:
-                    col.prop(settings, 'image_quality')
-                box_format.use_property_split = False
-                grid = box_format.grid_flow(columns=3, align=True)
-                if settings.texture_format == "Default":
-                    grid.active = False
-                else:
-                    grid.active = True
-                grid.prop(settings, 'texture_format_include')
+                if settings.reformat_textures:
+                    box_format = box_edit_textures.box()
+                    box_format.use_property_split = False
+                    col = box_format.column(align=True)
+                    col.label(text="Reformat Textures", icon="IMAGE_DATA")
+                    col = box_format.column(align=True)
+                    col.use_property_split = True
+                    col.prop(settings, 'texture_format')
+                    lossy_compression_support = ("JPEG", "WEBP")
+                    if settings.texture_format in lossy_compression_support:
+                        col.prop(settings, 'image_quality')
+                    box_format.use_property_split = False
+                    grid = box_format.grid_flow(columns=3, align=True)
+                    grid.prop(settings, 'texture_format_include')
 
     self.layout.separator(factor = 0.25)
 
@@ -449,8 +446,8 @@ def draw_settings_assets(self, context):
             import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
             if "Collections" in settings.asset_types_to_mark and "BLEND" in import_formats:
                 row.prop(settings, 'mark_only_master_collection', text='', icon='GROUP')
-            row.prop(settings, 'asset_add_metadata', text='', icon='COLOR')
             row.prop(settings, 'assets_allow_duplicates', text='', icon='DUPLICATE')
+            row.prop(settings, 'asset_add_metadata', text='', icon='COLOR')
             grid = box_mark_assets.grid_flow(columns=6, align=True)
             grid.prop(settings, 'asset_types_to_mark')
 
@@ -467,13 +464,6 @@ def draw_settings_assets(self, context):
                 col.prop(settings, 'asset_tags')
             
             box_assets.use_property_split = False
-            if "Objects" in settings.asset_types_to_mark:
-                box_objects = box_mark_assets.box()
-                col = box_objects.column(align=True)
-                col.label(text="Object Types", icon='OBJECT_DATA')
-                grid = box_objects.grid_flow(columns=5, align=True)
-                grid.prop(settings, 'asset_object_types_filter', text='')
-
             if settings.assets_allow_duplicates:
                 box_duplicates = box_mark_assets.box()
                 col = box_duplicates.column(align=True)
@@ -481,11 +471,18 @@ def draw_settings_assets(self, context):
                 grid = box_duplicates.grid_flow(columns=6, align=True)
                 grid.prop(settings, 'assets_allow_duplicates_filter')
 
+            if "Objects" in settings.asset_types_to_mark:
+                box_objects = box_mark_assets.box()
+                col = box_objects.column(align=True)
+                col.label(text="Object Types", icon='OBJECT_DATA')
+                grid = box_objects.grid_flow(columns=5, align=True)
+                grid.prop(settings, 'asset_object_types_filter', text='')
+
     if settings.mark_as_assets:
         box_assets.use_property_split = True
         box_library = box_assets.box()        
         row = box_library.row(align=False)
-        row.label(text='Asset Libraries', icon='HOME')
+        row.label(text='Storage', icon='HOME')
         col = box_library.column(align=True)
         col.prop(settings, 'asset_library_enum')
         col.prop(settings, 'asset_catalog_enum')
@@ -527,7 +524,6 @@ def draw_settings_uvs(self, context):
             col = box_uvs.column(align=True)
             col.prop(settings, 'uv_export_location')
             if settings.uv_export_location == "Custom":
-                col = box_uvs.column(align=True)
                 col.prop(settings, 'uv_directory_custom')
 
             if settings.advanced_ui:
@@ -960,6 +956,7 @@ def register():
     custom_icons.load("Transmogrifier_Icon", str(icons_dir / "Transmogrifier_Icon.png"), 'IMAGE')
     custom_icons.load("Data_Names_From_Objects_Icon", str(icons_dir / "Data_Names_From_Objects_Icon.png"), 'IMAGE')
     custom_icons.load("Regex_Textures_Icon", str(icons_dir / "Regex_Textures_Icon.png"), 'IMAGE')
+    custom_icons.load("Edit_Textures_Icon", str(icons_dir / "Edit_Textures_Icon.png"), 'IMAGE')
 
 
 # Unregister Classes.
