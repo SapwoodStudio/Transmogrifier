@@ -189,6 +189,11 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Modify image textures with regular expressions, resizing, and/or reformatting.",
         default=True,
     )
+    link_texture_settings: BoolProperty(
+        name="Link Texture Settings", 
+        description="Syncrhonize image textures' resolution, format, and regex",
+        default=True,
+    )
     regex_textures: BoolProperty(
         name="Regex Textures", 
         description="Use regex to correct misspellings and inconsistencies in texture PBR names. This helps to guarantee their detection and import by Transmogrifier",
@@ -1003,6 +1008,96 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
     )
 
 
+class TRANSMOGRIFIER_PG_TransmogrifierTextures(PropertyGroup):
+    
+    name: StringProperty(
+        name="Name", 
+        default="BaseColor",
+    )
+    
+    show_settings: BoolProperty(
+        name="Show/Hide texture settings",
+        description="",
+        default=True,
+    )
+
+    texture_map: EnumProperty(
+        name="PBR Map",
+        items=[
+            ('BaseColor', "BaseColor", "", 1),
+            ('Subsurface', "Subsurface", "", 2),
+            ('Metallic', "Metallic", "", 4),
+            ('Specular', "Specular", "", 16),
+            ('Roughness', "Roughness", "", 32),
+            ('Normal', "Normal", "", 64),
+            ('Bump', "Bump", "", 128),
+            ('Displacement', "Displacement", "", 256),
+            ('Emission', "Emission", "", 512),
+            ('Opacity', "Opacity", "", 1024),
+            ('Occlusion', "Occlusion", "", 2048),
+        ],
+        description="Filter texture maps to resize",
+        default='BaseColor',
+        update=lambda self, context: Functions.update_texture_settings(self, context) 
+    )
+
+    regex_texture: BoolProperty(
+        name="Regex Textures", 
+        description="Use regex to correct misspellings and inconsistencies in texture PBR names. This helps to guarantee their detection and import by Transmogrifier",
+        default=True,
+    )
+
+    resize_texture: BoolProperty(
+        name="Resize Textures", 
+        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files\nTextures will not be upscaled",
+        default=True,
+    )
+
+    texture_resolution: EnumProperty(
+        name="Resolution",
+        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
+        items=[
+            ("8192", "8192", "Square aspect ratio", 1),
+            ("4096", "4096", "Square aspect ratio", 2),
+            ("2048", "2048", "Square aspect ratio", 3),
+            ("1024", "1024", "Square aspect ratio", 4),
+            ("512", "512", "Square aspect ratio", 5),
+            ("256", "256", "Square aspect ratio", 6),
+            ("128", "128", "Square aspect ratio", 7),
+        ],
+        default="1024",
+    )
+
+    reformat_texture: BoolProperty(
+        name="Reformat Textures", 
+        description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
+        default=True,
+    )
+
+    texture_format: EnumProperty(
+        name="Format",
+        description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
+        items=[
+            ("PNG", "PNG", "Save image textures in PNG format", 1),
+            ("JPEG", "JPEG", "Save image textures in JPEG format", 2),
+            ("TARGA", "TARGA", "Save image textures in TARGA format", 3),
+            ("TIFF", "TIFF", "Save image textures in TIFF format", 4),
+            ("WEBP", "WEBP", "Save image textures in WEBP format", 5),
+            ("BMP", "BMP", "Save image textures in BMP format", 6),
+            ("OPEN_EXR", "OPEN_EXR", "Save image textures in OpenEXR format", 7),
+        ],
+        default="JPEG",
+    )
+
+    image_quality: IntProperty(
+        name="Quality", 
+        description="(%) Quality for image formats that support lossy compression",
+        default=90,
+        soft_min=0,
+        soft_max=100,
+        step=5,
+    )
+
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
 class TRANSMOGRIFIER_PG_TransmogrifierScripts(PropertyGroup):
@@ -1054,6 +1149,7 @@ classes = (
     TRANSMOGRIFIER_PG_TransmogrifierSettings,
     TRANSMOGRIFIER_PG_TransmogrifierImports,
     TRANSMOGRIFIER_PG_TransmogrifierExports,
+    TRANSMOGRIFIER_PG_TransmogrifierTextures,
     TRANSMOGRIFIER_PG_TransmogrifierScripts,
 )
 
@@ -1066,6 +1162,7 @@ def register():
     bpy.types.Scene.transmogrifier_settings = PointerProperty(type=TRANSMOGRIFIER_PG_TransmogrifierSettings)
     bpy.types.Scene.transmogrifier_imports = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierImports)
     bpy.types.Scene.transmogrifier_exports = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierExports)
+    bpy.types.Scene.transmogrifier_textures = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierTextures)
     bpy.types.Scene.transmogrifier_scripts = CollectionProperty(type=TRANSMOGRIFIER_PG_TransmogrifierScripts)
     
 

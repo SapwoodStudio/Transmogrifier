@@ -275,6 +275,7 @@ def draw_settings_general(self, context):
 def draw_settings_textures(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     imports = bpy.context.scene.transmogrifier_imports
+    textures = bpy.context.scene.transmogrifier_textures
 
     self.layout.use_property_split = False
     self.layout.use_property_decorate = False
@@ -309,6 +310,7 @@ def draw_settings_textures(self, context):
                 row.prop(settings, 'copy_textures_custom_dir', text='', icon='COPYDOWN')
 
         if settings.advanced_ui and settings.edit_textures:
+            lossy_compression_support = ("JPEG", "WEBP")
             box_edit_textures = box_textures.box()
             box_edit_textures.use_property_split = False
             grid = box_edit_textures.grid_flow(columns=2, align=True)
@@ -323,39 +325,99 @@ def draw_settings_textures(self, context):
                 toggle=True,
             )
 
-            row = grid.row()
-            row.alignment = "RIGHT"
-            row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
-            row.prop(settings, 'reformat_textures', text='', icon="IMAGE_DATA")
-            row.prop(settings, 'resize_textures', text='', icon="NODE_TEXTURE")
+            if len(textures) > 0:
+                row = grid.row()
+                row.alignment = "RIGHT"
+                if settings.link_texture_settings:
+                    row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
+                    row.prop(settings, 'reformat_textures', text='', icon="IMAGE_DATA")
+                    row.prop(settings, 'resize_textures', text='', icon="NODE_TEXTURE")
+                row.prop(settings, 'link_texture_settings', expand=False, text="", icon="LINKED" if settings.link_texture_settings else "UNLINKED")
 
             if settings.edit_textures_show_settings:
-                if settings.resize_textures:
-                    box_resolution = box_edit_textures.box()
-                    box_resolution.use_property_split = False
-                    col = box_resolution.column(align=True)
-                    col.label(text="Resize Textures", icon="NODE_TEXTURE")
-                    col = box_resolution.column(align=True)
-                    col.use_property_split = True
-                    col.prop(settings, 'texture_resolution')
 
-                    grid = box_resolution.grid_flow(columns=3, align=True)
-                    grid.prop(settings, 'texture_resolution_include')
+                col = box_edit_textures.column(align=True)
+                col.operator('transmogrifier.add_texture', icon="ADD")
 
-                if settings.reformat_textures:
-                    box_format = box_edit_textures.box()
-                    box_format.use_property_split = False
-                    col = box_format.column(align=True)
-                    col.label(text="Reformat Textures", icon="IMAGE_DATA")
-                    col = box_format.column(align=True)
-                    col.use_property_split = True
-                    col.prop(settings, 'texture_format')
-                    lossy_compression_support = ("JPEG", "WEBP")
-                    if settings.texture_format in lossy_compression_support:
-                        col.prop(settings, 'image_quality')
-                    box_format.use_property_split = False
-                    grid = box_format.grid_flow(columns=3, align=True)
-                    grid.prop(settings, 'texture_format_include')
+                # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
+                # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
+                for index, instance in enumerate(context.scene.transmogrifier_textures):   
+                    box = box_edit_textures.box()
+                    grid = box.grid_flow(columns=2, align=True)
+                    row = grid.row()
+                    row.use_property_split = False
+                    row.alignment = "LEFT"
+                    
+                    row.prop(
+                        instance,
+                        "show_settings",
+                        icon="DOWNARROW_HLT" if instance.show_settings else "RIGHTARROW_THIN",
+                        emboss=False,
+                        toggle=True,
+                        text=instance.name
+                    )
+
+                    row = grid.row()
+                    row.alignment = "RIGHT"
+                    if not settings.link_texture_settings:
+                        row.prop(instance, 'regex_texture', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
+                        row.prop(instance, 'reformat_texture', text='', icon="IMAGE_DATA")
+                        row.prop(instance, 'resize_texture', text='', icon="NODE_TEXTURE")
+                    props = row.operator('transmogrifier.remove_texture', text = "", icon = 'PANEL_CLOSE')
+                    props.index = index
+
+                    if instance.show_settings:
+                        col = box.column(align=True)
+                        col.use_property_split = True
+                        col.prop(instance, "texture_map")
+
+                        if not settings.link_texture_settings:
+                            if instance.resize_texture:
+                                col.prop(instance, "texture_resolution")
+                            if instance.reformat_texture:
+                                col.prop(instance, "texture_format")
+                                if instance.texture_format in lossy_compression_support:
+                                    col.prop(settings, 'image_quality')
+
+
+                if len(textures) > 1 or (len(textures) == 1 and settings.link_texture_settings):
+                    if settings.link_texture_settings and (settings.resize_textures or settings.reformat_textures):
+                        box_edit_textures.use_property_split = True
+                        col = box_edit_textures.column(align=True)
+                        if settings.resize_textures:
+                            col.prop(settings, 'texture_resolution')
+                        if settings.reformat_textures:
+                            col.prop(settings, 'texture_format')
+                            if settings.texture_format in lossy_compression_support:
+                                col.prop(settings, 'image_quality')
+
+            # if settings.edit_textures_show_settings:
+            #     if settings.resize_textures:
+            #         box_resolution = box_edit_textures.box()
+            #         box_resolution.use_property_split = False
+            #         col = box_resolution.column(align=True)
+            #         col.label(text="Resize Textures", icon="NODE_TEXTURE")
+            #         col = box_resolution.column(align=True)
+            #         col.use_property_split = True
+            #         col.prop(settings, 'texture_resolution')
+
+            #         grid = box_resolution.grid_flow(columns=3, align=True)
+            #         grid.prop(settings, 'texture_resolution_include')
+
+            #     if settings.reformat_textures:
+            #         box_format = box_edit_textures.box()
+            #         box_format.use_property_split = False
+            #         col = box_format.column(align=True)
+            #         col.label(text="Reformat Textures", icon="IMAGE_DATA")
+            #         col = box_format.column(align=True)
+            #         col.use_property_split = True
+            #         col.prop(settings, 'texture_format')
+            #         lossy_compression_support = ("JPEG", "WEBP")
+            #         if settings.texture_format in lossy_compression_support:
+            #             col.prop(settings, 'image_quality')
+            #         box_format.use_property_split = False
+            #         grid = box_format.grid_flow(columns=3, align=True)
+            #         grid.prop(settings, 'texture_format_include')
 
     self.layout.separator(factor = 0.25)
 
@@ -434,23 +496,26 @@ def draw_settings_assets(self, context):
     self.layout.use_property_decorate = False
     box_assets = self.layout.box()
     row = box_assets.row(align=False)
-    row.label(text="Assets", icon='ASSET_MANAGER')        
-    row.prop(settings, 'asset_extract_previews', text='', icon='IMAGE_PLANE')
-    row.prop(settings, 'mark_as_assets', text='', icon='ASSET_MANAGER')
-
+    row.label(text="Assets", icon='ASSET_MANAGER')
     if settings.advanced_ui:
-        if settings.mark_as_assets:
-            box_mark_assets = box_assets.box()
-            row = box_mark_assets.row(align=False)
-            row.label(text='Mark Assets', icon='ASSET_MANAGER')
+        row.prop(settings, 'asset_extract_previews', text='', icon='IMAGE_PLANE')
+    row.prop(settings, 'mark_as_assets', text='', icon='ASSET_MANAGER')
+    
+    if settings.mark_as_assets:
+        box_mark_assets = box_assets.box()
+        row = box_mark_assets.row(align=False)
+        row.label(text='Mark Assets', icon='ASSET_MANAGER')
+        if settings.advanced_ui:
             import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
             if "Collections" in settings.asset_types_to_mark and "BLEND" in import_formats:
                 row.prop(settings, 'mark_only_master_collection', text='', icon='GROUP')
             row.prop(settings, 'assets_allow_duplicates', text='', icon='DUPLICATE')
+        grid = box_mark_assets.grid_flow(columns=6, align=True)
+        grid.prop(settings, 'asset_types_to_mark')
+    
+    if settings.advanced_ui:
+        if settings.mark_as_assets:
             row.prop(settings, 'asset_add_metadata', text='', icon='COLOR')
-            grid = box_mark_assets.grid_flow(columns=6, align=True)
-            grid.prop(settings, 'asset_types_to_mark')
-
             if settings.asset_add_metadata:
                 box_metadata = box_mark_assets.box()
                 col = box_metadata.column(align=True)
@@ -491,7 +556,7 @@ def draw_settings_assets(self, context):
             row.prop(settings, 'asset_blend_location')
             row.prop(settings, 'pack_resources', text='', icon="PACKAGE" if settings.pack_resources else "UGLYPACKAGE")
 
-    if settings.asset_extract_previews:
+    if settings.advanced_ui and settings.asset_extract_previews:
         box_assets.use_property_split = False
         box_previews = box_assets.box()
         col = box_previews.column(align=True)

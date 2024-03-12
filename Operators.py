@@ -464,6 +464,38 @@ class TRANSMOGRIFIER_OT_remove_export(Operator):
 
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
+class TRANSMOGRIFIER_OT_add_texture(Operator):
+    '''Add new texture map to UI'''
+
+    bl_idname = "transmogrifier.add_texture"
+    bl_label = "Add Texture"
+    bl_description = "Add new texture map to edit"
+
+    def execute(self, context):
+        new_export = context.scene.transmogrifier_textures.add()
+        # Functions.link_export_settings(self, context)
+        return {'FINISHED'}
+
+
+class TRANSMOGRIFIER_OT_remove_texture(Operator):
+    '''Remove texture map from UI'''
+
+    bl_idname = "transmogrifier.remove_texture"
+    bl_label = "Remove Map"
+    bl_description = "Remove texture map from editing"
+
+    index: IntProperty(
+        name="Index to remove",
+        description="Index of the texture to remove",
+        min=0, 
+    )   
+
+    def execute(self, context):
+        context.scene.transmogrifier_textures.remove(self.index)
+        return {'FINISHED'}
+
+
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
 class TRANSMOGRIFIER_OT_add_custom_script(Operator):
     '''Add new custom script to UI'''
 
@@ -520,6 +552,8 @@ classes = (
     TRANSMOGRIFIER_OT_remove_import,
     TRANSMOGRIFIER_OT_add_export, 
     TRANSMOGRIFIER_OT_remove_export, 
+    TRANSMOGRIFIER_OT_add_texture, 
+    TRANSMOGRIFIER_OT_remove_texture, 
     TRANSMOGRIFIER_OT_add_custom_script,
     TRANSMOGRIFIER_OT_remove_custom_script,
 )
