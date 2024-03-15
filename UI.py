@@ -73,7 +73,7 @@ def draw_settings_general(self, context):
     for num in bl_info["version"]:
         version = version + "." + str(num)
     version = version.lstrip(".")
-    title = bl_info["name"] + " " + version
+    title = bl_info["name"] + " " + version + "-Dev"
     row = self.layout.row(align=False)
     row.label(text=title)
     if settings.advanced_ui:
@@ -334,14 +334,15 @@ def draw_settings_textures(self, context):
             if settings.edit_textures_show_settings:
 
                 col = box_edit_textures.column(align=True)
+                row = col.row(align=True)
+                row.prop(settings, 'edit_textures_preset_enum')
+                row.operator("transmogrifier.edit_textures_add_preset", text="", icon="ADD")
+                row.operator("transmogrifier.edit_textures_remove_preset", text="", icon="REMOVE")
+                row.operator("transmogrifier.edit_textures_load_preset", text="", icon="FILE_FOLDER")
+
+                col = box_edit_textures.column(align=True)
                 col.operator('transmogrifier.add_texture', icon="ADD")
                 
-                # if len(textures) > 0:
-                #     grid = box_edit_textures.grid_flow(columns=3, align=True)
-                #     grid.label(text='PBR Map')
-                #     grid.label(text='Resolution')
-                #     grid.label(text='Format')
-
                 if len(textures) > 0:
                     col = box_edit_textures.column(align=True)
 
@@ -528,9 +529,9 @@ def draw_settings_uvs(self, context):
         
         row = box_uvs.row(align=False)
         row.label(text="UVs", icon='UV')
-        if settings.rename_uvs and settings.advanced_ui:
-            row.prop(settings, 'rename_uvs_name', text='')
         if settings.advanced_ui:
+            if settings.rename_uvs:
+                row.prop(settings, 'rename_uvs_name', text='')
             row.prop(settings, 'rename_uvs', text='', icon='OUTLINER_OB_FONT')
         row.prop(settings, 'export_uv_layout', text='', icon="CHECKBOX_HLT" if settings.export_uv_layout else "CHECKBOX_DEHLT")
         

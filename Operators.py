@@ -463,6 +463,108 @@ class TRANSMOGRIFIER_OT_remove_export(Operator):
         return {'FINISHED'}
 
 
+class TRANSMOGRIFIER_OT_edit_textures_add_preset(Operator):
+    """Creates an Edit Textures preset from current settings"""
+    bl_idname = "transmogrifier.edit_textures_add_preset"
+    bl_label = "Add Edit Textures Preset"
+
+    # Captured preset name from pop-up dialog window.
+    preset_name: bpy.props.StringProperty(name="Name", default="")
+
+    def execute(self, context):
+        # Set Edit Textures operator preset directory and new preset file.
+        add_preset_name = f"{self.preset_name}.json"
+        edit_textures_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier" / "edit_textures"
+        if not Path(edit_textures_preset_dir).exists():  # Check if operator preset directory exists.
+            Path(edit_textures_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Edit Textures operator preset directory.
+        preset_json = edit_textures_preset_dir / add_preset_name
+
+        # Get current Edit Textures settings.
+        settings_dict = Functions.get_settings_dict(self, context, False, False)
+
+        # Save new Edit Textures operator preset as JSON file.
+        Functions.write_json(settings_dict, preset_json)
+        self.report({'INFO'}, f"Added Edit Textures preset: {add_preset_name}")
+        return {'FINISHED'}
+    
+    # Pop-up dialog window to capture new preset name.
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=200)
+    
+
+class TRANSMOGRIFIER_OT_edit_textures_remove_preset(Operator):
+    """Removes currently selected Transmogrifier preset"""
+    bl_idname = "transmogrifier.edit_textures_remove_preset"
+    bl_label = "Remove Edit Textures Preset"
+
+    def execute(self, context):
+        # Get selected Edit Textures operator preset.
+        settings = bpy.context.scene.transmogrifier_settings
+        remove_preset_name = f"{settings.transmogrifier_preset_enum}.json"
+
+        # Set Edit Textures operator preset directory and preset file to be removed.
+        edit_textures_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier" / "edit_textures"
+        if not Path(edit_textures_preset_dir).exists():  # Check if operator preset directory exists.
+            Path(edit_textures_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Edit Textures operator preset directory.
+        preset_json = edit_textures_preset_dir / remove_preset_name
+
+        # Return early and report error if Edit Textures operator preset does not exist.
+        if not preset_json.is_file():
+            self.report({'ERROR'}, f"Edit Textures preset does not exist: {remove_preset_name}")
+            return {'CANCELLED'}
+
+        # Remove Edit Textures operator preset.
+        self.report({'INFO'}, f"Removed Edit Textures preset: {remove_preset_name}")
+        Path.unlink(preset_json)
+        return {'FINISHED'}
+
+
+# Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), preset_manager.py, Line 124
+class TRANSMOGRIFIER_OT_edit_textures_load_preset(Operator, ImportHelper):
+    """Load an Edit Textures preset from a JSON file"""
+    bl_idname = "transmogrifier.edit_textures_load_preset"
+    bl_label = "Load Preset"
+    bl_options = {'UNDO'}
+
+    filename_ext = '.json'
+
+    filter_glob: StringProperty(
+        default='*.json',
+        options={'HIDDEN'}
+    )
+
+    def execute(self, context):
+        settings = bpy.context.scene.transmogrifier_settings
+        
+        # Get filepath from browser.
+        preset_src = Path(self.filepath)
+
+        # Get preset name.
+        preset_name = preset_src.name
+        
+        # Check if Edit Textures preset directory exists.
+        edit_textures_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier" / "edit_textures"
+        if not Path(edit_textures_preset_dir).exists():  # Check if operator preset directory exists.
+            Path(edit_textures_preset_dir).mkdir(parents=True, exist_ok=True)  # Make Edit Texture operator preset directory.
+        preset_dest = edit_textures_preset_dir / preset_name
+        
+        # Copy preset file to preset directory.  Overwrite existing.
+        shutil.copy(preset_src, preset_dest)
+        
+        # Concatenate the current property assignment.
+        property_assignment = f"settings.edit_textures_preset = {repr(preset_src.stem)}"
+
+        # Make the property (key) equal to the preset (value).
+        exec(property_assignment)
+        
+        # Load preset (Update settings and UI from preset file).
+        Functions.set_settings(self, context)
+
+        self.report({'INFO'}, f"Added Edit Textures preset: {preset_name}")
+        return {'FINISHED'}
+
+
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 782
 class TRANSMOGRIFIER_OT_add_texture(Operator):
     '''Add new texture map to UI'''
@@ -552,6 +654,9 @@ classes = (
     TRANSMOGRIFIER_OT_remove_import,
     TRANSMOGRIFIER_OT_add_export, 
     TRANSMOGRIFIER_OT_remove_export, 
+    TRANSMOGRIFIER_OT_edit_textures_add_preset, 
+    TRANSMOGRIFIER_OT_edit_textures_remove_preset, 
+    TRANSMOGRIFIER_OT_edit_textures_load_preset, 
     TRANSMOGRIFIER_OT_add_texture, 
     TRANSMOGRIFIER_OT_remove_texture, 
     TRANSMOGRIFIER_OT_add_custom_script,

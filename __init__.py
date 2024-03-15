@@ -45,7 +45,7 @@ import importlib
 bl_info = {
     "name": "Transmogrifier",
     "author": "Sapwood Studio",
-    "version": (1, 5, 0),
+    "version": (2, 0, 0),
     "blender": (3, 6),
     "category": "Import-Export",
     "location": "Set in preferences below. Default: 3D Viewport Side Panel (Transmogrifier Tab)",

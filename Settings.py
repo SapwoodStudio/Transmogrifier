@@ -189,6 +189,15 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Modify image textures with regular expressions, resizing, and/or reformatting.",
         default=True,
     )
+    edit_textures_preset: StringProperty(default='FBX_to_GLB')
+    edit_textures_preset_enum: EnumProperty(
+        name="", options={'SKIP_SAVE'},
+        description="Use texture edit settings from a preset.\n(Create by clicking '+' after adjusting settings in the Edit Textures menu)",
+        items=lambda self, context: Functions.get_transmogrifier_presets('transmogrifier'),
+        get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
+        set=lambda self, value: setattr(self, 'transmogrifier_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
+        update=Functions.set_settings,
+    )
     link_texture_settings: BoolProperty(
         name="Link Texture Settings", 
         description="Syncrhonize image textures' resolution, format, and regex",
