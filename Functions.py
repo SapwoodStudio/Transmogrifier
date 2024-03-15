@@ -392,10 +392,12 @@ def get_format_extensions(format):
 
 def update_texture_settings(self, context):
     textures = context.scene.transmogrifier_textures
+    settings = context.scene.transmogrifier_settings
 
     for index, instance in enumerate(textures):
-        # Update box name from import extension.
-        instance.name = instance.texture_map
+        instance.texture_resolution = settings.texture_resolution
+        instance.texture_format = settings.texture_format
+
 
 
 

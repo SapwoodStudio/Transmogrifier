@@ -193,11 +193,13 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Link Texture Settings", 
         description="Syncrhonize image textures' resolution, format, and regex",
         default=True,
+        update=lambda self, context: Functions.update_texture_settings(self, context),
     )
     regex_textures: BoolProperty(
         name="Regex Textures", 
         description="Use regex to correct misspellings and inconsistencies in texture PBR names. This helps to guarantee their detection and import by Transmogrifier",
         default=True,
+        update=lambda self, context: Functions.update_texture_settings(self, context),
     )
     textures_source: EnumProperty(
         name="Source", 
@@ -248,6 +250,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("128", "128", "Square aspect ratio", 7),
         ],
         default="1024",
+        update=lambda self, context: Functions.update_texture_settings(self, context),
     )
     # Which textures to include in resizing.
     texture_resolution_include: EnumProperty(
@@ -299,6 +302,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("OPEN_EXR", "OPEN_EXR", "Save image textures in OpenEXR format", 7),
         ],
         default="JPEG",
+        update=lambda self, context: Functions.update_texture_settings(self, context),
     )
     image_quality: IntProperty(
         name="Quality", 
@@ -1009,12 +1013,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
 
 
 class TRANSMOGRIFIER_PG_TransmogrifierTextures(PropertyGroup):
-    
-    name: StringProperty(
-        name="Name", 
-        default="BaseColor",
-    )
-    
+
     show_settings: BoolProperty(
         name="Show/Hide texture settings",
         description="",
@@ -1025,26 +1024,19 @@ class TRANSMOGRIFIER_PG_TransmogrifierTextures(PropertyGroup):
         name="PBR Map",
         items=[
             ('BaseColor', "BaseColor", "", 1),
-            ('Subsurface', "Subsurface", "", 2),
-            ('Metallic', "Metallic", "", 4),
-            ('Specular', "Specular", "", 16),
-            ('Roughness', "Roughness", "", 32),
-            ('Normal', "Normal", "", 64),
-            ('Bump', "Bump", "", 128),
-            ('Displacement', "Displacement", "", 256),
-            ('Emission', "Emission", "", 512),
-            ('Opacity', "Opacity", "", 1024),
-            ('Occlusion', "Occlusion", "", 2048),
+            ('Bump', "Bump", "", 2),
+            ('Displacement', "Displacement", "", 3),
+            ('Emission', "Emission", "", 4),
+            ('Metallic', "Metallic", "", 5),
+            ('Normal', "Normal", "", 6),
+            ('Occlusion', "Occlusion", "", 7),
+            ('Opacity', "Opacity", "", 8),
+            ('Roughness', "Roughness", "", 9),
+            ('Specular', "Specular", "", 10),
+            ('Subsurface', "Subsurface", "", 11),
         ],
         description="Filter texture maps to resize",
         default='BaseColor',
-        update=lambda self, context: Functions.update_texture_settings(self, context) 
-    )
-
-    regex_texture: BoolProperty(
-        name="Regex Textures", 
-        description="Use regex to correct misspellings and inconsistencies in texture PBR names. This helps to guarantee their detection and import by Transmogrifier",
-        default=True,
     )
 
     resize_texture: BoolProperty(
@@ -1078,13 +1070,13 @@ class TRANSMOGRIFIER_PG_TransmogrifierTextures(PropertyGroup):
         name="Format",
         description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
         items=[
-            ("PNG", "PNG", "Save image textures in PNG format", 1),
+            ("BMP", "BMP", "Save image textures in BMP format", 1),
             ("JPEG", "JPEG", "Save image textures in JPEG format", 2),
-            ("TARGA", "TARGA", "Save image textures in TARGA format", 3),
-            ("TIFF", "TIFF", "Save image textures in TIFF format", 4),
-            ("WEBP", "WEBP", "Save image textures in WEBP format", 5),
-            ("BMP", "BMP", "Save image textures in BMP format", 6),
-            ("OPEN_EXR", "OPEN_EXR", "Save image textures in OpenEXR format", 7),
+            ("OPEN_EXR", "OPEN_EXR", "Save image textures in OpenEXR format", 3),
+            ("PNG", "PNG", "Save image textures in PNG format", 4),
+            ("TARGA", "TARGA", "Save image textures in TARGA format", 5),
+            ("TIFF", "TIFF", "Save image textures in TIFF format", 6),
+            ("WEBP", "WEBP", "Save image textures in WEBP format", 7),
         ],
         default="JPEG",
     )
