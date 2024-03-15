@@ -329,8 +329,6 @@ def draw_settings_textures(self, context):
                 row = grid.row()
                 row.alignment = "RIGHT"
                 row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
-                    # row.prop(settings, 'reformat_textures', text='', icon="IMAGE_DATA")
-                    # row.prop(settings, 'resize_textures', text='', icon="NODE_TEXTURE")
                 row.prop(settings, 'link_texture_settings', expand=False, text="", icon="LINKED" if settings.link_texture_settings else "UNLINKED")
 
             if settings.edit_textures_show_settings:
@@ -351,50 +349,14 @@ def draw_settings_textures(self, context):
                 # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
                 for index, instance in enumerate(context.scene.transmogrifier_textures):   
                     row = col.row(align=True)
-                    # box = box_edit_textures.box()
-                    # grid = box_edit_textures.grid_flow(columns=2, align=True)
-                    # row = grid.row()
-                    # row.use_property_split = False
-                    # row.alignment = "LEFT"
-                    
-                    # row.prop(
-                    #     instance,
-                    #     "show_settings",
-                    #     icon="DOWNARROW_HLT" if instance.show_settings else "RIGHTARROW_THIN",
-                    #     emboss=False,
-                    #     toggle=True,
-                    #     text=instance.name
-                    # )
-
-                    # row = grid.row()
-                    # row.alignment = "RIGHT"
-                    
-                    # if not settings.link_texture_settings:
-                        # row.prop(instance, 'regex_texture', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
-                        # row.prop(instance, 'reformat_texture', text='', icon="IMAGE_DATA")
-                        # row.prop(instance, 'resize_texture', text='', icon="NODE_TEXTURE")
-                    # props = row.operator('transmogrifier.remove_texture', text = "", icon = 'PANEL_CLOSE')
-                    # props.index = index
-
-                    # if instance.show_settings:
-                        # col = box_edit_textures.column(align=True)
-                    # col.use_property_split = True
-                    row.prop(instance, "texture_map", text='')
-                    sub = row.row(align=True)
+                    split = row.split(factor=0.45, align=True)
+                    split.prop(instance, "texture_map", text='')
+                    sub = split.row(align=True)
                     sub.active = not settings.link_texture_settings
-
-                    # if not settings.link_texture_settings:
-                    # if instance.resize_texture:
                     sub.prop(instance, "texture_resolution", text='')
-                    
-                    # if instance.reformat_texture:
                     sub.prop(instance, "texture_format", text='')
-                    # if instance.texture_format in lossy_compression_support:
-                    #     row.prop(settings, 'image_quality')
-                    # row = row.row(align=True)
                     props = row.operator('transmogrifier.remove_texture', text = "", icon = 'PANEL_CLOSE')
                     props.index = index
-
 
                 if len(textures) > 1 or (len(textures) == 1 and settings.link_texture_settings):
                     if settings.link_texture_settings and (settings.resize_textures or settings.reformat_textures):
@@ -406,36 +368,6 @@ def draw_settings_textures(self, context):
                             col.prop(settings, 'texture_format')
                             if settings.texture_format in lossy_compression_support:
                                 col.prop(settings, 'image_quality')
-
-
-# 1st
-            # if settings.edit_textures_show_settings:
-            #     if settings.resize_textures:
-            #         box_resolution = box_edit_textures.box()
-            #         box_resolution.use_property_split = False
-            #         col = box_resolution.column(align=True)
-            #         col.label(text="Resize Textures", icon="NODE_TEXTURE")
-            #         col = box_resolution.column(align=True)
-            #         col.use_property_split = True
-            #         col.prop(settings, 'texture_resolution')
-
-            #         grid = box_resolution.grid_flow(columns=3, align=True)
-            #         grid.prop(settings, 'texture_resolution_include')
-
-            #     if settings.reformat_textures:
-            #         box_format = box_edit_textures.box()
-            #         box_format.use_property_split = False
-            #         col = box_format.column(align=True)
-            #         col.label(text="Reformat Textures", icon="IMAGE_DATA")
-            #         col = box_format.column(align=True)
-            #         col.use_property_split = True
-            #         col.prop(settings, 'texture_format')
-            #         lossy_compression_support = ("JPEG", "WEBP")
-            #         if settings.texture_format in lossy_compression_support:
-            #             col.prop(settings, 'image_quality')
-            #         box_format.use_property_split = False
-            #         grid = box_format.grid_flow(columns=3, align=True)
-            #         grid.prop(settings, 'texture_format_include')
 
     self.layout.separator(factor = 0.25)
 
