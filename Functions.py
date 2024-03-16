@@ -610,6 +610,7 @@ def get_propertygroups():
         ],
         "imports": [bpy.context.scene.transmogrifier_imports, True, ["files", "show_settings"]],
         "exports": [bpy.context.scene.transmogrifier_exports, True, ["show_settings"]],
+        "textures": [bpy.context.scene.transmogrifier_textures, True, ["show_settings"]],
         "scripts": [bpy.context.scene.transmogrifier_scripts, True, ["show_settings"]],
     }
     
@@ -698,6 +699,31 @@ def get_settings_dict(self, context, use_absolute_paths, write_imports_list):
         settings_dict.update(get_propertygroups_properties(key, value[0], value[1], value[2], use_absolute_paths, write_imports_list, settings_dict))
 
     return settings_dict
+
+
+# Create settings_dict dictionary from PropertyGroups to pass to write_json function later.
+def get_edit_textures_settings_dict(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    textures = bpy.context.scene.transmogrifier_textures
+    
+    settings_dict = {}
+
+    # Global Edit Textures settings to record.
+    global_edit_textures_settings = {
+        "link_texture_settings": settings.link_texture_settings,
+        "regex_textures": settings.regex_textures,
+        "texture_resolution": settings.texture_resolution,
+        "texture_format": settings.texture_format,
+        "image_quality": settings.image_quality,
+    }
+
+    # Update the dictionary with the global Edit Textures settings.
+    settings_dict.update(global_edit_textures_settings)
+
+    # Loop through each PropertyGroup and update the dictionary of settings.
+    settings_dict.update(get_propertygroups_properties("textures", textures, True, [], False, False, settings_dict))
+
+    return settings_dict
     
 
 
@@ -722,8 +748,13 @@ def load_propertygroup_settings(property_groups, properties, group, properties_t
             value = repr(value)
 
         # If a value is a list that contains strings, then change the list to a set.
-        elif isinstance(value, list) and isinstance(value[0], str):
-            value = set(value)
+        elif isinstance(value, list):
+            # If list is not empty and contains strings, convert the list to a set.
+            if value and isinstance(value[0], str):
+                value = set(value)
+            # If list is empty, convert the list to an empty set.
+            elif not value:
+                value = repr(set())
 
         # If an integer is an option of a certain EnumProperty drop down, make it a string.
         elif key in ("texture_resolution", "resize_textures_limit", "uv_resolution") and isinstance(value, int):
@@ -749,9 +780,6 @@ def instantiate_propertygroups(property_groups, properties_list, propertygroup, 
 # Update settings when a Transmogrifier preset is selected.
 def set_settings(self, context):
     settings = bpy.context.scene.transmogrifier_settings
-    imports = bpy.context.scene.transmogrifier_imports
-    exports = bpy.context.scene.transmogrifier_exports
-    scripts = bpy.context.scene.transmogrifier_scripts
 
     # Get PropertyGroups.
     property_groups = get_propertygroups()
@@ -759,15 +787,6 @@ def set_settings(self, context):
     if settings.transmogrifier_preset != "NO_PRESET":
         # Load selected Transmogrifier preset as a dictionary.
         transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier', settings.transmogrifier_preset)
-
-        # Clear any existing imports instances.
-        imports.clear()
-
-        # Clear any existing exports instances.
-        exports.clear()
-        
-        # Clear any existing custom script instances.
-        scripts.clear()
 
         # Loop through each PropertyGroup ("settings", "imports", etc.)
         for key, value in property_groups.items():
@@ -778,11 +797,35 @@ def set_settings(self, context):
                 
                 # If PropertyGroup is a CollectionProperty, instantiate and load settings for each instance.
                 else:
+                    # Clear any existing CollectionProperty instances.
+                    value[0].clear()
                     instantiate_propertygroups(property_groups, transmogrifier_preset_dict[key], value[0], value[2])
 
             # If using an old Transmogrifier preset (i.e. without new properties such as "imports" and "scripts"), skip.
             except KeyError:
                 continue
+
+
+# Update settings when an Edit Textures preset is selected.
+def set_texture_settings(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    textures = bpy.context.scene.transmogrifier_textures
+
+    # Get PropertyGroups.
+    property_groups = get_propertygroups()
+    
+    if settings.edit_textures_preset != "NO_PRESET":
+        # Load selected Edit Textures preset as a dictionary.
+        transmogrifier_preset_dict = load_transmogrifier_preset('transmogrifier/edit_textures', settings.edit_textures_preset)
+
+        # Clear any existing textures instances.
+        textures.clear()
+
+        # Load the global Edit Textures settings from the dictionary (e.g. link_texture_settings, regex_textures, etc.).
+        load_propertygroup_settings(property_groups, transmogrifier_preset_dict, settings, [])
+
+        # Instantiate each texture instance and load settings for each.
+        instantiate_propertygroups(property_groups, transmogrifier_preset_dict["textures"], property_groups["textures"][0], property_groups["textures"][2])
 
 
 

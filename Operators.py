@@ -480,7 +480,7 @@ class TRANSMOGRIFIER_OT_edit_textures_add_preset(Operator):
         preset_json = edit_textures_preset_dir / add_preset_name
 
         # Get current Edit Textures settings.
-        settings_dict = Functions.get_settings_dict(self, context, False, False)
+        settings_dict = Functions.get_edit_textures_settings_dict(self, context)
 
         # Save new Edit Textures operator preset as JSON file.
         Functions.write_json(settings_dict, preset_json)
@@ -501,7 +501,7 @@ class TRANSMOGRIFIER_OT_edit_textures_remove_preset(Operator):
     def execute(self, context):
         # Get selected Edit Textures operator preset.
         settings = bpy.context.scene.transmogrifier_settings
-        remove_preset_name = f"{settings.transmogrifier_preset_enum}.json"
+        remove_preset_name = f"{settings.edit_textures_preset_enum}.json"
 
         # Set Edit Textures operator preset directory and preset file to be removed.
         edit_textures_preset_dir = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator")) / "transmogrifier" / "edit_textures"
@@ -559,7 +559,7 @@ class TRANSMOGRIFIER_OT_edit_textures_load_preset(Operator, ImportHelper):
         exec(property_assignment)
         
         # Load preset (Update settings and UI from preset file).
-        Functions.set_settings(self, context)
+        Functions.set_texture_settings(self, context)
 
         self.report({'INFO'}, f"Added Edit Textures preset: {preset_name}")
         return {'FINISHED'}

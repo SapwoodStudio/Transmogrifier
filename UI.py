@@ -359,16 +359,13 @@ def draw_settings_textures(self, context):
                     props = row.operator('transmogrifier.remove_texture', text = "", icon = 'PANEL_CLOSE')
                     props.index = index
 
-                if len(textures) > 1 or (len(textures) == 1 and settings.link_texture_settings):
-                    if settings.link_texture_settings and (settings.resize_textures or settings.reformat_textures):
-                        box_edit_textures.use_property_split = True
-                        col = box_edit_textures.column(align=True)
-                        if settings.resize_textures:
-                            col.prop(settings, 'texture_resolution')
-                        if settings.reformat_textures:
-                            col.prop(settings, 'texture_format')
-                            if settings.texture_format in lossy_compression_support:
-                                col.prop(settings, 'image_quality')
+                if len(textures) >= 1 and settings.link_texture_settings:
+                    box_edit_textures.use_property_split = True
+                    col = box_edit_textures.column(align=True)
+                    col.prop(settings, 'texture_resolution')
+                    col.prop(settings, 'texture_format')
+                    if settings.texture_format in lossy_compression_support:
+                        col.prop(settings, 'image_quality')
 
     self.layout.separator(factor = 0.25)
 

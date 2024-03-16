@@ -189,14 +189,14 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Modify image textures with regular expressions, resizing, and/or reformatting.",
         default=True,
     )
-    edit_textures_preset: StringProperty(default='FBX_to_GLB')
+    edit_textures_preset: StringProperty(default='PBR_Standard')
     edit_textures_preset_enum: EnumProperty(
         name="", options={'SKIP_SAVE'},
         description="Use texture edit settings from a preset.\n(Create by clicking '+' after adjusting settings in the Edit Textures menu)",
-        items=lambda self, context: Functions.get_transmogrifier_presets('transmogrifier'),
-        get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier', self.transmogrifier_preset),
-        set=lambda self, value: setattr(self, 'transmogrifier_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier'][value][0]),
-        update=Functions.set_settings,
+        items=lambda self, context: Functions.get_transmogrifier_presets('transmogrifier/edit_textures'),
+        get=lambda self: Functions.get_transmogrifier_preset_index('transmogrifier/edit_textures', self.edit_textures_preset),
+        set=lambda self, value: setattr(self, 'edit_textures_preset', Functions.transmogrifier_preset_enum_items_refs['transmogrifier/edit_textures'][value][0]),
+        update=Functions.set_texture_settings,
     )
     link_texture_settings: BoolProperty(
         name="Link Texture Settings", 
@@ -241,11 +241,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Use textures already linked to .blend file",
         default=False,
     )
-    resize_textures: BoolProperty(
-        name="Resize Textures", 
-        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files\nTextures will not be upscaled",
-        default=True,
-    )
     texture_resolution: EnumProperty(
         name="Resolution",
         description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
@@ -260,43 +255,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         ],
         default="1024",
         update=lambda self, context: Functions.update_texture_settings(self, context),
-    )
-    # Which textures to include in resizing.
-    texture_resolution_include: EnumProperty(
-        name="Included Textures",
-        options={'ENUM_FLAG'},
-        items=[
-            ('BaseColor', "BaseColor", "", 1),
-            ('Subsurface', "Subsurface", "", 2),
-            ('Metallic', "Metallic", "", 4),
-            ('Specular', "Specular", "", 16),
-            ('Roughness', "Roughness", "", 32),
-            ('Normal', "Normal", "", 64),
-            ('Bump', "Bump", "", 128),
-            ('Displacement', "Displacement", "", 256),
-            ('Emission', "Emission", "", 512),
-            ('Opacity', "Opacity", "", 1024),
-            ('Occlusion', "Occlusion", "", 2048),
-        ],
-        description="Filter texture maps to resize",
-        default={
-            'BaseColor', 
-            'Subsurface', 
-            'Metallic', 
-            'Specular', 
-            'Roughness', 
-            'Normal', 
-            'Bump', 
-            'Displacement', 
-            'Emission', 
-            'Opacity', 
-            'Occlusion'
-        },
-    )
-    reformat_textures: BoolProperty(
-        name="Reformat Textures", 
-        description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
-        default=True,
     )
     texture_format: EnumProperty(
         name="Format",
@@ -320,38 +278,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         soft_min=0,
         soft_max=100,
         step=5,
-    )
-    # Which textures to include in converting.
-    texture_format_include: EnumProperty(
-        name="Included Textures",
-        options={'ENUM_FLAG'},
-        items=[
-            ('BaseColor', "BaseColor", "", 1),
-            ('Subsurface', "Subsurface", "", 2),
-            ('Metallic', "Metallic", "", 4),
-            ('Specular', "Specular", "", 16),
-            ('Roughness', "Roughness", "", 32),
-            ('Normal', "Normal", "", 64),
-            ('Bump', "Bump", "", 128),
-            ('Displacement', "Displacement", "", 256),
-            ('Emission', "Emission", "", 512),
-            ('Opacity', "Opacity", "", 1024),
-            ('Occlusion', "Occlusion", "", 2048),
-        ],
-        description="Filter texture maps to convert",
-        default={
-            'BaseColor', 
-            'Subsurface', 
-            'Metallic', 
-            'Specular', 
-            'Roughness', 
-            'Normal', 
-            'Bump', 
-            'Displacement', 
-            'Emission', 
-            'Opacity', 
-            'Occlusion'
-        },
     )
     # Set all UV map names to "UVMap". This prevents a material issue with USDZ's - when object A and object B share the same material, but their UV
     # map names differ, the material has to pick one UVMap in the UV Map node inputs connected to each texture channel. So if object A's UV map is called
@@ -1023,12 +949,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
 
 class TRANSMOGRIFIER_PG_TransmogrifierTextures(PropertyGroup):
 
-    show_settings: BoolProperty(
-        name="Show/Hide texture settings",
-        description="",
-        default=True,
-    )
-
     texture_map: EnumProperty(
         name="PBR Map",
         items=[
@@ -1048,12 +968,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierTextures(PropertyGroup):
         default='BaseColor',
     )
 
-    resize_texture: BoolProperty(
-        name="Resize Textures", 
-        description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files\nTextures will not be upscaled",
-        default=True,
-    )
-
     texture_resolution: EnumProperty(
         name="Resolution",
         description="Set a custom image texture resolution for exported models without affecting resolution of original/source texture files",
@@ -1067,12 +981,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierTextures(PropertyGroup):
             ("128", "128", "Square aspect ratio", 7),
         ],
         default="1024",
-    )
-
-    reformat_texture: BoolProperty(
-        name="Reformat Textures", 
-        description="Set a custom texture image type for exported models without affecting resolution of original/source texture files",
-        default=True,
     )
 
     texture_format: EnumProperty(
