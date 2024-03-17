@@ -463,8 +463,8 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
     # Option to set file size maximum.
     optimize: BoolProperty(
-        name="Optimize Exports", 
-        description="Set a maximum file size and Transmogrifier will automatically try to reduce the file size according to the requested size",
+        name="Auto-Optimize Files", 
+        description="Set a maximum file size and Transmogrifier will automatically try to reduce each export's size according to the target file size",
         default=False,
     )
     optimize_skip_existing_below_target: BoolProperty(
@@ -472,12 +472,12 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Skip optimizing models that 1) already exist and 2) are already below the target file size",
         default=False,
     )
-    optimize_filter: EnumProperty(
+    optimize_overwrite_filter: EnumProperty(
         name="Overwrite Files",
         description="Filter models to be automatically optimized",
         items=[
             ("All", "All", "Auto-optimize all exported files even if some previously exported files are already below the target threshold", "", 1),
-            ("Above Target", "Only Above Target", "Only auto-optimize exported files are still above the target threshold. Ignore previously exported files that are already below the target maximum", "", 2),
+            ("Only Above Target", "Only Above Target", "Only auto-optimize exported files are still above the target threshold. Ignore previously exported files that are already below the target maximum", "", 2),
         ],
         default="All",
     )

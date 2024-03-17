@@ -378,7 +378,7 @@ def draw_settings_optimize_exports(self, context):
     self.layout.use_property_decorate = False
     box_optimize = self.layout.box()
     row = box_optimize.row(align=False)
-    row.label(text="Optimize File Size", icon='TRIA_DOWN_BAR')
+    row.label(text="Auto-Optimize Files", icon='TRIA_DOWN_BAR')
     row.prop(settings, 'optimize', text='', icon="CHECKBOX_HLT" if settings.optimize else "CHECKBOX_DEHLT")
 
 
@@ -387,7 +387,7 @@ def draw_settings_optimize_exports(self, context):
         col.use_property_split = True
         col.prop(settings, 'optimize_target_file_size')
         if settings.advanced_ui and len(exports) > 0 and ((settings.link_export_settings and settings.overwrite_files) or (not settings.link_export_settings and len(exports) > 0 and any(instance.overwrite_files == True for instance in exports))):
-            col.prop(settings, 'optimize_filter')
+            col.prop(settings, 'optimize_overwrite_filter')
 
         # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
         if settings.advanced_ui:

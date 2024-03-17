@@ -249,11 +249,11 @@ def clean_data_block(block):
         logging.exception(f"Could not clean data block: {str(block).upper()}")
 		
 
-# Add new collection with name = prefix + item + suffix.
-def add_collection(item):
+# Add new collection with name = prefix + item_name + suffix.
+def add_collection(item_name):
     try:
         # Add new collection.
-        collection_name = prefix + item + suffix
+        collection_name = prefix + item_name + suffix
         collection = bpy.data.collections.new(collection_name)
 
         # Add collection to scene collection.
@@ -283,12 +283,12 @@ def purge_orphans():
 		
 
 # Enable addon dependencies and clear the scene
-def setup_scene(item):
+def setup_scene(item_name):
     try:
         clean_data_block(bpy.data.objects)
         clean_data_block(bpy.data.collections)
         purge_orphans()
-        add_collection(item)
+        add_collection(item_name)
 
         print("Set up scene")
         logging.info("Set up scene")
@@ -300,18 +300,18 @@ def setup_scene(item):
 # Append a blend file's objects to Converter.blend.
 def append_blend_objects(import_file_command, import_file_options, import_file):
     try:
-        with bpy.data.libraries.load(import_file, link=False) as (data_from, data_to):  # Append all objects.
+        with bpy.data.libraries.load(str(import_file), link=False) as (data_from, data_to):  # Append all objects.
             data_to.objects = [object for object in data_from.objects]
         
         for object in data_to.objects: # Link all objects to current scene.
             if object is not None:
                 bpy.context.collection.objects.link(object)
 
-        print(f"Appended blend file objects: {Path(import_file).name}")
-        logging.info(f"Appended blend file objects: {Path(import_file).name}")
+        print(f"Appended blend file objects: {import_file.name}")
+        logging.info(f"Appended blend file objects: {import_file.name}")
 
     except Exception as Argument:
-        logging.exception(f"Could not append blend file objects: {Path(import_file).name}")
+        logging.exception(f"Could not append blend file objects: {import_file.name}")
 
 
 # Import file of a format type supplied by the user.
@@ -321,7 +321,7 @@ def import_a_file(import_file, import_settings_dict):
         options = eval(import_settings_dict["options"])
 
         # Update options with filepath to the location of the model to be imported.
-        options["filepath"] = import_file  
+        options["filepath"] = str(import_file)
         
         # Get import operator.
         operator = import_settings_dict["operator"]
@@ -339,17 +339,17 @@ def import_a_file(import_file, import_settings_dict):
         # Run operator, which is stored as a string and won't run otherwise.
         exec(operator)
 
-        print(f"Imported file: {Path(import_file).name}")
-        logging.info(f"Imported file: {Path(import_file).name}")
+        print(f"Imported file: {import_file.name}")
+        logging.info(f"Imported file: {import_file.name}")
 
     except Exception as Argument:
-        logging.exception(f"Could not import file: {Path(import_file).name}")
+        logging.exception(f"Could not import file: {import_file.name}")
 		  
 
-# Move all objects and collections to item collection.
-def move_objects_and_collections_to_item_collection(item):
+# Move all objects and collections to item_name collection.
+def move_objects_and_collections_to_item_collection(item_name):
     try:
-        item_collection = bpy.data.collections[prefix + item + suffix]
+        item_collection = bpy.data.collections[prefix + item_name + suffix]
         collections_to_move = [collection for collection in bpy.context.scene.collection.children if collection != item_collection]  # Get a list of additional collections in the scene.
         objects_to_move = [object for object in bpy.context.scene.collection.objects]  # Get a list of objects that exist directly in the default Scene Collection.
 
@@ -491,12 +491,12 @@ def select_by_material(material):
         logging.exception(f"Could not select objects with material: {material.name}")
 		
 
-# Copy textures from custom directory to item directory.
+# Copy textures from custom directory to item_name directory.
 def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures):
     try:
         if Path(textures_custom_dir).exists():
             if Path(textures_dir).exists():  # Cannot create another textures folder if one already exists.
-                if copy_textures_custom_dir and not preserve_original_textures:  # If User elected to replace an existing textures directory that might be inside the item folder, then delete it.
+                if copy_textures_custom_dir and not preserve_original_textures:  # If User elected to replace an existing textures directory that might be inside the item_name folder, then delete it.
                     shutil.rmtree(textures_dir)
                 else:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
                     textures_dir_name = [d.name for d in Path.iterdir(item_dir) if "textures" in d.name.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
@@ -518,7 +518,7 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
         logging.exception("Could not copy textures from custom source")
 		
 
-# If User elected not to copy the custom textures directory to each item folder, delete the temporary copy of it there.
+# If User elected not to copy the custom textures directory to each item_name folder, delete the temporary copy of it there.
 def remove_copy_textures_custom_dir(item_dir, textures_dir):
     try:
         if Path(textures_dir).exists():
@@ -526,7 +526,7 @@ def remove_copy_textures_custom_dir(item_dir, textures_dir):
 
         textures_dir_original_name = [d.name for d in Path.iterdir(item_dir) if "textures_original" in d.name.lower()]
         if textures_dir_original_name:  # If there was a textures_dir there before transmogrification, return its name to its original form.
-            textures_dir_original_name = textures_dir_original_name[0]  # If the list is not empty, get the first item in the list.
+            textures_dir_original_name = textures_dir_original_name[0]  # If the list is not empty, get the first item_name in the list.
             textures_dir_original = Path(item_dir, textures_dir_original_name)
             if Path(textures_dir_original).exists():
                 Path(textures_dir_original).rename(Path(item_dir, textures_dir_original_name.replace("_original", "")))  # Return original textures_dir back to its former name before the conversion.
@@ -592,7 +592,7 @@ def create_textures_temp(item_dir, textures_dir, textures_temp_dir):
         # Delete "textures_temp" if folder already exists. It will already exist if the User elected to save a .blend file, and it may exist if Transmogrifier quit after an error.
         delete_textures_temp(textures_temp_dir)
         
-        # Check if a "textures" directory exists and is not empty. Copy it and call it textures_[item]_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
+        # Check if a "textures" directory exists and is not empty. Copy it and call it textures_[item_name]_temp if it does, otherwise create an empty directory and fill it with image textures found in the item_dir.
         if Path(textures_dir).exists():
             # If a textures directory exists but is empty, make one and fill it with images.
             if not any(Path.iterdir(textures_dir)):
@@ -867,8 +867,8 @@ def regex_transparent_objects():
         logging.exception("Could not regex transparent objects")
 		
 
-# Determine if current item has multiple texture sets present in textures_temp_dir. If so, loop through each texture set and create a material from the image textures in that set.
-def create_materials(item, textures_temp_dir):
+# Determine if current item_name has multiple texture sets present in textures_temp_dir. If so, loop through each texture set and create a material from the image textures in that set.
+def create_materials(item_name, textures_temp_dir):
     try:
         image_ext = supported_image_ext()  # Get a list of image extensions that could be used as textures
 
@@ -897,7 +897,7 @@ def create_materials(item, textures_temp_dir):
                             continue
                     textures = [texture.name for texture in Path.iterdir(texture_set_dir)]
 
-                    create_a_material(item=texture_set, textures_temp_dir=texture_set_dir, textures=textures)  # Parameters are temporarily reassigned in order that the create_a_material function can be reused.
+                    create_a_material(item_name=texture_set, textures_temp_dir=texture_set_dir, textures=textures)  # Parameters are temporarily reassigned in order that the create_a_material function can be reused.
             
             # If there are no subdirectories containing images, then determine how many texture sets exists in textures_temp directory.
             elif not textures_in_subdirs:
@@ -914,14 +914,14 @@ def create_materials(item, textures_temp_dir):
                     logging.info(f"Detected {basecolor_count} texture sets: {texture_sets}")
                     for texture_set in texture_sets:
                         textures = [texture for texture in textures_list if texture.startswith(texture_set)]
-                        create_a_material(item=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
+                        create_a_material(item_name=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
                 # If there are less than or equal to 6 images in textures_temp, assume there is only one texture set.
                 elif basecolor_count <= 1:
                     print(f"Detected {basecolor_count} texture set")
                     logging.info(f"Detected {basecolor_count} texture set")
                     textures = textures_list
 
-                    create_a_material(item, textures_temp_dir, textures)
+                    create_a_material(item_name, textures_temp_dir, textures)
 
         # If there are no subdirectories containing images, then determine how many texture sets exists in textures_temp directory.
         elif not texture_set_dir_list:
@@ -938,14 +938,14 @@ def create_materials(item, textures_temp_dir):
                 logging.info(f"Detected {basecolor_count} texture sets: {texture_sets}")
                 for texture_set in texture_sets:
                     textures = [texture for texture in textures_list if texture.startswith(texture_set)]
-                    create_a_material(item=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
+                    create_a_material(item_name=texture_set, textures_temp_dir=textures_temp_dir, textures=textures)
             # If there are less than or equal to 6 images in textures_temp, assume there is only one texture set.
             elif basecolor_count <= 1:
                 print(f"Detected {basecolor_count} texture set")
                 logging.info(f"Detected {basecolor_count} texture set")
                 textures = textures_list
 
-                create_a_material(item, textures_temp_dir, textures)
+                create_a_material(item_name, textures_temp_dir, textures)
         
         # If there are no textures, print a message.
         else:
@@ -1017,10 +1017,10 @@ def add_principled_setup(material, textures_temp_dir, textures):
 
 
 # Add materials, import textures, and assign materials to objects.
-def create_a_material(item, textures_temp_dir, textures):
+def create_a_material(item_name, textures_temp_dir, textures):
     try:
         # Create a new material. This will be the opaque material.
-        material = bpy.data.materials.new(name=item) # Create new material from item name.
+        material = bpy.data.materials.new(name=item_name) # Create new material from item_name name.
         
         # Import textures with Node Wrangler addon
         textures = textures
@@ -1034,21 +1034,21 @@ def create_a_material(item, textures_temp_dir, textures):
             # Copy current material and make opaque version in case there are any opaque objects in scene using the same texture set.
             material_opaque = material.copy()
             material_opaque.blend_method = 'OPAQUE'
-            bpy.data.materials[item + ".001"].name = item
+            bpy.data.materials[item_name + ".001"].name = item_name
             # Remove opacity map from opaque material.
             opacity_map = material_opaque.node_tree.nodes["Principled BSDF"].inputs['Alpha'].links[0].from_node
             material_opaque.node_tree.nodes.remove(opacity_map)
             # Add transparency tag to material name and set alpha blend.
-            material.name = item + "_transparent"
+            material.name = item_name + "_transparent"
             material.blend_method = "BLEND"
             print(f"Found an opacity map for texture set: {material_opaque.name}. Created transparent version of material, {material.name}")
             logging.info(f"Found an opacity map for texture set: {material_opaque.name}. Created transparent version of material, {material.name}")
 
-        print(f"Created a material: {item}")
-        logging.info(f"Created a material: {item}")
+        print(f"Created a material: {item_name}")
+        logging.info(f"Created a material: {item_name}")
 
     except Exception as Argument:
-        logging.exception(f"Could not create a material: {item}")
+        logging.exception(f"Could not create a material: {item_name}")
 		
 
 # Get alpha tags from Node Wrangler Preferences to use for checking if an object's indicates that it should be assigned a transparent material.
@@ -1087,7 +1087,7 @@ def get_nw_alpha_tags():
 		
 
 # Assign previously created materials to objects based on 1) how many texture sets were present in the textures_dir, 2) the objects' name prefixes (which texture set goes to what objects), and 3) the objects' name suffixes (determines transparency).
-def assign_materials(item):
+def assign_materials(item_name):
     try:
         # Determine how many mesh objects are in the scene.
         object_count = 0
@@ -1120,7 +1120,7 @@ def assign_materials(item):
             for material in bpy.data.materials:
                 material_name = str(material.name) # Get the material's name from that material's data block list.
                 for object in bpy.context.selected_objects: # Loop only through selected MESH type objects.
-                    if object.type == 'MESH' and material_name.replace("_" + transparency_tag, "") == item: # Ignore the "_transparent" suffix of the transparent material.
+                    if object.type == 'MESH' and material_name.replace("_" + transparency_tag, "") == item_name: # Ignore the "_transparent" suffix of the transparent material.
                         if object_count == 1 and material_name.endswith(transparency_tag):
                             object.data.materials.append(material)
                             print(f"Assigned transparent material, {material_name}, to transparent object, {object.name}")
@@ -1158,7 +1158,7 @@ def assign_materials(item):
                         else:
                             continue
 
-        # If there aren't any mesh-type objects in the scene (e.g. an empty FBX), continue on to the next item.
+        # If there aren't any mesh-type objects in the scene (e.g. an empty FBX), continue on to the next item_name.
         else:
             print("There are no mesh-type objects in the scene")
             logging.info("There are no mesh-type objects in the scene")
@@ -1465,7 +1465,7 @@ def map_textures_to_materials(import_file):
                 for node in material.node_tree.nodes:
                     if node.type=='TEX_IMAGE':
                         texture = Path(node.image.name).stem  # Remove any leftover image texture extensions.
-                        if Path(import_file).suffix == ".glb":
+                        if import_file.suffix == ".glb":
                             if "BaseColor" in texture:
                                 base_color = texture.replace("_Opacity", "")
                                 texture_set.append(base_color)
@@ -2069,7 +2069,7 @@ def set_scene_units(unit_system, length_unit):
 		
 
 # Export a model.
-def export_a_model(item, item_dir, export_settings_dict, export_dir, export_file):
+def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file):
     try:
         # Set scale
         export_scale = export_settings_dict["scale"]
@@ -2119,10 +2119,10 @@ def export_a_model(item, item_dir, export_settings_dict, export_dir, export_file
 
 
 # Determine how many, if any, models to export.
-def export_models(item, item_dir):
+def export_models(item_name, item_dir):
     try:
         for export_settings_dict in exports:
-            export_a_model(item, item_dir, export_settings_dict, export_dir, export_file)
+            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
         
         print("Exported models")
         logging.info("Exported Models")
@@ -2305,7 +2305,7 @@ def decimate_meshes_and_export(export_file, export_file_2, decimate_counter, dec
 
 
 # Automatically try to resize the exported file (only takes export_file into account)
-def optimize_export_file(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file):
+def optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file):
     try:
         # Get current file size (in MB)
         export_file_size = get_export_file_size(export_file)
@@ -2390,7 +2390,7 @@ def determine_modify_textures():
 
 
 # Apply "Custom" textures to objects.
-def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
+def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
     try:
         # Regex transparent objects before creating materials and searching for matches between transparent material(s) and transparent object(s).
         if regex_textures:
@@ -2412,7 +2412,7 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
                 regex_textures_external(textures_temp_dir)
 
             # Create materials.
-            create_materials(item, textures_temp_dir)
+            create_materials(item_name, textures_temp_dir)
             
             # Modify textures if requested.
             determine_modify_textures()
@@ -2421,7 +2421,7 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
             clean_data_block(bpy.data.materials)
             clean_data_block(bpy.data.images)
 
-        # Copy textures_temp from custom textures directory to item directory.
+        # Copy textures_temp from custom textures directory to item_name directory.
         copy_file(item_dir, textures_temp_dir)
 
         # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
@@ -2433,12 +2433,12 @@ def apply_textures_custom(item_dir, item, import_file, textures_dir, textures_te
         textures_temp_dir = textures_temp_dir_renamed
 
         # Create materials.
-        create_materials(item, textures_temp_dir)
+        create_materials(item_name, textures_temp_dir)
 
         # Assign materials to objects.
-        assign_materials(item)
+        assign_materials(item_name)
 
-        # Copy original custom textures to item directory if elected.
+        # Copy original custom textures to item_name directory if elected.
         if copy_textures_custom_dir:
             copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures)
         
@@ -2467,7 +2467,7 @@ def repath_blend_textures(blend, path_old, path_new):
 
 
 # Apply "Packed" textures to objects.
-def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
+def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend):
     try:
         # Find and rename transparent materials that have mispellings of transparency with regex keys. 
         regex_transparent_materials()
@@ -2486,15 +2486,15 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
 
         # Rename unpacked textures to match image name, since images packed into .blend use names from 
         #  original texture filepath baked into their data instead of the image name.
-        if Path(import_file).suffix == ".blend":
+        if import_file.suffix == ".blend":
             rename_textures_unpacked(textures_temp_dir)
 
         # Modify textures if requested.
-        if Path(import_file).suffix != ".glb":
+        if import_file.suffix != ".glb":
             determine_modify_textures()
 
         # Only separate image textures if imported file is a GLB.
-        elif Path(import_file).suffix == ".glb":
+        elif import_file.suffix == ".glb":
             # Get a dictionary of which textures are assigned to which materials.
             mapped_textures = map_textures_to_materials(import_file)
 
@@ -2524,9 +2524,9 @@ def apply_textures_packed(item_dir, item, import_file, textures_dir, textures_te
 
 
 # Apply "External" textures to objects.
-def apply_textures_external(item_dir, item, import_file, textures_dir, textures_temp_dir, blend):
+def apply_textures_external(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend):
     try:    
-        if Path(import_file).suffix == ".blend" and use_linked_blend_textures:  # Skip apply textures to objects if they're already set up in the imported .blend file.
+        if import_file.suffix == ".blend" and use_linked_blend_textures:  # Skip apply textures to objects if they're already set up in the imported .blend file.
             print("Using external textures already linked to .blend for conversion")
             logging.info("Using external textures already linked to .blend for conversion")
 
@@ -2534,7 +2534,7 @@ def apply_textures_external(item_dir, item, import_file, textures_dir, textures_
             bpy.ops.file.pack_all()
 
             # Pretend that these textures were "Packed" all along.
-            apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+            apply_textures_packed(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend)
 
             return
 
@@ -2562,13 +2562,13 @@ def apply_textures_external(item_dir, item, import_file, textures_dir, textures_
             regex_textures_external(textures_temp_dir)
 
         # Create materials.
-        create_materials(item, textures_temp_dir)
+        create_materials(item_name, textures_temp_dir)
 
         # Modify textures if requested.
         determine_modify_textures()
 
         # Assign materials to objects.
-        assign_materials(item)
+        assign_materials(item_name)
 
         print("Applied external textures to objects")
         logging.info("Applied external textures to objects")
@@ -2578,16 +2578,16 @@ def apply_textures_external(item_dir, item, import_file, textures_dir, textures_
 
 
 # Determine where textures should be sourced, then texture the model.
-def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
+def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
     try:
         if textures_source == "External":
-            apply_textures_external(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+            apply_textures_external(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend)
             
         elif textures_source == "Packed":
-            apply_textures_packed(item_dir, item, import_file, textures_dir, textures_temp_dir, blend)
+            apply_textures_packed(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend)
             
         elif textures_source == "Custom":
-            apply_textures_custom(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
+            apply_textures_custom(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
             
         print("Applied textures to objects")
         logging.info("Applied textures to objects")
@@ -2597,7 +2597,7 @@ def apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir,
 		
 
 # Decide whether to export files (again) or not based on optimize_filter menu.
-def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_dir, export_file):
+def determine_exports(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_dir, export_file):
     try:
         # # Force global variables to reset to original settings, specifically export_file(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
         # # Assign variables from dictionary.
@@ -2607,7 +2607,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
 
         if optimize_filter == "All":
             
-            export_a_model(item, item_dir, export_settings_dict, export_dir, export_file)
+            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
             
             # Get current file size (in MB)
             export_file_size = get_export_file_size(export_file)
@@ -2620,7 +2620,7 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
             
             # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
             elif export_file_size > file_size_maximum:
-                optimize_export_file(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file)
+                optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file)
 
         elif optimize_filter == "Above Target":
             # Get current file size (in MB)
@@ -2636,21 +2636,21 @@ def determine_exports(item_dir, item, import_file, textures_dir, textures_temp_d
                 print(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 logging.info(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 
-                export_a_model(item, item_dir, export_settings_dict, export_dir, export_file)
+                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-                optimize_export_file(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file)
+                optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file)
 
             elif export_file_size == 0:
                 print(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
                 logging.info(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
                 
-                export_a_model(item, item_dir, export_settings_dict, export_dir, export_file)
+                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-                optimize_export_file(item_dir, item, import_file, textures_dir, textures_temp_dir, export_file)
+                optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file)
 
         elif optimize_filter == "None":
             
-            export_a_model(item, item_dir, export_settings_dict, export_dir, export_file)
+            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
 
         print("Determined whether/what to export")
         logging.info("Determined whether/what to export")
@@ -2672,9 +2672,9 @@ def import_uv_image(uv_path):
 
 
 # Export UV Layout.
-def export_a_uv_layout(item, name, directory, export_all):
+def export_a_uv_layout(item_name, name, directory, export_all):
     try:
-        uv_name = prefix + item + name + suffix + "_UV." + uv_format.lower()
+        uv_name = prefix + item_name + name + suffix + "_UV." + uv_format.lower()
         uv_path = str(Path(directory) / uv_name)
         export_uv_layout_options = {
             "filepath": uv_path,
@@ -2744,7 +2744,7 @@ def determine_uv_directory(textures_dir):
         logging.exception("Could not determine UV directory")
 
 
-# Determine whether to keep modified or copied textures after the conversion is over for a given item.
+# Determine whether to keep modified or copied textures after the conversion is over for a given item_name.
 def determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir):
     try:
         # If saving a .blend, don't delete the textures upon which the model inside depends.
@@ -2782,13 +2782,13 @@ def determine_keep_edited_textures(item_dir, blend, import_file, export_file, ex
 
 
 # Determine how to export UV layouts.
-def determine_export_uv_layout(item, textures_dir):
+def determine_export_uv_layout(item_name, textures_dir):
     try:
         directory = determine_uv_directory(textures_dir)
         if uv_combination == "All":
             export_all = True
             name = ""
-            export_a_uv_layout(item, name, directory, export_all)
+            export_a_uv_layout(item_name, name, directory, export_all)
         elif uv_combination == "Object":
             export_all = False
             select_only_meshes()
@@ -2797,14 +2797,14 @@ def determine_export_uv_layout(item, textures_dir):
                 deselect_all()
                 object.select_set(object.type == "MESH")
                 bpy.context.view_layer.objects.active = object
-                export_a_uv_layout(item + "_", object.name, directory, export_all)
+                export_a_uv_layout(item_name + "_", object.name, directory, export_all)
         elif uv_combination == "Material":
             export_all = False
             for material in bpy.data.materials:
                 deselect_all()
                 select_by_material(material)
-                item = ""
-                export_a_uv_layout(item, material.name, directory, export_all)
+                item_name = ""
+                export_a_uv_layout(item_name, material.name, directory, export_all)
         
         uv_default_formats = ("PNG", "SVG", "EPS")
         if uv_format not in uv_default_formats:
@@ -3060,7 +3060,7 @@ def get_assets_in_library(library_name):
 
 
 # Mark assets in asset data filter.
-def mark_assets(item, export_name, blend):
+def mark_assets(item_name, export_name, blend):
     try:
         assets_in_library = get_assets_in_library(asset_library)  # Get a dictionary of assets in the selected asset library.
 
@@ -3069,7 +3069,7 @@ def mark_assets(item, export_name, blend):
                 mark_asset(action, "Actions", assets_in_library, export_name, blend)
         
         if "Collections" in asset_types_to_mark:
-            master_collection_name = prefix + item + suffix
+            master_collection_name = prefix + item_name + suffix
             for collection in bpy.data.collections:
                 if mark_only_master_collection and collection.name != master_collection_name:
                     continue
@@ -3101,12 +3101,12 @@ def mark_assets(item, export_name, blend):
 
 
 # Move/Copy blend file and textures to selected Asset Library.
-def move_copy_blend_to_asset_library(item, blend):
+def move_copy_blend_to_asset_library(item_name, blend):
     try:
         if asset_library != "NO_LIBRARY" and asset_library != "(no library)":
             asset_library_path = Path(bpy.context.preferences.filepaths.asset_libraries[asset_library].path)
             
-            if asset_blend_location == "None":  # Return early if User elected to leave blend adjacent to each converted item.
+            if asset_blend_location == "None":  # Return early if User elected to leave blend adjacent to each converted item_name.
                 return
 
             asset_dir = make_directory(asset_library_path, blend.stem)
@@ -3131,11 +3131,11 @@ def move_copy_blend_to_asset_library(item, blend):
 
 
 # Archive assets to Asset Library by marking, tagging, and cataloging.
-def archive_assets_to_library(item, export_name, blend):
+def archive_assets_to_library(item_name, export_name, blend):
     try:
-        mark_assets(item, export_name, blend)
+        mark_assets(item_name, export_name, blend)
         save_blend_file(blend)
-        move_copy_blend_to_asset_library(item, blend)
+        move_copy_blend_to_asset_library(item_name, blend)
 
         print(f"Archived Assets to library: {asset_library}")
         logging.info(f"Archived Assets to library: {asset_library}")
@@ -3145,17 +3145,17 @@ def archive_assets_to_library(item, export_name, blend):
 
 
 # Convert the file for every file found inside the given directory.
-def converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_count):
+def converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file):
     try:
         print("-------------------------------------------------------------------")
-        print(f"CONVERTER START: {Path(import_file).name}")
+        print(f"CONVERTER START: {import_file.name}")
         print("-------------------------------------------------------------------")
         logging.info("-------------------------------------------------------------------")
-        logging.info(f"CONVERTER START: {Path(import_file).name}")
+        logging.info(f"CONVERTER START: {import_file.name}")
         logging.info("-------------------------------------------------------------------")
         
         # Set up scene.
-        setup_scene(item)
+        setup_scene(item_name)
 
         # Brute force-remove all materials and images.
         if textures_source != "Custom":
@@ -3168,8 +3168,8 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
         # Import the file.
         import_a_file(import_file, import_settings_dict)
 
-        # Move all objects and collections to item collection.
-        move_objects_and_collections_to_item_collection(item)
+        # Move all objects and collections to item_name collection.
+        move_objects_and_collections_to_item_collection(item_name)
 
         # Delete animations.
         if not use_animations:
@@ -3184,7 +3184,7 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
 
         # Determine whether to use textures and from where they should come.
         if use_textures:
-            apply_textures(item_dir, item, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
+            apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
         elif not use_textures:
             clear_materials_users()  # Clear all users of all materials.
             clean_data_block(bpy.data.materials)  # Brute force-remove all materials and images.
@@ -3212,8 +3212,8 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
         run_custom_scripts("Before_Export")
 
         # Decide whether to export files or not based on optimize_filter menu.
-        determine_exports(item_dir, item, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_dir, export_file)
-        # export_models(item, item_dir)
+        determine_exports(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_dir, export_file)
+        # export_models(item_name, item_dir)
 
         # Run custom scripts with triggers "After Export".
         run_custom_scripts("After_Export")
@@ -3224,28 +3224,28 @@ def converter(item_dir, item, import_file, import_settings_dict, textures_dir, t
 
         # Export UV Layout(s).
         if export_uv_layout:
-            determine_export_uv_layout(item, textures_dir)
+            determine_export_uv_layout(item_name, textures_dir)
         
         # Archive assets to library.
         if archive_assets:
-            archive_assets_to_library(item, export_name, blend)
+            archive_assets_to_library(item_name, export_name, blend)
 
         # Save only single preview image of collections if desired when not archiving assets to library.
         if not archive_assets and asset_extract_previews:
             asset_extract_previews_filter = ["Collections"]
             asset_types_to_mark = ["Collections"]
-            mark_assets(item, blend)
+            mark_assets(item_name, blend)
 
 
         print("-------------------------------------------------------------------")
-        print(f"CONVERTER END: {Path(import_file).name}")
+        print(f"CONVERTER END: {import_file.name}")
         print("-------------------------------------------------------------------")
         logging.info("-------------------------------------------------------------------")
-        logging.info(f"CONVERTER END: {Path(import_file).name}")
+        logging.info(f"CONVERTER END: {import_file.name}")
         logging.info("-------------------------------------------------------------------")
 
     except Exception as Argument:
-        logging.exception(f"COULD NOT CONVERT FILE: {Path(import_file).name}")
+        logging.exception(f"COULD NOT CONVERT FILE: {import_file.name}")
 		
 
 # Write conversion report to a JSON file.
@@ -3268,7 +3268,7 @@ def report_conversion_count(conversion_count):
         logging.exception("Could not report conversion count")
 		
 
-# Make a list of exports for the current item, which will then be appended to the full conversion_list to be reported in the log.
+# Make a list of exports for the current item_name, which will then be appended to the full conversion_list to be reported in the log.
 def list_exports(export_file):
     try:
         exports_list = []
@@ -3302,8 +3302,8 @@ def make_directory(destination, name):
         logging.exception(f"Could not make directory: {new_dir}")
 
 
-# Move and or copy files from item directory to custom directory specified by the User.
-def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents):
+# Move and or copy files from item_name directory to custom directory specified by the User.
+def move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents):
     try:
         destination = export_dir
         
@@ -3336,18 +3336,18 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
             if asset_extract_previews:  # Include asset preview(s).
                 previews = [files_to_move.append(file) for file in Path.iterdir(item_dir) if "Preview" in file.name and file.suffix == ".png"]
 
-        # Change destination to subdirectory by item name if elected.
+        # Change destination to subdirectory by item_name name if elected.
         if use_subdirectories:
-            # Change destination to item subdirectory.
-            destination = Path(destination, prefix + item + suffix)
+            # Change destination to item_name subdirectory.
+            destination = Path(destination, prefix + item_name + suffix)
             
-            # Make item subdirectory.
+            # Make item_name subdirectory.
             make_directory(destination.parent, destination.name)
             
             # Copy original subfolders and files.
             if copy_orignal_contents and original_contents:  # Don't bother trying to copy original files if none exist.
                 for file in original_contents: 
-                    copy_file(destination, file)  # Copy original files to custom item subdirectory.
+                    copy_file(destination, file)  # Copy original files to custom item_name subdirectory.
                         
         # Move files.
         for file in files_to_move:
@@ -3361,75 +3361,117 @@ def move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_
         
 
 # Determine whether to import a model before converting in order to save time.
-def determine_imports(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_list, conversion_count):
+# def determine_import(item_dir, item_name, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_list, conversion_count):
+def determine_import(import_file, export_settings_dict, export_dir, export_file):    
     try:
-        # Always convert files if not auto file resizing "All" or not auto file resizing at all.
-        if not optimize or (optimize and optimize_filter == "All"):
-            print(f"Initiating Converter: {Path(import_file).name}")
-            logging.info(f"Initiating Converter: {Path(import_file).name}")
-            # Run the converter on the item that was found.
-            converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_count)
-            # Increment conversion counter and add converted item(s) to list.
-            exports_list = list_exports(export_file)
-            # Add export(s) to conversion list.
-            conversion_list.extend(exports_list)
-            conversion_count += 1
-            # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
-            if not export_adjacent:
-                move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents)
-            return conversion_list, conversion_count
+        if export_settings_dict["overwrite_files"]:
+            # If export file exists and the target filter is set to only overwrite files above target, get the existing file's size and determine whether to import.
+            if export_file.is_file() and optimize_overwrite_filter == "Only Above Target":
+                export_file_size = get_export_file_size(export_file)
+                if export_file_size < optimize_target_file_size:
+                    return False
+            # In all other cases where overwrite_files is True, import the file.
+            return True
 
-        # Get original contents inside the item directory.  Will be used later if exporting models to a custom output directory.
-        original_contents = [file for file in Path.iterdir(item_dir)]
+        elif not export_settings_dict["overwrite_files"]:
+            # Don't import the file when not overwriting exports and the export file already exists.
+            if export_file.is_file():
+                return False
+        
+        # In all other cases, import the file.
+        return True
 
-        # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
-        if optimize_filter == "Above Target":
-            # Get current file size (in MB) in order to determine whether to import the current item at all.
-            export_file_size = get_export_file_size(export_file)
 
-            # If export_file exists and is above maximum when optimize_filter is set to "Above Target", convert item.
-            if export_file_size > file_size_maximum:
-                print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
-                logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
-                # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_count)
-                # Increment conversion counter and add converted item(s) to list.
-                exports_list = list_exports(export_file)
-                # Add export(s) to conversion list.
-                conversion_list.extend(exports_list)
-                conversion_count += 1
-                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
-                if not export_adjacent:
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents)
-                return conversion_list, conversion_count
+
+
+        # # Always convert files if not auto file resizing "All" or not auto file resizing at all.
+        # if not optimize or (optimize and optimize_filter == "All"):
+        #     print(f"Initiating Converter: {import_file.name}")
+        #     logging.info(f"Initiating Converter: {import_file.name}")
+        #     # Run the converter on the item_name that was found.
+        #     converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+        #     # Increment conversion counter and add converted item_name(s) to list.
+        #     exports_list = list_exports(export_file)
+        #     # Add export(s) to conversion list.
+        #     conversion_list.extend(exports_list)
+        #     conversion_count += 1
+        #     # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+        #     if not export_adjacent:
+        #         move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents)
+        #     return conversion_list, conversion_count
+
+        # # Get original contents inside the item_name directory.  Will be used later if exporting models to a custom output directory.
+        # original_contents = [file for file in Path.iterdir(item_dir)]
+
+        # # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
+        # if optimize_filter == "Above Target":
+        #     # Get current file size (in MB) in order to determine whether to import the current item_name at all.
+        #     export_file_size = get_export_file_size(export_file)
+
+        #     # If export_file exists and is above maximum when optimize_filter is set to "Above Target", convert item_name.
+        #     if export_file_size > file_size_maximum:
+        #         print(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+        #         logging.info(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+        #         # Run the converter on the item_name that was found.
+        #         converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+        #         # Increment conversion counter and add converted item_name(s) to list.
+        #         exports_list = list_exports(export_file)
+        #         # Add export(s) to conversion list.
+        #         conversion_list.extend(exports_list)
+        #         conversion_count += 1
+        #         # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+        #         if not export_adjacent:
+        #             move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents)
+        #         return conversion_list, conversion_count
             
-            # If export_file already exists and is already below maximum when optimize_filter is set to "Above Target", skip item.
-            elif export_file_size > 0 and export_file_size < file_size_maximum:
-                print(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-                logging.info(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-                return conversion_list, conversion_count
+        #     # If export_file already exists and is already below maximum when optimize_filter is set to "Above Target", skip item_name.
+        #     elif export_file_size > 0 and export_file_size < file_size_maximum:
+        #         print(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+        #         logging.info(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+        #         return conversion_list, conversion_count
 
-            # If file size is zero, then the file cannot exist and requires export.
-            elif export_file_size == 0:
-                print(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file).name} doesn't yet exist.")
-                logging.info(f"Initiating Converter: {Path(import_file).name}.  {Path(export_file).name} doesn't yet exist.")
-                # Run the converter on the item that was found.
-                converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_count)
-                # Increment conversion counter and add converted item(s) to list.
-                exports_list = list_exports(export_file)
-                # Add export(s) to conversion list.
-                conversion_list.extend(exports_list)
-                conversion_count += 1
-                # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
-                if not export_adjacent:
-                    move_copy_to_custom_dir(item, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents)
-                return conversion_list, conversion_count
-
-        print(f"Determined imports: {item}")
-        logging.info(f"Determined imports: {item}")
+        #     # If file size is zero, then the file cannot exist and requires export.
+        #     elif export_file_size == 0:
+        #         print(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} doesn't yet exist.")
+        #         logging.info(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} doesn't yet exist.")
+        #         # Run the converter on the item_name that was found.
+        #         converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+        #         # Increment conversion counter and add converted item_name(s) to list.
+        #         exports_list = list_exports(export_file)
+        #         # Add export(s) to conversion list.
+        #         conversion_list.extend(exports_list)
+        #         conversion_count += 1
+        #         # Now determine whether to copy/move contents to a custom directory after the conversion has taken place.
+        #         if not export_adjacent:
+        #             move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents)
+        #         return conversion_list, conversion_count
 
     except Exception as Argument:
-        logging.exception(f"Could not determine imports: {item}")
+        logging.exception(f"Could not determine imports: {item_name}")
+
+
+# Get export file and parent directory.
+def get_export_file_and_directory(item_dir, export_settings_dict):
+    try: 
+        # Determine where to export the model.
+        if export_adjacent:
+            export_dir = item_dir
+        
+        # Replace the export directory with the custom export directory if not exporting models adjacent to each other.
+        elif not export_settings_dict["export_adjacent"]:
+            export_dir = Path(export_settings_dict["directory"])
+            
+            # Convert the export directory to a subdirectory after the item_name.
+            if export_settings_dict["use_subdirectories"]:
+                export_dir = export_dir / export_name
+            
+        export_ext = export_settings_dict["extension"]
+        export_file = export_dir / f"{export_name}{export_ext}"
+
+        return export_dir, export_file
+    
+    except Exception as Argument:
+        logging.exception(f"Could not determine get export file: {export_file.name}")
 
 
 # Main function that loops through specified directory and creates variables for the converter
@@ -3442,7 +3484,7 @@ def batch_converter():
         logging.info("---------------------  BATCH CONVERTER START  ---------------------")
         logging.info("-------------------------------------------------------------------")
 
-        # Set up a conversion count and list to report how many conversions took place and the final file sizes of each item.
+        # Set up a conversion count and list to report how many conversions took place and the final file sizes of each item_name.
         conversion_count = 0
         conversion_list = []
 
@@ -3460,48 +3502,65 @@ def batch_converter():
         for import_settings_dict in imports:
 
             # Get a list of imports for the given import instance's format from the Imports.json dictionary.
-            import_list = import_settings_dict["files"]
+            imports_list = import_settings_dict["files"]
 
             # Loop through files in the current imports list and determine imports/run converter for each.
-            for file in import_list:
-                file = Path(file)
-                item = file.stem
-                item_dir = file.parent
-                import_file = str(file)
+            for import_file in imports_list:
+                import_file = Path(import_file)
+                item_name = import_file.stem
+                item_dir = import_file.parent
+                export_name = f"{prefix}{item_name}{suffix}"
                 textures_dir = item_dir / "textures"
                 textures_temp_dir = item_dir / f"{textures_dir}_{export_name}"
                 if textures_source == "Custom":  
                     textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
                 blend = item_dir / f"{export_name}.blend"
+
                 
-                export_name = f"{prefix}{item}{suffix}"
-                
-                # Loop through exports and determine imports/run converter for each.
+                # Loop through exports and determine whether to import the file for each.
+                import_checklist = []
                 for export_settings_dict in exports:
-                    # Determine where to export the model.
-                    if export_adjacent:
-                        export_dir = item_dir
+                    # Get export file and parent directory.
+                    export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict)
+
+                    # Determine which models are eligible for conversion.
+                    determine_import = determine_import(import_file, export_settings_dict, export_dir, export_file)
                     
-                    elif not export_adjacent:
-                        export_dir = Path(export_settings_dict["directory"])
-                        
-                        if export_settings_dict["use_subdirectories"]:
-                            export_dir = export_dir / export_name
-                        
-                    export_ext = export_settings_dict["extension"]
-                    export_file = export_dir / f"{export_name}{export_ext}"
+                    # Note eligibility on list.
+                    import_checklist.append(determine_import)
+                    
+                    # Update each export dictionary with import eligibility.
+                    export_settings_dict.update({"determine_import": determine_import})
+                
 
-                    # Determine which models to import, then convert the ones that are eligible for import.
-                    conversion_list, conversion_count = determine_imports(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_list, conversion_count)
-                    # converter(item_dir, item, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_count)
+                # If at least one export file is eligible for export, import the file.
+                if True in import_checklist:
+                    # Import the file.
+                    # (ADD ALL IMPORT-RELEVANT OPERATIONS HERE, E.G. PROBABLY EVERYTHING BEFORE APPLYING TEXTURES)
+                    
 
-                    conversion_count += 1
+                    
+                    # Export files per import file.
+                    for export_settings_dict in exports:
+                        if export_settings_dict("determine_import"):
+                            # Get export file and parent directory.
+                            export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict)
+                            
+                            # Convert and export the file.
+                            # (ADD ALL CONVERSION-AND-EXPORT-RELEVANT OPERATIONS HERE, E.G. PROBABLY EVERYTHING AT AND AFTER APPLYING TEXTURES) 
 
-        # If using custom textures, delete temporary textures directory only after all items have been converted.
-        if use_textures and textures_source == "Custom" and not keep_edited_textures:
-            textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
-            if Path(textures_temp_dir).exists():
-                delete_textures_temp(textures_temp_dir)
+
+
+                            # # Run the converter.
+                            # converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+
+                conversion_count += 1
+
+        # # If using custom textures, delete temporary textures directory only after all items have been converted.
+        # if use_textures and textures_source == "Custom" and not keep_edited_textures:
+        #     textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
+        #     if Path(textures_temp_dir).exists():
+        #         delete_textures_temp(textures_temp_dir)
 
         # Run custom scripts with triggers "After Batch".
         run_custom_scripts("After_Batch")
