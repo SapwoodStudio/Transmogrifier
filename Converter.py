@@ -1171,23 +1171,21 @@ def assign_materials(item_name):
 		
 
 # Resize image textures in textures_temp folder before export.
-def resize_textures(texture_resolution, texture_resolution_include):
+def resize_textures(texture_map, texture_resolution):
     try:
         for image in bpy.data.images:
             try:
-                width, height = image.size
-                if texture_resolution < width and image.name != "Render Result":
-                    for pbr_type in texture_resolution_include:
-                        if pbr_type in image.name:
-                            image.scale(texture_resolution, texture_resolution) # (width, height)
-                            image.save() # save images to textures_temp folder so USDZip will use smaller textures when zipping USD. 
-                            print(f"Resized Image ({image.name}): {width, height} --> {texture_resolution, texture_resolution}")
-                            logging.info(f"Resized Image ({image.name}): {width, height} --> {texture_resolution, texture_resolution}")
-                        else:
-                            continue
-                elif texture_resolution > width and image.name != "Render Result":
-                    print(f"Skipped Resize Image ({image.name}) to avoid upscaling: {width, height} --> {texture_resolution, texture_resolution}")
-                    logging.info(f"Skipped Resize Image ({image.name}) to avoid upscaling: {width, height} --> {texture_resolution, texture_resolution}")
+                if texture_map in image.name:
+                    width, height = image.size
+                    if texture_resolution < width:
+                        image.scale(texture_resolution, texture_resolution) # (width, height)
+                        image.save()
+                        print(f"Resized Image ({image.name}): {width, height} --> {texture_resolution, texture_resolution}")
+                        logging.info(f"Resized Image ({image.name}): {width, height} --> {texture_resolution, texture_resolution}")
+                    
+                    elif texture_resolution > width:
+                        print(f"Skipped Resize Image ({image.name}) to avoid upscaling: {width, height} --> {texture_resolution, texture_resolution}")
+                        logging.info(f"Skipped Resize Image ({image.name}) to avoid upscaling: {width, height} --> {texture_resolution, texture_resolution}")
             except:
                 pass
 
@@ -1276,7 +1274,7 @@ def set_color_management(
 		
 
 # Convert images to specified format.
-def reformat_images(texture_format, image_quality, texture_format_include):
+def reformat_images(texture_map, texture_format, image_quality):
     try:
         # Get dictionary.
         ext_dict = image_texture_ext_dict()
@@ -1301,63 +1299,58 @@ def reformat_images(texture_format, image_quality, texture_format_include):
             if image.name == "Render Result" or image.name == "Viewer Node":
                 continue
             
-            # Include only the images specified by the User.
-            for pbr_tag in texture_format_include:
-                if pbr_tag in image.name:
-                    image_path = str(Path.resolve(Path(bpy.path.abspath(image.filepath))))
+            if texture_map in image.name:
+                image_path = str(Path.resolve(Path(bpy.path.abspath(image.filepath))))
 
-                    # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
-                    image.name = Path(image_path).name
+                # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
+                image.name = Path(image_path).name
 
-                    # Change image extension and pathing.
-                    image_ext = "." + image.name.split(".")[-1].lower()
-                    image_ext_new = ext_dict[texture_format]
-                    image_path_new = str(Path.resolve(Path(bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new)))))
-                    
-                    # Don't reformat image if converting between identical formats.
-                    if image_ext == image_ext_new:
-                        print(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({texture_format})")
-                        logging.info(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({texture_format})")
-                        continue
-
-                    # Change image name.
-                    image_name = image.name
-                    image_name_new = image.name.replace(image_ext, image_ext_new)
-
-                    # Save image as input specified by the User.
-                    image.save_render(filepath = image_path_new)
-                    if image_path != image_path_new and Path(image_path).exists():  # Don't delete image if converting to the same file format.
-                        Path.unlink(Path(image_path))
-
-                    # Repath the image textures to the new format.
-                    image.name = image_name_new
-                    bpy.data.images[image.name].filepath = image_path_new
-
-                    # Ensure alpha modes and color spaces are set appropriately for EXR format.
-                    if texture_format == "OPEN_EXR":
-                        image.alpha_mode = 'PREMUL'
-                        print(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
-                        logging.info(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
-                        if pbr_tag == "BaseColor":
-                            image.colorspace_settings.name = 'Linear'
-                            print(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
-                            logging.info(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
-
-                    # Ensure alpha modes and color spaces are set appropriately for non-EXR formats.
-                    elif texture_format != "OPEN_EXR" and image_ext == ".exr":
-                        image.alpha_mode = 'STRAIGHT'
-                        print(f"{image.name}'s alpha mode was set to 'Straight'.")
-                        logging.info(f"{image.name}'s alpha mode was set to 'Straight'.")
-                        if pbr_tag == "BaseColor":
-                            image.colorspace_settings.name = 'sRGB'
-                            print(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
-                            logging.info(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
-
-                    print(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {texture_format}")
-                    logging.info(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {texture_format}")
-
-                else:
+                # Change image extension and pathing.
+                image_ext = "." + image.name.split(".")[-1].lower()
+                image_ext_new = ext_dict[texture_format]
+                image_path_new = str(Path.resolve(Path(bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new)))))
+                
+                # Don't reformat image if converting between identical formats.
+                if image_ext == image_ext_new:
+                    print(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({texture_format})")
+                    logging.info(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({texture_format})")
                     continue
+
+                # Change image name.
+                image_name = image.name
+                image_name_new = image.name.replace(image_ext, image_ext_new)
+
+                # Save image as input specified by the User.
+                image.save_render(filepath = image_path_new)
+                if image_path != image_path_new and Path(image_path).exists():  # Don't delete image if converting to the same file format.
+                    Path.unlink(Path(image_path))
+
+                # Repath the image textures to the new format.
+                image.name = image_name_new
+                bpy.data.images[image.name].filepath = image_path_new
+
+                # Ensure alpha modes and color spaces are set appropriately for EXR format.
+                if texture_format == "OPEN_EXR":
+                    image.alpha_mode = 'PREMUL'
+                    print(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
+                    logging.info(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
+                    if pbr_tag == "BaseColor":
+                        image.colorspace_settings.name = 'Linear'
+                        print(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
+                        logging.info(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
+
+                # Ensure alpha modes and color spaces are set appropriately for non-EXR formats.
+                elif texture_format != "OPEN_EXR" and image_ext == ".exr":
+                    image.alpha_mode = 'STRAIGHT'
+                    print(f"{image.name}'s alpha mode was set to 'Straight'.")
+                    logging.info(f"{image.name}'s alpha mode was set to 'Straight'.")
+                    if pbr_tag == "BaseColor":
+                        image.colorspace_settings.name = 'sRGB'
+                        print(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
+                        logging.info(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
+
+                print(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {texture_format}")
+                logging.info(f"Reformatted Image ({image_name}): {image_ext.upper()[1:]} --> {texture_format}")
 
         print("Reformatted images")
         logging.info("Reformatted images")
@@ -2069,7 +2062,7 @@ def set_scene_units(unit_system, length_unit):
 		
 
 # Export a model.
-def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file):
+def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression):  # MAYBE ADD DRACO COMPRESSION FLAG HERE, E.G. draco_compression
     try:
         # Set scale
         export_scale = export_settings_dict["scale"]
@@ -2086,7 +2079,11 @@ def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export
 
         # Set filepath to the location of the model to be exported.
         options["filepath"] = str(export_file)
-        
+
+        # Turn on Draco compression if auto-optimizing files and exporting a GLB.
+        if draco_compression and export_settings_dict["extension"] == ".glb":
+            options["export_draco_mesh_compression_enable"] = True
+
         # Get export operator.
         operator = export_settings_dict["operator"]
         operator = f"{operator}{options})"  # Concatenate the export command with the export options dictionary.
@@ -2122,7 +2119,7 @@ def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export
 def export_models(item_name, item_dir):
     try:
         for export_settings_dict in exports:
-            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
+            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
         
         print("Exported models")
         logging.info("Exported Models")
@@ -2213,25 +2210,36 @@ def get_texture_resolution_maximum():
         logging.exception("Could not get texture resolution maximum for Auto Resize Files")
 
 
-# Auto resize method: Draco-Compress
-def draco_compress_and_export(export_file, export_file_2):
+# Turn on draco-compression if elected and if exporting a GLB.
+def draco_compression_check(export_settings_dict):
     try:
-        if "Draco-Compress" in file_size_methods and export_file_ext == ".glb":
-            print("#################  Draco-Compress  #################")
-            logging.info("#################  Draco-Compress  #################")
-            export_file_options["export_draco_mesh_compression_enable"] = True
-            
-            # Determine how many 3D files to export, then export.
-            export_models(export_file_command, export_file_options, export_file_scale, export_file, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+        if optimize_draco and export_settings_dict["extension"] == ".glb":
+            return True
+        return False
+
+    except Exception as Argument:
+        logging.exception("Could not check Draco compression")
+
+
+# Auto resize method: Draco-Compress
+def draco_compress_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file):
+    try:
+        # Turn on draco-compression if elected and if exporting a GLB.
+        draco_compression = draco_compression_check(export_settings_dict)
+        
+        print("#################  Draco-Compress  #################")
+        logging.info("#################  Draco-Compress  #################")
+
+        export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
 
     except Exception as Argument:
         logging.exception("Could not Draco-compress model for Auto Resize Files")
 
 
 # Auto resize method: Resize textures
-def resize_textures_and_export(export_file, export_file_2, texture_resolution_current):
+def resize_textures_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, texture_resolution_current):
     try:
-        if "Resize Textures" in file_size_methods:
+        if optimize_texture_resize:
             if texture_resolution_current / 2 >= resize_textures_limit:
                 print("#################  Resize Textures  #################")
                 logging.info("#################  Resize Textures  #################")
@@ -2239,8 +2247,10 @@ def resize_textures_and_export(export_file, export_file_2, texture_resolution_cu
                 # Resize textures (again) and re-export.
                 resize_textures(texture_resolution = texture_resolution_current, texture_resolution_include = texture_resolution_include)
 
-                # Determine how many 3D files to export, then export.
-                export_models(export_file_command, export_file_options, export_file_scale, export_file, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+                # Turn on draco-compression if elected and if exporting a GLB.
+                draco_compression = draco_compression_check(export_settings_dict)
+
+                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
             
             elif texture_resolution_current / 2 < resize_textures_limit:
                 print("#################  Resize Textures  #################")
@@ -2256,9 +2266,9 @@ def resize_textures_and_export(export_file, export_file_2, texture_resolution_cu
 
 
 # Auto resize method: Reformat textures
-def reformat_textures_and_export(export_file, export_file_2):
+def reformat_textures_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file):
     try:
-        if "Reformat Textures" in file_size_methods:
+        if optimize_texture_reformat:
             print("#################  Reformat Textures  #################")
             logging.info("#################  Reformat Textures  #################")
             texture_format = 'JPEG'
@@ -2268,19 +2278,21 @@ def reformat_textures_and_export(export_file, export_file_2):
                 texture_format_include.append("Normal")
             elif reformat_normal_maps == False and "Normal" in texture_format_include:
                 texture_format_include.remove("Normal")
-            reformat_images(texture_format, image_quality, texture_format_include)
+            reformat_images(texture_map, texture_format, image_quality)
+
+            # Turn on draco-compression if elected and if exporting a GLB.
+            draco_compression = draco_compression_check(export_settings_dict)
             
-            # Determine how many 3D files to export, then export.
-            export_models(export_file_command, export_file_options, export_file_scale, export_file, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
 
     except Exception as Argument:
         logging.exception("Could not reformat textures for Auto Resize Files")
 
 
 # Auto resize method: Decimate meshes
-def decimate_meshes_and_export(export_file, export_file_2, decimate_counter, decimate_maximum):
+def decimate_meshes_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, decimate_counter, decimate_maximum):
     try:
-        if "Decimate Meshes" in file_size_methods:
+        if optimize_decimate:
             if decimate_counter <= decimate_maximum:
                 print("#################  Decimate Meshes  #################")
                 logging.info("#################  Decimate Meshes  #################")
@@ -2288,8 +2300,10 @@ def decimate_meshes_and_export(export_file, export_file_2, decimate_counter, dec
                 decimate_objects()
                 select_all()
 
-                # Determine how many 3D files to export, then export.
-                export_models(export_file_command, export_file_options, export_file_scale, export_file, export_file_2_command, export_file_2_options, export_file_2_scale, export_file_2)
+                # Turn on draco-compression if elected and if exporting a GLB.
+                draco_compression = draco_compression_check(export_settings_dict)
+
+                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
                 decimate_counter += 1
 
             elif decimate_counter > decimate_maximum:
@@ -2304,8 +2318,8 @@ def decimate_meshes_and_export(export_file, export_file_2, decimate_counter, dec
         logging.exception("Could not decimate meshes for Auto Resize Files")
 
 
-# Automatically try to resize the exported file (only takes export_file into account)
-def optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file):
+# Try to automatically to optimize the exported file's size.
+def optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file):
     try:
         # Get current file size (in MB)
         export_file_size = get_export_file_size(export_file)
@@ -2319,34 +2333,34 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
             logging.info("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
             
             # 1. Draco
-            draco_compress_and_export(export_file, export_file_2)
+            draco_compress_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file)
             # check
             export_file_size = get_export_file_size(export_file)
             if export_file_size < file_size_maximum:
                 break
 
             # 2. Resize
-            texture_resolution_current = resize_textures_and_export(export_file, export_file_2, texture_resolution_current)
+            texture_resolution_current = resize_textures_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, texture_resolution_current)
             # check
             export_file_size = get_export_file_size(export_file)
             if export_file_size < file_size_maximum:
                 break
            
             # 3. Reformat
-            reformat_textures_and_export(export_file, export_file_2)
+            reformat_textures_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file)
             # check
             export_file_size = get_export_file_size(export_file)
             if export_file_size < file_size_maximum:
                 break
 
             # (4.) Decimate
-            decimate_counter = decimate_meshes_and_export(export_file, export_file_2, decimate_counter, decimate_maximum)
+            decimate_counter = decimate_meshes_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, decimate_counter, decimate_maximum)
             # check
             export_file_size = get_export_file_size(export_file)
             if export_file_size < file_size_maximum:
                 break
             
-            # repeat unless all methods are exhausted
+            # Repeat unless all methods are exhausted.
             if "Resize Textures" not in file_size_methods and "Decimate Meshes" not in file_size_methods:
                 break
             elif "Resize Textures" in file_size_methods and "Decimate Meshes" in file_size_methods:
@@ -2375,15 +2389,22 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
 
 
 # Modify textures if requested.
-def determine_modify_textures():
+def modify_textures():
     try:
-        if texture_resolution != "Default":
-            resize_textures(texture_resolution, texture_resolution_include)
-        if texture_format != "Default":
-            reformat_images(texture_format, image_quality, texture_format_include)
+        for edit_textures_dict in textures:
+            texture_map = edit_textures_dict["texture_map"]
+            texture_resolution = edit_textures_dict["texture_resolution"]
+            texture_format = edit_textures_dict["texture_format"]
+            image_quality = edit_textures_dict["image_quality"]
+            
+            if texture_resolution != "Default":
+                resize_textures(texture_map, texture_resolution)
+            
+            if texture_format != "Default":
+                reformat_images(texture_map, texture_format, image_quality)
 
-        print("Determined whether to modify textures")
-        logging.info("Determined whether to modify textures")
+        print("Modified textures")
+        logging.info("Modified textures")
 
     except Exception as Argument:
         logging.exception("Could not determine whether to modify textures")
@@ -2415,7 +2436,7 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
             create_materials(item_name, textures_temp_dir)
             
             # Modify textures if requested.
-            determine_modify_textures()
+            modify_textures()
 
             # Remove existing materials and textures again.
             clean_data_block(bpy.data.materials)
@@ -2491,7 +2512,7 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
 
         # Modify textures if requested.
         if import_file.suffix != ".glb":
-            determine_modify_textures()
+            modify_textures()
 
         # Only separate image textures if imported file is a GLB.
         elif import_file.suffix == ".glb":
@@ -2511,7 +2532,7 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
             reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
             
             # Modify textures if requested.
-            determine_modify_textures()
+            modify_textures()
         
         # Delete saved .blend that was used for unpacking textures.
         Path.unlink(blend)
@@ -2565,7 +2586,7 @@ def apply_textures_external(item_dir, item_name, import_file, textures_dir, text
         create_materials(item_name, textures_temp_dir)
 
         # Modify textures if requested.
-        determine_modify_textures()
+        modify_textures()
 
         # Assign materials to objects.
         assign_materials(item_name)
@@ -2578,7 +2599,7 @@ def apply_textures_external(item_dir, item_name, import_file, textures_dir, text
 
 
 # Determine where textures should be sourced, then texture the model.
-def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
+def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend):
     try:
         if textures_source == "External":
             apply_textures_external(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend)
@@ -2596,67 +2617,61 @@ def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp
         logging.exception("Could not apply textures to objects")
 		
 
-# Decide whether to export files (again) or not based on optimize_filter menu.
-def determine_exports(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_dir, export_file):
-    try:
-        # # Force global variables to reset to original settings, specifically export_file(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
-        # # Assign variables from dictionary.
-        # settings_dict = read_json(Path(__file__).parent.resolve() / "Settings.json")
-        # export_file_options = settings_dict["export_file_options"]
-        # export_file_2_options = settings_dict["export_file_2_options"]
+# # Decide whether to export files (again) or not based on overwrite_filter menu.
+# def determine_exports(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_dir, export_file):
+#     try:
+#         # Force global variables to reset to original settings, specifically export_file(or 2)_options["export_draco_mesh_compression_enable"], otherwise all GLB's after the first one above target maximum will be draco compressed because that variable is global and was altered in the auto file resize method if Draco compression was included in the filter.
+#         settings_dict = read_json(Path(__file__).parent.resolve() / "Settings.json")
+#         export_file_options = settings_dict["export_file_options"]
+#         export_file_2_options = settings_dict["export_file_2_options"]
 
-        if optimize_filter == "All":
+#         if overwrite_filter == "All":            
+#             export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
             
-            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
+#             # Get current file size (in MB)
+#             export_file_size = get_export_file_size(export_file)
             
-            # Get current file size (in MB)
-            export_file_size = get_export_file_size(export_file)
+#             # If exported file is already below maximum, skip ahead.
+#             if export_file_size < file_size_maximum:
+#                 print(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+#                 logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+#                 return
             
-            # If exported file is already below maximum, skip ahead.
-            if export_file_size < file_size_maximum:
-                print(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-                logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-                return
-            
-            # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-            elif export_file_size > file_size_maximum:
-                optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file)
+#             # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
+#             elif export_file_size > file_size_maximum:
+#                 optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
 
-        elif optimize_filter == "Above Target":
-            # Get current file size (in MB)
-            export_file_size = get_export_file_size(export_file)
+#         elif overwrite_filter == "Only Above Target":
+#             # Get current file size (in MB)
+#             export_file_size = get_export_file_size(export_file)
 
-            # If exported file is already above maximum, skip ahead.
-            if export_file_size > 0 and export_file_size < file_size_maximum:
-                print(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-                logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-                return
+#             # If exported file is already above maximum, skip ahead.
+#             if export_file_size > 0 and export_file_size < file_size_maximum:
+#                 print(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+#                 logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+#                 return
             
-            elif export_file_size > file_size_maximum:
-                print(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
-                logging.info(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+#             elif export_file_size > file_size_maximum:
+#                 print(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+#                 logging.info(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
                 
-                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
-                # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-                optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file)
+#                 export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+#                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
+#                 optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
 
-            elif export_file_size == 0:
-                print(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
-                logging.info(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
+#             elif export_file_size == 0:
+#                 print(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
+#                 logging.info(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
                 
-                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
-                # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-                optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_file)
+#                 export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+#                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
+#                 optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
 
-        elif optimize_filter == "None":
-            
-            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file)
+#         print("Determined whether/what to export")
+#         logging.info("Determined whether/what to export")
 
-        print("Determined whether/what to export")
-        logging.info("Determined whether/what to export")
-
-    except Exception as Argument:
-        logging.exception("Could not determine whether/what to export")
+#     except Exception as Argument:
+#         logging.exception("Could not determine whether/what to export")
 
 
 # Import UV images to Blender for reformatting.
@@ -2748,7 +2763,7 @@ def determine_uv_directory(textures_dir):
 def determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir):
     try:
         # If saving a .blend, don't delete the textures upon which the model inside depends.
-        if Path(export_file).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or archive_assets:
+        if Path(export_file).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or mark_as_assets:
 
             # Correct the textures temporary directory location for Custom textures scenario.
             if textures_source == "Custom":
@@ -3144,8 +3159,48 @@ def archive_assets_to_library(item_name, export_name, blend):
         logging.exception(f"Could not archive Assets to library: {asset_library}")
 
 
-# Convert the file for every file found inside the given directory.
-def converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file):
+def converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file):
+    try:
+        # Export a model.
+        export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, False)
+        
+        # Try to automatically to optimize the exported file's size.
+        if optimize:
+            optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
+
+        # Run custom scripts with triggers "After Export".
+        run_custom_scripts("After_Export")
+
+        # # Modified or copied textures can now be deleted after the conversion is over.
+        # if use_textures:
+        #     determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir)
+
+        # Export UV Layout(s).
+        if export_uv_layout:
+            determine_export_uv_layout(item_name, textures_dir)
+        
+        # Archive assets to library.
+        if mark_as_assets:
+            archive_assets_to_library(item_name, export_name, blend)
+
+        # Save only single preview image of collections if desired when not archiving assets to library.
+        if not mark_as_assets and asset_extract_previews:
+            asset_extract_previews_filter = ["Collections"]
+            asset_types_to_mark = ["Collections"]
+            mark_assets(item_name, blend)
+
+        print("-------------------------------------------------------------------")
+        print(f"CONVERTER END: {import_file.name}")
+        print("-------------------------------------------------------------------")
+        logging.info("-------------------------------------------------------------------")
+        logging.info(f"CONVERTER END: {import_file.name}")
+        logging.info("-------------------------------------------------------------------")
+
+    except Exception as Argument:
+        logging.exception("COULD NOT COMPLETE CONVERTER STAGE EXPORT")
+
+
+def converter_stage_import(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend):
     try:
         print("-------------------------------------------------------------------")
         print(f"CONVERTER START: {import_file.name}")
@@ -3153,8 +3208,8 @@ def converter(import_settings_dict, import_file, item_name, item_dir, export_nam
         logging.info("-------------------------------------------------------------------")
         logging.info(f"CONVERTER START: {import_file.name}")
         logging.info("-------------------------------------------------------------------")
-        
-        # Set up scene.
+
+         # Set up scene.
         setup_scene(item_name)
 
         # Brute force-remove all materials and images.
@@ -3184,7 +3239,7 @@ def converter(import_settings_dict, import_file, item_name, item_dir, export_nam
 
         # Determine whether to use textures and from where they should come.
         if use_textures:
-            apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
+            apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend)
         elif not use_textures:
             clear_materials_users()  # Clear all users of all materials.
             clean_data_block(bpy.data.materials)  # Brute force-remove all materials and images.
@@ -3211,39 +3266,17 @@ def converter(import_settings_dict, import_file, item_name, item_dir, export_nam
         # Run custom scripts with triggers "Before Export".
         run_custom_scripts("Before_Export")
 
-        # Decide whether to export files or not based on optimize_filter menu.
-        determine_exports(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_dir, export_file)
-        # export_models(item_name, item_dir)
+    except Exception as Argument:
+        logging.exception("COULD NOT COMPLETE CONVERTER STAGE IMPORT")
 
-        # Run custom scripts with triggers "After Export".
-        run_custom_scripts("After_Export")
 
-        # Modified or copied textures can now be deleted after the conversion is over.
-        if use_textures:
-            determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir)
-
-        # Export UV Layout(s).
-        if export_uv_layout:
-            determine_export_uv_layout(item_name, textures_dir)
+# Convert the file for every file found inside the given directory.
+def converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file):
+    try:
+        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend)
         
-        # Archive assets to library.
-        if archive_assets:
-            archive_assets_to_library(item_name, export_name, blend)
-
-        # Save only single preview image of collections if desired when not archiving assets to library.
-        if not archive_assets and asset_extract_previews:
-            asset_extract_previews_filter = ["Collections"]
-            asset_types_to_mark = ["Collections"]
-            mark_assets(item_name, blend)
-
-
-        print("-------------------------------------------------------------------")
-        print(f"CONVERTER END: {import_file.name}")
-        print("-------------------------------------------------------------------")
-        logging.info("-------------------------------------------------------------------")
-        logging.info(f"CONVERTER END: {import_file.name}")
-        logging.info("-------------------------------------------------------------------")
-
+        converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+    
     except Exception as Argument:
         logging.exception(f"COULD NOT CONVERT FILE: {import_file.name}")
 		
@@ -3328,7 +3361,7 @@ def move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, text
                 uvs = [file for file in Path.iterdir(item_dir) if "UV" in file.name]
                 for uv in uvs:
                     files_to_move.append(uv)
-        if archive_assets and asset_library == "NO_LIBRARY":  # Include assets.
+        if mark_as_assets and asset_library == "NO_LIBRARY":  # Include assets.
             files_to_move.append(blend)
             if not pack_resources:  # Include blend textures if not packing resources.
                 blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
@@ -3361,7 +3394,6 @@ def move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, text
         
 
 # Determine whether to import a model before converting in order to save time.
-# def determine_import(item_dir, item_name, import_file, import_settings_dict, textures_dir, textures_temp_dir, blend, export_name, export_settings_dict, export_dir, export_file, conversion_list, conversion_count):
 def determine_import(import_file, export_settings_dict, export_dir, export_file):    
     try:
         if export_settings_dict["overwrite_files"]:
@@ -3385,7 +3417,7 @@ def determine_import(import_file, export_settings_dict, export_dir, export_file)
 
 
         # # Always convert files if not auto file resizing "All" or not auto file resizing at all.
-        # if not optimize or (optimize and optimize_filter == "All"):
+        # if not optimize or (optimize and overwrite_filter == "All"):
         #     print(f"Initiating Converter: {import_file.name}")
         #     logging.info(f"Initiating Converter: {import_file.name}")
         #     # Run the converter on the item_name that was found.
@@ -3404,11 +3436,11 @@ def determine_import(import_file, export_settings_dict, export_dir, export_file)
         # original_contents = [file for file in Path.iterdir(item_dir)]
 
         # # Don't waste time converting files that already exist and are below the target maximum if auto file resizing.
-        # if optimize_filter == "Above Target":
+        # if overwrite_filter == "Above Target":
         #     # Get current file size (in MB) in order to determine whether to import the current item_name at all.
         #     export_file_size = get_export_file_size(export_file)
 
-        #     # If export_file exists and is above maximum when optimize_filter is set to "Above Target", convert item_name.
+        #     # If export_file exists and is above maximum when overwrite_filter is set to "Above Target", convert item_name.
         #     if export_file_size > file_size_maximum:
         #         print(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
         #         logging.info(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
@@ -3424,7 +3456,7 @@ def determine_import(import_file, export_settings_dict, export_dir, export_file)
         #             move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents)
         #         return conversion_list, conversion_count
             
-        #     # If export_file already exists and is already below maximum when optimize_filter is set to "Above Target", skip item_name.
+        #     # If export_file already exists and is already below maximum when overwrite_filter is set to "Above Target", skip item_name.
         #     elif export_file_size > 0 and export_file_size < file_size_maximum:
         #         print(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
         #         logging.info(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
@@ -3451,7 +3483,7 @@ def determine_import(import_file, export_settings_dict, export_dir, export_file)
 
 
 # Get export file and parent directory.
-def get_export_file_and_directory(item_dir, export_settings_dict):
+def get_export_file_and_directory(item_dir, export_settings_dict, export_name):
     try: 
         # Determine where to export the model.
         if export_adjacent:
@@ -3471,7 +3503,7 @@ def get_export_file_and_directory(item_dir, export_settings_dict):
         return export_dir, export_file
     
     except Exception as Argument:
-        logging.exception(f"Could not determine get export file: {export_file.name}")
+        logging.exception(f"Could not determine get export file")
 
 
 # Main function that loops through specified directory and creates variables for the converter
@@ -3516,45 +3548,57 @@ def batch_converter():
                     textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
                 blend = item_dir / f"{export_name}.blend"
 
-                
-                # Loop through exports and determine whether to import the file for each.
-                import_checklist = []
-                for export_settings_dict in exports:
-                    # Get export file and parent directory.
-                    export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict)
-
-                    # Determine which models are eligible for conversion.
-                    determine_import = determine_import(import_file, export_settings_dict, export_dir, export_file)
-                    
-                    # Note eligibility on list.
-                    import_checklist.append(determine_import)
-                    
-                    # Update each export dictionary with import eligibility.
-                    export_settings_dict.update({"determine_import": determine_import})
-                
-
-                # If at least one export file is eligible for export, import the file.
-                if True in import_checklist:
-                    # Import the file.
-                    # (ADD ALL IMPORT-RELEVANT OPERATIONS HERE, E.G. PROBABLY EVERYTHING BEFORE APPLYING TEXTURES)
-                    
-
-                    
-                    # Export files per import file.
+                # If auto-optimizing files, always re-import the import file for every export. 
+                # This will take longer to convert, but provides the flexibility required for optimizing only as much as needed per export format.
+                # e.g. a model with a high polycount can simply be Draco-compressed when exporting a GLB, but would require a destructive Decimate
+                # modifier to achieve the same file size when exporting a USDZ.
+                if optimize:
+                    # Loop through exports and determine whether to import the file for each.
                     for export_settings_dict in exports:
-                        if export_settings_dict("determine_import"):
-                            # Get export file and parent directory.
-                            export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict)
+                        # Get export file and parent directory.
+                        export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict, export_name)
+
+                        # Determine which models are eligible for conversion.
+                        import_check = determine_import(import_file, export_settings_dict, export_dir, export_file)
+                                        
+                        # If item is eligible for export, run the converter.
+                        if import_check:
+                            converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
                             
-                            # Convert and export the file.
-                            # (ADD ALL CONVERSION-AND-EXPORT-RELEVANT OPERATIONS HERE, E.G. PROBABLY EVERYTHING AT AND AFTER APPLYING TEXTURES) 
+                            conversion_count += 1
 
+                
+                # If not auto-optimizing files, only import the file once and edit the textures once, the export the file in every requested format.
+                elif not optimize:
+                    # Loop through exports and determine whether to import the file for each.
+                    import_checklist = []
+                    for export_settings_dict in exports:
+                        # Get export file and parent directory.
+                        export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict, export_name)
 
-
-                            # # Run the converter.
-                            # converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
-
-                conversion_count += 1
+                        # Determine which models are eligible for conversion.
+                        import_check = determine_import(import_file, export_settings_dict, export_dir, export_file)
+                        
+                        # Note eligibility on list.
+                        import_checklist.append(import_check)
+                        
+                        # Update each export dictionary with import eligibility.
+                        export_settings_dict.update({"determine_import": import_check})
+                    
+                    # If at least one export file is eligible for export, import the file.
+                    if True in import_checklist:
+                        # Import the file.
+                        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend)
+                        
+                        # Export files per import file.
+                        for export_settings_dict in exports:
+                            if export_settings_dict["determine_import"]:
+                                # Get export file and parent directory.
+                                export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict, export_name)
+                                
+                                # Convert and export the file.
+                                converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+                                conversion_count += 1
 
         # # If using custom textures, delete temporary textures directory only after all items have been converted.
         # if use_textures and textures_source == "Custom" and not keep_edited_textures:

@@ -527,8 +527,6 @@ def draw_settings_uvs(self, context):
         row = box_uvs.row(align=False)
         row.label(text="UVs", icon='UV')
         if settings.advanced_ui:
-            if settings.rename_uvs:
-                row.prop(settings, 'rename_uvs_name', text='')
             row.prop(settings, 'rename_uvs', text='', icon='OUTLINER_OB_FONT')
         row.prop(settings, 'export_uv_layout', text='', icon="CHECKBOX_HLT" if settings.export_uv_layout else "CHECKBOX_DEHLT")
         
@@ -549,6 +547,11 @@ def draw_settings_uvs(self, context):
                 if settings.uv_format in lossy_compression_support:
                     col.prop(settings, 'uv_image_quality')  # Only show this option for formats that support lossy compression (i.e. JPEG & WEBP).
                 col.prop(settings, 'uv_fill_opacity')
+            
+        if settings.rename_uvs:
+            box_uvs.use_property_split = True
+            col = box_uvs.column(align=True)
+            col.prop(settings, 'rename_uvs_name')
 
         self.layout.separator(factor = 0.25)
 
