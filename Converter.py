@@ -2059,7 +2059,24 @@ def set_scene_units(unit_system, length_unit):
 
     except Exception as Argument:
         logging.exception("Could not set scene units")
-		
+
+
+# Create a new directory in a given directory.
+def make_directory(destination, name):
+    try:
+        new_dir = destination / name  # destination needs to be a Path.
+        if destination.exists():
+            if not new_dir.exists():
+                Path.mkdir(new_dir)
+
+        print(f"Made directory: {new_dir}")
+        logging.info(f"Made directory: {new_dir}")
+
+        return new_dir
+
+    except Exception as Argument:
+        logging.exception(f"Could not make directory: {new_dir}")
+
 
 # Export a model.
 def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression):  # MAYBE ADD DRACO COMPRESSION FLAG HERE, E.G. draco_compression
@@ -2088,6 +2105,9 @@ def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export
         operator = export_settings_dict["operator"]
         operator = f"{operator}{options})"  # Concatenate the export command with the export options dictionary.
 
+        # Create export directory if it doesn't yet exist (e.g. when exporting to a non-adjacent directory with subdirectories)
+        make_directory(export_dir.parent, export_dir.name)
+
         # Use save_blend_file function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
         if export_file.suffix == ".blend":
             save_blend_file(export_file)
@@ -2114,19 +2134,6 @@ def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export
     except Exception as Argument:
         logging.exception("Could not export a model")
 
-
-# Determine how many, if any, models to export.
-def export_models(item_name, item_dir):
-    try:
-        for export_settings_dict in exports:
-            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
-        
-        print("Exported models")
-        logging.info("Exported Models")
-
-    except Exception as Argument:
-        logging.exception("Could not export models")
-		
 
 # Deletes the temporary textures folder.
 def delete_textures_temp(textures_temp_dir):
@@ -2760,10 +2767,10 @@ def determine_uv_directory(textures_dir):
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item_name.
-def determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir):
+def determine_keep_edited_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend):
     try:
         # If saving a .blend, don't delete the textures upon which the model inside depends.
-        if Path(export_file).suffix == ".blend" or Path(export_file_2).suffix == ".blend" or mark_as_assets:
+        if Path(export_file).suffix == ".blend" or mark_as_assets:
 
             # Correct the textures temporary directory location for Custom textures scenario.
             if textures_source == "Custom":
@@ -3167,27 +3174,26 @@ def converter_stage_export(import_settings_dict, import_file, item_name, item_di
         # Try to automatically to optimize the exported file's size.
         if optimize:
             optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
-
+        
         # Run custom scripts with triggers "After Export".
         run_custom_scripts("After_Export")
 
-        # # Modified or copied textures can now be deleted after the conversion is over.
-        # if use_textures:
-        #     determine_keep_edited_textures(item_dir, blend, import_file, export_file, export_file_2, textures_dir, textures_temp_dir)
+        # If export settings are linked, avoid repeating the same operations for multiple exports when they only need done once.
+        if not link_export_settings:                
+            # Archive assets to library.
+            if mark_as_assets:
+                archive_assets_to_library(item_name, export_name, blend)
 
-        # Export UV Layout(s).
-        if export_uv_layout:
-            determine_export_uv_layout(item_name, textures_dir)
-        
-        # Archive assets to library.
-        if mark_as_assets:
-            archive_assets_to_library(item_name, export_name, blend)
-
-        # Save only single preview image of collections if desired when not archiving assets to library.
-        if not mark_as_assets and asset_extract_previews:
-            asset_extract_previews_filter = ["Collections"]
-            asset_types_to_mark = ["Collections"]
-            mark_assets(item_name, blend)
+            # Save only single preview image of collections if desired when not archiving assets to library.
+            if not mark_as_assets and asset_extract_previews:
+                asset_extract_previews_filter = ["Collections"]
+                asset_types_to_mark = ["Collections"]
+                mark_assets(item_name, blend)
+            
+            # Copy files adjacent to the import_file to the custom export directory.
+            if not export_adjacent and use_subdirectories and copy_original_contents:
+                for file in Path.iterdir(item_dir):
+                    copy_file(export_dir, file)
 
         print("-------------------------------------------------------------------")
         print(f"CONVERTER END: {import_file.name}")
@@ -3318,23 +3324,6 @@ def list_exports(export_file):
         logging.exception("Could not list exports")
 
 
-# Create a new directory in a given directory.
-def make_directory(destination, name):
-    try:
-        new_dir = destination / name  # destination needs to be a Path.
-        if destination.exists():
-            if not new_dir.exists():
-                Path.mkdir(new_dir)
-
-        print(f"Made directory: {new_dir}")
-        logging.info(f"Made directory: {new_dir}")
-
-        return new_dir
-
-    except Exception as Argument:
-        logging.exception(f"Could not make directory: {new_dir}")
-
-
 # Move and or copy files from item_name directory to custom directory specified by the User.
 def move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents):
     try:
@@ -3378,7 +3367,7 @@ def move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, text
             make_directory(destination.parent, destination.name)
             
             # Copy original subfolders and files.
-            if copy_orignal_contents and original_contents:  # Don't bother trying to copy original files if none exist.
+            if copy_original_contents and original_contents:  # Don't bother trying to copy original files if none exist.
                 for file in original_contents: 
                     copy_file(destination, file)  # Copy original files to custom item_name subdirectory.
                         
@@ -3486,7 +3475,7 @@ def determine_import(import_file, export_settings_dict, export_dir, export_file)
 def get_export_file_and_directory(item_dir, export_settings_dict, export_name):
     try: 
         # Determine where to export the model.
-        if export_adjacent:
+        if export_settings_dict["export_adjacent"]:
             export_dir = item_dir
         
         # Replace the export directory with the custom export directory if not exporting models adjacent to each other.
@@ -3600,11 +3589,36 @@ def batch_converter():
                                 converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
                                 conversion_count += 1
 
-        # # If using custom textures, delete temporary textures directory only after all items have been converted.
-        # if use_textures and textures_source == "Custom" and not keep_edited_textures:
-        #     textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
-        #     if Path(textures_temp_dir).exists():
-        #         delete_textures_temp(textures_temp_dir)
+                # If export settings are linked, avoid repeating the same operations for multiple exports when they only need done once.
+                if link_export_settings:                
+                    # Archive assets to library.
+                    if mark_as_assets:
+                        archive_assets_to_library(item_name, export_name, blend)
+
+                    # Save only single preview image of collections if desired when not archiving assets to library.
+                    if not mark_as_assets and asset_extract_previews:
+                        asset_extract_previews_filter = ["Collections"]
+                        asset_types_to_mark = ["Collections"]
+                        mark_assets(item_name, blend)
+                    
+                    # Copy files adjacent to the import_file to the custom export directory.
+                    if not export_adjacent and use_subdirectories and copy_original_contents:
+                        for file in Path.iterdir(item_dir):
+                            copy_file((Path(export_directory) / export_name), file)
+
+                # Export UV Layout(s).
+                if export_uv_layout:
+                    determine_export_uv_layout(item_name, textures_dir)
+
+                # Modified or copied textures can now be deleted after the conversion is over.
+                if use_textures:
+                    determine_keep_edited_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend)
+                
+                # If using custom textures, delete temporary textures directory only after all items have been converted.
+                if use_textures and textures_source == "Custom" and not keep_edited_textures:
+                    textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
+                    if Path(textures_temp_dir).exists():
+                        delete_textures_temp(textures_temp_dir)
 
         # Run custom scripts with triggers "After Batch".
         run_custom_scripts("After_Batch")
