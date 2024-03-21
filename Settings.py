@@ -564,8 +564,8 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
     # Mark data blocks as assets.
     mark_as_assets: BoolProperty(
-        name="Mark as Assets",
-        description="Mark converted models as assets.\n(Saves a Blend file for each model converted)",
+        name="Mark Assets",
+        description="Mark converted models as assets.\n(Saves a Blend file for each model imported/converted)",
         default=False,
     )
     # Mark asset data filter.

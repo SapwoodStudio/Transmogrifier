@@ -3178,22 +3178,12 @@ def converter_stage_export(import_settings_dict, import_file, item_name, item_di
         # Run custom scripts with triggers "After Export".
         run_custom_scripts("After_Export")
 
-        # If export settings are linked, avoid repeating the same operations for multiple exports when they only need done once.
-        if not link_export_settings:                
-            # Archive assets to library.
-            if mark_as_assets:
-                archive_assets_to_library(item_name, export_name, blend)
-
-            # Save only single preview image of collections if desired when not archiving assets to library.
-            if not mark_as_assets and asset_extract_previews:
-                asset_extract_previews_filter = ["Collections"]
-                asset_types_to_mark = ["Collections"]
-                mark_assets(item_name, blend)
-            
-            # Copy files adjacent to the import_file to the custom export directory.
-            if not export_adjacent and use_subdirectories and copy_original_contents:
-                for file in Path.iterdir(item_dir):
-                    copy_file(export_dir, file)
+        # Copy files adjacent to the import_file to the custom export directory.
+        if not link_export_settings and not export_settings_dict["export_adjacent"] and export_settings_dict["use_subdirectories"] and export_settings_dict["copy_original_contents"]:
+            for file in Path.iterdir(item_dir):
+                if file == textures_temp_dir:
+                    continue
+                copy_file(export_dir, file)
 
         print("-------------------------------------------------------------------")
         print(f"CONVERTER END: {import_file.name}")
@@ -3588,23 +3578,23 @@ def batch_converter():
                                 # Convert and export the file.
                                 converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
                                 conversion_count += 1
+        
+                # Copy files adjacent to the import_file to the custom export directory.
+                if link_export_settings and not export_adjacent and use_subdirectories and copy_original_contents:
+                    for file in Path.iterdir(item_dir):
+                        if file == textures_temp_dir:
+                            continue
+                        copy_file((Path(export_directory) / export_name), file)
 
-                # If export settings are linked, avoid repeating the same operations for multiple exports when they only need done once.
-                if link_export_settings:                
-                    # Archive assets to library.
-                    if mark_as_assets:
-                        archive_assets_to_library(item_name, export_name, blend)
+                # Archive assets to library.
+                if mark_as_assets:
+                    archive_assets_to_library(item_name, export_name, blend)
 
-                    # Save only single preview image of collections if desired when not archiving assets to library.
-                    if not mark_as_assets and asset_extract_previews:
-                        asset_extract_previews_filter = ["Collections"]
-                        asset_types_to_mark = ["Collections"]
-                        mark_assets(item_name, blend)
-                    
-                    # Copy files adjacent to the import_file to the custom export directory.
-                    if not export_adjacent and use_subdirectories and copy_original_contents:
-                        for file in Path.iterdir(item_dir):
-                            copy_file((Path(export_directory) / export_name), file)
+                # Save only single preview image of collections if desired when not archiving assets to library.
+                if not mark_as_assets and asset_extract_previews:
+                    asset_extract_previews_filter = ["Collections"]
+                    asset_types_to_mark = ["Collections"]
+                    mark_assets(item_name, blend)
 
                 # Export UV Layout(s).
                 if export_uv_layout:
