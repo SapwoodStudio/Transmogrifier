@@ -2335,7 +2335,7 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
         decimate_counter = 0
         decimate_maximum = decimate_limit
 
-        while export_file_size > file_size_maximum:
+        while export_file_size > optimize_target_file_size:
             print("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
             logging.info("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
             
@@ -2343,28 +2343,28 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
             draco_compress_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file)
             # check
             export_file_size = get_export_file_size(export_file)
-            if export_file_size < file_size_maximum:
+            if export_file_size < optimize_target_file_size:
                 break
 
             # 2. Resize
             texture_resolution_current = resize_textures_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, texture_resolution_current)
             # check
             export_file_size = get_export_file_size(export_file)
-            if export_file_size < file_size_maximum:
+            if export_file_size < optimize_target_file_size:
                 break
            
             # 3. Reformat
             reformat_textures_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file)
             # check
             export_file_size = get_export_file_size(export_file)
-            if export_file_size < file_size_maximum:
+            if export_file_size < optimize_target_file_size:
                 break
 
             # (4.) Decimate
             decimate_counter = decimate_meshes_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, decimate_counter, decimate_maximum)
             # check
             export_file_size = get_export_file_size(export_file)
-            if export_file_size < file_size_maximum:
+            if export_file_size < optimize_target_file_size:
                 break
             
             # Repeat unless all methods are exhausted.
@@ -2381,12 +2381,12 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
                     break
 
         # Report on how the auto-resizing turned out.
-        if export_file_size < file_size_maximum:
-            print(f"{Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-            logging.info(f"{Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-        elif export_file_size > file_size_maximum:
-            print(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file).name} file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
-            logging.info(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file).name} file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+        if export_file_size < optimize_target_file_size:
+            print(f"{Path(export_file).name} ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
+            logging.info(f"{Path(export_file).name} ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
+        elif export_file_size > optimize_target_file_size:
+            print(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file).name} file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
+            logging.info(f"Exhausted Auto Resize Files methods. Exiting. {Path(export_file).name} file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
         
         print("Auto Resized Files")
         logging.info("Auto Resized Files")
@@ -2639,13 +2639,13 @@ def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp
 #             export_file_size = get_export_file_size(export_file)
             
 #             # If exported file is already below maximum, skip ahead.
-#             if export_file_size < file_size_maximum:
-#                 print(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-#                 logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+#             if export_file_size < optimize_target_file_size:
+#                 print(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
+#                 logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
 #                 return
             
 #             # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
-#             elif export_file_size > file_size_maximum:
+#             elif export_file_size > optimize_target_file_size:
 #                 optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
 
 #         elif overwrite_filter == "Only Above Target":
@@ -2653,14 +2653,14 @@ def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp
 #             export_file_size = get_export_file_size(export_file)
 
 #             # If exported file is already above maximum, skip ahead.
-#             if export_file_size > 0 and export_file_size < file_size_maximum:
-#                 print(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-#                 logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+#             if export_file_size > 0 and export_file_size < optimize_target_file_size:
+#                 print(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
+#                 logging.info(f"Skipped Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
 #                 return
             
-#             elif export_file_size > file_size_maximum:
-#                 print(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
-#                 logging.info(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+#             elif export_file_size > optimize_target_file_size:
+#                 print(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
+#                 logging.info(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
                 
 #                 export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
 #                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
@@ -2770,7 +2770,7 @@ def determine_uv_directory(textures_dir):
 def determine_keep_edited_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend):
     try:
         # If saving a .blend, don't delete the textures upon which the model inside depends.
-        if Path(export_file).suffix == ".blend" or mark_as_assets:
+        if mark_as_assets:
 
             # Correct the textures temporary directory location for Custom textures scenario.
             if textures_source == "Custom":
@@ -2990,13 +2990,15 @@ def create_image(name, width, height, alpha=True):
 # Extract generated asset preview to disk.
 # Source: Gorgious56's "asset_browser_utilities" addon: https://github.com/Gorgious56/asset_browser_utilities,
 # asset_browser_utilities/module/preview/operator/extract.py, Line 29
-def extract_preview_to_disk(asset, asset_type, export_name, blend):
+def extract_preview_to_disk(asset, asset_type, item_name, blend):
     try:
         folder = Path(blend).parent
         asset_preview = asset.preview
         
         if asset_preview is not None and asset_type in asset_extract_previews_filter:
-            image_name = f"Preview_{export_name}_{asset_type}"
+            image_name = f"Preview_{item_name}_{asset_type}"
+            if asset_type == "Objects":
+                image_name = f"{image_name}_{asset.name}"
             image = create_image(image_name, asset_preview.image_size[0], asset_preview.image_size[1])
             image.file_format = "PNG"
             for char in ("/", "\\", ":", "|", '"', "!", "?", "<", ">", "*"):
@@ -3023,7 +3025,7 @@ def extract_preview_to_disk(asset, asset_type, export_name, blend):
 
 
 # Mark asset.
-def mark_asset(asset, asset_type, assets_in_library, export_name, blend):
+def mark_asset(asset, asset_type, assets_in_library, item_name, blend):
     try:
         if not assets_allow_duplicates and asset_type not in assets_allow_duplicates_filter and asset.name in assets_in_library[asset_type]:  # Don't mark data-block as an asset if an asset with that name already exists in the selected Asset Library.
             print(f"Skipped Mark Asset: {asset.name}.  Asset already exists in Library: {asset_library}")
@@ -3042,7 +3044,7 @@ def mark_asset(asset, asset_type, assets_in_library, export_name, blend):
             generate_preview(asset)  # Generate preview.
 
         if asset_extract_previews:
-            extract_preview_to_disk(asset, asset_type, export_name, blend)  # Extract preview.
+            extract_preview_to_disk(asset, asset_type, item_name, blend)  # Extract preview.
 
         print(f"Marked Asset: {asset.name}")
         logging.info(f"Marked Asset: {asset.name}")
@@ -3082,38 +3084,38 @@ def get_assets_in_library(library_name):
 
 
 # Mark assets in asset data filter.
-def mark_assets(item_name, export_name, blend):
+def mark_assets(item_name, blend):
     try:
         assets_in_library = get_assets_in_library(asset_library)  # Get a dictionary of assets in the selected asset library.
 
         if "Actions" in asset_types_to_mark:
             for action in bpy.data.actions:
-                mark_asset(action, "Actions", assets_in_library, export_name, blend)
+                mark_asset(action, "Actions", assets_in_library, item_name, blend)
         
         if "Collections" in asset_types_to_mark:
             master_collection_name = prefix + item_name + suffix
             for collection in bpy.data.collections:
                 if mark_only_master_collection and collection.name != master_collection_name:
                     continue
-                mark_asset(collection, "Collections", assets_in_library, export_name, blend)
+                mark_asset(collection, "Collections", assets_in_library, item_name, blend)
                 
         if "Materials" in asset_types_to_mark:
             for material in bpy.data.materials:
-                mark_asset(material, "Materials", assets_in_library, export_name, blend)
+                mark_asset(material, "Materials", assets_in_library, item_name, blend)
 
         if "Node_Groups" in asset_types_to_mark:
             for node_group in bpy.data.node_groups:
-                mark_asset(node_group, "Node_Groups", assets_in_library, export_name, blend)
+                mark_asset(node_group, "Node_Groups", assets_in_library, item_name, blend)
     
         if "Objects" in asset_types_to_mark:
             for object in bpy.data.objects:
                 if not object.type in asset_object_types_filter:  # Mark only certain selected object types as assets.
                     continue
-                mark_asset(object, "Objects", assets_in_library, export_name, blend)
+                mark_asset(object, "Objects", assets_in_library, item_name, blend)
 
         if "Worlds" in asset_types_to_mark:
             for world in bpy.data.worlds:
-                mark_asset(world, "Worlds", assets_in_library, export_name, blend)
+                mark_asset(world, "Worlds", assets_in_library, item_name, blend)
 
         print("Marked assets")
         logging.info("Marked assets")
@@ -3153,9 +3155,9 @@ def move_copy_blend_to_asset_library(item_name, blend):
 
 
 # Archive assets to Asset Library by marking, tagging, and cataloging.
-def archive_assets_to_library(item_name, export_name, blend):
+def archive_assets_to_library(item_name, blend):
     try:
-        mark_assets(item_name, export_name, blend)
+        mark_assets(item_name, blend)
         save_blend_file(blend)
         move_copy_blend_to_asset_library(item_name, blend)
 
@@ -3196,7 +3198,7 @@ def converter_stage_export(import_settings_dict, import_file, item_name, item_di
         logging.exception("COULD NOT COMPLETE CONVERTER STAGE EXPORT")
 
 
-def converter_stage_import(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend):
+def converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend):
     try:
         print("-------------------------------------------------------------------")
         print(f"CONVERTER START: {import_file.name}")
@@ -3269,7 +3271,7 @@ def converter_stage_import(import_settings_dict, import_file, item_name, item_di
 # Convert the file for every file found inside the given directory.
 def converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file):
     try:
-        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend)
+        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend)
         
         converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
     
@@ -3420,9 +3422,9 @@ def determine_import(import_file, export_settings_dict, export_dir, export_file)
         #     export_file_size = get_export_file_size(export_file)
 
         #     # If export_file exists and is above maximum when overwrite_filter is set to "Above Target", convert item_name.
-        #     if export_file_size > file_size_maximum:
-        #         print(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
-        #         logging.info(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({file_size_maximum} MB).")
+        #     if export_file_size > optimize_target_file_size:
+        #         print(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
+        #         logging.info(f"Initiating Converter: {import_file.name}.  {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
         #         # Run the converter on the item_name that was found.
         #         converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
         #         # Increment conversion counter and add converted item_name(s) to list.
@@ -3436,9 +3438,9 @@ def determine_import(import_file, export_settings_dict, export_dir, export_file)
         #         return conversion_list, conversion_count
             
         #     # If export_file already exists and is already below maximum when overwrite_filter is set to "Above Target", skip item_name.
-        #     elif export_file_size > 0 and export_file_size < file_size_maximum:
-        #         print(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
-        #         logging.info(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({file_size_maximum} MB).")
+        #     elif export_file_size > 0 and export_file_size < optimize_target_file_size:
+        #         print(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
+        #         logging.info(f"Skipped Converter: {Path(export_file).name} already exists and file size ({export_file_size} MB) < File Size Limit ({optimize_target_file_size} MB).")
         #         return conversion_list, conversion_count
 
         #     # If file size is zero, then the file cannot exist and requires export.
@@ -3520,12 +3522,11 @@ def batch_converter():
                 import_file = Path(import_file)
                 item_name = import_file.stem
                 item_dir = import_file.parent
-                export_name = f"{prefix}{item_name}{suffix}"
                 textures_dir = item_dir / "textures"
-                textures_temp_dir = item_dir / f"{textures_dir}_{export_name}"
+                textures_temp_dir = item_dir / f"{textures_dir}_{item_name}"
                 if textures_source == "Custom":  
                     textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
-                blend = item_dir / f"{export_name}.blend"
+                blend = item_dir / f"{item_name}.blend"
 
                 # If auto-optimizing files, always re-import the import file for every export. 
                 # This will take longer to convert, but provides the flexibility required for optimizing only as much as needed per export format.
@@ -3534,6 +3535,11 @@ def batch_converter():
                 if optimize:
                     # Loop through exports and determine whether to import the file for each.
                     for export_settings_dict in exports:
+                        # Set export_name-dependent variables.
+                        export_prefix = export_settings_dict["prefix"]
+                        export_suffix = export_settings_dict["suffix"]
+                        export_name = f"{export_prefix}{item_name}{export_suffix}"
+                        
                         # Get export file and parent directory.
                         export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict, export_name)
 
@@ -3547,11 +3553,16 @@ def batch_converter():
                             conversion_count += 1
 
                 
-                # If not auto-optimizing files, only import the file once and edit the textures once, the export the file in every requested format.
+                # If not auto-optimizing files, only import the file once and edit the textures once, then export the file in every requested format.
                 elif not optimize:
                     # Loop through exports and determine whether to import the file for each.
                     import_checklist = []
                     for export_settings_dict in exports:
+                        # Set export_name-dependent variables.
+                        export_prefix = export_settings_dict["prefix"]
+                        export_suffix = export_settings_dict["suffix"]
+                        export_name = f"{export_prefix}{item_name}{export_suffix}"
+
                         # Get export file and parent directory.
                         export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict, export_name)
 
@@ -3562,16 +3573,23 @@ def batch_converter():
                         import_checklist.append(import_check)
                         
                         # Update each export dictionary with import eligibility.
-                        export_settings_dict.update({"determine_import": import_check})
+                        export_settings_dict.update(
+                            {
+                            "determine_import": import_check,
+                            "export_name": export_name,
+                            }
+                        )
                     
                     # If at least one export file is eligible for export, import the file.
                     if True in import_checklist:
                         # Import the file.
-                        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend)
+                        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend)
                         
                         # Export files per import file.
                         for export_settings_dict in exports:
                             if export_settings_dict["determine_import"]:
+                                export_name = export_settings_dict["export_name"]
+                                
                                 # Get export file and parent directory.
                                 export_dir, export_file = get_export_file_and_directory(item_dir, export_settings_dict, export_name)
                                 
@@ -3588,7 +3606,7 @@ def batch_converter():
 
                 # Archive assets to library.
                 if mark_as_assets:
-                    archive_assets_to_library(item_name, export_name, blend)
+                    archive_assets_to_library(item_name, blend)
 
                 # Save only single preview image of collections if desired when not archiving assets to library.
                 if not mark_as_assets and asset_extract_previews:

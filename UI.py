@@ -528,7 +528,7 @@ def draw_settings_uvs(self, context):
         row.label(text="UVs", icon='UV')
         if settings.advanced_ui:
             row.prop(settings, 'rename_uvs', text='', icon='OUTLINER_OB_FONT')
-        row.prop(settings, 'export_uv_layout', text='', icon="CHECKBOX_HLT" if settings.export_uv_layout else "CHECKBOX_DEHLT")
+        row.prop(settings, 'export_uv_layout', text='', icon="EXPORT")
         
         if settings.export_uv_layout:
             box_uvs.use_property_split = True
