@@ -95,19 +95,27 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
    
     # Export Settings
+    link_export_settings: BoolProperty(
+        name="Link Export Settings",
+        description="Synchronize some export settings between all export file formats",
+        default=True,
+        update=Functions.link_export_settings,
+    )
+    set_data_names: BoolProperty(
+        name="Data Names from Objects",
+        description="Rename object data names according to their corresponding object names",
+        default=True,
+        update=Functions.link_export_settings,
+    )
     export_adjacent: BoolProperty(
         name="Export Adjacent",
         description="Export models adjacent to their respective imports",
         default=True,
+        update=Functions.link_export_settings,
     )
     overwrite_files: BoolProperty(
         name="Overwrite Files",
         description="Overwrite files of the given export format(s) that may already exist",
-        default=True,
-    )
-    link_export_settings: BoolProperty(
-        name="Link Export Settings",
-        description="Synchronize some export settings between all export file formats",
         default=True,
         update=Functions.link_export_settings,
     )
@@ -125,6 +133,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         soft_min=0.0,
         soft_max=10000.0,
         step=100,
+        update=Functions.link_export_settings,
     )
     # Option to export models to subdirectories in custom directory
     use_subdirectories: BoolProperty(
@@ -148,13 +157,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     suffix: StringProperty(
         name="Suffix",
         description="Text to put at the end of all the exported file names",
-        update=Functions.link_export_settings,
-    )
-    # Set data names from object names.
-    set_data_names: BoolProperty(
-        name="Data Names from Objects",
-        description="Rename object data names according to their corresponding object names",
-        default=True,
         update=Functions.link_export_settings,
     )
     use_textures: BoolProperty(
@@ -478,7 +480,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default=15.0,
         soft_min=0.0,
         soft_max=1000.0,
-        step=10,
+        step=50,
     )
 
     optimize_show_methods: BoolProperty(
