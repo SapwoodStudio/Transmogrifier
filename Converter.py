@@ -2308,10 +2308,10 @@ def reformat_textures_and_export(item_name, item_dir, textures_temp_dir, export_
 
 
 # Auto resize method: Decimate meshes
-def decimate_meshes_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, decimate_counter, decimate_maximum):
+def decimate_meshes_and_export(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, decimate_counter):
     try:
         if optimize_decimate:
-            if decimate_counter <= decimate_maximum:
+            if decimate_counter <= decimate_limit:
                 print("#################  Decimate Meshes  #################")
                 logging.info("#################  Decimate Meshes  #################")
                 select_only_meshes()
@@ -2324,11 +2324,11 @@ def decimate_meshes_and_export(item_name, item_dir, export_settings_dict, export
                 export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
                 decimate_counter += 1
 
-            elif decimate_counter > decimate_maximum:
+            elif decimate_counter > decimate_limit:
                 print("#################  Decimate Meshes  #################")
                 logging.info("#################  Decimate Meshes  #################")
-                print(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_maximum})")
-                logging.info(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_maximum})")
+                print(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_limit})")
+                logging.info(f"Skipped Decimate Meshes: Decimation iteration ({decimate_counter}) = Decimate Limit ({decimate_limit})")
         
         return decimate_counter
 
@@ -2344,7 +2344,6 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
         texture_resolution_start = get_texture_resolution_maximum()  # Always start with largest existing resolution. That way resizing textures will always occur before reformatting.
         texture_resolution_current = texture_resolution_start
         decimate_counter = 0
-        decimate_maximum = decimate_limit
 
         while export_file_size > optimize_target_file_size:
             print("#############################  NEW AUTO FILE RESIZE ITERATION  #############################")
@@ -2372,7 +2371,7 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
                 break
 
             # (4.) Decimate
-            decimate_counter = decimate_meshes_and_export(item_name, item_dir, export_settings_dict, export_dir, export_file, decimate_counter, decimate_maximum)
+            decimate_counter = decimate_meshes_and_export(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, decimate_counter)
             # check
             export_file_size = get_export_file_size(export_file)
             if export_file_size < optimize_target_file_size:
@@ -2382,13 +2381,13 @@ def optimize_export_file(item_dir, item_name, import_file, textures_dir, texture
             if not optimize_texture_resize and not optimize_decimate:
                 break
             elif optimize_texture_resize and optimize_decimate:
-                if texture_resolution_current <= resize_textures_limit and decimate_counter >= decimate_maximum:
+                if texture_resolution_current <= resize_textures_limit and decimate_counter >= decimate_limit:
                     break
             if optimize_texture_resize and not optimize_decimate:
                 if texture_resolution_current <= resize_textures_limit:
                     break
             elif not optimize_texture_resize and optimize_decimate:
-                if decimate_counter >= decimate_maximum:
+                if decimate_counter >= decimate_limit:
                     break
 
         # Report on how the auto-resizing turned out.
