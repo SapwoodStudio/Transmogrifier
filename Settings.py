@@ -126,18 +126,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         soft_max=10000.0,
         step=100,
     )
-    # Pack resources into Blend.
-    pack_resources: BoolProperty(
-        name="Pack Resources",
-        description="Pack all used external files into .blend",
-        default=True,
-        )
-    # Make Blend paths relative.
-    make_paths_relative: BoolProperty(
-        name="Relative Paths",
-        description="Use relative paths for textures",
-        default=True,
-        )
     # Option to export models to subdirectories in custom directory
     use_subdirectories: BoolProperty(
         name="Subdirectories",
@@ -692,6 +680,18 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         ],
         default="Move",
     )
+    # Pack resources into Blend.
+    asset_pack_resources: BoolProperty(
+        name="Pack Resources",
+        description="Pack all used external files into .blend",
+        default=True,
+    )
+    # Option to make Blend paths relative if not packing resources.
+    asset_use_absolute_paths: BoolProperty(
+        name="Use Absolute Paths",
+        description="Use absolute paths for textures",
+        default=False,
+    )
     # Add metadata to assets.
     asset_add_metadata: BoolProperty(
         name="Add Metadata",
@@ -853,6 +853,20 @@ class TRANSMOGRIFIER_PG_TransmogrifierExports(PropertyGroup):
         ],
         default="glTF",
         update=lambda self, context: Functions.update_import_export_settings(self, context, "exports"),
+    )
+
+    # Option to pack resources if exporting a Blend.
+    pack_resources: BoolProperty(
+        name="Pack Resources",
+        description="Pack all used external files into .blend",
+        default=True,
+    )
+
+    # Option to make Blend paths relative if not packing resources.
+    use_absolute_paths: BoolProperty(
+        name="Use Absolute Paths",
+        description="Use absolute paths for textures",
+        default=False,
     )
 
     # A string property for saving User option (without new presets changing User choice),...

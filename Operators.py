@@ -440,8 +440,11 @@ class TRANSMOGRIFIER_OT_add_export(Operator):
     bl_description = "Add new export to UI"
 
     def execute(self, context):
+        settings = bpy.context.scene.transmogrifier_settings
         new_export = context.scene.transmogrifier_exports.add()
-        Functions.link_export_settings(self, context)
+        
+        if settings.link_export_settings:
+            Functions.link_export_settings(self, context)
         return {'FINISHED'}
 
 

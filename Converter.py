@@ -1359,8 +1359,7 @@ def reformat_images(texture_map, texture_format, image_quality):
         logging.exception("Could not reformat images")
 		    
 
-# Save a .blend file preserving all materials created even if some are not assigned to any objects.
-def save_blend_file(blend):
+def save_blend(blend):
     try:
         # Reset color management to the default Blender file, sRGB Filmic.
         set_color_management(
@@ -1377,18 +1376,6 @@ def save_blend_file(blend):
 
         # Preserve unused materials & textures by setting fake user(s).
         use_fake_user()
-
-        # Pack textures into .blend before saving the file if exporting a .blend.
-        if pack_resources:
-            bpy.ops.file.pack_all()
-
-            # Delete blend_textures_temp since it is no longer needed.
-            blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
-            delete_textures_temp(blend_textures)
-
-        # Make paths relative if not packing and if elected.
-        elif not pack_resources and make_paths_relative:
-            bpy.ops.file.make_paths_relative()
 
         # Frame object(s) in the viewport before saving.
         override = override_context('VIEW_3D', 'WINDOW')
@@ -1410,6 +1397,30 @@ def save_blend_file(blend):
 
     except Exception as Argument:
         logging.exception(f"Could not save blend file: {Path(blend).name}")
+
+
+# Save a .blend file preserving all materials created even if some are not assigned to any objects.
+def pack_and_save_blend(blend, textures_temp_dir, pack_textures, absolute_paths):
+    try:
+        # Always pack textures and then determine whether to unpack and repath.
+        bpy.ops.file.pack_all()
+        
+        # Unpack, copy unpacked textures to directory matching Blend name, and then repath textures to new directory.
+        if not pack_textures:
+            unpack_textures(blend.parent, textures_temp_dir, blend)
+            blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
+            if blend_textures.exists():
+                shutil.rmtree(blend_textures)
+            shutil.copytree(textures_temp_dir, blend_textures)
+            repath_blend_textures(blend, blend_textures)
+            if not absolute_paths:
+                bpy.ops.file.make_paths_relative()            
+
+        # Save the Blend
+        save_blend(blend)
+
+    except Exception as Argument:
+        logging.exception(f"Could not save blend file: {Path(blend).name}")
 		
 
 # Save.blend file and unpack images to textures_temp whenever packed images are used for conversion and are to be resized and/or reformatted.
@@ -1423,7 +1434,7 @@ def unpack_textures(item_dir, textures_temp_dir, blend):
             textures_dir.rename(textures_original)
 
         # Save blend file.
-        save_blend_file(blend)
+        save_blend(blend)
         
         # Unpack images
         bpy.ops.file.unpack_all(method='WRITE_LOCAL')
@@ -2079,7 +2090,7 @@ def make_directory(destination, name):
 
 
 # Export a model.
-def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression):  # MAYBE ADD DRACO COMPRESSION FLAG HERE, E.G. draco_compression
+def export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression):  # MAYBE ADD DRACO COMPRESSION FLAG HERE, E.G. draco_compression
     try:
         # Set scale
         export_scale = export_settings_dict["scale"]
@@ -2108,9 +2119,9 @@ def export_a_model(item_name, item_dir, export_settings_dict, export_dir, export
         # Create export directory if it doesn't yet exist (e.g. when exporting to a non-adjacent directory with subdirectories)
         make_directory(export_dir.parent, export_dir.name)
 
-        # Use save_blend_file function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
+        # Use pack_and_save_blend function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
         if export_file.suffix == ".blend":
-            save_blend_file(export_file)
+            pack_and_save_blend(export_file, textures_temp_dir, export_settings_dict["pack_resources"], export_settings_dict["use_absolute_paths"])
 
         # Run operator, which is stored as a string and won't run otherwise.
         else:
@@ -2237,7 +2248,7 @@ def draco_compress_and_export(item_name, item_dir, export_settings_dict, export_
         print("#################  Draco-Compress  #################")
         logging.info("#################  Draco-Compress  #################")
 
-        export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+        export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
 
     except Exception as Argument:
         logging.exception("Could not Draco-compress model for Auto Resize Files")
@@ -2257,7 +2268,7 @@ def resize_textures_and_export(item_name, item_dir, export_settings_dict, export
                 # Turn on draco-compression if elected and if exporting a GLB.
                 draco_compression = draco_compression_check(export_settings_dict)
 
-                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+                export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
             
             elif texture_resolution_current / 2 < resize_textures_limit:
                 print("#################  Resize Textures  #################")
@@ -2290,7 +2301,7 @@ def reformat_textures_and_export(item_name, item_dir, export_settings_dict, expo
             # Turn on draco-compression if elected and if exporting a GLB.
             draco_compression = draco_compression_check(export_settings_dict)
             
-            export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+            export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
 
     except Exception as Argument:
         logging.exception("Could not reformat textures for Auto Resize Files")
@@ -2310,7 +2321,7 @@ def decimate_meshes_and_export(item_name, item_dir, export_settings_dict, export
                 # Turn on draco-compression if elected and if exporting a GLB.
                 draco_compression = draco_compression_check(export_settings_dict)
 
-                export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+                export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
                 decimate_counter += 1
 
             elif decimate_counter > decimate_maximum:
@@ -2478,17 +2489,15 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
 
 
 # Rename textures_temp_dir and repath images inside the .blend.
-def repath_blend_textures(blend, path_old, path_new):
+def repath_blend_textures(blend, path_new):
     try:
         for image in bpy.data.images:  # Repath the textures.
-            image_filepath = bpy.data.images[image.name].filepath
-            image_filepath_new = image_filepath.replace(path_old.name, path_new.name)
-            bpy.data.images[image.name].filepath = image_filepath_new
+            bpy.data.images[image.name].filepath = str(path_new / image.name)
         
         print("Renamed modified textures directory and repathed blend")
         logging.info("Renamed modified textures directory and repathed blend")
         
-        save_blend_file(blend)  # Save the .blend.
+        save_blend(blend)  # Save the .blend.
 
     except Exception as Argument:
         logging.exception("Could not rename modified textures directory or repath blend")
@@ -2633,7 +2642,7 @@ def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp
 #         export_file_2_options = settings_dict["export_file_2_options"]
 
 #         if overwrite_filter == "All":            
-#             export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+#             export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
             
 #             # Get current file size (in MB)
 #             export_file_size = get_export_file_size(export_file)
@@ -2662,7 +2671,7 @@ def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp
 #                 print(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
 #                 logging.info(f"Initiating Auto Resize Files: {Path(export_file).name} already exists and file size ({export_file_size} MB) > File Size Limit ({optimize_target_file_size} MB).")
                 
-#                 export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+#                 export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
 #                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
 #                 optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
 
@@ -2670,7 +2679,7 @@ def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp
 #                 print(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
 #                 logging.info(f"Exporting model and initiating Auto Resize Files: {Path(export_file).name} doesn't yet exist.")
                 
-#                 export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, draco_compression)
+#                 export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, draco_compression)
 #                 # If User elected to automatically resize the file, get the current file size and keep exporting until it's lower than the specified maximum or methods have been exhausted.
 #                 optimize_export_file(item_dir, item_name, import_file, textures_dir, textures_temp_dir, export_settings_dict, export_file)
 
@@ -2768,25 +2777,7 @@ def determine_uv_directory(textures_dir):
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item_name.
 def determine_keep_edited_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend):
-    try:
-        # If saving a .blend, don't delete the textures upon which the model inside depends.
-        if mark_as_assets:
-
-            # Correct the textures temporary directory location for Custom textures scenario.
-            if textures_source == "Custom":
-                textures_temp_dir = item_dir / (f"textures_{blend.stem}")
-            
-            # Copy temporary textures directory as a blend_textures directory.
-            blend_textures = item_dir / (f"{textures_temp_dir.name}_blend")
-            if blend_textures.exists():
-                shutil.rmtree(blend_textures)
-            shutil.copytree(textures_temp_dir, blend_textures)
-            
-            # Repath the textures to blend_textures.
-            repath_blend_textures(blend, textures_temp_dir, blend_textures)  # Repath the textures.
-            print("Preserved modified textures for blend")
-            logging.info("Preserved modified textures for blend")
-        
+    try:        
         # Delete temporary textures directory (local copy for Custom textures scenario) if elected.
         if not keep_edited_textures:
             textures_temp_dir = item_dir / (f"textures_{blend.stem}")
@@ -3056,7 +3047,7 @@ def mark_asset(asset, asset_type, assets_in_library, item_name, blend):
 # Get a dictionary of asset names by data-block type that exist in a given asset library.
 def get_assets_in_library(library_name):
     try:
-        keys = assets_allow_duplicates_filter  # Keys are the asset types for which duplicates should be allow.
+        keys = ["Actions", "Collections", "Materials", "Node_Groups", "Objects", "Worlds"]   # Keys are the asset types for which duplicates should be allow.
         values = [[] for key in keys]  # Placeholder lists to be filled later.
         assets_in_library = dict(zip(keys, values))  # Create an template dictionary to fill.
         
@@ -3155,10 +3146,10 @@ def move_copy_blend_to_asset_library(item_name, blend):
 
 
 # Archive assets to Asset Library by marking, tagging, and cataloging.
-def archive_assets_to_library(item_name, blend):
+def archive_assets_to_library(item_name, blend, textures_temp_dir):
     try:
         mark_assets(item_name, blend)
-        save_blend_file(blend)
+        pack_and_save_blend(blend, textures_temp_dir, asset_pack_resources, asset_use_absolute_paths)
         move_copy_blend_to_asset_library(item_name, blend)
 
         print(f"Archived Assets to library: {asset_library}")
@@ -3171,7 +3162,7 @@ def archive_assets_to_library(item_name, blend):
 def converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file):
     try:
         # Export a model.
-        export_a_model(item_name, item_dir, export_settings_dict, export_dir, export_file, False)
+        export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict, export_dir, export_file, False)
         
         # Try to automatically to optimize the exported file's size.
         if optimize:
@@ -3606,7 +3597,7 @@ def batch_converter():
 
                 # Archive assets to library.
                 if mark_as_assets:
-                    archive_assets_to_library(item_name, blend)
+                    archive_assets_to_library(item_name, blend, textures_temp_dir)
 
                 # Save only single preview image of collections if desired when not archiving assets to library.
                 if not mark_as_assets and asset_extract_previews:

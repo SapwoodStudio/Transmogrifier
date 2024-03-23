@@ -223,7 +223,12 @@ def draw_settings_general(self, context):
             self.layout.use_property_split = True
 
             # Format
-            col.prop(instance, "format")
+            row = col.row(align=True)
+            row.prop(instance, "format")
+            if settings.advanced_ui and instance.format == "BLEND":
+                if not instance.pack_resources:
+                   row.prop(instance, 'use_absolute_paths', text='', icon="LOCKED" if instance.use_absolute_paths else "UNLOCKED") 
+                row.prop(instance, 'pack_resources', text='', icon="PACKAGE" if instance.pack_resources else "UGLYPACKAGE")
 
             # Extension options for USD and glTF formats.
             if instance.format == 'USD' or instance.format == "glTF":
@@ -502,7 +507,9 @@ def draw_settings_assets(self, context):
         if settings.asset_library != "NO_LIBRARY" and settings.advanced_ui:
             row = box_library.row(align=False)
             row.prop(settings, 'asset_blend_location')
-            row.prop(settings, 'pack_resources', text='', icon="PACKAGE" if settings.pack_resources else "UGLYPACKAGE")
+            if not settings.asset_pack_resources:
+                   row.prop(settings, 'asset_use_absolute_paths', text='', icon="LOCKED" if settings.asset_use_absolute_paths else "UNLOCKED") 
+            row.prop(settings, 'asset_pack_resources', text='', icon="PACKAGE" if settings.asset_pack_resources else "UGLYPACKAGE")
 
     if settings.advanced_ui and settings.asset_extract_previews:
         box_assets.use_property_split = False
