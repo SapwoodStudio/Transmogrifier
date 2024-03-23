@@ -249,11 +249,11 @@ def clean_data_block(block):
         logging.exception(f"Could not clean data block: {str(block).upper()}")
 		
 
-# Add new collection with name = prefix + item_name + suffix.
+# Add new collection with name of import_file.
 def add_collection(item_name):
     try:
         # Add new collection.
-        collection_name = prefix + item_name + suffix
+        collection_name = item_name
         collection = bpy.data.collections.new(collection_name)
 
         # Add collection to scene collection.
@@ -349,7 +349,7 @@ def import_a_file(import_file, import_settings_dict):
 # Move all objects and collections to item_name collection.
 def move_objects_and_collections_to_item_collection(item_name):
     try:
-        item_collection = bpy.data.collections[prefix + item_name + suffix]
+        item_collection = bpy.data.collections[item_name]
         collections_to_move = [collection for collection in bpy.context.scene.collection.children if collection != item_collection]  # Get a list of additional collections in the scene.
         objects_to_move = [object for object in bpy.context.scene.collection.objects]  # Get a list of objects that exist directly in the default Scene Collection.
 
@@ -2987,9 +2987,7 @@ def extract_preview_to_disk(asset, asset_type, item_name, blend):
         asset_preview = asset.preview
         
         if asset_preview is not None and asset_type in asset_extract_previews_filter:
-            image_name = f"Preview_{item_name}_{asset_type}"
-            if asset_type == "Objects":
-                image_name = f"{image_name}_{asset.name}"
+            image_name = f"Preview_{item_name}_{asset_type}_{asset.name}"
             image = create_image(image_name, asset_preview.image_size[0], asset_preview.image_size[1])
             image.file_format = "PNG"
             for char in ("/", "\\", ":", "|", '"', "!", "?", "<", ">", "*"):
@@ -3084,7 +3082,7 @@ def mark_assets(item_name, blend):
                 mark_asset(action, "Actions", assets_in_library, item_name, blend)
         
         if "Collections" in asset_types_to_mark:
-            master_collection_name = prefix + item_name + suffix
+            master_collection_name = item_name
             for collection in bpy.data.collections:
                 if mark_only_master_collection and collection.name != master_collection_name:
                     continue
@@ -3307,59 +3305,59 @@ def list_exports(export_file):
         logging.exception("Could not list exports")
 
 
-# Move and or copy files from item_name directory to custom directory specified by the User.
-def move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents):
-    try:
-        destination = export_dir
+# # Move and or copy files from item_name directory to custom directory specified by the User.
+# def move_copy_to_custom_dir(item_name, item_dir, import_file, textures_dir, textures_temp_dir, blend, export_dir, export_file, original_contents):
+#     try:
+#         destination = export_dir
         
-        # Make the custom directory if it doesn't exist.
-        make_directory(destination.parent, destination.name)
+#         # Make the custom directory if it doesn't exist.
+#         make_directory(destination.parent, destination.name)
 
-        # Move all created/exported files and directories resulting from the conversion.
-        files_to_move = [file for file in Path.iterdir(item_dir) if file not in original_contents]
+#         # Move all created/exported files and directories resulting from the conversion.
+#         files_to_move = [file for file in Path.iterdir(item_dir) if file not in original_contents]
         
-        # Always move these files.
-        files_to_move.append(export_file)
-        if copy_textures_custom_dir:  # If custom textures scenario and User elected to copy textures to model folders, then include the textures_dir in files_to_move.
-            files_to_move.append(textures_dir)
-        if keep_edited_textures:  # Include temporary texures directory.
-            if textures_source == "Custom":
-                textures_temp_dir = item_dir / (f"textures_{blend.stem}")  # Make sure only the local copy of textures_temp_dir for custom textures gets moved.
-            files_to_move.append(textures_temp_dir)
-        if export_uv_layout:  # Include UVs in UV directory or individual images adjacent to the imported model.
-            if uv_export_location == "UV":
-                files_to_move.append(Path(item_dir) / "UV")
-            elif uv_export_location == "Adjacents":
-                uvs = [file for file in Path.iterdir(item_dir) if "UV" in file.name]
-                for uv in uvs:
-                    files_to_move.append(uv)
-        if mark_as_assets and asset_library == "NO_LIBRARY":  # Include assets.
-            files_to_move.append(blend)
-            if not pack_resources:  # Include blend textures if not packing resources.
-                blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
-                files_to_move.append(blend_textures)
-            if asset_extract_previews:  # Include asset preview(s).
-                previews = [files_to_move.append(file) for file in Path.iterdir(item_dir) if "Preview" in file.name and file.suffix == ".png"]
+#         # Always move these files.
+#         files_to_move.append(export_file)
+#         if copy_textures_custom_dir:  # If custom textures scenario and User elected to copy textures to model folders, then include the textures_dir in files_to_move.
+#             files_to_move.append(textures_dir)
+#         if keep_edited_textures:  # Include temporary texures directory.
+#             if textures_source == "Custom":
+#                 textures_temp_dir = item_dir / (f"textures_{blend.stem}")  # Make sure only the local copy of textures_temp_dir for custom textures gets moved.
+#             files_to_move.append(textures_temp_dir)
+#         if export_uv_layout:  # Include UVs in UV directory or individual images adjacent to the imported model.
+#             if uv_export_location == "UV":
+#                 files_to_move.append(Path(item_dir) / "UV")
+#             elif uv_export_location == "Adjacents":
+#                 uvs = [file for file in Path.iterdir(item_dir) if "UV" in file.name]
+#                 for uv in uvs:
+#                     files_to_move.append(uv)
+#         if mark_as_assets and asset_library == "NO_LIBRARY":  # Include assets.
+#             files_to_move.append(blend)
+#             if not pack_resources:  # Include blend textures if not packing resources.
+#                 blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
+#                 files_to_move.append(blend_textures)
+#             if asset_extract_previews:  # Include asset preview(s).
+#                 previews = [files_to_move.append(file) for file in Path.iterdir(item_dir) if "Preview" in file.name and file.suffix == ".png"]
 
-        # Change destination to subdirectory by item_name name if elected.
-        if use_subdirectories:
-            # Change destination to item_name subdirectory.
-            destination = Path(destination, prefix + item_name + suffix)
+#         # Change destination to subdirectory by item_name name if elected.
+#         if use_subdirectories:
+#             # Change destination to item_name subdirectory.
+#             destination = Path(destination, prefix + item_name + suffix)
             
-            # Make item_name subdirectory.
-            make_directory(destination.parent, destination.name)
+#             # Make item_name subdirectory.
+#             make_directory(destination.parent, destination.name)
             
-            # Copy original subfolders and files.
-            if copy_original_contents and original_contents:  # Don't bother trying to copy original files if none exist.
-                for file in original_contents: 
-                    copy_file(destination, file)  # Copy original files to custom item_name subdirectory.
+#             # Copy original subfolders and files.
+#             if copy_original_contents and original_contents:  # Don't bother trying to copy original files if none exist.
+#                 for file in original_contents: 
+#                     copy_file(destination, file)  # Copy original files to custom item_name subdirectory.
                         
-        # Move files.
-        for file in files_to_move:
-            move_file(destination, file)
+#         # Move files.
+#         for file in files_to_move:
+#             move_file(destination, file)
         
-        print("Moved/copied items to custom output directory")
-        logging.info("Moved/copied items to custom output directory")
+#         print("Moved/copied items to custom output directory")
+#         logging.info("Moved/copied items to custom output directory")
 
     except Exception as Argument:
         logging.exception("Could not move/copy items to custom output directory")
