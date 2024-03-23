@@ -452,25 +452,33 @@ def draw_settings_assets(self, context):
     row.label(text="Assets", icon='ASSET_MANAGER')
     if settings.advanced_ui:
         row.prop(settings, 'asset_extract_previews', text='', icon='IMAGE_PLANE')
+        if settings.mark_as_assets:
+            row.prop(settings, 'assets_allow_duplicates', text='', icon='DUPLICATE')
+            row.prop(settings, 'asset_add_metadata', text='', icon='COLOR')
     row.prop(settings, 'mark_as_assets', text='', icon='ASSET_MANAGER')
     
     if settings.mark_as_assets:
         box_mark_assets = box_assets.box()
         row = box_mark_assets.row(align=False)
         row.label(text='Mark Assets', icon='ASSET_MANAGER')
+        
         if settings.advanced_ui:
             import_formats = [i.format for i in bpy.context.scene.transmogrifier_imports]
             if "Collections" in settings.asset_types_to_mark and "BLEND" in import_formats:
                 row.prop(settings, 'mark_only_master_collection', text='', icon='GROUP')
-            row.prop(settings, 'assets_allow_duplicates', text='', icon='DUPLICATE')
         grid = box_mark_assets.grid_flow(columns=6, align=True)
         grid.prop(settings, 'asset_types_to_mark')
     
-    if settings.advanced_ui:
-        if settings.mark_as_assets:
-            row.prop(settings, 'asset_add_metadata', text='', icon='COLOR')
+        if settings.advanced_ui:
+            if "Objects" in settings.asset_types_to_mark:
+                box_objects = box_mark_assets.box()
+                col = box_objects.column(align=True)
+                col.label(text="Object Types", icon='OBJECT_DATA')
+                grid = box_objects.grid_flow(columns=5, align=True)
+                grid.prop(settings, 'asset_object_types_filter', text='')
+                
             if settings.asset_add_metadata:
-                box_metadata = box_mark_assets.box()
+                box_metadata = box_assets.box()
                 col = box_metadata.column(align=True)
                 col.label(text='Metadata', icon='COLOR')
                 col = box_metadata.column(align=True)
@@ -483,18 +491,11 @@ def draw_settings_assets(self, context):
             
             box_assets.use_property_split = False
             if settings.assets_allow_duplicates:
-                box_duplicates = box_mark_assets.box()
+                box_duplicates = box_assets.box()
                 col = box_duplicates.column(align=True)
                 col.label(text='Allow Duplicates', icon='DUPLICATE')
                 grid = box_duplicates.grid_flow(columns=6, align=True)
                 grid.prop(settings, 'assets_allow_duplicates_filter')
-
-            if "Objects" in settings.asset_types_to_mark:
-                box_objects = box_mark_assets.box()
-                col = box_objects.column(align=True)
-                col.label(text="Object Types", icon='OBJECT_DATA')
-                grid = box_objects.grid_flow(columns=5, align=True)
-                grid.prop(settings, 'asset_object_types_filter', text='')
 
     if settings.mark_as_assets:
         box_assets.use_property_split = True

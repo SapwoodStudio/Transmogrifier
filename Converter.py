@@ -2115,6 +2115,7 @@ def export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict,
         # Turn on Draco compression if auto-optimizing files and exporting a GLB.
         if draco_compression and export_settings_dict["extension"] == ".glb":
             options["export_draco_mesh_compression_enable"] = True
+            options["export_draco_mesh_compression_level"] = compression_level
 
         # Get export operator.
         operator = export_settings_dict["operator"]
