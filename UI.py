@@ -458,6 +458,10 @@ def draw_settings_assets(self, context):
     row.prop(settings, 'mark_as_assets', text='', icon='ASSET_MANAGER')
     
     if settings.mark_as_assets:
+        col = box_assets.column(align=True)
+        col.use_property_split = True
+        col.prop(settings, 'asset_quality')
+        
         box_mark_assets = box_assets.box()
         row = box_mark_assets.row(align=False)
         row.label(text='Mark Assets', icon='ASSET_MANAGER')

@@ -1338,7 +1338,7 @@ def reformat_images(texture_map, texture_format, image_quality, reformat_all, in
                     image.alpha_mode = 'PREMUL'
                     print(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
                     logging.info(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
-                    if pbr_tag == "BaseColor":
+                    if texture_map == "BaseColor":
                         image.colorspace_settings.name = 'Linear'
                         print(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
                         logging.info(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
@@ -1348,7 +1348,7 @@ def reformat_images(texture_map, texture_format, image_quality, reformat_all, in
                     image.alpha_mode = 'STRAIGHT'
                     print(f"{image.name}'s alpha mode was set to 'Straight'.")
                     logging.info(f"{image.name}'s alpha mode was set to 'Straight'.")
-                    if pbr_tag == "BaseColor":
+                    if texture_map == "BaseColor":
                         image.colorspace_settings.name = 'sRGB'
                         print(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
                         logging.info(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
@@ -1398,6 +1398,19 @@ def save_blend(blend):
 
         print(f"Saved blend file: {Path(blend).name}")
         logging.info(f"Saved blend file: {Path(blend).name}")
+
+        # Now save a temp.blend so changes to this blender file are not edited
+        blend_temp = blend.parent / "temp.blend"
+        bpy.ops.wm.save_as_mainfile(
+            filepath=str(blend_temp), 
+        )
+
+        # Delete temp.blend and any associated blend1 file.
+        blend1 = Path(f"{blend_temp}1")
+        if Path(blend_temp).is_file():
+            Path.unlink(blend_temp)
+        if Path(blend1).is_file():
+            Path.unlink(blend1)
 
     except Exception as Argument:
         logging.exception(f"Could not save blend file: {Path(blend).name}")
@@ -2442,7 +2455,51 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
         clean_data_block(bpy.data.materials)
         clean_data_block(bpy.data.images)
 
-        if conversion_count == 0:
+        if (mark_as_assets and asset_quality != "Highest") or not mark_as_assets:
+            if conversion_count == 0:
+                # Create a temporary textures directory beside the custom textures directory.
+                create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
+                
+                # Regex external custom textures.
+                if regex_textures:
+                    regex_textures_external(textures_temp_dir)
+
+                # Create materials.
+                create_materials(item_name, textures_temp_dir)
+                
+                # Modify textures if requested.
+                modify_textures()
+
+                # Remove existing materials and textures again.
+                clean_data_block(bpy.data.materials)
+                clean_data_block(bpy.data.images)
+
+            # Copy textures_temp from custom textures directory to item_name directory.
+            copy_file(item_dir, textures_temp_dir)
+
+            # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
+            textures_temp_dir = item_dir / textures_temp_dir.name
+            textures_temp_dir_renamed = item_dir / (f"textures_{blend.stem}")
+            if Path(textures_temp_dir_renamed).exists():  # Remove the local copy of temporary textures directory if it already exists from a prior conversion.
+                shutil.rmtree(textures_temp_dir_renamed)
+            Path(textures_temp_dir).rename(textures_temp_dir_renamed)
+            textures_temp_dir = textures_temp_dir_renamed
+
+            # Create materials.
+            create_materials(item_name, textures_temp_dir)
+
+            # Assign materials to objects.
+            assign_materials(item_name)
+
+            # Archive assets to library.
+            archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
+
+            # Copy original custom textures to item_name directory if elected.
+            if copy_textures_custom_dir:
+                copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures)
+
+
+        elif mark_as_assets and asset_quality != "Highest":
             # Create a temporary textures directory beside the custom textures directory.
             create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
             
@@ -2450,36 +2507,35 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
             if regex_textures:
                 regex_textures_external(textures_temp_dir)
 
+            # Copy textures_temp from custom textures directory to item_name directory.
+            copy_file(item_dir, textures_temp_dir)
+
+            # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
+            textures_temp_dir = item_dir / textures_temp_dir.name
+            textures_temp_dir_renamed = item_dir / (f"textures_{blend.stem}")
+            if Path(textures_temp_dir_renamed).exists():  # Remove the local copy of temporary textures directory if it already exists from a prior conversion.
+                shutil.rmtree(textures_temp_dir_renamed)
+            Path(textures_temp_dir).rename(textures_temp_dir_renamed)
+            textures_temp_dir = textures_temp_dir_renamed
+
             # Create materials.
             create_materials(item_name, textures_temp_dir)
-            
+
+            # Assign materials to objects.
+            assign_materials(item_name)
+
+            # Archive assets to library.
+            archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest")
+
             # Modify textures if requested.
             modify_textures()
 
-            # Remove existing materials and textures again.
-            clean_data_block(bpy.data.materials)
-            clean_data_block(bpy.data.images)
+            # Archive assets to library.
+            archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
 
-        # Copy textures_temp from custom textures directory to item_name directory.
-        copy_file(item_dir, textures_temp_dir)
-
-        # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
-        textures_temp_dir = item_dir / textures_temp_dir.name
-        textures_temp_dir_renamed = item_dir / (f"textures_{blend.stem}")
-        if Path(textures_temp_dir_renamed).exists():  # Remove the local copy of temporary textures directory if it already exists from a prior conversion.
-            shutil.rmtree(textures_temp_dir_renamed)
-        Path(textures_temp_dir).rename(textures_temp_dir_renamed)
-        textures_temp_dir = textures_temp_dir_renamed
-
-        # Create materials.
-        create_materials(item_name, textures_temp_dir)
-
-        # Assign materials to objects.
-        assign_materials(item_name)
-
-        # Copy original custom textures to item_name directory if elected.
-        if copy_textures_custom_dir:
-            copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures)
+            # Copy original custom textures to item_name directory if elected.
+            if copy_textures_custom_dir:
+                copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures)
         
         print("Applied custom textures to objects")
         logging.info("Applied custom textures to objects")
@@ -2526,10 +2582,6 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
         if import_file.suffix == ".blend":
             rename_textures_unpacked(textures_temp_dir)
 
-        # Modify textures if requested.
-        if import_file.suffix != ".glb":
-            modify_textures()
-
         # Only separate image textures if imported file is a GLB.
         elif import_file.suffix == ".glb":
             # Get a dictionary of which textures are assigned to which materials.
@@ -2547,8 +2599,14 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
             # Reimport unpacked & separated textures to their original materials.
             reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
             
-            # Modify textures if requested.
-            modify_textures()
+        # Archive assets to library.
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest")
+
+        # Modify textures if requested.
+        modify_textures()
+
+        # Archive assets to library.
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
         
         # Delete saved .blend that was used for unpacking textures.
         Path.unlink(blend)
@@ -2601,11 +2659,17 @@ def apply_textures_external(item_dir, item_name, import_file, textures_dir, text
         # Create materials.
         create_materials(item_name, textures_temp_dir)
 
+        # Assign materials to objects.
+        assign_materials(item_name)
+
+        # Archive assets to library.
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest")
+
         # Modify textures if requested.
         modify_textures()
 
-        # Assign materials to objects.
-        assign_materials(item_name)
+        # Archive assets to library.
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
 
         print("Applied external textures to objects")
         logging.info("Applied external textures to objects")
@@ -3087,11 +3151,19 @@ def move_copy_blend_to_asset_library(item_name, blend):
 
 
 # Archive assets to Asset Library by marking, tagging, and cataloging.
-def archive_assets_to_library(item_name, blend, textures_temp_dir):
+def archive_assets_to_library(item_name, blend, textures_temp_dir, quality):
     try:
-        mark_assets(item_name, blend)
-        pack_and_save_blend(blend, textures_temp_dir, asset_pack_resources, asset_use_absolute_paths)
-        move_copy_blend_to_asset_library(item_name, blend)
+        if asset_quality != quality:  # Skip marking assets if it's not the right time to run it.
+            return
+
+        if mark_as_assets:
+            mark_assets(item_name, blend)
+            pack_and_save_blend(blend, textures_temp_dir, asset_pack_resources, asset_use_absolute_paths)
+            move_copy_blend_to_asset_library(item_name, blend)
+
+        # Repath textures back to textures_temp_dir
+        blend_temp = blend.parent / "temp.blend"
+        repath_blend_textures(blend_temp, textures_temp_dir)
 
         print(f"Archived Assets to library: {asset_library}")
         logging.info(f"Archived Assets to library: {asset_library}")
@@ -3414,8 +3486,7 @@ def batch_converter():
                         copy_file((Path(export_directory) / export_name), file)
 
                 # Archive assets to library.
-                if mark_as_assets:
-                    archive_assets_to_library(item_name, blend, textures_temp_dir)
+                archive_assets_to_library(item_name, blend, textures_temp_dir, "Low")
 
                 # Save only single preview image of collections if desired when not archiving assets to library.
                 if not mark_as_assets and asset_extract_previews:
