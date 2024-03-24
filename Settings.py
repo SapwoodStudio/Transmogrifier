@@ -80,18 +80,18 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         update=Functions.set_settings,
     )
     # Import Settings
-    link_import_directories: BoolProperty(
+    link_import_settings: BoolProperty(
         name="Link Directories",
         description="Synchronize import directories between all import file formats",
         default=True,
-        update=Functions.link_import_directories,
+        update=Functions.link_import_settings,
     )
     import_directory: StringProperty(
         name="Directory",
         description="Parent directory to search through and import files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
-        update=Functions.link_import_directories,
+        update=Functions.link_import_settings,
     )
    
     # Export Settings

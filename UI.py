@@ -112,7 +112,7 @@ def draw_settings_general(self, context):
     row.label(text="Imports", icon='IMPORT')
     
     if len(imports) > 0:
-        row.prop(settings, 'link_import_directories', expand=False, text="", icon="LINKED" if settings.link_import_directories else "UNLINKED")
+        row.prop(settings, 'link_import_settings', expand=False, text="", icon="LINKED" if settings.link_import_settings else "UNLINKED")
 
     # Add Import button
     col = box_imports.column(align=True)
@@ -158,13 +158,13 @@ def draw_settings_general(self, context):
                 col.prop(instance, "preset_enum")
 
             # Directory
-            if not settings.link_import_directories:
+            if not settings.link_import_settings:
                 col = box.column(align=True)
                 col.prop(instance, "directory")
 
     # Import Directory (synced)
-    if len(imports) > 1 or (len(imports) == 1 and settings.link_import_directories):
-        if settings.link_import_directories:
+    if len(imports) > 1 or (len(imports) == 1 and settings.link_import_settings):
+        if settings.link_import_settings:
             col = box_imports.column(align=True)
             col.prop(settings, 'import_directory')
     

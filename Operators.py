@@ -407,9 +407,12 @@ class TRANSMOGRIFIER_OT_add_import(Operator):
     bl_description = "Add new import to UI"
 
     def execute(self, context):
+        settings = bpy.context.scene.transmogrifier_settings
         new_import = context.scene.transmogrifier_imports.add()
         new_import.name = new_import.format
-        Functions.link_import_directories(self, context)
+
+        if settings.link_import_settings:
+            Functions.link_import_settings(self, context)
         return {'FINISHED'}
 
 
@@ -573,12 +576,11 @@ class TRANSMOGRIFIER_OT_add_texture(Operator):
     '''Add new texture map to UI'''
 
     bl_idname = "transmogrifier.add_texture"
-    bl_label = "Add Texture"
-    bl_description = "Add new texture map to edit"
+    bl_label = "Add Texture Edit"
+    bl_description = "Add a texture map to edit"
 
     def execute(self, context):
         new_export = context.scene.transmogrifier_textures.add()
-        # Functions.link_export_settings(self, context)
         return {'FINISHED'}
 
 

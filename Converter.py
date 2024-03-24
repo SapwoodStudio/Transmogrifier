@@ -120,11 +120,27 @@ def get_settings(json_files):
         logging.exception("Could not get settings from JSON")
 
 
+# Copy finished log file to other import directories.
+def copy_log_file(log_file):
+    try:
+        log_directory = imports[0]["directory"]
+        for import_settings_dict in imports:
+            directory = import_settings_dict["directory"]
+            if Path(directory) == log_file.parent:
+                continue
+            copy_file(directory, log_file)
+    
+    except Exception as Argument:
+        logging.exception("Could not copy log file to other import directories")
+
+
 # Make a log file to log conversion process.
 def make_log_file():
     # Set path to log file with timestamp
     timestamp = str(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
-    log_file = Path(import_directory, f"Transmogrifier_Log_{timestamp}.txt")
+    
+    log_directory = imports[0]["directory"]
+    log_file = Path(log_directory, f"Transmogrifier_Log_{timestamp}.txt")
     
     # Create log file.
     logging.basicConfig(
@@ -134,6 +150,8 @@ def make_log_file():
         format="%(asctime)s %(levelname)s %(message)s",
         force=True
     )
+
+    return log_file
 
 
 # Enable addons that the Converter depends upon, namely Node Wrangler and Materials Utilities.
@@ -3189,10 +3207,10 @@ def converter_stage_export(import_settings_dict, import_file, item_name, item_di
                 copy_file(export_dir, file)
 
         print("-------------------------------------------------------------------")
-        print(f"CONVERTER END: {import_file.name}")
+        print(f"CONVERTER END: {export_file.name}")
         print("-------------------------------------------------------------------")
         logging.info("-------------------------------------------------------------------")
-        logging.info(f"CONVERTER END: {import_file.name}")
+        logging.info(f"CONVERTER END: {export_file.name}")
         logging.info("-------------------------------------------------------------------")
 
     except Exception as Argument:
@@ -3552,12 +3570,16 @@ def transmogrify():
 
     # Step 2: Start logging conversion if requested by User.
     if save_conversion_log:
-        make_log_file()
+        log_file = make_log_file()
 
     # Step 3: Run the batch converter.
     batch_converter()
 
-    # Step 4: Quit Blender after batch conversion is complete.
+    # Step 4: Copy log file to all import directories
+    if not link_import_settings and len(imports) > 1:
+        copy_log_file(log_file)
+
+    # Step 5: Quit Blender after batch conversion is complete.
     quit_blender()
 
 

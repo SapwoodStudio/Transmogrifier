@@ -286,7 +286,7 @@ def update_import_export_settings(self, context, imports_or_exports):
 # ░▀▀▀░▀░▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀
 
 # Synchronize import directories with master directory.
-def link_import_directories(self, context):
+def link_import_settings(self, context):
     settings = bpy.context.scene.transmogrifier_settings
     for index, import_file in enumerate(context.scene.transmogrifier_imports):
         import_file.directory = settings.import_directory
