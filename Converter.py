@@ -3319,20 +3319,18 @@ def report_conversion_count(conversion_count):
 		
 
 # Make a list of exports for the current item_name, which will then be appended to the full conversion_list to be reported in the log.
-def list_exports(export_file):
+def get_export_info(export_file):
     try:
-        exports_list = []
         export_file_size = get_export_file_size(export_file)
-        export_file_list = [export_file.name, export_file_size]
-        exports_list.append(export_file_list)
+        export_info = [export_file.name, export_file_size]
 
-        print("Listed exports")
-        logging.info("Listed exports")
+        print(f"Got export info: {export_file.name}")
+        logging.info(f"Got export info: {export_file.name}")
 
-        return exports_list
+        return export_info
 
     except Exception as Argument:
-        logging.exception("Could not list exports")
+        logging.exception(f"Could not get export info: {export_file.name}")
 
 
 # Determine whether to import a model before converting in order to save time.
@@ -3446,6 +3444,10 @@ def batch_converter():
                         if import_check:
                             converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file, conversion_count)
                             
+                            # Get export info after the model has been exported.
+                            export_info = get_export_info(export_file)
+                            # Append export info to conversion list.
+                            conversion_list.append(export_info)
                             conversion_count += 1
 
                 
@@ -3491,6 +3493,11 @@ def batch_converter():
                                 
                                 # Convert and export the file.
                                 converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+                                
+                                # Get export info after the model has been exported.
+                                export_info = get_export_info(export_file)
+                                # Append export info to conversion list.
+                                conversion_list.append(export_info)
                                 conversion_count += 1
         
                 # Copy files adjacent to the import_file to the custom export directory.
@@ -3536,9 +3543,10 @@ def batch_converter():
         # Report list of files converted and their corresponding file sizes.
         print("ITEMS EXPORTED:")
         logging.info("ITEMS EXPORTED:")
-        # for i in conversion_list:
-        #     print(f"{i[0]} = {i[1]} MB.")
-        #     logging.info(f"{i[0]} = {i[1]} MB.")
+        print(conversion_list)
+        for i in conversion_list:
+            print(f"{i[0]} = {i[1]} MB.")
+            logging.info(f"{i[0]} = {i[1]} MB.")
 
         print("-----------------------------------------------------------------")
         print("---------------------  BATCH CONVERTER END  ---------------------")
