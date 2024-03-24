@@ -322,13 +322,7 @@ def draw_settings_textures(self, context):
             row = grid.row()
             row.use_property_split = False
             row.alignment = "LEFT"
-            row.prop(
-                settings,
-                "edit_textures_show_settings",
-                icon="DOWNARROW_HLT" if settings.edit_textures_show_settings else "RIGHTARROW_THIN",
-                emboss=False,
-                toggle=True,
-            )
+            row.label(text='Edit Textures', icon_value=custom_icons['Edit_Textures_Icon'].icon_id)
 
             if len(textures) > 0:
                 row = grid.row()
@@ -336,41 +330,39 @@ def draw_settings_textures(self, context):
                 row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
                 row.prop(settings, 'link_texture_settings', expand=False, text="", icon="LINKED" if settings.link_texture_settings else "UNLINKED")
 
-            if settings.edit_textures_show_settings:
+            col = box_edit_textures.column(align=True)
+            row = col.row(align=True)
+            row.prop(settings, 'edit_textures_preset_enum')
+            row.operator("transmogrifier.edit_textures_add_preset", text="", icon="ADD")
+            row.operator("transmogrifier.edit_textures_remove_preset", text="", icon="REMOVE")
+            row.operator("transmogrifier.edit_textures_load_preset", text="", icon="FILE_FOLDER")
 
+            col = box_edit_textures.column(align=True)
+            col.operator('transmogrifier.add_texture', icon="ADD")
+            
+            if len(textures) > 0:
                 col = box_edit_textures.column(align=True)
+
+            # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
+            # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
+            for index, instance in enumerate(context.scene.transmogrifier_textures):   
                 row = col.row(align=True)
-                row.prop(settings, 'edit_textures_preset_enum')
-                row.operator("transmogrifier.edit_textures_add_preset", text="", icon="ADD")
-                row.operator("transmogrifier.edit_textures_remove_preset", text="", icon="REMOVE")
-                row.operator("transmogrifier.edit_textures_load_preset", text="", icon="FILE_FOLDER")
+                split = row.split(factor=0.45, align=True)
+                split.prop(instance, "texture_map", text='')
+                sub = split.row(align=True)
+                sub.active = not settings.link_texture_settings
+                sub.prop(instance, "texture_resolution", text='')
+                sub.prop(instance, "texture_format", text='')
+                props = row.operator('transmogrifier.remove_texture', text = "", icon = 'PANEL_CLOSE')
+                props.index = index
 
+            if len(textures) >= 1 and settings.link_texture_settings:
+                box_edit_textures.use_property_split = True
                 col = box_edit_textures.column(align=True)
-                col.operator('transmogrifier.add_texture', icon="ADD")
-                
-                if len(textures) > 0:
-                    col = box_edit_textures.column(align=True)
-
-                # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), UI.py, Line 508
-                # Adapted from Gaffer v3.1.18 (GPL-3.0 License, https://github.com/gregzaal/Gaffer), UI.py, Line 1327
-                for index, instance in enumerate(context.scene.transmogrifier_textures):   
-                    row = col.row(align=True)
-                    split = row.split(factor=0.45, align=True)
-                    split.prop(instance, "texture_map", text='')
-                    sub = split.row(align=True)
-                    sub.active = not settings.link_texture_settings
-                    sub.prop(instance, "texture_resolution", text='')
-                    sub.prop(instance, "texture_format", text='')
-                    props = row.operator('transmogrifier.remove_texture', text = "", icon = 'PANEL_CLOSE')
-                    props.index = index
-
-                if len(textures) >= 1 and settings.link_texture_settings:
-                    box_edit_textures.use_property_split = True
-                    col = box_edit_textures.column(align=True)
-                    col.prop(settings, 'texture_resolution')
-                    col.prop(settings, 'texture_format')
-                    if settings.texture_format in lossy_compression_support:
-                        col.prop(settings, 'image_quality')
+                col.prop(settings, 'texture_resolution')
+                col.prop(settings, 'texture_format')
+                if settings.texture_format in lossy_compression_support:
+                    col.prop(settings, 'image_quality')
 
     self.layout.separator(factor = 0.25)
 

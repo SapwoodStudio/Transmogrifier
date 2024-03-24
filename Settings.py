@@ -60,7 +60,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     # Save conversion log.
     save_conversion_log: BoolProperty(
         name="Save Conversion Log",
-        description="Save a log of the batch conversion in the given import directory. This can help troubleshoot conversion errors",
+        description="Save a log of the batch conversion in the given import directories. The log records each step of the conversion process and reports a list of models exported along with their final file sizes.  A log is also invaluable for troubleshooting conversion errors or bugs",
         default=False,
     )
     # Advanced UI toggle.
@@ -173,11 +173,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Keep Edited Textures", 
         description="Don't delete the temporary textures directory used to modify image textures by regex, resolution, and/or format\nEspecially useful when troubleshooting errors",
         default=False,
-    )
-    edit_textures_show_settings: BoolProperty(
-        name="Edit Textures", 
-        description="Modify image textures with regular expressions, resizing, and/or reformatting.",
-        default=True,
     )
     edit_textures_preset: StringProperty(default='PBR_Standard')
     edit_textures_preset_enum: EnumProperty(

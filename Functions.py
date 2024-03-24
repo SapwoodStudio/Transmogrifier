@@ -610,7 +610,7 @@ def get_propertygroups():
         ],
         "imports": [bpy.context.scene.transmogrifier_imports, True, ["files", "show_settings"]],
         "exports": [bpy.context.scene.transmogrifier_exports, True, ["show_settings"]],
-        "textures": [bpy.context.scene.transmogrifier_textures, True, ["show_settings"]],
+        "textures": [bpy.context.scene.transmogrifier_textures, True, []],
         "scripts": [bpy.context.scene.transmogrifier_scripts, True, ["show_settings"]],
     }
     

@@ -472,7 +472,7 @@ class TRANSMOGRIFIER_OT_remove_export(Operator):
 class TRANSMOGRIFIER_OT_edit_textures_add_preset(Operator):
     """Creates an Edit Textures preset from current settings"""
     bl_idname = "transmogrifier.edit_textures_add_preset"
-    bl_label = "Add Edit Textures Preset"
+    bl_label = "Add 'Edit Textures' Preset"
 
     # Captured preset name from pop-up dialog window.
     preset_name: bpy.props.StringProperty(name="Name", default="")
@@ -490,7 +490,7 @@ class TRANSMOGRIFIER_OT_edit_textures_add_preset(Operator):
 
         # Save new Edit Textures operator preset as JSON file.
         Functions.write_json(settings_dict, preset_json)
-        self.report({'INFO'}, f"Added Edit Textures preset: {add_preset_name}")
+        self.report({'INFO'}, f"Added 'Edit Textures' preset: {add_preset_name}")
         return {'FINISHED'}
     
     # Pop-up dialog window to capture new preset name.
@@ -502,7 +502,7 @@ class TRANSMOGRIFIER_OT_edit_textures_add_preset(Operator):
 class TRANSMOGRIFIER_OT_edit_textures_remove_preset(Operator):
     """Removes currently selected Transmogrifier preset"""
     bl_idname = "transmogrifier.edit_textures_remove_preset"
-    bl_label = "Remove Edit Textures Preset"
+    bl_label = "Remove 'Edit Textures' Preset"
 
     def execute(self, context):
         # Get selected Edit Textures operator preset.
@@ -517,11 +517,11 @@ class TRANSMOGRIFIER_OT_edit_textures_remove_preset(Operator):
 
         # Return early and report error if Edit Textures operator preset does not exist.
         if not preset_json.is_file():
-            self.report({'ERROR'}, f"Edit Textures preset does not exist: {remove_preset_name}")
+            self.report({'ERROR'}, f"'Edit Textures' preset does not exist: {remove_preset_name}")
             return {'CANCELLED'}
 
         # Remove Edit Textures operator preset.
-        self.report({'INFO'}, f"Removed Edit Textures preset: {remove_preset_name}")
+        self.report({'INFO'}, f"Removed 'Edit Textures' preset: {remove_preset_name}")
         Path.unlink(preset_json)
         return {'FINISHED'}
 
@@ -530,7 +530,7 @@ class TRANSMOGRIFIER_OT_edit_textures_remove_preset(Operator):
 class TRANSMOGRIFIER_OT_edit_textures_load_preset(Operator, ImportHelper):
     """Load an Edit Textures preset from a JSON file"""
     bl_idname = "transmogrifier.edit_textures_load_preset"
-    bl_label = "Load Preset"
+    bl_label = "Load 'Edit Textures' Preset"
     bl_options = {'UNDO'}
 
     filename_ext = '.json'
@@ -567,7 +567,7 @@ class TRANSMOGRIFIER_OT_edit_textures_load_preset(Operator, ImportHelper):
         # Load preset (Update settings and UI from preset file).
         Functions.set_texture_settings(self, context)
 
-        self.report({'INFO'}, f"Added Edit Textures preset: {preset_name}")
+        self.report({'INFO'}, f"Loaded 'Edit Textures' preset: {preset_name}")
         return {'FINISHED'}
 
 
