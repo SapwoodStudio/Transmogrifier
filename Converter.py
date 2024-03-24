@@ -1338,7 +1338,7 @@ def reformat_images(texture_map, texture_format, image_quality, reformat_all, in
                     image.alpha_mode = 'PREMUL'
                     print(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
                     logging.info(f"{image.name}'s alpha mode was set to 'Premultiplied' for EXR format.")
-                    if texture_map == "BaseColor":
+                    if "BaseColor" in image.name or "Subsurface" in image.name or "Emission" in image.name:
                         image.colorspace_settings.name = 'Linear'
                         print(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
                         logging.info(f"{image.name}'s BaseColor texture's color space was set to 'Linear' for EXR format.")
@@ -1348,7 +1348,7 @@ def reformat_images(texture_map, texture_format, image_quality, reformat_all, in
                     image.alpha_mode = 'STRAIGHT'
                     print(f"{image.name}'s alpha mode was set to 'Straight'.")
                     logging.info(f"{image.name}'s alpha mode was set to 'Straight'.")
-                    if texture_map == "BaseColor":
+                    if "BaseColor" in image.name or "Subsurface" in image.name or "Emission" in image.name:
                         image.colorspace_settings.name = 'sRGB'
                         print(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
                         logging.info(f"{image.name}'s BaseColor texture's color space was set to 'sRGB'.")
