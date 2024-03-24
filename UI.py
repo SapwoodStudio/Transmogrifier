@@ -458,9 +458,10 @@ def draw_settings_assets(self, context):
     row.prop(settings, 'mark_as_assets', text='', icon='ASSET_MANAGER')
     
     if settings.mark_as_assets:
-        col = box_assets.column(align=True)
-        col.use_property_split = True
-        col.prop(settings, 'asset_quality')
+        if settings.advanced_ui:
+            col = box_assets.column(align=True)
+            col.use_property_split = True
+            col.prop(settings, 'asset_quality')
         
         box_mark_assets = box_assets.box()
         row = box_mark_assets.row(align=False)
@@ -509,7 +510,7 @@ def draw_settings_assets(self, context):
         col = box_library.column(align=True)
         col.prop(settings, 'asset_library_enum')
         col.prop(settings, 'asset_catalog_enum')
-        if settings.asset_library != "NO_LIBRARY" and settings.advanced_ui:
+        if settings.advanced_ui:
             row = box_library.row(align=False)
             row.prop(settings, 'asset_blend_location')
             if not settings.asset_pack_resources:

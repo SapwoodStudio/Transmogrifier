@@ -1304,15 +1304,16 @@ def reformat_images(texture_map, texture_format, image_quality, reformat_all, in
                 continue
             
             if texture_map in image.name or reformat_all:
-                image_path = str(Path.resolve(Path(bpy.path.abspath(image.filepath))))
+                image_path = Path.resolve(Path(bpy.path.abspath(image.filepath)))
 
                 # Get image name from saved image filepath, not the image in the editor. (This is to account for GLB's not including the image extension in the image name when importing a GLB and exporting again with packed textures.)
-                image.name = Path(image_path).name
+                image_name = image_path.name
 
                 # Change image extension and pathing.
-                image_ext = "." + image.name.split(".")[-1].lower()
+                image_ext = image_path.suffix.lower()
                 image_ext_new = ext_dict[texture_format]
-                image_path_new = str(Path.resolve(Path(bpy.path.abspath(image.filepath.replace(image_ext, image_ext_new)))))
+                image_name_new = f"{image_path.stem}{image_ext_new}"
+                image_path_new = image_path.parent / image_name_new
                 
                 # Don't reformat image if converting between identical formats.
                 if image_ext == image_ext_new:
@@ -1320,18 +1321,14 @@ def reformat_images(texture_map, texture_format, image_quality, reformat_all, in
                     logging.info(f"Skipped Reformat Image ({image.name}): Current format ({image_ext.upper()[1:]}) = New format ({texture_format})")
                     continue
 
-                # Change image name.
-                image_name = image.name
-                image_name_new = image.name.replace(image_ext, image_ext_new)
-
                 # Save image as input specified by the User.
-                image.save_render(filepath = image_path_new)
-                if image_path != image_path_new and Path(image_path).exists():  # Don't delete image if converting to the same file format.
-                    Path.unlink(Path(image_path))
+                image.save_render(filepath = str(image_path_new))
+                if image_path != image_path_new and image_path.exists():  # Don't delete image if converting to the same file format.
+                    Path.unlink(image_path)
 
                 # Repath the image textures to the new format.
                 image.name = image_name_new
-                bpy.data.images[image.name].filepath = image_path_new
+                bpy.data.images[image.name].filepath = str(image_path_new)
 
                 # Ensure alpha modes and color spaces are set appropriately for EXR format.
                 if texture_format == "OPEN_EXR":
@@ -1399,7 +1396,7 @@ def save_blend(blend):
         print(f"Saved blend file: {Path(blend).name}")
         logging.info(f"Saved blend file: {Path(blend).name}")
 
-        # Now save a temp.blend so changes to this blender file are not edited
+        # Now save a temp.blend so changes to this blender file are not edited.
         blend_temp = blend.parent / "temp.blend"
         bpy.ops.wm.save_as_mainfile(
             filepath=str(blend_temp), 
@@ -2548,7 +2545,10 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
 def repath_blend_textures(blend, path_new):
     try:
         for image in bpy.data.images:  # Repath the textures.
-            bpy.data.images[image.name].filepath = str(path_new / image.name)
+            image_filename = Path.resolve(Path(bpy.path.abspath(image.filepath))).name
+            print(f"image_filename: {image_filename}")
+            image_filepath_new = path_new / image_filename
+            bpy.data.images[image.name].filepath = str(path_new / image_filename)
         
         print("Renamed modified textures directory and repathed blend")
         logging.info("Renamed modified textures directory and repathed blend")
@@ -2575,7 +2575,8 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
         delete_textures_temp(textures_temp_dir)
 
         # Unpack textures before modifying them.
-        unpack_textures(item_dir, textures_temp_dir, blend)
+        blend_temp = blend.parent / "temp.blend"
+        unpack_textures(item_dir, textures_temp_dir, blend_temp)
 
         # Rename unpacked textures to match image name, since images packed into .blend use names from 
         #  original texture filepath baked into their data instead of the image name.
@@ -2586,6 +2587,8 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
         elif import_file.suffix == ".glb":
             # Get a dictionary of which textures are assigned to which materials.
             mapped_textures = map_textures_to_materials(import_file)
+            print("mapped textures")
+            print(mapped_textures)
 
             # Separate the combined maps.
             separate_gltf_maps(textures_temp_dir)
@@ -2607,10 +2610,7 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
 
         # Archive assets to library.
         archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
-        
-        # Delete saved .blend that was used for unpacking textures.
-        Path.unlink(blend)
-                
+                        
         print("Applied packed textures to objects")
         logging.info("Applied packed textures to objects")
 
