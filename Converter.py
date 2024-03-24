@@ -492,11 +492,11 @@ def select_by_material(material):
 		
 
 # Copy textures from custom directory to item_name directory.
-def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures):
+def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir):
     try:
         if Path(textures_custom_dir).exists():
             if Path(textures_dir).exists():  # Cannot create another textures folder if one already exists.
-                if copy_textures_custom_dir and not preserve_original_textures:  # If User elected to replace an existing textures directory that might be inside the item_name folder, then delete it.
+                if copy_textures_custom_dir and overwrite_textures:  # If User elected to replace an existing textures directory that might be inside the item_name folder, then delete it.
                     shutil.rmtree(textures_dir)
                 else:  # If not, preserve existing textures folder by renaming adding an "_original" suffix.
                     textures_dir_name = [d.name for d in Path.iterdir(item_dir) if "textures" in d.name.lower()][0]  # Need to get specific textures_dir folder characters in case any other files are pathed to it.
@@ -2493,10 +2493,10 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
 
             # Copy original custom textures to item_name directory if elected.
             if copy_textures_custom_dir:
-                copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures)
+                copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir)
 
 
-        elif mark_as_assets and asset_quality != "Highest":
+        elif mark_as_assets and asset_quality == "Highest":
             # Create a temporary textures directory beside the custom textures directory.
             create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
             
@@ -2532,7 +2532,7 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
 
             # Copy original custom textures to item_name directory if elected.
             if copy_textures_custom_dir:
-                copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir, preserve_original_textures)
+                copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir)
         
         print("Applied custom textures to objects")
         logging.info("Applied custom textures to objects")
@@ -2546,7 +2546,6 @@ def repath_blend_textures(blend, path_new):
     try:
         for image in bpy.data.images:  # Repath the textures.
             image_filename = Path.resolve(Path(bpy.path.abspath(image.filepath))).name
-            print(f"image_filename: {image_filename}")
             image_filepath_new = path_new / image_filename
             bpy.data.images[image.name].filepath = str(path_new / image_filename)
         
@@ -2587,8 +2586,6 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
         elif import_file.suffix == ".glb":
             # Get a dictionary of which textures are assigned to which materials.
             mapped_textures = map_textures_to_materials(import_file)
-            print("mapped textures")
-            print(mapped_textures)
 
             # Separate the combined maps.
             separate_gltf_maps(textures_temp_dir)
@@ -2679,7 +2676,7 @@ def apply_textures_external(item_dir, item_name, import_file, textures_dir, text
 
 
 # Determine where textures should be sourced, then texture the model.
-def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend):
+def apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count):
     try:
         if textures_source == "External":
             apply_textures_external(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend)
@@ -3202,7 +3199,7 @@ def converter_stage_export(import_settings_dict, import_file, item_name, item_di
         logging.exception("COULD NOT COMPLETE CONVERTER STAGE EXPORT")
 
 
-def converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend):
+def converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend, conversion_count):
     try:
         print("-------------------------------------------------------------------")
         print(f"CONVERTER START: {import_file.name}")
@@ -3241,7 +3238,7 @@ def converter_stage_import(import_settings_dict, import_file, item_name, item_di
 
         # Determine whether to use textures and from where they should come.
         if use_textures:
-            apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend)
+            apply_textures(item_dir, item_name, import_file, textures_dir, textures_temp_dir, blend, conversion_count)
         elif not use_textures:
             clear_materials_users()  # Clear all users of all materials.
             clean_data_block(bpy.data.materials)  # Brute force-remove all materials and images.
@@ -3273,9 +3270,9 @@ def converter_stage_import(import_settings_dict, import_file, item_name, item_di
 
 
 # Convert the file for every file found inside the given directory.
-def converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file):
+def converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file, conversion_count):
     try:
-        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend)
+        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend, conversion_count)
         
         converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
     
@@ -3429,7 +3426,7 @@ def batch_converter():
                                         
                         # If item is eligible for export, run the converter.
                         if import_check:
-                            converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
+                            converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file, conversion_count)
                             
                             conversion_count += 1
 
@@ -3464,7 +3461,7 @@ def batch_converter():
                     # If at least one export file is eligible for export, import the file.
                     if True in import_checklist:
                         # Import the file.
-                        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend)
+                        converter_stage_import(import_settings_dict, import_file, item_name, item_dir, textures_dir, textures_temp_dir, blend, conversion_count)
                         
                         # Export files per import file.
                         for export_settings_dict in exports:
