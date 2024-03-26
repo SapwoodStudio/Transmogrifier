@@ -41,9 +41,11 @@ import json
 import re
 import logging
 from bpy.app.handlers import persistent
-from itertools import chain
+import itertools
 import time
 import numpy as np
+from mathutils import Vector
+import csv
 
 
 
@@ -3318,21 +3320,6 @@ def report_conversion_count(conversion_count):
         logging.exception("Could not report conversion count")
 		
 
-# Make a list of exports for the current item_name, which will then be appended to the full conversion_list to be reported in the log.
-def get_export_info(export_file):
-    try:
-        export_file_size = get_export_file_size(export_file)
-        export_info = [export_file.name, export_file_size]
-
-        print(f"Got export info: {export_file.name}")
-        logging.info(f"Got export info: {export_file.name}")
-
-        return export_info
-
-    except Exception as Argument:
-        logging.exception(f"Could not get export info: {export_file.name}")
-
-
 # Determine whether to import a model before converting in order to save time.
 def determine_import(import_file, export_settings_dict, export_dir, export_file):    
     try:
@@ -3381,8 +3368,145 @@ def get_export_file_and_directory(item_dir, export_settings_dict, export_name):
         logging.exception(f"Could not determine get export file")
 
 
+def compare_file_size_to_target(file_size):
+    try:
+        if file_size < target_file_size:
+            return "🟢"    
+        return "🔺"
+        
+    except Exception as Argument:
+        logging.exception(f"Could not compare file size to target")
+
+
+# Source: https://blender.stackexchange.com/questions/223858/how-do-i-get-the-bounding-box-of-all-objects-in-a-scene
+def get_model_dimensions(unit_in, unit_out):
+    try:
+        units_dict = {
+            "MICROMETERS": 0.0001,
+            "MILLIMETERS": 0.001,
+            "CENTIMETERS": 0.01,
+            "METERS": 1,
+            "KILOMETERS": 10,
+            "THOU": 0.0000254,
+            "INCHES": 0.0254,
+            "FEET": 0.3048,
+            "MILES": 1609.344,
+            "ADAPTIVE": 1,
+        }
+
+        # Source: https://codereview.stackexchange.com/questions/283132/length-unit-converter
+        def convert_unit(val: float, unit_in: str, unit_out: str) -> float:
+            return val * units_dict[unit_in] / units_dict[unit_out]
+        
+        def get_axis_dimension(bbc, axis_index):
+            minmax = list(set([coord[axis_index] for coord in bbc]))
+            bbc_axis_length = abs(minmax[0] - minmax[1])
+            
+            return bbc_axis_length
+
+        # Multiply 3d coord list by matrix
+        def np_matmul_coords(coords, matrix, space=None):
+            M = (space @ matrix @ space.inverted()
+                if space else matrix).transposed()
+            ones = np.ones((coords.shape[0], 1))
+            coords4d = np.hstack((coords, ones))
+            
+            return np.dot(coords4d, M)[:,:-1]
+            return coords4d[:,:-1]
+
+        # Get the global coordinates of all object bounding box corners    
+        coords = np.vstack(
+            tuple(np_matmul_coords(np.array(o.bound_box), o.matrix_world.copy())
+                for o in  
+                    bpy.context.scene.objects
+                    if o.type == 'MESH'
+                    )
+                )
+        print("#" * 72)
+        # Bottom front left (all the mins)
+        bfl = coords.min(axis=0)
+        # Top back right
+        tbr = coords.max(axis=0)
+        G  = np.array((bfl, tbr)).T
+        # Bound box coords, i.e. the 8 combinations of bfl tbr.
+        bbc = np.array([i for i in itertools.product(*G)])
+
+        x_dim = convert_unit(get_dimensions(bbc, 0), unit_in, unit_out)
+        y_dim = convert_unit(get_dimensions(bbc, 1), unit_in, unit_out)
+        z_dim = convert_unit(get_dimensions(bbc, 2), unit_in, unit_out)
+
+        return x_dim, y_dim, z_dim
+
+    except Exception as Argument:
+        logging.exception(f"Could not get model dimensions")
+
+
+# Make a list of exports for the current item_name, which will then be appended to the full conversion_list to be reported in the log.
+def get_export_info(import_settings_dict, import_file, export_settings_dict, export_file):
+    try:
+        export_info = [
+            import_file = import_file.name, 
+            export_file = export_file.name, 
+            file_size = get_export_file_size(export_file), 
+            above_below_target = compare_file_size_to_target(file_size), 
+            length, width, height = get_model_dimensions("METERS", logging_length_unit), 
+
+
+
+        ]
+
+        print(f"Got export info: {export_file.name}")
+        logging.info(f"Got export info: {export_file.name}")
+
+        return export_info
+
+    except Exception as Argument:
+        logging.exception(f"Could not get export info: {export_file.name}")
+
+
+# Tabulate and save a CSV of the summary of the conversion.
+def report_conversion_summary(log_file):
+    try:
+        fields = [
+            "Import File", 
+            "Export File", 
+            "File Size", 
+            f"Above/Below Target ({str(target_file_size)})",
+            "Length",
+            "Width",
+            "Height",
+            f"Above/Below Target Dimensions ({str(target_dimensions)})",
+            "Objects", 
+            "Vertices", 
+            "Edges",
+            "Faces", 
+            "Triangles",
+            "Materials",
+            "Textures",
+            "Assets Marked",
+            "File Path", 
+        ]
+
+        rows = []
+
+        log_summary_file = f"{log_file.stem}_Summary.csv"
+
+        # Write csv file.
+        with open(log_summary_file, 'w') as csvfile:
+            # Create a csv writer object.
+            csvwriter = csv.writer(csvfile)
+
+            # Write the fields.
+            csvwriter.writerow(fields)
+
+            # Write the rows.
+            csvwriter.writerows(rows)
+
+    except Exception as Argument:
+        logging.exception(f"Could not report conversion summary")
+
 # Main function that loops through specified directory and creates variables for the converter
-def batch_converter():
+def batch_converter(log_file):
     try:
         print("-------------------------------------------------------------------")
         print("---------------------  BATCH CONVERTER START  ---------------------")
@@ -3445,7 +3569,7 @@ def batch_converter():
                             converter(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file, conversion_count)
                             
                             # Get export info after the model has been exported.
-                            export_info = get_export_info(export_file)
+                            export_info = get_export_info(import_settings_dict, import_file, export_settings_dict, export_file)
                             # Append export info to conversion list.
                             conversion_list.append(export_info)
                             conversion_count += 1
@@ -3495,7 +3619,7 @@ def batch_converter():
                                 converter_stage_export(import_settings_dict, import_file, item_name, item_dir, export_name, textures_dir, textures_temp_dir, blend, export_settings_dict, export_dir, export_file)
                                 
                                 # Get export info after the model has been exported.
-                                export_info = get_export_info(export_file)
+                                export_info = get_export_info(import_settings_dict, import_file, export_settings_dict, export_file)
                                 # Append export info to conversion list.
                                 conversion_list.append(export_info)
                                 conversion_count += 1
@@ -3548,6 +3672,9 @@ def batch_converter():
             print(f"{i[0]} = {i[1]} MB.")
             logging.info(f"{i[0]} = {i[1]} MB.")
 
+        # Output a summary table of the batch conversion.
+        report_conversion_summary(log_file)
+
         print("-----------------------------------------------------------------")
         print("---------------------  BATCH CONVERTER END  ---------------------")
         print("-----------------------------------------------------------------")
@@ -3581,7 +3708,7 @@ def transmogrify():
         log_file = make_log_file()
 
     # Step 3: Run the batch converter.
-    batch_converter()
+    batch_converter(log_file)
 
     # Step 4: Copy log file to all import directories
     if not link_import_settings and len(imports) > 1:

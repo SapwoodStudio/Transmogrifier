@@ -717,7 +717,30 @@ def draw_settings_scripts(self, context):
     elif not settings.advanced_ui:
         col = self.layout.column(align=True)
         col.label(text="(Toggle 'Advanced UI' to view)")
-        
+
+
+# Set max file size options.
+def draw_settings_logging(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    self.layout.use_property_split = False
+    self.layout.use_property_decorate = False
+    box_logging = self.layout.box()
+    row = box_logging.row(align=False)
+    row.label(text="Logging", icon="TEXT")
+    row.prop(settings, 'save_conversion_log', text='', icon="CHECKBOX_HLT" if settings.save_conversion_log else "CHECKBOX_DEHLT")
+
+    if settings.save_conversion_log:
+        box_dimensions = box_logging.box()
+        col = box_dimensions.column(align=True)
+        col.use_property_split = True
+        col.label(text='Compare Dimensions', icon='ORIENTATION_GLOBAL')
+        col.prop(settings, 'logging_bounding_box')
+
+        col = box_dimensions.column(align=True)
+        col.use_property_split = True
+        col.prop(settings, 'logging_unit_system')
+        col.prop(settings, 'logging_length_unit')
+
 
 # Draws the button and popover dropdown button used in the
 # 3D Viewport Header or Top Bar
@@ -819,6 +842,15 @@ class VIEW3D_PT_transmogrifier_scripts(Panel):
         draw_settings_scripts(self, context)
 
 
+class VIEW3D_PT_transmogrifier_logging(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Transmogrifier"
+    bl_label = "Logging"
+
+    def draw(self, context):
+        draw_settings_logging(self, context)
+
 
 # Popover panel (used on 3D Viewport Header or Top Bar option)
 class POPOVER_PT_transmogrifier(Panel):
@@ -839,6 +871,7 @@ class POPOVER_PT_transmogrifier(Panel):
         draw_settings_scene(self, context)
         if settings.advanced_ui:
             draw_settings_scripts(self, context)
+            draw_settings_logging(self, context)
 
 
 # Addon settings that are NOT specific to a .blend file
@@ -859,6 +892,7 @@ class TransmogrifierPreferences(AddonPreferences):
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_logging)
         if self.addon_location == 'TOPBAR':
             bpy.types.TOPBAR_MT_editor_menus.append(draw_popover)
         elif self.addon_location == '3DHEADER':
@@ -873,6 +907,7 @@ class TransmogrifierPreferences(AddonPreferences):
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_logging)
 
 
     addon_location: EnumProperty(
@@ -923,6 +958,7 @@ class TRANSMOGRIFIER_OT_advanced_ui(Operator):
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
+                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_logging)
             settings.advanced_ui = False
 
         elif not settings.advanced_ui:
@@ -934,6 +970,7 @@ class TRANSMOGRIFIER_OT_advanced_ui(Operator):
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_transformations)
                 bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
+                bpy.utils.register_class(VIEW3D_PT_transmogrifier_logging)
             settings.advanced_ui = True
             
         return {'FINISHED'}

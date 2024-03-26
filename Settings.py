@@ -748,6 +748,29 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         ],
         default="Before_Export",
     )
+    # Set location amount.
+    logging_bounding_box: FloatVectorProperty(
+        name="Bounds  ", 
+        # description="Set a bounding box dimensions a model should fit inside"
+        default=(0.0, 0.0, 0.0), 
+        subtype="TRANSLATION"
+    )
+    # Set unit system for logging model dimenions.
+    logging_unit_system: EnumProperty(
+        name="Unit System",
+        description="Set the unit system to use for logging model dimensions",
+        items=[
+            ("METRIC", "Metric", "", 1),
+            ("IMPERIAL", "Imperial", "", 2),
+        ],
+        default="METRIC",
+    )
+    # Set length unit for logging.
+    logging_length_unit: EnumProperty(
+        name="Length",
+        description="Set the length unit to use for logging model dimensions",
+        items=lambda self, context: Functions.get_length_unit(self.logging_unit_system),
+    )
 
 
 # Adapted from Bystedts Blender Baker (GPL-3.0 License, https://3dbystedt.gumroad.com/l/JAqLT), bake_passes.py
