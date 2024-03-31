@@ -733,13 +733,18 @@ def draw_settings_logging(self, context):
         box_dimensions = box_logging.box()
         col = box_dimensions.column(align=True)
         col.use_property_split = True
-        col.label(text='Compare Dimensions', icon='ORIENTATION_GLOBAL')
-        col.prop(settings, 'logging_bounding_box')
+        col.label(text='Compare Bounds', icon='CUBE')
+        col.prop(settings, 'logging_unit_system')
+        col.prop(settings, 'logging_length_unit')
 
         col = box_dimensions.column(align=True)
         col.use_property_split = True
-        col.prop(settings, 'logging_unit_system')
-        col.prop(settings, 'logging_length_unit')
+        row = col.row(align=True)
+        row.prop(settings, 'logging_bounds_x', text=f"X ({settings.logging_length_unit_abbr})")
+        row = col.row(align=True)
+        row.prop(settings, 'logging_bounds_y', text=f"Y ({settings.logging_length_unit_abbr})")
+        row = col.row(align=True)
+        row.prop(settings, 'logging_bounds_z', text=f"Z ({settings.logging_length_unit_abbr})")
 
 
 # Draws the button and popover dropdown button used in the

@@ -387,9 +387,6 @@ def get_format_extensions(format):
     return extensions
 
 
-
-
-
 def update_texture_settings(self, context):
     textures = context.scene.transmogrifier_textures
     settings = context.scene.transmogrifier_settings
@@ -397,9 +394,6 @@ def update_texture_settings(self, context):
     for index, instance in enumerate(textures):
         instance.texture_resolution = settings.texture_resolution
         instance.texture_format = settings.texture_format
-
-
-
 
 
 
@@ -586,11 +580,36 @@ length_unit_enum_items_refs = {
     ]
 }
 
+# Dictionary of length unit abbreviations.
+length_unit_abbr_dict = {
+    "MICROMETERS": "μm",
+    "MILLIMETERS": "mm", 
+    "CENTIMETERS": "cm", 
+    "METERS": "m", 
+    "KILOMETERS": "km", 
+    "THOU": "th", 
+    "INCHES": "in",
+    "FEET": "ft", 
+    "MILES": "mi",
+    "ADAPTIVE": "", 
+    "NONE": "", 
+}
 
 # Get length units for a given system.
 def get_length_unit(unit_system):
     
     return length_unit_enum_items_refs[unit_system]
+
+
+
+# ░█░░░█▀█░█▀▀░█▀▀░▀█▀░█▀█░█▀▀
+# ░█░░░█░█░█░█░█░█░░█░░█░█░█░█
+# ░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
+
+# Update the length unit abbreviation to be displayed next to the x,y, or z dimension text.
+def update_length_unit_abbr(self, context):
+    settings = bpy.context.scene.transmogrifier_settings
+    settings.logging_length_unit_abbr = length_unit_abbr_dict[settings.logging_length_unit]
 
 
 

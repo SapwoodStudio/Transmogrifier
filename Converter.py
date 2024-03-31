@@ -3371,8 +3371,8 @@ def get_export_file_and_directory(item_dir, export_settings_dict, export_name):
 def compare_file_size_to_target(file_size):
     try:
         if file_size < target_file_size:
-            return "🟢"    
-        return "🔺"
+            return "✅"    
+        return "⚠"
         
     except Exception as Argument:
         logging.exception(f"Could not compare file size to target")
@@ -3441,6 +3441,31 @@ def get_model_dimensions(unit_in, unit_out):
         logging.exception(f"Could not get model dimensions")
 
 
+# Compare model dimension to target bound.
+def within_bounds(index, dimension, bounds):
+    try:
+        if dimension > bounds[index]:
+            return False
+        return True
+
+    except Exception as Argument:
+        logging.exception(f"Could not compare dimensions")
+
+
+# Compare model dimensions to target bounds.
+def compare_dimensions(length, width, height):
+    try:
+        bounds = [logging_bounds_x, logging_bounds_y, logging_bounds_z]
+        for index, dimension in enumerate([length, width, height]):
+            within_bound = within_bounds(index, dimension, bounds)
+            if not within_bound:
+                return "⚠"
+        return "✅" 
+    
+    except Exception as Argument:
+        logging.exception(f"Could not determine if model dimensions are within bounds")
+
+
 # Make a list of exports for the current item_name, which will then be appended to the full conversion_list to be reported in the log.
 def get_export_info(import_settings_dict, import_file, export_settings_dict, export_file):
     try:
@@ -3448,8 +3473,9 @@ def get_export_info(import_settings_dict, import_file, export_settings_dict, exp
             import_file = import_file.name, 
             export_file = export_file.name, 
             file_size = get_export_file_size(export_file), 
-            above_below_target = compare_file_size_to_target(file_size), 
+            above_below_file_size_target = compare_file_size_to_target(file_size), 
             length, width, height = get_model_dimensions("METERS", logging_length_unit), 
+            above_below_dimensions_target = compare_dimensions(length, width, height),
 
 
 

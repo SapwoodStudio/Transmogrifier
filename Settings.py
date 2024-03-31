@@ -748,13 +748,6 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         ],
         default="Before_Export",
     )
-    # Set location amount.
-    logging_bounding_box: FloatVectorProperty(
-        name="Bounds  ", 
-        # description="Set a bounding box dimensions a model should fit inside"
-        default=(0.0, 0.0, 0.0), 
-        subtype="TRANSLATION"
-    )
     # Set unit system for logging model dimenions.
     logging_unit_system: EnumProperty(
         name="Unit System",
@@ -764,12 +757,43 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("IMPERIAL", "Imperial", "", 2),
         ],
         default="METRIC",
+        update=Functions.update_length_unit_abbr,
     )
     # Set length unit for logging.
     logging_length_unit: EnumProperty(
         name="Length",
         description="Set the length unit to use for logging model dimensions",
         items=lambda self, context: Functions.get_length_unit(self.logging_unit_system),
+        update=Functions.update_length_unit_abbr,
+    )
+    logging_length_unit_abbr: StringProperty(
+        name="Length Unit Abbreviation",
+        description="The length unit to use for logging model dimensions",
+        default="cm"
+    )
+    logging_bounds_x: FloatProperty(
+        name="X", 
+        description="Set a bounding box X-dimension a model's length should fit inside",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=100,
+    )
+    logging_bounds_y: FloatProperty(
+        name="Y", 
+        description="Set a bounding box Y-dimension a model's width should fit inside",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=100,
+    )
+    logging_bounds_z: FloatProperty(
+        name="Z", 
+        description="Set a bounding box Z-dimension a model's height should fit inside",
+        default=1.0,
+        soft_min=0.0,
+        soft_max=10000.0,
+        step=100,
     )
 
 
