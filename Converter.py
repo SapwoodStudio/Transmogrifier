@@ -42,6 +42,7 @@ import re
 import logging
 from bpy.app.handlers import persistent
 import itertools
+from itertools import chain
 import time
 import numpy as np
 from mathutils import Vector
@@ -3370,7 +3371,7 @@ def get_export_file_and_directory(item_dir, export_settings_dict, export_name):
 
 def compare_file_size_to_target(file_size):
     try:
-        if file_size < target_file_size:
+        if file_size < optimize_target_file_size:
             return "✅"    
         return "⚠"
         
@@ -3431,9 +3432,9 @@ def get_model_dimensions(unit_in, unit_out):
         # Bound box coords, i.e. the 8 combinations of bfl tbr.
         bbc = np.array([i for i in itertools.product(*G)])
 
-        x_dim = convert_unit(get_dimensions(bbc, 0), unit_in, unit_out)
-        y_dim = convert_unit(get_dimensions(bbc, 1), unit_in, unit_out)
-        z_dim = convert_unit(get_dimensions(bbc, 2), unit_in, unit_out)
+        x_dim = round(convert_unit(get_axis_dimension(bbc, 0), unit_in, unit_out), 2)
+        y_dim = round(convert_unit(get_axis_dimension(bbc, 1), unit_in, unit_out), 2)
+        z_dim = round(convert_unit(get_axis_dimension(bbc, 2), unit_in, unit_out), 2)
 
         return x_dim, y_dim, z_dim
 
@@ -3466,19 +3467,60 @@ def compare_dimensions(length, width, height):
         logging.exception(f"Could not determine if model dimensions are within bounds")
 
 
-# Make a list of exports for the current item_name, which will then be appended to the full conversion_list to be reported in the log.
+# Get some scene statistics.
+def get_scene_statistics():
+    try:
+        statistics = bpy.context.scene.statistics(bpy.context.view_layer)
+        collection, object, vertices, faces, triangles, objects, duration, memory, version = statistics.split(sep=' | ')
+
+        vertices = vertices.split(':')[-1]
+        faces = faces.split(':')[-1]
+        triangles = triangles.split(':')[-1]
+        objects = objects.split(':')[-1].split('/')[-1]
+
+        return vertices, faces, triangles, objects
+
+    except Exception as Argument:
+        logging.exception(f"Could not get scene statistics")
+
+
+# Make a list of exports for the current item_name, which will then be appended to the full export_info_list to be reported in the log.
 def get_export_info(import_settings_dict, import_file, export_settings_dict, export_file):
     try:
+        materials = bpy.data.materials
+        textures = bpy.data.images
+
+        import_file_name = import_file.name
+        export_file_name = export_file.name
+        file_size = get_export_file_size(export_file)
+        above_below_file_size_target = compare_file_size_to_target(file_size)
+        length, width, height = get_model_dimensions("METERS", logging_length_unit)
+        above_below_dimensions_target = compare_dimensions(length, width, height)
+        vertices, faces, triangles, objects = get_scene_statistics()
+        material_count = len(materials)
+        materials = [material.name for material in materials]
+        textures_count = len(textures)
+        textures = [texture.name for texture in textures]
+        filepath = str(export_file)
+
         export_info = [
-            import_file = import_file.name, 
-            export_file = export_file.name, 
-            file_size = get_export_file_size(export_file), 
-            above_below_file_size_target = compare_file_size_to_target(file_size), 
-            length, width, height = get_model_dimensions("METERS", logging_length_unit), 
-            above_below_dimensions_target = compare_dimensions(length, width, height),
-
-
-
+            import_file_name, 
+            export_file_name, 
+            file_size, 
+            above_below_file_size_target, 
+            length, 
+            width, 
+            height, 
+            above_below_dimensions_target,
+            vertices, 
+            faces, 
+            triangles, 
+            objects,
+            material_count,
+            materials,
+            textures_count,
+            textures,
+            filepath
         ]
 
         print(f"Got export info: {export_file.name}")
@@ -3491,31 +3533,32 @@ def get_export_info(import_settings_dict, import_file, export_settings_dict, exp
 
 
 # Tabulate and save a CSV of the summary of the conversion.
-def report_conversion_summary(log_file):
+def report_conversion_summary(log_file, export_info_list):
     try:
+        target_dimensions = f"{logging_bounds_x}{logging_length_unit_abbr} x {logging_bounds_y}{logging_length_unit_abbr} x {logging_bounds_z}{logging_length_unit_abbr}"
+        
         fields = [
             "Import File", 
             "Export File", 
-            "File Size", 
-            f"Above/Below Target ({str(target_file_size)})",
+            "File Size (MB)", 
+            f"Above/Below Target ({str(optimize_target_file_size)} MB)",
             "Length",
             "Width",
             "Height",
-            f"Above/Below Target Dimensions ({str(target_dimensions)})",
-            "Objects", 
+            f"Above/Below Target Dimensions ({target_dimensions})",
             "Vertices", 
-            "Edges",
             "Faces", 
             "Triangles",
+            "Objects", 
+            "Material Count",
             "Materials",
+            "Texture Count",
             "Textures",
-            "Assets Marked",
             "File Path", 
         ]
 
-        rows = []
-
-        log_summary_file = f"{log_file.stem}_Summary.csv"
+        log_summary_file = log_file.parent / f"{log_file.stem}_Summary.csv"
+        logging.info(log_summary_file)
 
         # Write csv file.
         with open(log_summary_file, 'w') as csvfile:
@@ -3526,7 +3569,7 @@ def report_conversion_summary(log_file):
             csvwriter.writerow(fields)
 
             # Write the rows.
-            csvwriter.writerows(rows)
+            csvwriter.writerows(export_info_list)
 
     except Exception as Argument:
         logging.exception(f"Could not report conversion summary")
@@ -3543,7 +3586,7 @@ def batch_converter(log_file):
 
         # Set up a conversion count and list to report how many conversions took place and the final file sizes of each item_name.
         conversion_count = 0
-        conversion_list = []
+        export_info_list = []
 
         # Create path to blender.exe and get version
         blender_dir = bpy.app.binary_path
@@ -3597,7 +3640,7 @@ def batch_converter(log_file):
                             # Get export info after the model has been exported.
                             export_info = get_export_info(import_settings_dict, import_file, export_settings_dict, export_file)
                             # Append export info to conversion list.
-                            conversion_list.append(export_info)
+                            export_info_list.append(export_info)
                             conversion_count += 1
 
                 
@@ -3647,7 +3690,7 @@ def batch_converter(log_file):
                                 # Get export info after the model has been exported.
                                 export_info = get_export_info(import_settings_dict, import_file, export_settings_dict, export_file)
                                 # Append export info to conversion list.
-                                conversion_list.append(export_info)
+                                export_info_list.append(export_info)
                                 conversion_count += 1
         
                 # Copy files adjacent to the import_file to the custom export directory.
@@ -3693,13 +3736,13 @@ def batch_converter(log_file):
         # Report list of files converted and their corresponding file sizes.
         print("ITEMS EXPORTED:")
         logging.info("ITEMS EXPORTED:")
-        print(conversion_list)
-        for i in conversion_list:
-            print(f"{i[0]} = {i[1]} MB.")
-            logging.info(f"{i[0]} = {i[1]} MB.")
+        print(export_info_list)
+        for converted_item in export_info_list:
+            print(f"{converted_item[1]} = {converted_item[2]} MB.")
+            logging.info(f"{converted_item[1]} = {converted_item[2]} MB.")
 
         # Output a summary table of the batch conversion.
-        report_conversion_summary(log_file)
+        report_conversion_summary(log_file, export_info_list)
 
         print("-----------------------------------------------------------------")
         print("---------------------  BATCH CONVERTER END  ---------------------")
