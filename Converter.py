@@ -3373,14 +3373,14 @@ def compare_file_size_to_target(file_size):
     try:
         if file_size < optimize_target_file_size:
             return "✅"    
-        return "⚠"
+        return "🔺"
         
     except Exception as Argument:
         logging.exception(f"Could not compare file size to target")
 
 
 # Source: https://blender.stackexchange.com/questions/223858/how-do-i-get-the-bounding-box-of-all-objects-in-a-scene
-def get_model_dimensions(unit_in, unit_out):
+def get_model_dimensions(export_settings_dict, unit_in, unit_out):
     try:
         units_dict = {
             "MICROMETERS": 0.0001,
@@ -3432,9 +3432,13 @@ def get_model_dimensions(unit_in, unit_out):
         # Bound box coords, i.e. the 8 combinations of bfl tbr.
         bbc = np.array([i for i in itertools.product(*G)])
 
-        x_dim = round(convert_unit(get_axis_dimension(bbc, 0), unit_in, unit_out), 2)
-        y_dim = round(convert_unit(get_axis_dimension(bbc, 1), unit_in, unit_out), 2)
-        z_dim = round(convert_unit(get_axis_dimension(bbc, 2), unit_in, unit_out), 2)
+        # Get export scale for current export instance.
+        export_scale = export_settings_dict["scale"]
+
+        # Calculate model dimensions from bounding box coordinates, length unit, and export scale.
+        x_dim = round(convert_unit(get_axis_dimension(bbc, 0), unit_in, unit_out) * export_scale, 2)
+        y_dim = round(convert_unit(get_axis_dimension(bbc, 1), unit_in, unit_out) * export_scale, 2)
+        z_dim = round(convert_unit(get_axis_dimension(bbc, 2), unit_in, unit_out) * export_scale, 2)
 
         return x_dim, y_dim, z_dim
 
@@ -3460,25 +3464,39 @@ def compare_dimensions(length, width, height):
         for index, dimension in enumerate([length, width, height]):
             within_bound = within_bounds(index, dimension, bounds)
             if not within_bound:
-                return "⚠"
+                return "🔺"
         return "✅" 
     
     except Exception as Argument:
         logging.exception(f"Could not determine if model dimensions are within bounds")
 
+# Calculate triangles
+def calculate_triangles():
+    try:
+        select_all()
+        total_triangles = 0
+        for object in bpy.context.selected_objects:
+            if object.type != "MESH":
+                continue
+            for face in object.data.polygons:
+                triangles = len(face.vertices) - 2
+                total_triangles += triangles
+
+        return total_triangles
+
+    except Exception as Argument:
+        logging.exception(f"Could not calculate triangles")
 
 # Get some scene statistics.
 def get_scene_statistics():
     try:
-        statistics = bpy.context.scene.statistics(bpy.context.view_layer)
-        collection, object, vertices, faces, triangles, objects, duration, memory, version = statistics.split(sep=' | ')
+        objects = len(bpy.data.objects)
+        vertices = sum(len(object.data.vertices) for object in bpy.context.scene.objects if object.type == "MESH")
+        edges = sum(len(object.data.edges) for object in bpy.context.scene.objects if object.type == "MESH")
+        faces = sum(len(object.data.polygons) for object in bpy.context.scene.objects if object.type == "MESH")
+        triangles = calculate_triangles()
 
-        vertices = vertices.split(':')[-1]
-        faces = faces.split(':')[-1]
-        triangles = triangles.split(':')[-1]
-        objects = objects.split(':')[-1].split('/')[-1]
-
-        return vertices, faces, triangles, objects
+        return objects, vertices, edges, faces, triangles
 
     except Exception as Argument:
         logging.exception(f"Could not get scene statistics")
@@ -3491,12 +3509,14 @@ def get_export_info(import_settings_dict, import_file, export_settings_dict, exp
         textures = bpy.data.images
 
         import_file_name = import_file.name
+        import_format = import_settings_dict["name"]
         export_file_name = export_file.name
+        export_format = export_settings_dict["name"]
         file_size = get_export_file_size(export_file)
-        above_below_file_size_target = compare_file_size_to_target(file_size)
-        length, width, height = get_model_dimensions("METERS", logging_length_unit)
-        above_below_dimensions_target = compare_dimensions(length, width, height)
-        vertices, faces, triangles, objects = get_scene_statistics()
+        below_file_size_target = compare_file_size_to_target(file_size)
+        length, width, height = get_model_dimensions(export_settings_dict, "METERS", logging_length_unit)
+        within_bounds = compare_dimensions(length, width, height)
+        objects, vertices, edges, faces, triangles = get_scene_statistics()
         material_count = len(materials)
         materials = [material.name for material in materials]
         textures_count = len(textures)
@@ -3505,17 +3525,20 @@ def get_export_info(import_settings_dict, import_file, export_settings_dict, exp
 
         export_info = [
             import_file_name, 
+            import_format, 
             export_file_name, 
+            export_format, 
             file_size, 
-            above_below_file_size_target, 
+            below_file_size_target, 
             length, 
             width, 
             height, 
-            above_below_dimensions_target,
+            within_bounds,
+            objects,
             vertices, 
+            edges,
             faces, 
             triangles, 
-            objects,
             material_count,
             materials,
             textures_count,
@@ -3539,17 +3562,20 @@ def report_conversion_summary(log_file, export_info_list):
         
         fields = [
             "Import File", 
+            "Import Format", 
             "Export File", 
+            "Export Format", 
             "File Size (MB)", 
-            f"Above/Below Target ({str(optimize_target_file_size)} MB)",
-            "Length",
-            "Width",
-            "Height",
-            f"Above/Below Target Dimensions ({target_dimensions})",
-            "Vertices", 
+            f"Below Target File Size? ({str(optimize_target_file_size)} MB)",
+            f"Length ({logging_length_unit_abbr})",
+            f"Width ({logging_length_unit_abbr})",
+            f"Height ({logging_length_unit_abbr})",
+            f"Within Bounds? ({target_dimensions})",
+            "Objects", 
+            "Vertices",
+            "Edges", 
             "Faces", 
             "Triangles",
-            "Objects", 
             "Material Count",
             "Materials",
             "Texture Count",
@@ -3561,7 +3587,7 @@ def report_conversion_summary(log_file, export_info_list):
         logging.info(log_summary_file)
 
         # Write csv file.
-        with open(log_summary_file, 'w') as csvfile:
+        with open(log_summary_file, 'w', newline='') as csvfile:
             # Create a csv writer object.
             csvwriter = csv.writer(csvfile)
 
@@ -3738,8 +3764,8 @@ def batch_converter(log_file):
         logging.info("ITEMS EXPORTED:")
         print(export_info_list)
         for converted_item in export_info_list:
-            print(f"{converted_item[1]} = {converted_item[2]} MB.")
-            logging.info(f"{converted_item[1]} = {converted_item[2]} MB.")
+            print(f"{converted_item[2]} = {converted_item[4]} MB.")
+            logging.info(f"{converted_item[2]} = {converted_item[4]} MB.")
 
         # Output a summary table of the batch conversion.
         report_conversion_summary(log_file, export_info_list)
