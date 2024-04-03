@@ -76,8 +76,8 @@ def draw_settings_general(self, context):
     title = bl_info["name"] + " " + version + "-Dev"
     row = self.layout.row(align=False)
     row.label(text=title)
-    if settings.advanced_ui:
-        row.prop(settings, 'save_conversion_log', expand=False, text="", icon="TEXT")
+    if not settings.advanced_ui:
+        row.prop(settings, 'logging_save_summary', expand=False, text="", icon="TEXT")
     row.operator('transmogrifier.advanced_ui', text="", icon="OPTIONS", depress=True if settings.advanced_ui else False)
     help = row.operator('transmogrifier.help', text="", icon="QUESTION")
     help.link = "https://sapwoodstudio.github.io/Transmogrifier"
@@ -288,8 +288,6 @@ def draw_settings_textures(self, context):
     row = box_textures.row(align=False)
     row.label(text="Textures", icon='TEXTURE')
     if settings.use_textures and settings.advanced_ui:
-        if settings.edit_textures:
-            row.prop(settings, 'keep_edited_textures', text='', icon="FAKE_USER_ON" if settings.keep_edited_textures else "FAKE_USER_OFF")
         row.prop(settings, 'edit_textures', text='', icon_value=custom_icons['Edit_Textures_Icon'].icon_id)
     row.prop(settings, 'use_textures', text='', icon="CHECKBOX_HLT" if settings.use_textures else "CHECKBOX_DEHLT")
 
@@ -327,6 +325,7 @@ def draw_settings_textures(self, context):
             if len(textures) > 0:
                 row = grid.row()
                 row.alignment = "RIGHT"
+                row.prop(settings, 'keep_edited_textures', text='', icon="FAKE_USER_ON" if settings.keep_edited_textures else "FAKE_USER_OFF")
                 row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
                 row.prop(settings, 'link_texture_settings', expand=False, text="", icon="LINKED" if settings.link_texture_settings else "UNLINKED")
 
@@ -727,24 +726,42 @@ def draw_settings_logging(self, context):
     box_logging = self.layout.box()
     row = box_logging.row(align=False)
     row.label(text="Logging", icon="TEXT")
-    row.prop(settings, 'save_conversion_log', text='', icon="CHECKBOX_HLT" if settings.save_conversion_log else "CHECKBOX_DEHLT")
+    row.prop(settings, 'logging_save_log', text='', icon="FILE_TEXT")
+    row.prop(settings, 'logging_save_summary', text='', icon="SPREADSHEET")
 
-    if settings.save_conversion_log:
-        box_dimensions = box_logging.box()
-        col = box_dimensions.column(align=True)
+    if settings.logging_save_summary:
+        box_summary = box_logging.box()
+        col = box_summary.column(align=True)
         col.use_property_split = True
-        col.label(text='Compare Bounds', icon='CUBE')
-        col.prop(settings, 'logging_unit_system')
-        col.prop(settings, 'logging_length_unit')
+        col.label(text='Log Summary', icon='SPREADSHEET')
+        grid = box_summary.grid_flow(columns=2, align=True)
+        grid.prop(settings, 'logging_summary_filter')
 
-        col = box_dimensions.column(align=True)
-        col.use_property_split = True
-        row = col.row(align=True)
-        row.prop(settings, 'logging_bounds_x', text=f"X ({settings.logging_length_unit_abbr})")
-        row = col.row(align=True)
-        row.prop(settings, 'logging_bounds_y', text=f"Y ({settings.logging_length_unit_abbr})")
-        row = col.row(align=True)
-        row.prop(settings, 'logging_bounds_z', text=f"Z ({settings.logging_length_unit_abbr})")
+        # Compare File Size
+        if "File Size" in settings.logging_summary_filter:
+            box_file_size = box_summary.box()
+            col = box_file_size.column(align=True)
+            col.use_property_split = True
+            col.label(text='Compare File Size', icon='FILE')
+            col.prop(settings, 'optimize_target_file_size')
+
+        # Compare Dimensions
+        if "Dimensions" in settings.logging_summary_filter:
+            box_dimensions = box_summary.box()
+            col = box_dimensions.column(align=True)
+            col.use_property_split = True
+            col.label(text='Compare Dimensions', icon='CUBE')
+            col.prop(settings, 'logging_unit_system')
+            col.prop(settings, 'logging_length_unit')
+
+            col = box_dimensions.column(align=True)
+            col.use_property_split = True
+            row = col.row(align=True)
+            row.prop(settings, 'logging_bounds_x', text=f"X ({settings.logging_length_unit_abbr})")
+            row = col.row(align=True)
+            row.prop(settings, 'logging_bounds_y', text=f"Y ({settings.logging_length_unit_abbr})")
+            row = col.row(align=True)
+            row.prop(settings, 'logging_bounds_z', text=f"Z ({settings.logging_length_unit_abbr})")
 
 
 # Draws the button and popover dropdown button used in the

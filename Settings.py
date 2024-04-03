@@ -57,12 +57,6 @@ from . import Functions
 
 # Groups together all the addon settings that are saved in each .blend file
 class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
-    # Save conversion log.
-    save_conversion_log: BoolProperty(
-        name="Save Conversion Log",
-        description="Save a log of the batch conversion in the given import directories. The log records each step of the conversion process and reports a list of models exported along with their final file sizes.  A log is also invaluable for troubleshooting conversion errors or bugs",
-        default=False,
-    )
     # Advanced UI toggle.
     advanced_ui: BoolProperty(
         name="Advanced UI",
@@ -747,6 +741,44 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
             ("After_Batch", "After Batch", "Run script after the batch conversion ends.", 5),
         ],
         default="Before_Export",
+    )
+    # Save conversion summary.
+    logging_save_summary: BoolProperty(
+        name="Save Conversion Summary",
+        description="Save a CSV summary of the batch conversion in the given import directories. The summary records statistics about each model converted",
+        default=False,
+    )
+    # Option to set custom transformations.
+    logging_summary_filter: EnumProperty(
+        name="Log Summary Filter",
+        options={'ENUM_FLAG'},
+        items=[
+            ("Date", 'Date', "", "TIME", 1),
+            ("File Size", 'File Size', "", "FILE", 2),
+            ("Dimensions", 'Dimensions', "", "CUBE", 4),
+            ("Objects", 'Objects', "", "OUTLINER", 8),
+            ("Polycount", 'Polycount', "", "MESH_DATA", 16),
+            ("Materials", 'Materials', "", "MATERIAL", 32),
+            ("Textures", 'Textures', "", "TEXTURE", 64),
+            ("File Path", 'File Path', "", "NETWORK_DRIVE", 128),
+        ],
+        description="Filter properties to document in the log summary CSV",
+        default={
+            'Date',
+            'File Size',
+            'Dimensions',
+            'Objects',
+            'Polycount',
+            'Materials',
+            'Textures',
+            'File Path',
+        },
+    )
+    # Save conversion log.
+    logging_save_log: BoolProperty(
+        name="Save Conversion Log",
+        description="Save a TXT log of the batch conversion in the given import directories. The log records each step of the conversion process, which is invaluable for troubleshooting conversion errors or bugs",
+        default=False,
     )
     # Set unit system for logging model dimenions.
     logging_unit_system: EnumProperty(

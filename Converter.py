@@ -126,7 +126,6 @@ def get_settings(json_files):
 # Copy finished log file to other import directories.
 def copy_log_file(log_file):
     try:
-        log_directory = imports[0]["directory"]
         for import_settings_dict in imports:
             directory = import_settings_dict["directory"]
             if Path(directory) == log_file.parent:
@@ -3490,13 +3489,12 @@ def calculate_triangles():
 # Get some scene statistics.
 def get_scene_statistics():
     try:
-        objects = len(bpy.data.objects)
         vertices = sum(len(object.data.vertices) for object in bpy.context.scene.objects if object.type == "MESH")
         edges = sum(len(object.data.edges) for object in bpy.context.scene.objects if object.type == "MESH")
         faces = sum(len(object.data.polygons) for object in bpy.context.scene.objects if object.type == "MESH")
         triangles = calculate_triangles()
 
-        return objects, vertices, edges, faces, triangles
+        return vertices, edges, faces, triangles
 
     except Exception as Argument:
         logging.exception(f"Could not get scene statistics")
@@ -3505,46 +3503,51 @@ def get_scene_statistics():
 # Make a list of exports for the current item_name, which will then be appended to the full export_info_list to be reported in the log.
 def get_export_info(import_settings_dict, import_file, export_settings_dict, export_file):
     try:
-        materials = bpy.data.materials
-        textures = bpy.data.images
+        export_info = []
 
+        # Add field values according to the logging_summary_filter menu.
+        if "Date" in logging_summary_filter:
+            Date = datetime.date.today()
+            Time = datetime.datetime.now().strftime("%H:%M:%S")
+            export_info.extend([Date, Time])
+
+        # Always add these field values.
         import_file_name = import_file.name
         import_format = import_settings_dict["name"]
         export_file_name = export_file.name
         export_format = export_settings_dict["name"]
-        file_size = get_export_file_size(export_file)
-        below_file_size_target = compare_file_size_to_target(file_size)
-        length, width, height = get_model_dimensions(export_settings_dict, "METERS", logging_length_unit)
-        within_bounds = compare_dimensions(length, width, height)
-        objects, vertices, edges, faces, triangles = get_scene_statistics()
-        material_count = len(materials)
-        materials = [material.name for material in materials]
-        textures_count = len(textures)
-        textures = [texture.name for texture in textures]
-        filepath = str(export_file)
+        export_info.extend([import_file_name, import_format, export_file_name, export_format])
 
-        export_info = [
-            import_file_name, 
-            import_format, 
-            export_file_name, 
-            export_format, 
-            file_size, 
-            below_file_size_target, 
-            length, 
-            width, 
-            height, 
-            within_bounds,
-            objects,
-            vertices, 
-            edges,
-            faces, 
-            triangles, 
-            material_count,
-            materials,
-            textures_count,
-            textures,
-            filepath
-        ]
+        # Continue adding field values.
+        if "File Size" in logging_summary_filter:
+            file_size = get_export_file_size(export_file)
+            below_file_size_target = compare_file_size_to_target(file_size)
+            export_info.extend([file_size, below_file_size_target])
+        if "Dimensions" in logging_summary_filter:
+            length, width, height = get_model_dimensions(export_settings_dict, "METERS", logging_length_unit)
+            within_bounds = compare_dimensions(length, width, height)
+            export_info.extend([length, width, height, within_bounds])
+        if "Polycount" in logging_summary_filter:
+            vertices, edges, faces, triangles = get_scene_statistics()
+            export_info.extend([vertices, edges, faces, triangles])
+        if "Objects" in logging_summary_filter:
+            objects = bpy.data.objects
+            object_count = len(objects)
+            objects = [object.name for object in objects]
+            export_info.extend([object_count, objects])
+        if "Materials" in logging_summary_filter:
+            materials = bpy.data.materials
+            material_count = len(materials)
+            materials = [material.name for material in materials]
+            export_info.extend([material_count, materials])
+        if "Textures" in logging_summary_filter:
+            textures = bpy.data.images
+            texture_count = len(textures)
+            textures = [texture.name for texture in textures]
+            export_info.extend([texture_count, textures])
+        if "File Path" in logging_summary_filter:
+            export_file_path = str(export_file)
+            export_info.extend([export_file_path])
 
         print(f"Got export info: {export_file.name}")
         logging.info(f"Got export info: {export_file.name}")
@@ -3558,35 +3561,37 @@ def get_export_info(import_settings_dict, import_file, export_settings_dict, exp
 # Tabulate and save a CSV of the summary of the conversion.
 def report_conversion_summary(log_file, export_info_list):
     try:
-        target_dimensions = f"{logging_bounds_x}{logging_length_unit_abbr} x {logging_bounds_y}{logging_length_unit_abbr} x {logging_bounds_z}{logging_length_unit_abbr}"
-        
-        fields = [
-            "Import File", 
-            "Import Format", 
-            "Export File", 
-            "Export Format", 
-            "File Size (MB)", 
-            f"Below Target File Size? ({str(optimize_target_file_size)} MB)",
-            f"Length ({logging_length_unit_abbr})",
-            f"Width ({logging_length_unit_abbr})",
-            f"Height ({logging_length_unit_abbr})",
+        fields = []
+
+        # Add fields according to the logging_summary_filter menu.
+        if "Date" in logging_summary_filter:
+            fields.extend(["Date", "Time"])
+        fields.extend(["Import File", "Import Format", "Export File", "Export Format"])  # Always add these fields
+        if "File Size" in logging_summary_filter:
+            fields.extend(["File Size (MB)", f"Below Target File Size? ({str(optimize_target_file_size)} MB)"])
+        if "Dimensions" in logging_summary_filter:
+            target_dimensions = f"{logging_bounds_x}{logging_length_unit_abbr} x {logging_bounds_y}{logging_length_unit_abbr} x {logging_bounds_z}{logging_length_unit_abbr}"
+            fields.extend([
+            f"Length (X) ({logging_length_unit_abbr})",
+            f"Width (Y) ({logging_length_unit_abbr})",
+            f"Height (Z) ({logging_length_unit_abbr})",
             f"Within Bounds? ({target_dimensions})",
-            "Objects", 
-            "Vertices",
-            "Edges", 
-            "Faces", 
-            "Triangles",
-            "Material Count",
-            "Materials",
-            "Texture Count",
-            "Textures",
-            "File Path", 
-        ]
+            ])
+        if "Polycount" in logging_summary_filter:
+            fields.extend(["Vertices", "Edges", "Faces", "Triangles",])
+        if "Objects" in logging_summary_filter:
+            fields.extend(["Object Count", "Objects"])
+        if "Materials" in logging_summary_filter:
+            fields.extend(["Material Count", "Materials"])
+        if "Textures" in logging_summary_filter:
+            fields.extend(["Texture Count", "Textures"])
+        if "File Path" in logging_summary_filter:
+            fields.extend(["Export File Path"])
 
-        log_summary_file = log_file.parent / f"{log_file.stem}_Summary.csv"
-        logging.info(log_summary_file)
+        log_summary_name = log_file.stem.replace("Log", "Summary") + ".csv"
+        log_summary_file = log_file.parent / log_summary_name
 
-        # Write csv file.
+        # Write CSV file.
         with open(log_summary_file, 'w', newline='') as csvfile:
             # Create a csv writer object.
             csvwriter = csv.writer(csvfile)
@@ -3596,6 +3601,13 @@ def report_conversion_summary(log_file, export_info_list):
 
             # Write the rows.
             csvwriter.writerows(export_info_list)
+        
+        print(f"Reported conversion summary: {log_summary_name}")
+        logging.info(f"Reported conversion summary: {log_summary_name}")
+
+        # Copy CSV file to each import directory.
+        if not link_import_settings and len(imports) > 1:
+            copy_log_file(log_summary_file)
 
     except Exception as Argument:
         logging.exception(f"Could not report conversion summary")
@@ -3758,14 +3770,6 @@ def batch_converter(log_file):
         # Report final conversion count.
         print(f"{conversion_count} files were converted.")
         logging.info(f"{conversion_count} files were converted.")
-        
-        # Report list of files converted and their corresponding file sizes.
-        print("ITEMS EXPORTED:")
-        logging.info("ITEMS EXPORTED:")
-        print(export_info_list)
-        for converted_item in export_info_list:
-            print(f"{converted_item[2]} = {converted_item[4]} MB.")
-            logging.info(f"{converted_item[2]} = {converted_item[4]} MB.")
 
         # Output a summary table of the batch conversion.
         report_conversion_summary(log_file, export_info_list)
@@ -3799,7 +3803,7 @@ def transmogrify():
     get_settings(["Settings.json"])
 
     # Step 2: Start logging conversion if requested by User.
-    if save_conversion_log:
+    if logging_save_log:
         log_file = make_log_file()
 
     # Step 3: Run the batch converter.
