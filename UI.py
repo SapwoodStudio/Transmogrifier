@@ -76,8 +76,6 @@ def draw_settings_general(self, context):
     title = bl_info["name"] + " " + version + "-Dev"
     row = self.layout.row(align=False)
     row.label(text=title)
-    if not settings.advanced_ui:
-        row.prop(settings, 'logging_save_summary', expand=False, text="", icon="TEXT")
     row.operator('transmogrifier.advanced_ui', text="", icon="OPTIONS", depress=True if settings.advanced_ui else False)
     help = row.operator('transmogrifier.help', text="", icon="QUESTION")
     help.link = "https://sapwoodstudio.github.io/Transmogrifier"
