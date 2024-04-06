@@ -4,22 +4,18 @@ repo_url: https://github.com/sapwoodstudio/transmogrifier
 
 nav:
   - Home: 'index.md'
-  - Installation: 'installation.md'
-  - Quickstart: 'quickstart.md'
-  - Usage Guide: 'usage.md'
+  - Getting started: 'getting_started.md'
+  - Features: 'features.md'
   - FAQ: 'faq.md'
-  - Credits: 'credits.md'
-
-markdown_extensions:
-  - toc:
-    permalink: "#"
+  - Contribute: 'contribute.md'
+  - What's New?: 'whats_new.md'
 
 theme:
   name: material
 
-  logo: Transmogrifier_Logo_128.png
+  logo: assets/images/Transmogrifier_Logo_128.png
 
-  favicon: Transmogrifier_Logo_64.png
+  favicon: assets/images/Transmogrifier_Logo_64.png
 
   features:
     - navigation.tabs
@@ -38,16 +34,16 @@ theme:
     - content.code.copy
 
   palette:
-    # Palette toggle for light mode
-    - media: "(prefers-color-scheme: light)"
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
       scheme: default
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
       primary: brown
       accent: light blue
-    # Palette toggle for dark mode
-    - media: "(prefers-color-scheme: dark)"
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
       scheme: slate
       toggle:
         icon: material/weather-night
@@ -55,15 +51,34 @@ theme:
       primary: brown
       accent: light blue
 
+  icon:
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/squirrel-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
+
 plugins:
   - search
 
 markdown_extensions:
+  - toc:
+      permalink: "#"
+  - admonition
   - admonition
   - sane_lists
+  - pymdownx.details
+  - pymdownx.superfences
   - pymdownx.highlight:
       auto_title: false
-  - pymdownx.superfences
   - pymdownx.keys
   - attr_list
 
