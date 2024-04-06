@@ -2473,7 +2473,7 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
         clean_data_block(bpy.data.materials)
         clean_data_block(bpy.data.images)
 
-        if (mark_as_assets and asset_quality != "Highest") or not mark_as_assets:
+        if (mark_as_assets and asset_quality != "Highest Fidelity") or not mark_as_assets:
             if conversion_count == 0:
                 # Create a temporary textures directory beside the custom textures directory.
                 create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
@@ -2510,14 +2510,14 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
             assign_materials(item_name)
 
             # Archive assets to library.
-            archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
+            archive_assets_to_library(item_name, blend, textures_temp_dir, "Balanced")
 
             # Copy original custom textures to item_name directory if elected.
             if copy_textures_custom_dir:
                 copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir)
 
 
-        elif mark_as_assets and asset_quality == "Highest":
+        elif mark_as_assets and asset_quality == "Highest Fidelity":
             # Create a temporary textures directory beside the custom textures directory.
             create_textures_temp(Path(textures_custom_dir), Path(textures_custom_dir), textures_temp_dir)
             
@@ -2543,13 +2543,13 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
             assign_materials(item_name)
 
             # Archive assets to library.
-            archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest")
+            archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest Fidelity")
 
             # Modify textures if requested.
             modify_textures()
 
             # Archive assets to library.
-            archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
+            archive_assets_to_library(item_name, blend, textures_temp_dir, "Balanced")
 
             # Copy original custom textures to item_name directory if elected.
             if copy_textures_custom_dir:
@@ -2621,13 +2621,13 @@ def apply_textures_packed(item_dir, item_name, import_file, textures_dir, textur
             reimport_textures_to_existing_materials(textures_temp_dir, mapped_textures)
             
         # Archive assets to library.
-        archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest")
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest Fidelity")
 
         # Modify textures if requested.
         modify_textures()
 
         # Archive assets to library.
-        archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Balanced")
                         
         print("Applied packed textures to objects")
         logging.info("Applied packed textures to objects")
@@ -2681,13 +2681,13 @@ def apply_textures_external(item_dir, item_name, import_file, textures_dir, text
         assign_materials(item_name)
 
         # Archive assets to library.
-        archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest")
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Highest Fidelity")
 
         # Modify textures if requested.
         modify_textures()
 
         # Archive assets to library.
-        archive_assets_to_library(item_name, blend, textures_temp_dir, "Medium")
+        archive_assets_to_library(item_name, blend, textures_temp_dir, "Balanced")
 
         print("Applied external textures to objects")
         logging.info("Applied external textures to objects")
@@ -3744,7 +3744,7 @@ def batch_converter(log_file):
                         copy_file((Path(export_directory) / export_name), file)
 
                 # Archive assets to library.
-                archive_assets_to_library(item_name, blend, textures_temp_dir, "Low")
+                archive_assets_to_library(item_name, blend, textures_temp_dir, "Most Optimized")
 
                 # Save only single preview image of collections if desired when not archiving assets to library.
                 if not mark_as_assets and asset_extract_previews:

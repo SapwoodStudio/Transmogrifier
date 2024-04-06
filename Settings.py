@@ -551,11 +551,11 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         name="Asset Quality",
         description="Select the quality of the Blend files containing assets. Quality is based on when asset Blend files are saved during each item's conversion (i.e. before/after textures are resized/reformatted and meshes are decimated). If Edit Textures is empty and Auto-Optimize Files is turned off, asset Blend files will always save at the highest regardless of this menu's selection. If it is desired to run a script before an asset Blend is saved, select 'Low'.\nAsset Quality",
         items=[
-            ("Highest", "Highest", "Mark assets before textures are edited according the 'Edit Textures' menu\n(Select this option for the highest quality asset Blend files)", 1),
-            ("Medium", "Medium", "Mark assets after textures are edited according the 'Edit Textures' menu but before meshes and/or textures are automatically optimized according to the 'Auto-Optimize Files' menu\n(Select this option for medium-quality asset Blend files)", 2),
-            ("Low", "Low", "Mark assets after meshes and/or textures are automatically optimized according to the 'Auto-Optimize Files' menu.\n(Select this option for low-quality asset Blend files)", 3),
+            ("Highest Fidelity", "Highest Fidelity", "Mark assets before textures are edited according the 'Edit Textures' menu\n(Select this option for the highest quality asset Blend files)", 1),
+            ("Balanced", "Balanced", "Mark assets after textures are edited according the 'Edit Textures' menu but before meshes and/or textures are automatically optimized according to the 'Auto-Optimize Files' menu\n(Select this option for medium-quality asset Blend files)", 2),
+            ("Most Optimized", "Most Optimized", "Mark assets after meshes and/or textures are automatically optimized according to the 'Auto-Optimize Files' menu.\n(Select this option for lower-quality asset Blend files)", 3),
         ],
-        default="Highest",
+        default="Highest Fidelity",
     )
     # Mark asset data filter.
     asset_types_to_mark: EnumProperty(
