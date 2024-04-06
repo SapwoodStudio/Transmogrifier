@@ -145,13 +145,14 @@ def make_log_file():
     log_file = Path(log_directory, f"Transmogrifier_Log_{timestamp}.txt")
     
     # Create log file.
-    logging.basicConfig(
-        level=logging.INFO, 
-        filename=log_file, 
-        filemode="w",
-        format="%(asctime)s %(levelname)s %(message)s",
-        force=True
-    )
+    if logging_save_log:
+        logging.basicConfig(
+            level=logging.INFO, 
+            filename=log_file, 
+            filemode="w",
+            format="%(asctime)s %(levelname)s %(message)s",
+            force=True
+        )
 
     return log_file
 
@@ -3561,6 +3562,9 @@ def get_export_info(import_settings_dict, import_file, export_settings_dict, exp
 # Tabulate and save a CSV of the summary of the conversion.
 def report_conversion_summary(log_file, export_info_list):
     try:
+        if not logging_save_summary:
+            return
+        
         fields = []
 
         # Add fields according to the logging_summary_filter menu.
@@ -3651,7 +3655,8 @@ def batch_converter(log_file):
                 textures_temp_dir = item_dir / f"{textures_dir}_{item_name}"
                 if textures_source == "Custom":  
                     textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
-                blend = item_dir / f"{item_name}.blend"
+                blend = item_dir / f"{item_name}_Assets.blend"
+
 
                 # If auto-optimizing files, always re-import the import file for every export. 
                 # This will take longer to convert, but provides the flexibility required for optimizing only as much as needed per export format.
@@ -3803,14 +3808,13 @@ def transmogrify():
     get_settings(["Settings.json"])
 
     # Step 2: Start logging conversion if requested by User.
-    if logging_save_log:
-        log_file = make_log_file()
+    log_file = make_log_file()
 
     # Step 3: Run the batch converter.
     batch_converter(log_file)
 
     # Step 4: Copy log file to all import directories
-    if not link_import_settings and len(imports) > 1:
+    if logging_save_log and not link_import_settings and len(imports) > 1:
         copy_log_file(log_file)
 
     # Step 5: Quit Blender after batch conversion is complete.
