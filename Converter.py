@@ -2805,7 +2805,6 @@ def determine_keep_edited_textures(item_dir, import_file, export_file, textures_
     try:        
         # Delete temporary textures directory (local copy for Custom textures scenario) if elected.
         if not keep_edited_textures:
-            textures_temp_dir = item_dir / (f"textures_{blend.stem}")
             delete_textures_temp(textures_temp_dir)
         
         # Delete local copy of textures directory for Custom textures scenario if elected.
