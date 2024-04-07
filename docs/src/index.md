@@ -30,16 +30,15 @@
 ## How it Works
 Transmogrifier uses a simple algorithm with powerful features.
 
-!!! abstract "General Workflow"
-    1. 🔍 Transmogrifier searches through an entire folder hierarchy for 3D files of the desired format(s). 
-    2. For every discovered 3D file of the desired format(s), Transmogrifier then
-        1. 🧹 refreshes the scene
-        2. 📥 imports the file
-        3. 🏁 applies textures to the model
-        4. 📚 adds the model to the given asset library
-        5. 📤 exports the model
-        6. ⏬ auto-optimizes the export file's size
-    3. 📋 Reports a summary of the batch conversion in a CSV file.
+1. 🔍 Transmogrifier searches through an entire folder hierarchy for 3D files of the desired format(s). 
+2. For every discovered 3D file of the desired format(s), Transmogrifier then
+    1. 🧹 refreshes the scene
+    2. 📥 imports the file
+    3. 🏁 applies textures to the model
+    4. 📚 adds the model to the given asset library
+    5. 📤 exports the model
+    6. ⏬ auto-optimizes the export file's size
+3. 📋 Reports a summary of the batch conversion in a CSV file.
 
 !!! tip
     Many additional options are also available within this general workflow.  Check out all the [Features](https://sapwoodstudio.github.io/Transmogrifier/features/)!

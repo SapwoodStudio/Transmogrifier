@@ -73,9 +73,10 @@ def draw_settings_general(self, context):
     for num in bl_info["version"]:
         version = version + "." + str(num)
     version = version.lstrip(".")
-    title = bl_info["name"] + " " + version + "-Dev"
+    title = bl_info["name"] + " " + version
     row = self.layout.row(align=False)
     row.label(text=title)
+    row.prop(settings, 'logging_save_summary', text='', icon="SPREADSHEET")
     row.operator('transmogrifier.advanced_ui', text="", icon="OPTIONS", depress=True if settings.advanced_ui else False)
     help = row.operator('transmogrifier.help', text="", icon="QUESTION")
     help.link = "https://sapwoodstudio.github.io/Transmogrifier"
@@ -955,7 +956,7 @@ class TransmogrifierPreferences(AddonPreferences):
         # Display copy assets button
         box = layout.box()
         col = box.column(align=True)
-        col.operator("transmogrifier.copy_assets", text="Copy Assets to Preferences", icon="DUPLICATE")
+        col.operator("transmogrifier.install_presets", icon="DUPLICATE")
 
 
 # Toggles Advanced UI setting.  Registers and unregisters additional panels when the addon's UI is in the 3D Viewport Side Menu.

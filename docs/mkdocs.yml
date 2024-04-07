@@ -7,7 +7,7 @@ nav:
   - Getting started: 'getting_started.md'
   - Features: 'features.md'
   - FAQ: 'faq.md'
-  - Contribute: 'contribute.md'
+  - Community: 'community.md'
   - What's New?: 'whats_new.md'
 
 theme:
@@ -19,7 +19,7 @@ theme:
 
   features:
     - navigation.tabs
-    - navigation.tabs.sticky
+    # - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
     - navigation.top
@@ -80,6 +80,8 @@ markdown_extensions:
   - pymdownx.highlight:
       auto_title: false
   - pymdownx.keys
+  - pymdownx.tabbed:
+      alternate_style: true
   - attr_list
 
 extra:

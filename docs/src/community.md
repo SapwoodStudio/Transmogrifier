@@ -1,3 +1,12 @@
+## Join the Conversation
+
+
+## Report a Bug
+
+
+## Contribute
+
+
 ## Credits 🙏
 
 Many thanks to the [people](https://www.blender.org/about/people/) who develop Blender, without whom this addon would have no foundation to exist!

@@ -262,16 +262,15 @@ class TRANSMOGRIFIER_OT_forecast(Operator):
 
 
 
-# Copy import/export/transmogrifier presets shipped with Transmogrifier to relevant Blender Preferences directory.
-class TRANSMOGRIFIER_OT_copy_assets(Operator):
+# Install import/export/transmogrifier presets shipped with Transmogrifier to relevant Blender Preferences directory.
+class TRANSMOGRIFIER_OT_install_presets(Operator):
     """Copy example presets shipped with Transmogrifier to User Preferences"""
-    bl_idname = "transmogrifier.copy_assets"
-    bl_label = "Copy Assets to Preferences"
+    bl_idname = "transmogrifier.install_presets"
+    bl_label = "Install Example Presets"
 
     def execute(self, context):
         # Define paths.
-        assets_dir = Path(__file__).parent / "assets"
-        presets_dir_src = assets_dir / "presets" / "operator"
+        presets_dir_src = Path(__file__).parent / "presets" / "operator"
         presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets/operator")
 
         # Make list of source paths and destination paths (parents).
@@ -291,7 +290,7 @@ class TRANSMOGRIFIER_OT_copy_assets(Operator):
                         Path(dir_dest).mkdir(parents=True, exist_ok=True)
                     shutil.copy(file_src, file_dest)
         
-        self.report({'INFO'}, "Copied Assets to Preferences")
+        self.report({'INFO'}, "Installed Example Presets")
 
         return {'FINISHED'}
 
@@ -651,7 +650,7 @@ classes = (
     TRANSMOGRIFIER_OT_help,
     TRANSMOGRIFIER_OT_transmogrify,
     TRANSMOGRIFIER_OT_forecast,
-    TRANSMOGRIFIER_OT_copy_assets,
+    TRANSMOGRIFIER_OT_install_presets,
     TRANSMOGRIFIER_OT_add_preset,
     TRANSMOGRIFIER_OT_remove_preset,
     TRANSMOGRIFIER_OT_load_preset,
