@@ -36,7 +36,7 @@ Transmogrifier uses a simple algorithm with powerful features.
     2. 📥 imports the file
     3. 🏁 applies textures to the model
     4. 📚 adds the model to the given asset library
-    5. 📤 exports the model
+    5. 📤 exports the model in the new format
     6. ⏬ auto-optimizes the export file's size
 3. 📋 Reports a summary of the batch conversion in a CSV file.
 

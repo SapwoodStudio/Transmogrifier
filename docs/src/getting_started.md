@@ -40,7 +40,7 @@ The Transmogrifier add-on extends Blender with a 3D batch conversion toolset.
 
     ![Getting_started_Install_3_2.png](assets/images/Getting_started_Install_3_3.png)
 
-### 4. Choose where to display Transmogrifier
+### 4. Choose Add-on Location
 
 Transmogrifier can be conveniently displayed in different places within Blender's user interface.
 
@@ -65,62 +65,106 @@ Transmogrifier comes with some example presets for its own settings and for impo
 
 ***
 ## Quickstart Demo 🧪
-!!! quote ""
-    *"The best way to teach kayaking is not by lecturing on the sand.  Instead, toss a bucket of tennis balls onto the lake and say, 'Go get 'em!'"*
+!!! example "Demo"
 
-Learn Transmogrifier with a demo!  This will quickstart your first steps using the addon.
+    !!! quote ""
+        *"The best way to teach kayaking is not by lecturing on the sand.  Instead, toss a bucket of tennis balls onto the lake and say, 'Go get 'em!'"*
+
+    Learn Transmogrifier with a demo and quickstart your first steps using the addon.
 
 
-=== "1. Download the Demo Files"
-    ### 1. Download the Demo Files
-    Download the demo files, then unzip the folder.  Inside you will find 3D models as FBX files along with their associated textures.
+    === "1. Download the Demo Files"
+        ### 1. Download the Demo Files
+        Download the demo files, then unzip the folder.  Inside you will find 3D models as FBX files along with their associated textures.
 
-    [Download PolyHaven Demo Files](https://github.com/SapwoodStudio/Transmogrifier/releases/latest/download/PolyHaven_Demo_Files.zip){ .md-button .md-button--primary }
+        [Download PolyHaven Demo Files](https://github.com/SapwoodStudio/Transmogrifier/releases/latest/download/PolyHaven_Demo_Files.zip){ .md-button .md-button--primary }
 
-    !!! info "PolyHaven"
-        [PolyHaven](https://polyhaven.com/) is a creative-commons (CC0) library of models, textures and HDRI's.  We've curated 5 models with textures from their library for this demo.
+        !!! info "PolyHaven"
+            [PolyHaven](https://polyhaven.com/) is a creative-commons (CC0) library of models, textures and HDRI's.  We've curated 5 models with textures from their library for this demo.
 
-=== "2. `Add Import`" 
-    ### 2. Add Import
-    Click `+ Add Import` to add an import file format for Transmogrifier to search for.  Leave the format in its default value (`FBX`).
+    === "2. `Add Import`" 
+        ### 2. Add Import
+        Click `+ Add Import` to add an import file format for Transmogrifier to search for.  Leave the format in its default value (`FBX`).
 
-    ![Getting_started_Quickstart_Demo_2.gif](assets/images/Getting_started_Quickstart_Demo_2.gif)
+        ![Getting_started_Quickstart_Demo_2.gif](assets/images/Getting_started_Quickstart_Demo_2.gif)
 
-=== "3. Select `Directory`"
-    ### 3. Select `Directory`
-    Click on the folder icon at the bottom of the `Imports` box.  In the pop-up file dialog, double-click into the unzipped "PolyHaven_Demo_Files" folder and click `Accept`.
+    === "3. Select `Directory`"
+        ### 3. Select `Directory`
+        Click on the folder icon at the bottom of the `Imports` box.  In the pop-up file dialog, double-click into the unzipped "PolyHaven_Demo_Files" folder and click `Accept`.
 
-    ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_3.gif)
+        ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_3.gif)
 
-=== "4. `Add Export`"
-    ### 4. Add Export
-    Click `+ Add Export` to add an export file format for Transmogrifier to output for each import file it finds.  Leave the format in its default value (`GLB`).
+    === "4. `Add Export`"
+        ### 4. Add Export
+        Click `+ Add Export` to add an export file format for Transmogrifier to output for each import file it finds.  Leave the format in its default value (`GLB`).
 
-    ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_4.gif)
+        ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_4.gif)
 
-=== "5. Check the `Forecast`"
-    ### 5. Check the `Forecast`
-    Click the `Forecast` button to predict the batch conversion.  In this case, Transmogrifier should find 5 `FBX` files in the PolyHaven_Demo_Files folder which will then be converted to 5 `GLB` files in the next step.
+    === "5. Check the `Forecast`"
+        ### 5. Check the `Forecast`
+        Click the `Forecast` button to predict the batch conversion.  In this case, Transmogrifier should find 5 `FBX` files in the PolyHaven_Demo_Files folder which will then be converted to 5 `GLB` files in the next step.
+        
+        ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_5.gif)
+
+    === "6. Click `Batch Convert`"
+        ### 6. Click `Batch Convert`
+        Finally, click `Batch Convert` and let the process run.  When it finishes, you should now be able to find 5 `GLB` files, one in each model's folder.  
+
+        !!! info
+            After this button is clicked, a second Blender window will pop-up.  This window will be greyed-out, and both this and the original Blender window will remain unresponsive until the batch conversion is over.  This is normal operation. 
+
+        ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_6.gif)
+
+
+
+***
+## User Interface 💻
+Transmogrifier's user interface is highly interactive - don't be afraid to click around and see what the buttons do!  No button will modify your current scene because Transmogrifier batch converts in a separate window every time.  
+
+=== "Simple/Advanced UI"
+    Transmogrifier has an `Advanced UI` toggle  ![Getting_started_User_Interface_UI_Toggle.png](assets/images/Getting_started_User_Interface_UI_Toggle.png)  that provides many additional features for advanced users.
+
+    ![Getting_started_User_Interface_UI_Toggle.gif](assets/images/Getting_started_User_Interface_UI_Toggle.gif)
+
+=== "Tooltips"
+    Every button and menu comes with its own tooltip - quick descriptions about what they do.  Hover over a button for a couple of seconds and its tooltip will popup.
+
+    ![Getting_started_User_Interface_Tooltips.gif](assets/images/Getting_started_User_Interface_Tooltips.gif)
+
+
+=== "Layout"
+    Transmogrifier's UI was designed with the following principles:
     
-    ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_5.gif)
+    ???+ note "Boxes and Buttons"
+        Related settings are grouped into "boxes".  Sometimes there are boxes within boxes.  The icon buttons at the top right of each box affect settings relevant to each box.  Some of them toggle the visibility of menus inside.  
 
-=== "6. Click `Batch Convert`"
-    ### 6. Click `Batch Convert`
-    Finally, click `Batch Convert` and let the process run.  When it finishes, you should now be able to find 5 `GLB` files, one in each model's folder.  
+        ![Getting_started_User_Interface_Boxes_and_Buttons.jpg](assets/images/Getting_started_User_Interface_Boxes_and_Buttons.jpg)
 
-    !!! info
-        After this button is clicked, a second Blender window will pop-up.  This window will be greyed-out, and both this and the original Blender window will remain unresponsive until the batch conversion is over.  This is normal operation. 
-
-    ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_6.gif)
+    ???+ note "Need-to-Knows"
+        Menu visibility is on a "need-to-know" basis, meaning that you will see certain settings only when they are relevant given the context.
+        ![Getting_started_User_Interface_Design_Need_to_Know.gif](assets/images/Getting_started_User_Interface_Design_Need_to_Know.gif)
 
 
+=== "Linked Settings"
+    A chain link icon ![Getting_started_User_Interface_Design_Linked_Settings_Link.png](assets/images/Getting_started_User_Interface_Design_Linked_Settings_Link.png) indicates there are settings in the box that are synchorized.  Breaking the link will enable more granular control per instance.
+
+    ![Getting_started_User_Interface_Design_Linked_Settings.gif](assets/images/Getting_started_User_Interface_Design_Linked_Settings.gif)
 
 
-## User Interface
+=== "Undo/Redo"
+    You can undo and redo actions within Transmogrifier.
+
+    ![Getting_started_User_Interface_Design_Undo.gif](assets/images/Getting_started_User_Interface_Design_Undo.gif)
+    
 
 
-
+***
 ## General Usage 🏭
+
+??? note "Two-Step Approach"
+    
+    ![Getting_started_User_Interface_General_Usage_Steps.jpg](assets/images/Getting_started_User_Interface_General_Usage_Steps.jpg)
+
 
 1. **Select a directory** containing 3D files of the chosen **import format**, or a parent directory of arbitrary organization and/or depth as long as there exists at least one 3D file of the specified import format somewhere inside.  Try out the [Demo](#demo-) 🧪 below to get started.
 
@@ -156,3 +200,11 @@ Learn Transmogrifier with a demo!  This will quickstart your first steps using t
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/053903c1-5167-488e-86e4-a5c65a7aa6ad" width="600">
 
 <img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/90cc4699-137c-4c69-bf8d-dd887d2cae61" width="350">
+
+
+***
+## Updating
+
+
+***
+## Uninstall
