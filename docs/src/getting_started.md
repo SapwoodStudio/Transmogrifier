@@ -109,7 +109,7 @@ Learn Transmogrifier with a demo!  This will quickstart your first steps using t
     Finally, click `Batch Convert` and let the process run.  When it finishes, you should now be able to find 5 `GLB` files, one in each model's folder.  
 
     !!! info
-        After this button is clicked, a second Blender window will pop-up.  This window will be greyed-out, and both this and the original Blender window will remain unresponsive until the batch conversion is over.
+        After this button is clicked, a second Blender window will pop-up.  This window will be greyed-out, and both this and the original Blender window will remain unresponsive until the batch conversion is over.  This is normal operation. 
 
     ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_6.gif)
 
