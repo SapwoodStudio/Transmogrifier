@@ -4,7 +4,13 @@ repo_url: https://github.com/sapwoodstudio/transmogrifier
 
 nav:
   - Home: 'index.md'
-  - Getting started: 'getting_started.md'
+  - Getting started:
+    - Installation 📥: 'installation.md'
+    - Quickstart Demo 🧪: 'quickstart_demo.md'
+    - User Interface 💻: 'user_interface.md'
+    - General Usage 🏭: 'general_usage.md'
+    - Updating 🔁: 'updating.md'
+    - Uninstall 🔌: 'uninstall.md'
   - Features: 'features.md'
   - FAQ: 'faq.md'
   - Community: 'community.md'
@@ -19,14 +25,14 @@ theme:
 
   features:
     - navigation.tabs
-    # - navigation.tabs.sticky
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
     - navigation.top
     - navigation.path
     - navigation.indexes
     - navigation.footer
-    - toc.integrate
+    # - toc.integrate
     - search.suggest
     - search.highlight
     - content.tabs.link

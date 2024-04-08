@@ -21,7 +21,32 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://sapwoodstudio.github.io/transmogrifier/getting_started/</loc>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/general_usage/</loc>
+         <lastmod>2024-04-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/installation/</loc>
+         <lastmod>2024-04-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/quickstart_demo/</loc>
+         <lastmod>2024-04-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/uninstall/</loc>
+         <lastmod>2024-04-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/updating/</loc>
+         <lastmod>2024-04-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/user_interface/</loc>
          <lastmod>2024-04-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
