@@ -728,9 +728,17 @@
 <h1 id="frequently-asked-questions">Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">#</a></h1>
 <details class="question">
 <summary>Do I have to import my first model into my Blender scene before Batch Converting?</summary>
+<p>No.  Transmogrifier imports and exports files via a new Blender session/window every time you batch convert, so your current scene doesn't need any preparation nor is it affected by the conversion.</p>
 </details>
 <details class="question">
 <summary>What is Transmogrifier's license?</summary>
+<p>Transmogrifier is open-source/licensed-free software under the <a href="https://github.com/SapwoodStudio/Transmogrifier/blob/main/LICENSE">GNU GPL</a>.</p>
+<details class="question">
+<summary>What is Free Software?</summary>
+<div class="admonition quote">
+<p>' “Free software” means software that respects users' freedom and community. Roughly, it means that the users have the freedom to run, copy, distribute, study, change and improve the software. Thus, “free software” is a matter of liberty, not price. To understand the concept, you should think of “free” as in “free speech,” not as in “free beer.” ' - <a href="https://www.gnu.org/philosophy/free-sw.html">GNU.org</a></p>
+</div>
+</details>
 </details>
 <details class="question">
 <summary>Where is Transmogrifier installed on my computer?</summary>
@@ -803,31 +811,157 @@
 </div>
 </details>
 <details class="question">
-<summary>My <a href="https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets"><code>Workflow Presets</code></a> don't work anymore</summary>
+<summary>My <a href="https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets"><code>Workflow Presets</code></a> don't work anymore.</summary>
+<p>Transmogrifier's codebase (API) was overhauled for version 2.0.0, so any <code>Workflow Presets</code> you made prior to this release won't work anymore.  Your import and export presets should still work, however.</p>
 </details>
 <details class="question">
 <summary>Something's not working.  Where do I submit a bug report?</summary>
+<p>If Transmogrifier isn't working the way you expected, please let us know by submitting an issue on <a href="https://github.com/SapwoodStudio/Transmogrifier/issues">Github</a> or reaching out on <a href="https://blenderartists.org/t/transmogrifier-free-3d-batch-converter-addon/1475060">BlenderArtists</a>.</p>
+<p><a class="md-button md-button--primary" href="https://github.com/SapwoodStudio/Transmogrifier/issues">Report Bug</a></p>
 </details>
 <details class="question">
 <summary>How do I update Transmogrifier?</summary>
+<p>Check out the <a href="https://sapwoodstudio.github.io/Transmogrifier/update/">Update 🔁</a> page.</p>
 </details>
 <details class="question">
 <summary>How do I uninstall Transmogrifier?</summary>
+<p>Check out the <a href="https://sapwoodstudio.github.io/Transmogrifier/uninstall/">Uninstall 🔌</a> page.</p>
 </details>
 <details class="question">
 <summary>How do I create an Asset Library?</summary>
+<p>Open Blender, then navigate to <code>Edit &gt; Preferences</code>.</p>
+<p><img alt="Getting_started_Install_3_1.png" src="../assets/images/Getting_started_Install_3_1.png" /></p>
+<p>Then click <code>File Paths</code> and scroll down to the <code>Asset Libraries</code> section.
+<img alt="FAQ_How_to_Add_Asset_Library_2.gif" src="../assets/images/FAQ_How_to_Add_Asset_Library_2.gif" /></p>
+<div class="admonition success">
+<p class="admonition-title">Success</p>
+<p>Now you should see your new library availabe in your <code>Assets &gt; Storage &gt; Library</code> menu.</p>
+<p><img alt="FAQ_How_to_Add_Asset_Library_3.gif" src="../assets/images/FAQ_How_to_Add_Asset_Library_3.gif" /></p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>For more information about Asset Libraries, check out Blender's <a href="https://docs.blender.org/manual/en/latest/files/asset_libraries/index.html">documentation</a>.</p>
+</div>
 </details>
 <details class="question">
 <summary>How do I create Asset Catalogs?</summary>
+<p>This is less intuitive than creating an Asset Library.  </p>
+<ol>
+<li>
+<p>Open a new Blender session.</p>
+</li>
+<li>
+<p>Split the view and change the panel to the <code>Asset Browser</code>.</p>
+</li>
+<li>
+<p>Select your desired asset library from the menu.</p>
+</li>
+<li>
+<p>Click the <code>+</code> button to add an <code>Asset Catalog</code>.  Add and rename as many asset catalogs and sub-catalogs as you wish.</p>
+</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Your changes to the <code>Asset Library</code>'s Catalogs are not saved yet.  Don't close Blender.</p>
+</div>
+<ol start="5">
+<li>Now save the current Blender session inside your <code>Asset Library</code> as something like <code>blender_assets.cats.blend</code>. </li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The name of your Blender file doesn't matter.  We only suggest to save it with the title <code>blender_assets.cats.blend</code> for the sake of consistency, since Asset Catalogs are stored in a <code>.txt</code> file stored in your Asset Library directory as <code>blender_assets.cats.txt</code>.</p>
+</div>
+<ol start="6">
+<li>Now, whenever you want to add/edit/remove new catalogs, open <code>blender_assets.cats.blend</code>, make your changes, and save the file again.</li>
+</ol>
+<p>Here's a GIF that sums it all up.</p>
+<p><img alt="FAQ_How_to_Create_Asset_Catalogs.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs.gif" /></p>
+<div class="admonition success">
+<p class="admonition-title">You have now created Asset Catalogs.</p>
+<p>They should now be visible in Transmogrifier's <code>Assets &gt; Storage &gt; Library</code> menu.</p>
+<p><img alt="FAQ_How_to_Create_Asset_Catalogs_Success.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif" /></p>
+</div>
 </details>
 <details class="question">
 <summary>How do I make a <code>Custom Script</code> for Transmogrifier?</summary>
+<p>Creating custom scripts is easy for developers and non-developer alike.  </p>
+<ol>
+<li>
+<p>Open Blender and navigate to the <code>Scripting</code> tab.</p>
+</li>
+<li>
+<p>Click <code>+ New</code> in the Text Editor to create a new text data-block.</p>
+</li>
+<li>
+<p>If you know Python for Blender, you can write your script.  It doesn't have to be anything fancy.  Pythonic conventions, such as adding functions and commenting your code, are recommended but not required.  </p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Basic</label><label for="__tabbed_3_2">Better</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># Add_Monkey_and_Shade_Flat.py</span>
+
+<span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">select_all</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;DESELECT&#39;</span><span class="p">)</span>
+<span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">primitive_monkey_add</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">enter_editmode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s1">&#39;WORLD&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+<span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">select_all</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;SELECT&#39;</span><span class="p">)</span>
+<span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">shade_flat</span><span class="p">()</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># Add_Monkey_and_Shade_Flat.py</span>
+
+<span class="c1"># Add a monkey to the scene.</span>
+<span class="k">def</span> <span class="nf">add_monkey</span><span class="p">():</span>
+    <span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">select_all</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;DESELECT&#39;</span><span class="p">)</span>
+    <span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">primitive_monkey_add</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">enter_editmode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s1">&#39;WORLD&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+
+<span class="c1"># Shade all objects with flat shading.</span>
+<span class="k">def</span> <span class="nf">shade_flat</span><span class="p">():</span>
+    <span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">select_all</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;SELECT&#39;</span><span class="p">)</span>
+    <span class="n">bpy</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">shade_flat</span><span class="p">()</span>
+
+<span class="c1"># Add monkey and shade flat.</span>
+<span class="n">add_monkey</span><span class="p">()</span>
+<span class="n">shade_flat</span><span class="p">()</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you're new to Python programming, you can copy many commands directly from the Blender's user interface.  </p>
+<p>For example, if you wanted to find the command for adding a Monkey to your scene, simply add the monkey graphically, open the <code>Info</code> panel, copy the monkay's Python command, and paste it into your script.</p>
+<p><img alt="FAQ_How_to_Make_a_Custom_Script_Tip.gif" src="../assets/images/FAQ_How_to_Make_a_Custom_Script_Tip.gif" /></p>
+</div>
+</li>
+<li>
+<p>Save your code as a Python (<code>.py</code>) file.</p>
+</li>
+</ol>
+<div class="admonition success">
+<p class="admonition-title">Success!</p>
+<p>Now you can add your Python recipe as a custom script for Transmogrifier to execute during conversion.</p>
+</div>
 </details>
 <details class="question">
 <summary>Where are log files output?</summary>
+<p>Log files are stored inside the <code>Imports &gt; Directory</code> (or in each of the <code>Directory</code> of each import box if you have multiple imports whose settings are not linked).</p>
+<table>
+<thead>
+<tr>
+<th>When Import Settings are Linked</th>
+<th>When Import Settings are Unlinked</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="FAQ_Where_are_Log_Files_Output_Linked.png" src="../assets/images/FAQ_Where_are_Log_Files_Output_Linked.png" /></td>
+<td><img alt="FAQ_Where_are_Log_Files_Output_Unlinked.png" src="../assets/images/FAQ_Where_are_Log_Files_Output_Unlinked.png" /></td>
+</tr>
+</tbody>
+</table>
 </details>
 <details class="question">
-<summary>Why are there so many icon-buttons without descriptions?</summary>
+<summary>Why are there so many icon buttons without descriptions?</summary>
+<p>Transmogrifier is a robust suite of tools for batch converting 3D files.  As we added more and more features, its user interface grew longer and longer.  So, we overhauled the UI in version 2.0.0 to make it more compact.  We replaced a lot of the prior checkboxes that had names with icon-only buttons and shoved them in the top-right of each relevant box, which made a lot of room for everything else.    </p>
 </details>
 
 
