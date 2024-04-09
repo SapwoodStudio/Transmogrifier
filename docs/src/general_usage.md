@@ -51,3 +51,5 @@
     When the batch conversion finishes, you should now be able to find the same number of export files as Transmogrifier predicted in the `Forecast`.  You can verify the conversion manually or by reviewing the `Conversion Summary` CSV file ![Getting_started_General_Usage_4_Conversion_Summary.png](assets/images/Getting_started_General_Usage_4_Conversion_Summary.png).
 
     ![Getting_started_General_Usage_7.gif](assets/images/Getting_started_General_Usage_7.gif)
+
+    !!! success "That's the jist of how Transmogrifier works."

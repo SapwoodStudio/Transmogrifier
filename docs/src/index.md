@@ -41,7 +41,7 @@ Transmogrifier uses a simple algorithm with powerful features.
 3. 📋 Reports a summary of the batch conversion in a CSV file.
 
 !!! tip
-    Many additional options are also available within this general workflow.  Check out all the [Features](https://sapwoodstudio.github.io/Transmogrifier/features/)!
+    Many additional conversion utilities are also available within this general workflow.  Check out all the [Features](https://sapwoodstudio.github.io/Transmogrifier/features/)!
 
 
 The diagram below demonstrates the variety of ways in which Transmogrifier can convert models with respect to available textures and the chosen import and export formats. 
@@ -51,3 +51,11 @@ The diagram below demonstrates the variety of ways in which Transmogrifier can c
 
 !!! info
     Each gray box with rounded corners indicates a directory/folder.
+
+## License
+Transmogrifier is open-source/licensed-free software under the [GNU GPL](https://github.com/SapwoodStudio/Transmogrifier/blob/main/LICENSE).
+
+??? Question "What is Free Software?"
+    !!! quote ""
+        ' “Free software” means software that respects users' freedom and community. Roughly, it means that the users have the freedom to run, copy, distribute, study, change and improve the software. Thus, “free software” is a matter of liberty, not price. To understand the concept, you should think of “free” as in “free speech,” not as in “free beer.” ' - [GNU.org](https://www.gnu.org/philosophy/free-sw.html)
+

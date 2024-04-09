@@ -2,57 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/changelog/</loc>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/community/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/faq/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/features/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/general_usage/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/installation/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/quickstart_demo/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/uninstall/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://sapwoodstudio.github.io/transmogrifier/updating/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/update/</loc>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/user_interface/</loc>
-         <lastmod>2024-04-08</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://sapwoodstudio.github.io/transmogrifier/whats_new/</loc>
-         <lastmod>2024-04-08</lastmod>
+         <lastmod>2024-04-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

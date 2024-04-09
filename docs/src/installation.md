@@ -46,7 +46,7 @@ Transmogrifier can be conveniently displayed in different places within Blender'
 
 ![Getting_started_Install_4.png](assets/images/Getting_started_Install_4.png)
 
-!!! tip "`Addon Location` Screenshots"
+!!! note "`Addon Location` Screenshots"
     | `Top Bar` | `3D Viewport Header` | `3D Viewport Side Panel` |
     | ------- | ------------------ | ---------------------- |
     | ![Getting_started_Install_4_Top.png](assets/images/Getting_started_Install_4_Top.png) | ![Getting_started_Install_4_Header.png](assets/images/Getting_started_Install_4_Header.png) | ![Getting_started_Install_4_Side.png](assets/images/Getting_started_Install_4_Side.png) |
@@ -61,3 +61,6 @@ Transmogrifier comes with some example presets for its own settings and for impo
     This is highly recommended for beginners to Transmogrifier or for those who rely on these presets and desire to keep them updated with each new Transmogrifier version.
 
 ![Getting_started_Install_5.png](assets/images/Getting_started_Install_5.png)
+
+
+!!! success "Success!  Transmogrifier is now installed."

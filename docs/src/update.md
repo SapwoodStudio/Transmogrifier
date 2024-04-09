@@ -1,4 +1,4 @@
-# Uninstall Transmogrifier
+# Update Transmogrifier
 
 ## 1. Open Blender
 Open Blender, then navigate to `Edit > Preferences`.
@@ -18,5 +18,11 @@ Click `Remove` to fully uninstall Transmogrifier.  Then click `Save Preferences`
 ## 4. Close Blender
 Close Blender.
 
+## 5. Re-open Blender
+Re-open Blender.
 
-!!! success "Success!  Transmogrifier is now uninstalled."
+## 6. Install Transmogrifier
+Install Transmogrifier exactly how you first did according to the **[Installation 📥](https://sapwoodstudio.github.io/Transmogrifier/installation/#2-download-the-transmogrifier-add-on)** section.
+
+
+!!! success "Success!  Transmogrifier is now updated."

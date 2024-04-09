@@ -9,12 +9,12 @@ nav:
     - Quickstart Demo 🧪: 'quickstart_demo.md'
     - User Interface 💻: 'user_interface.md'
     - General Usage 🏭: 'general_usage.md'
-    - Updating 🔁: 'updating.md'
+    - Update 🔁: 'update.md'
     - Uninstall 🔌: 'uninstall.md'
   - Features: 'features.md'
   - FAQ: 'faq.md'
   - Community: 'community.md'
-  - What's New?: 'whats_new.md'
+  - Changelog: 'changelog.md'
 
 theme:
   name: material

@@ -1,5 +1,5 @@
 # User Interface 💻
-Transmogrifier's user interface is highly interactive - don't be afraid to click around and see what the buttons do!  No button will modify your current scene because Transmogrifier batch converts in a separate window every time.  
+Transmogrifier's user interface is highly interactive - don't be afraid to click around and see what the buttons do!
 
 === "Simple/Advanced UI"
     Transmogrifier has an `Advanced UI` toggle  ![Getting_started_User_Interface_UI_Toggle.png](assets/images/Getting_started_User_Interface_UI_Toggle.png)  that provides many additional features for advanced users.
