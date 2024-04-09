@@ -61,6 +61,34 @@
 
 
 ***
+## 1.3.1
+### New Features
+- N/A
+
+### Optimizations
+- For "External" and "Custom" textures scenarios with multiple texture sets, material names strings in object names can now exist anywhere in the objects' names, no longer only as prefixes. (Adds flexibility)
+- For "Custom" textures scenario, only import/resize/reformat once. (Speeds up conversion)
+- Rewrote packed textures algorithm. (Adds more flexibility & improves reliability)
+- Improved material assignment algorithm.
+- Improved material creation algorithm.
+    - Only create transparent material if opacity map is present.
+- Tidied up extraneous logging outputs
+- Rewrote PBR tag regex dictionaries
+    - Ignore capitalization
+    - Require exact matches/prohibit keys from being substrings in a given component string when texture names are split into components by common separators for regexing.
+        - (e.g. regexing "MetalGalvanized_nrml_4K.png" used to return "Metallic_Normal_4K.png", but now it correctly returns "MetalGalvanized_Normal_4K.png")
+    - Re-introduced 3-letter/abbreviated PBR tag regex keys
+
+### Bug Fixes
+- Fixed occlusion maps not getting resized/reformatted.
+- Fixed bug where if there was a single mesh object in the scene but multiple texture sets had been imported, material assignment would fail.
+- "Alpha Clip" blend mode is now set for materials assigned to objects with "cutout" instead of "transparent" in their names. 
+
+### Documentation
+- N/A
+
+
+***
 ## 1.3.0
 ### New Features
 - Workflow Presets

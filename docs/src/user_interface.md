@@ -1,4 +1,4 @@
-# User Interface 💻
+# User Interface
 Transmogrifier's user interface is highly interactive - don't be afraid to click around and see what the buttons do!
 
 === "Simple/Advanced UI"

@@ -1,9 +1,14 @@
 # Frequently Asked Questions
 
 ??? question "Do I have to import my first model into my Blender scene before Batch Converting?"
+    #### "Do I have to import my first model into my Blender scene before Batch Converting?"
+
     No.  Transmogrifier imports and exports files via a new Blender session/window every time you batch convert, so your current scene doesn't need any preparation nor is it affected by the conversion.
 
+
 ??? question "What is Transmogrifier's license?"
+    #### "What is Transmogrifier's license?"
+
     Transmogrifier is open-source/licensed-free software under the [GNU GPL](https://github.com/SapwoodStudio/Transmogrifier/blob/main/LICENSE).
 
     ??? Question "What is Free Software?"
@@ -11,8 +16,9 @@
             ' “Free software” means software that respects users' freedom and community. Roughly, it means that the users have the freedom to run, copy, distribute, study, change and improve the software. Thus, “free software” is a matter of liberty, not price. To understand the concept, you should think of “free” as in “free speech,” not as in “free beer.” ' - [GNU.org](https://www.gnu.org/philosophy/free-sw.html)
 
 
-
 ??? question "Where is Transmogrifier installed on my computer?"
+    #### "Where is Transmogrifier installed on my computer?"
+
     The location of Transmogrifier's files is dependent upon your operating system and your Blender installation.
 
     !!! tip 
@@ -55,7 +61,6 @@
             C:\Users\{YOUR_USER}\AppData\Roaming\Blender Foundation\X.XX\scripts\addons\Transmogrifier\
             ```
 
-
     !!! info "Transmogrifier [`Workflow Presets`](https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets) Location"
         === "GNU/Linux" 
             If you installed the add-on as a user:
@@ -93,24 +98,61 @@
             C:\Users\{YOUR_USER}\AppData\Roaming\Blender Foundation\X.XX\scripts\presets\operator\transmogrifier
             ```
 
+
 ??? question "My [`Workflow Presets`](https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets) don't work anymore."
+    #### "My [`Workflow Presets`](https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets) don't work anymore."
+
     Transmogrifier's codebase (API) was overhauled for version 2.0.0, so any `Workflow Presets` you made prior to this release won't work anymore.  Your import and export presets should still work, however.
 
+
 ??? question "Something's not working.  Where do I submit a bug report?"
+    #### "Something's not working.  Where do I submit a bug report?"
+
     If Transmogrifier isn't working the way you expected, please let us know by submitting an issue on [Github](https://github.com/SapwoodStudio/Transmogrifier/issues) or reaching out on [BlenderArtists](https://blenderartists.org/t/transmogrifier-free-3d-batch-converter-addon/1475060).
 
     [Report Bug](https://github.com/SapwoodStudio/Transmogrifier/issues){ .md-button .md-button--primary }
 
 
+??? question "How do I create an import or export preset?"
+    #### "How do I create an import or export preset?"
+
+    You can make your own import and export presets in the pop-up dialog box of the given format you are import or exporting.  
+
+    !!! example
+        For example, let's say you want to create a glTF export preset.
+
+        1. Navigate to `File > Export` menu and click `glTF 2.0 (.glb/.gltf)`.
+        
+        2. Adjust your glTF export settings in the panel on the right.
+
+        3. Now that you have made your adjustments to the export settings, click the `+` button to save them to a new preset. 
+        
+        4. Name your preset, then click `OK`.
+
+        !!! success "Success! You have now created your own export preset."
+            Import presets work the same way.
+
+        ![FAQ_How_to_Create_Import_Export_Presets.gif](assets/images/FAQ_How_to_Create_Import_Export_Presets.gif)            
+
+    !!! note
+        Blender doesn't support presets for some import and export formats.  We are unsure why!
+
+
 ??? question "How do I update Transmogrifier?"
+    #### "How do I update Transmogrifier?"
+
     Check out the [Update 🔁](https://sapwoodstudio.github.io/Transmogrifier/update/) page.
 
 
 ??? question "How do I uninstall Transmogrifier?"
+    #### "How do I uninstall Transmogrifier?"
+
     Check out the [Uninstall 🔌](https://sapwoodstudio.github.io/Transmogrifier/uninstall/) page.
 
 
 ??? question "How do I create an Asset Library?"
+    #### "How do I create an Asset Library?"
+
     Open Blender, then navigate to `Edit > Preferences`.
 
     ![Getting_started_Install_3_1.png](assets/images/Getting_started_Install_3_1.png)
@@ -128,6 +170,8 @@
 
 
 ??? question "How do I create Asset Catalogs?"
+    #### "How do I create Asset Catalogs?"
+
     This is less intuitive than creating an Asset Library.  
 
     1. Open a new Blender session.
@@ -158,9 +202,8 @@
         ![FAQ_How_to_Create_Asset_Catalogs_Success.gif](assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif)
         
 
-
-
 ??? question "How do I make a `Custom Script` for Transmogrifier?"
+    #### "How do I make a `Custom Script` for Transmogrifier?"
 
     Creating custom scripts is easy for developers and non-developer alike.  
     
@@ -215,6 +258,8 @@
 
 
 ??? question "Where are log files output?"
+    #### "Where are log files output?"
+
     Log files are stored inside the `Imports > Directory` (or in each of the `Directory` of each import box if you have multiple imports whose settings are not linked).
     
     | When Import Settings are Linked | When Import Settings are Unlinked |
@@ -223,4 +268,6 @@
 
 
 ??? question "Why are there so many icon buttons without descriptions?"
+    #### "Why are there so many icon buttons without descriptions?"
+
     Transmogrifier is a robust suite of tools for batch converting 3D files.  As we added more and more features, its user interface grew longer and longer.  So, we overhauled the UI in version 2.0.0 to make it more compact.  We replaced a lot of the prior checkboxes that had names with icon-only buttons and shoved them in the top-right of each relevant box, which made a lot of room for everything else.    

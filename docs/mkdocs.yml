@@ -7,11 +7,23 @@ nav:
   - Getting started:
     - Installation 📥: 'installation.md'
     - Quickstart Demo 🧪: 'quickstart_demo.md'
-    - User Interface 💻: 'user_interface.md'
+    # - User Interface 💻: 'user_interface.md'
     - General Usage 🏭: 'general_usage.md'
     - Update 🔁: 'update.md'
     - Uninstall 🔌: 'uninstall.md'
-  - Features: 'features.md'
+  - Features:
+    - 'features_overview.md'
+    - 'user_interface.md'
+    - 'batch_convert.md'
+    - 'apply_textures.md'
+    - 'optimize_file_size.md'
+    - 'mark_assets.md'
+    - 'export_uv_maps.md'
+    - 'adjust_scene.md'
+    - 'transform_objects.md'
+    - 'run_custom_scripts.md'
+    - 'log_conversions.md'
+    - 'convert_via_terminal.md'
   - FAQ: 'faq.md'
   - Community: 'community.md'
   - Changelog: 'changelog.md'
@@ -25,7 +37,7 @@ theme:
 
   features:
     - navigation.tabs
-    - navigation.tabs.sticky
+    # - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
     - navigation.top

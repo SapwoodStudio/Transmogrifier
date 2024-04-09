@@ -115,7 +115,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     )
     export_directory: StringProperty(
         name="Directory",
-        description="Directory to export files\nDefault of // will import from the same directory as the blend file (only works if the blend file is saved)",
+        description="Directory to export files\nDefault of // will export to the same directory as the blend file (only works if the blend file is saved)",
         default="//",
         subtype='DIR_PATH',
         update=Functions.link_export_settings,
