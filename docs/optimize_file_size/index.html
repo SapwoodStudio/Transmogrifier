@@ -22,7 +22,7 @@
     
     
       
-        <title>Optimize file size - Transmogrifier</title>
+        <title>Auto-Optimize File Size - Transmogrifier</title>
       
     
     
@@ -128,6 +128,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#auto-optimize-file-size" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -157,7 +162,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Optimize file size
+              Auto-Optimize File Size
             
           </span>
         </div>
@@ -740,16 +745,69 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Auto-Optimize File Size
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Optimize file size
+    Auto-Optimize File Size
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#target" class="md-nav__link">
+    Target
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overwrite-files" class="md-nav__link">
+    Overwrite Files
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -977,6 +1035,37 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#target" class="md-nav__link">
+    Target
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overwrite-files" class="md-nav__link">
+    Overwrite Files
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -994,9 +1083,132 @@
   
 
 
-  <h1>Optimize file size</h1>
-
-
+<h1 id="auto-optimize-file-size">Auto-Optimize File Size<a class="headerlink" href="#auto-optimize-file-size" title="Permanent link">#</a></h1>
+<p>Perform automatic file-optmization methods adaptive to every model in order reduce the exported file size below a custom target threshold. Filter which methods are used. </p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This feature adapts to each model, meaning that Transmogrifier iteratively reduces an export's file size only inasmuch as required to "sneak" below the target threshold.  This allows you to always have each individual export exist at its maximum allowable quality within the limit you set.</p>
+</div>
+<p><a class="glightbox" href="../assets/images/Optimize%20File%20Size.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Optimize File Size.gif" src="../assets/images/Optimize%20File%20Size.gif" /></a></p>
+<h2 id="target">Target<a class="headerlink" href="#target" title="Permanent link">#</a></h2>
+<p>Set a target threshold below which Transmogrifier should attempt to adaptively reduce each export files' size (in <code>Megabytes</code>).  </p>
+<h2 id="overwrite-files">Overwrite Files<a class="headerlink" href="#overwrite-files" title="Permanent link">#</a></h2>
+<p>If you elected to <code>Overwrite Exports</code> above in the <code>Exports</code> box, then you have the option to overwrite <code>All</code> existing export files or overwrite export files <code>Only Above Target</code>.  </p>
+<div class="admonition question">
+<p class="admonition-title">How is this helpful?</p>
+<p>Sometimes a batch conversion with auto-optimize can still yield some exports with file sizes above the target threshold.  This allows you to focus on re-batch-converting only the few outliers that need extra optimization.</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<ul>
+<li>
+<p>Let's say that out of <code>100</code> models converted, <code>5</code> models are still above a target of <code>15MB</code>.  </p>
+<ul>
+<li>Let's also say that batch took <code>7min.</code> to process. </li>
+<li>But you absolutely have to have all <code>100</code> models below <code>15MB</code>.</li>
+</ul>
+</li>
+<li>
+<p>You have two options:</p>
+<table>
+<thead>
+<tr>
+<th>Overwrite <code>All</code> 🐢</th>
+<th>Overwrite <code>Only Above Target</code> 🐇</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Adjust your auto-optimize settings, re-batch-converting, and waiting another <code>7min.</code> for the <code>100</code> models to convert all over again when <code>95</code> didn't need to.</td>
+<td>Adjust your auto-optimize settings, then <code>Only Above Target</code> will only re-batch-convert those <code>5</code> files in, say, <code>20sec.</code>.  You just saved about <code>6.5min.</code>!</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</div>
+</div>
+<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Adjustment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Draco</td>
+<td>Try activating Draco compression for exported models. (Only works for <code>glTF</code>/<code>GLB</code> files)</td>
+<td>Draco compression level</td>
+</tr>
+<tr>
+<td>Resize textures</td>
+<td>Set minimum image texture resolution for auto file size not to go below. Images will not be upscaled</td>
+<td>Resolution</td>
+</tr>
+<tr>
+<td>Reformat textures</td>
+<td>Try reformatting all textures except the normal map to JPEG's to lower the exported file size</td>
+<td>Include Normal Maps (usually avoided because JPG compression causes artifacts in norma maps)</td>
+</tr>
+<tr>
+<td>Decimate</td>
+<td>Try decimating objects to lower the exported file size (Uses edge collapse at 50% ratio each time. Set a maximum decimate iteration).</td>
+<td>Decimate iteration limit</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Decimate Warning</p>
+<p><a href="https://docs.blender.org/manual/en/latest/modeling/modifiers/generate/decimate.html">Decimation</a> is a destructive form of mesh optimization.  When batch converting models with textures, it's important to note that while Blender does its best to preserve UV's when decimating, texture distortion can occur.</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>For example, let's say you're exporting a <code>USDZ</code> with a target threshold set to <code>15MB</code> and with default <code>Methods</code> settings.  Your import file is a <code>10MB</code> <code>FBX</code> + (4) 4K, <code>PNG</code> external textures at <code>10MB</code> each = <code>50MB</code> total.  </p>
+<p>Transmogrifier will run through the following steps in order to optimize the file:</p>
+<ol start="0">
+<li>Export the model<ol>
+<li>Export the model with no adjustments</li>
+<li>Get the export file's size (<code>50MB</code>)</li>
+</ol>
+</li>
+<li>First iteration    <ol>
+<li><code>Resize Textures</code> by halving their resolution<ol>
+<li><code>4096px</code> / <code>2</code> = <code>2048px</code></li>
+<li>Export the model again</li>
+<li>Get the export file's size (<code>30MB</code>)</li>
+</ol>
+</li>
+<li><code>Reformat Textures</code> by converting them to a <code>JPEG</code> format<ol>
+<li>Export the model again</li>
+<li>Get the export file's size (<code>22MB</code>)<ul>
+<li>Since <code>22MB</code> is still greater than your target of <code>15MB</code>, Transmogrifier will begin again with another optimize iteration 🔁</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>Second iteration<ol>
+<li><code>Resize Textures</code> by halving their resolution<ol>
+<li><code>2048px</code> / <code>2</code> = <code>1024px</code></li>
+<li>Export the model again</li>
+<li>Get the export file's size (<code>14MB</code>) <ul>
+<li>Since <code>14MB</code> &lt; <code>15MB</code>, Transmogrifier will exit the auto-optimize loop and move on the converting the next model. ✅</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</div>
+<div class="admonition question">
+<p class="admonition-title">What if Transmogrifier Runs out of options?</p>
+<p>If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on to converting the next file.</p>
+</div>
+<p><a class="glightbox" href="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/052d2b6c-ffa3-4f42-b798-eb6d59e84f82" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img src="https://github.com/SapwoodStudio/Transmogrifier/assets/87623407/052d2b6c-ffa3-4f42-b798-eb6d59e84f82" width="350"></a></p>
 
 
 

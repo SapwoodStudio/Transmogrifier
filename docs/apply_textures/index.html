@@ -806,15 +806,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resolution" class="md-nav__link">
-    Resolution
+  <a href="#resize-textures" class="md-nav__link">
+    Resize Textures
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#format" class="md-nav__link">
-    Format
+  <a href="#reformat-textures" class="md-nav__link">
+    Reformat Textures
   </a>
   
 </li>
@@ -838,7 +838,7 @@
         
   
   <span class="md-ellipsis">
-    Optimize file size
+    Auto-Optimize File Size
   </span>
   
 
@@ -1120,15 +1120,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resolution" class="md-nav__link">
-    Resolution
+  <a href="#resize-textures" class="md-nav__link">
+    Resize Textures
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#format" class="md-nav__link">
-    Format
+  <a href="#reformat-textures" class="md-nav__link">
+    Reformat Textures
   </a>
   
 </li>
@@ -1153,6 +1153,7 @@
 
 <h1 id="apply-textures">Apply Textures<a class="headerlink" href="#apply-textures" title="Permanent link">#</a></h1>
 <p>Transmogrifier can detect the presence of multiple image texture sets and non-destructively modify them during the conversion process. Select whether to use textures, regex the PBR tags in the textures' names, and keep the otherwise temporary textures folders with their modifiied images.</p>
+<p><a class="glightbox" href="../assets/images/Apply_Textures.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Apply_Textures.gif" src="../assets/images/Apply_Textures.gif" /></a></p>
 <h2 id="source">Source<a class="headerlink" href="#source" title="Permanent link">#</a></h2>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><a class="glightbox" href="../assets/images/Textures_Source_External_Icon.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Textures_Source_External_Icon.jpg" src="../assets/images/Textures_Source_External_Icon.jpg" /></a> <strong>External</strong></label><label for="__tabbed_1_2"><a class="glightbox" href="../assets/images/Textures_Source_Packed_Icon.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Textures_Source_Packed_Icon.jpg" src="../assets/images/Textures_Source_Packed_Icon.jpg" /></a> <strong>Packed</strong></label><label for="__tabbed_1_3"><a class="glightbox" href="../assets/images/Textures_Source_Custom_Icon.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Textures_Source_Custom_Icon.jpg" src="../assets/images/Textures_Source_Custom_Icon.jpg" /></a> <strong>Custom</strong></label></div>
 <div class="tabbed-content">
@@ -1257,11 +1258,13 @@
 </div>
 </div>
 </div>
-<h2 id="resolution">Resolution<a class="headerlink" href="#resolution" title="Permanent link">#</a></h2>
-<p class="annotate">Resize textures (1) </p>
+<h2 id="resize-textures">Resize Textures<a class="headerlink" href="#resize-textures" title="Permanent link">#</a></h2>
+<p class="annotate">Resize textures images textures non-destructively &amp; on-the-fly.  For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution. (1) </p>
 <ol>
 <li>Images will not be upscaled.</li>
 </ol>
+<details class="abstract">
+<summary>Supported Resolutions</summary>
 <ul>
 <li>8192</li>
 <li>4096</li>
@@ -1271,8 +1274,12 @@
 <li>256</li>
 <li>128</li>
 </ul>
-<h2 id="format">Format<a class="headerlink" href="#format" title="Permanent link">#</a></h2>
-<p>Reformat textures</p>
+</details>
+<p><a class="glightbox" href="../assets/images/Edit_Textures_Resolution.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Edit_Textures_Resolution.gif" src="../assets/images/Edit_Textures_Resolution.gif" /></a></p>
+<h2 id="reformat-textures">Reformat Textures<a class="headerlink" href="#reformat-textures" title="Permanent link">#</a></h2>
+<p>Reformat textures non-destructively &amp; on-the-fly. For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution.</p>
+<details class="abstract">
+<summary>Supported Image Formats</summary>
 <ul>
 <li>PNG</li>
 <li>JPEG (.jpg)</li>
@@ -1282,6 +1289,8 @@
 <li>BMP</li>
 <li>OPEN_EXR</li>
 </ul>
+</details>
+<p><a class="glightbox" href="../assets/images/Edit_Textures_Format.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Edit_Textures_Format.gif" src="../assets/images/Edit_Textures_Format.gif" /></a></p>
 <div class="admonition question">
 <p class="admonition-title">Missing Something?</p>
 <p>Do you think we're missing a feature?  Submit a request on Github!</p>
@@ -1333,13 +1342,13 @@
         
         
           
-          <a href="../optimize_file_size/" class="md-footer__link md-footer__link--next" aria-label="Next: Optimize file size" rel="next">
+          <a href="../optimize_file_size/" class="md-footer__link md-footer__link--next" aria-label="Next: Auto-Optimize File Size" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Optimize file size
+                Auto-Optimize File Size
               </div>
             </div>
             <div class="md-footer__button md-icon">

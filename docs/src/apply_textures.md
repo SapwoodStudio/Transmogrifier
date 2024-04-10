@@ -2,6 +2,8 @@
 
 Transmogrifier can detect the presence of multiple image texture sets and non-destructively modify them during the conversion process. Select whether to use textures, regex the PBR tags in the textures' names, and keep the otherwise temporary textures folders with their modifiied images.
 
+![Apply_Textures.gif](assets/images/Apply_Textures.gif)
+
 
 ## Source
 === "![Textures_Source_External_Icon.jpg](assets/images/Textures_Source_External_Icon.jpg) **External**" 
@@ -101,33 +103,42 @@ There are three naming conventions that must be followed in order for textures t
     ![Textures_Rule_No_3.png](assets/images/Textures_Rule_No_3.png)
 
         
-## Resolution
-Resize textures (1) 
+## Resize Textures
+Resize textures images textures non-destructively & on-the-fly.  For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution. (1) 
 { .annotate }
 
 1. Images will not be upscaled.
 
-- 8192
-- 4096
-- 2048
-- 1024
-- 512
-- 256
-- 128
+??? abstract "Supported Resolutions"
+    
+    - 8192
+    - 4096
+    - 2048
+    - 1024
+    - 512
+    - 256
+    - 128
 
 
+![Edit_Textures_Resolution.gif](assets/images/Edit_Textures_Resolution.gif)
 
 
-## Format
-Reformat textures
+## Reformat Textures
+Reformat textures non-destructively & on-the-fly. For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution.
 
-- PNG
-- JPEG (.jpg)
-- TARGA
-- TIFF
-- WEBP
-- BMP
-- OPEN_EXR
+??? abstract "Supported Image Formats"
+    
+    - PNG
+    - JPEG (.jpg)
+    - TARGA
+    - TIFF
+    - WEBP
+    - BMP
+    - OPEN_EXR
+
+
+![Edit_Textures_Format.gif](assets/images/Edit_Textures_Format.gif)
+
 
 
 !!! question "Missing Something?"
