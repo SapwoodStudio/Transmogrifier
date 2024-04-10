@@ -102,8 +102,44 @@ There are three naming conventions that must be followed in order for textures t
     
     ![Textures_Rule_No_3.png](assets/images/Textures_Rule_No_3.png)
 
+
+## Edit Textures
+Edit textures by PBR map for every item converted.  Click `+ Add Texture Edit` to add a texture edit profile.  Click `✖` to remove a profile.
+
+![Apply_Textures_Add_Texture_Edit.gif](assets/images/Apply_Textures_Add_Texture_Edit.gif)
+
+### Edit Textures Presets
+Create custom `Edit Textures` presets for quickly switching between different image editing scenarios. (1)
+{ .annotate }
+
+1. `Edit Textures` presets are stored as `JSON` files in your [Blender preferences directory](https://sapwoodstudio.github.io/Transmogrifier/faq/#where-is-transmogrifier-installed-on-my-computer). 
+
+=== "`+` Add Preset"
+    Click the plus button `+` to create a preset from the current Edit Textures settings and profiles, giving it a custom name.  Click `OK` to save it.
+
+    ![Apply_Textures_Edit_Textures_Presets.gif](assets/images/Apply_Textures_Edit_Textures_Presets.gif)
+
+=== "`v` Select Preset"
+    Select an existing preset from the menu.
+
+    ![Apply_Textures_Edit_Textures_Preset_Select.gif](assets/images/Apply_Textures_Edit_Textures_Preset_Select.gif)
+
+=== "`-` Remove Preset"
+    Remove a workflow by selecting it from the menu, then clicking the minus button `-`.
+
+    ![Apply_Textures_Edit_Textures_Preset_Remove.gif](assets/images/Apply_Textures_Edit_Textures_Preset_Remove.gif)
+
+=== "`-` `+` Edit Preset"
+    Edit an `Edit Textures` preset by 
+
+    1. Select your preset
+    2. Make your adjustments to settings
+    3. Click the minus button `-` to remove the preset
+    4. Click the plus button `+` and give the new preset the same name.  Click `OK`.
+
+    ![Apply_Textures_Edit_Textures_Preset_Edit_Preset.gif](assets/images/Apply_Textures_Edit_Textures_Preset_Edit_Preset.gif)
         
-## Resize Textures
+### Resize Textures
 Resize textures images textures non-destructively & on-the-fly.  For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution. (1) 
 { .annotate }
 
@@ -123,7 +159,7 @@ Resize textures images textures non-destructively & on-the-fly.  For every item 
 ![Edit_Textures_Resolution.gif](assets/images/Edit_Textures_Resolution.gif)
 
 
-## Reformat Textures
+### Reformat Textures
 Reformat textures non-destructively & on-the-fly. For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution.
 
 ??? abstract "Supported Image Formats"
@@ -138,6 +174,62 @@ Reformat textures non-destructively & on-the-fly. For every item converted, Tran
 
 
 ![Edit_Textures_Format.gif](assets/images/Edit_Textures_Format.gif)
+
+
+### Regex Textures
+
+Use regular expressions (aka `regex`) to correct misspellings and inconsistencies in image texture PBR tags. This helps to guarantee their detection and import by Transmogrifier.  
+
+
+!!! example 
+    
+
+    | Original Name | Regexed Name | Reason for Regex |
+    | ---- | ---- | ---- |
+    | lightbulb_01_**diff**_2k.jpg | lightbulb_01_**BaseColor**_2k.jpg | Normalize |
+    | lightbulb_01_**mtal**_2k.png | lightbulb_01_**Metallic**_2k.png | Misspelling |
+    | lightbulb_01_**transprancy**_2k.png | lightbulb_01_**Alpha**_2k.png | Misspelling |
+    | Monkey **Base Color**.webp | Monkey_**BaseColor**.webp | Normalize |
+
+
+
+
+!!! note "Node Wrangler"
+    Transmogrifier relies on Node Wrangler's `Add Principled Setup` feature to detect image textures, import textures, and create a material shading network.
+
+    #### Edit PBR Tags
+    You can modify the PBR tags that Node Wrangler looks for in image textures, which it uses to plug textures into the proper input of the Principled BSDF shader.  Simply mimic the recording below:
+    
+    ![Apply_Textures_Regex_Textures_Node_Wrangler.gif](assets/images/Apply_Textures_Regex_Textures_Node_Wrangler.gif)
+
+    ??? tip "Recommended PBR tags"
+        We recommend the following tags for most conversion scenarios:
+
+        | Regexed Name | Recommended PBR Tags |
+        | ---- | ---- |
+        | `BaseColor` | albedo base col color basecolor diffuse diff |
+        | `Subsurface` | sss subsurface |
+        | `Metallic` | metallic metalness metal mtl |
+        | `Specular` | specularity specular spec spc |
+        | `Roughness` | roughness rough rgh |
+        | `Gloss` | gloss glossy glossiness |
+        | `Normal` | normal nor nrm nrml norm |
+        | `Bump` | bump bmp |
+        | `Displacement` | displacement displace disp dsp height heightmap |
+        | `Transmission` | transmission |
+        | `Emission` | emission emissive emit | 
+        | `Alpha` | alpha opacity transparency |
+        | `Ambient_Occlusion` | ao ambient occlusion |
+
+
+
+
+### Keep Edited Textures
+`Keep Edited Textures` in order to have granular access to the images resulting from on-the-fly modifications. 
+
+!!! tip
+    This can be useful if you ever need to manually edit individual image textures later or want to troubleshoot textures that did not get assigned properly to your model(s).
+
 
 
 ***

@@ -804,16 +804,63 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#edit-textures" class="md-nav__link">
+    Edit Textures
+  </a>
+  
+    <nav class="md-nav" aria-label="Edit Textures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edit-textures-presets" class="md-nav__link">
+    Edit Textures Presets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#resize-textures" class="md-nav__link">
     Resize Textures
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#reformat-textures" class="md-nav__link">
     Reformat Textures
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regex-textures" class="md-nav__link">
+    Regex Textures
+  </a>
+  
+    <nav class="md-nav" aria-label="Regex Textures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edit-pbr-tags" class="md-nav__link">
+    Edit PBR Tags
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-edited-textures" class="md-nav__link">
+    Keep Edited Textures
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -956,7 +1003,7 @@
         
   
   <span class="md-ellipsis">
-    Log conversions
+    Log Conversions
   </span>
   
 
@@ -1098,16 +1145,63 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#edit-textures" class="md-nav__link">
+    Edit Textures
+  </a>
+  
+    <nav class="md-nav" aria-label="Edit Textures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edit-textures-presets" class="md-nav__link">
+    Edit Textures Presets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#resize-textures" class="md-nav__link">
     Resize Textures
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#reformat-textures" class="md-nav__link">
     Reformat Textures
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regex-textures" class="md-nav__link">
+    Regex Textures
+  </a>
+  
+    <nav class="md-nav" aria-label="Regex Textures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edit-pbr-tags" class="md-nav__link">
+    Edit PBR Tags
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keep-edited-textures" class="md-nav__link">
+    Keep Edited Textures
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1236,7 +1330,41 @@
 </div>
 </div>
 </div>
-<h2 id="resize-textures">Resize Textures<a class="headerlink" href="#resize-textures" title="Permanent link">#</a></h2>
+<h2 id="edit-textures">Edit Textures<a class="headerlink" href="#edit-textures" title="Permanent link">#</a></h2>
+<p>Edit textures by PBR map for every item converted.  Click <code>+ Add Texture Edit</code> to add a texture edit profile.  Click <code>✖</code> to remove a profile.</p>
+<p><a class="glightbox" href="../assets/images/Apply_Textures_Add_Texture_Edit.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Apply_Textures_Add_Texture_Edit.gif" src="../assets/images/Apply_Textures_Add_Texture_Edit.gif" /></a></p>
+<h3 id="edit-textures-presets">Edit Textures Presets<a class="headerlink" href="#edit-textures-presets" title="Permanent link">#</a></h3>
+<p class="annotate">Create custom <code>Edit Textures</code> presets for quickly switching between different image editing scenarios. (1)</p>
+<ol>
+<li><code>Edit Textures</code> presets are stored as <code>JSON</code> files in your <a href="https://sapwoodstudio.github.io/Transmogrifier/faq/#where-is-transmogrifier-installed-on-my-computer">Blender preferences directory</a>. </li>
+</ol>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:4"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><input id="__tabbed_3_4" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1"><code>+</code> Add Preset</label><label for="__tabbed_3_2"><code>v</code> Select Preset</label><label for="__tabbed_3_3"><code>-</code> Remove Preset</label><label for="__tabbed_3_4"><code>-</code> <code>+</code> Edit Preset</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Click the plus button <code>+</code> to create a preset from the current Edit Textures settings and profiles, giving it a custom name.  Click <code>OK</code> to save it.</p>
+<p><a class="glightbox" href="../assets/images/Apply_Textures_Edit_Textures_Presets.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Apply_Textures_Edit_Textures_Presets.gif" src="../assets/images/Apply_Textures_Edit_Textures_Presets.gif" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>Select an existing preset from the menu.</p>
+<p><a class="glightbox" href="../assets/images/Apply_Textures_Edit_Textures_Preset_Select.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Apply_Textures_Edit_Textures_Preset_Select.gif" src="../assets/images/Apply_Textures_Edit_Textures_Preset_Select.gif" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>Remove a workflow by selecting it from the menu, then clicking the minus button <code>-</code>.</p>
+<p><a class="glightbox" href="../assets/images/Apply_Textures_Edit_Textures_Preset_Remove.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Apply_Textures_Edit_Textures_Preset_Remove.gif" src="../assets/images/Apply_Textures_Edit_Textures_Preset_Remove.gif" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>Edit an <code>Edit Textures</code> preset by </p>
+<ol>
+<li>Select your preset</li>
+<li>Make your adjustments to settings</li>
+<li>Click the minus button <code>-</code> to remove the preset</li>
+<li>Click the plus button <code>+</code> and give the new preset the same name.  Click <code>OK</code>.</li>
+</ol>
+<p><a class="glightbox" href="../assets/images/Apply_Textures_Edit_Textures_Preset_Edit_Preset.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Apply_Textures_Edit_Textures_Preset_Edit_Preset.gif" src="../assets/images/Apply_Textures_Edit_Textures_Preset_Edit_Preset.gif" /></a></p>
+</div>
+</div>
+</div>
+<h3 id="resize-textures">Resize Textures<a class="headerlink" href="#resize-textures" title="Permanent link">#</a></h3>
 <p class="annotate">Resize textures images textures non-destructively &amp; on-the-fly.  For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution. (1) </p>
 <ol>
 <li>Images will not be upscaled.</li>
@@ -1254,7 +1382,7 @@
 </ul>
 </details>
 <p><a class="glightbox" href="../assets/images/Edit_Textures_Resolution.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Edit_Textures_Resolution.gif" src="../assets/images/Edit_Textures_Resolution.gif" /></a></p>
-<h2 id="reformat-textures">Reformat Textures<a class="headerlink" href="#reformat-textures" title="Permanent link">#</a></h2>
+<h3 id="reformat-textures">Reformat Textures<a class="headerlink" href="#reformat-textures" title="Permanent link">#</a></h3>
 <p>Reformat textures non-destructively &amp; on-the-fly. For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution.</p>
 <details class="abstract">
 <summary>Supported Image Formats</summary>
@@ -1269,6 +1397,121 @@
 </ul>
 </details>
 <p><a class="glightbox" href="../assets/images/Edit_Textures_Format.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Edit_Textures_Format.gif" src="../assets/images/Edit_Textures_Format.gif" /></a></p>
+<h3 id="regex-textures">Regex Textures<a class="headerlink" href="#regex-textures" title="Permanent link">#</a></h3>
+<p>Use regular expressions (aka <code>regex</code>) to correct misspellings and inconsistencies in image texture PBR tags. This helps to guarantee their detection and import by Transmogrifier.  </p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<table>
+<thead>
+<tr>
+<th>Original Name</th>
+<th>Regexed Name</th>
+<th>Reason for Regex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lightbulb_01_<strong>diff</strong>_2k.jpg</td>
+<td>lightbulb_01_<strong>BaseColor</strong>_2k.jpg</td>
+<td>Normalize</td>
+</tr>
+<tr>
+<td>lightbulb_01_<strong>mtal</strong>_2k.png</td>
+<td>lightbulb_01_<strong>Metallic</strong>_2k.png</td>
+<td>Misspelling</td>
+</tr>
+<tr>
+<td>lightbulb_01_<strong>transprancy</strong>_2k.png</td>
+<td>lightbulb_01_<strong>Alpha</strong>_2k.png</td>
+<td>Misspelling</td>
+</tr>
+<tr>
+<td>Monkey <strong>Base Color</strong>.webp</td>
+<td>Monkey_<strong>BaseColor</strong>.webp</td>
+<td>Normalize</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Node Wrangler</p>
+<p>Transmogrifier relies on Node Wrangler's <code>Add Principled Setup</code> feature to detect image textures, import textures, and create a material shading network.</p>
+<h4 id="edit-pbr-tags">Edit PBR Tags<a class="headerlink" href="#edit-pbr-tags" title="Permanent link">#</a></h4>
+<p>You can modify the PBR tags that Node Wrangler looks for in image textures, which it uses to plug textures into the proper input of the Principled BSDF shader.  Simply mimic the recording below:</p>
+<p><a class="glightbox" href="../assets/images/Apply_Textures_Regex_Textures_Node_Wrangler.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Apply_Textures_Regex_Textures_Node_Wrangler.gif" src="../assets/images/Apply_Textures_Regex_Textures_Node_Wrangler.gif" /></a></p>
+<details class="tip">
+<summary>Recommended PBR tags</summary>
+<p>We recommend the following tags for most conversion scenarios:</p>
+<table>
+<thead>
+<tr>
+<th>Regexed Name</th>
+<th>Recommended PBR Tags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BaseColor</code></td>
+<td>albedo base col color basecolor diffuse diff</td>
+</tr>
+<tr>
+<td><code>Subsurface</code></td>
+<td>sss subsurface</td>
+</tr>
+<tr>
+<td><code>Metallic</code></td>
+<td>metallic metalness metal mtl</td>
+</tr>
+<tr>
+<td><code>Specular</code></td>
+<td>specularity specular spec spc</td>
+</tr>
+<tr>
+<td><code>Roughness</code></td>
+<td>roughness rough rgh</td>
+</tr>
+<tr>
+<td><code>Gloss</code></td>
+<td>gloss glossy glossiness</td>
+</tr>
+<tr>
+<td><code>Normal</code></td>
+<td>normal nor nrm nrml norm</td>
+</tr>
+<tr>
+<td><code>Bump</code></td>
+<td>bump bmp</td>
+</tr>
+<tr>
+<td><code>Displacement</code></td>
+<td>displacement displace disp dsp height heightmap</td>
+</tr>
+<tr>
+<td><code>Transmission</code></td>
+<td>transmission</td>
+</tr>
+<tr>
+<td><code>Emission</code></td>
+<td>emission emissive emit</td>
+</tr>
+<tr>
+<td><code>Alpha</code></td>
+<td>alpha opacity transparency</td>
+</tr>
+<tr>
+<td><code>Ambient_Occlusion</code></td>
+<td>ao ambient occlusion</td>
+</tr>
+</tbody>
+</table>
+</details>
+</div>
+<h3 id="keep-edited-textures">Keep Edited Textures<a class="headerlink" href="#keep-edited-textures" title="Permanent link">#</a></h3>
+<p><code>Keep Edited Textures</code> in order to have granular access to the images resulting from on-the-fly modifications. </p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This can be useful if you ever need to manually edit individual image textures later or want to troubleshoot textures that did not get assigned properly to your model(s).</p>
+</div>
 <hr />
 <div class="admonition question">
 <p class="admonition-title">Missing Something?</p>

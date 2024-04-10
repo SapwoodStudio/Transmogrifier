@@ -10,7 +10,7 @@ Create your own custom Python recipes for extending Transmogrifier's functionali
 Select your custom script saved as a Python file `.py` to execute during the batch conversion.
 
 ## Trigger
-Define at which point your custom script's execution should be triggered.
+Define at which point your custom script's execution should be triggered.  Synchronize triggers by clicking the link ![Link_Settings.png](assets/images/Link_Settings.png) icon in the upper right of the `Custom Scripts` box.
 
 | | |
 | ---- | ---- |

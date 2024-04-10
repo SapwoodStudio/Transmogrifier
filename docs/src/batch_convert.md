@@ -10,7 +10,10 @@ Calculate the batch conversion and display an info message of the `Forecast`.
 ![Getting_started_Quickstart_Demo_3.gif](assets/images/Getting_started_Quickstart_Demo_5.gif)
 
 ## Workflow Presets
-Create custom Transmogrifier presets (aka "Workflows) for quickly switching between different conversion scenarios.  Workflows are stored as `JSON` files in your [Blender preferences directory](https://sapwoodstudio.github.io/Transmogrifier/faq/#where-is-transmogrifier-installed-on-my-computer). 
+Create custom Transmogrifier presets (aka "Workflows) for quickly switching between different conversion scenarios. (1)
+{ .annotate }
+
+1. Workflows are stored as `JSON` files in your [Blender preferences directory](https://sapwoodstudio.github.io/Transmogrifier/faq/#where-is-transmogrifier-installed-on-my-computer). 
 
 === "`+` Add Preset"
     Click the plus button `+` to create a Workflow from **all** of the current Transmogrifier settings, giving it a custom name.  Click `OK` to save it.
@@ -18,7 +21,7 @@ Create custom Transmogrifier presets (aka "Workflows) for quickly switching betw
     ![Worfklow_Presets_Add.gif](assets/images/Worfklow_Presets_Add.gif)
 
 === "`v` Select Preset"
-    Select and existing preset from the menu.
+    Select an existing preset from the menu.
 
     ![Workflow_Presets_Select.gif](assets/images/Workflow_Presets_Select.gif)
 
