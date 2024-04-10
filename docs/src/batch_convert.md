@@ -38,29 +38,51 @@ Create custom Transmogrifier presets (aka "Workflows) for quickly switching betw
     ![Workflow_Presets_Edit.gif](assets/images/Workflow_Presets_Edit.gif)
 
 
-## Supported 3D Formats
-Transmogrifier supports importing and exporting the following 3D formats.
-
-- `FBX`
-- `OBJ`
-- `glTF`/`GLB`
-- `STL`
-- `PLY`
-- `X3D`
-- `DAE`
-- `ABC`
-- `USD`/`USDA`/`USDC`/`USDZ`
-- `BLEND`
-
-
 ## Imports
 Click `+ Add Import` to add an import file format for Transmogrifier to search for.  Select your desired file format and associated user preset.  Click on the folder icon and choose a `Directory` hierarchy containing your 3D models in the pop-up file dialog.
+
+??? abstract "Supported 3D Formats"
+    Transmogrifier supports importing and exporting the following 3D formats.
+
+    - `FBX`
+    - `OBJ`
+    - `glTF`/`GLB`
+    - `STL`
+    - `PLY`
+    - `X3D`
+    - `DAE`
+    - `ABC`
+    - `USD`/`USDA`/`USDC`/`USDZ`
+    - `BLEND`
+
+
+??? info "Icons Explained"
+    | Icon | Name | Description | 
+    | ---- | ---- | ------------|
+    | ![Remove_Instance.png](assets/images/Remove_Instance.png) | Remove Import | Remove the import instance and related settings from the UI. |
+    | ![Link_Settings.png](assets/images/Link_Settings.png) | Link Import Settings | Synchronize import directories between all import file formats |
+    | ![Directory.png](assets/images/Directory.png) | Import Directory | Parent directory to search through and import files.  Default of `//` will import from the same directory as the blend file (only works if the blend file is saved) |
+     
 
 ![Features_Imports.gif](assets/images/Features_Imports.gif)
 
 
 ## Exports
 Click `+ Add Export` to add an export file format for Transmogrifier to output for each import file it finds.  Select your desired file format and associated user preset.
+
+??? abstract "Supported 3D Formats"
+    Transmogrifier supports importing and exporting the following 3D formats.
+
+    - `FBX`
+    - `OBJ`
+    - `glTF`/`GLB`
+    - `STL`
+    - `PLY`
+    - `X3D`
+    - `DAE`
+    - `ABC`
+    - `USD`/`USDA`/`USDC`/`USDZ`
+    - `BLEND`
 
 ??? info "Icons Explained"
     | Icon | Name | Description | 
@@ -80,6 +102,6 @@ Click `+ Add Export` to add an export file format for Transmogrifier to output f
 
 
 !!! question "Missing Something?"
-    Do you think we're missing a feature?  Submit a feature request on our Github!
+    Do you think we're missing a feature?  Submit a request on Github!
 
     [Request Feature](https://github.com/SapwoodStudio/Transmogrifier/issues){ .md-button .md-button--primary }

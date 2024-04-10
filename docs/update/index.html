@@ -98,7 +98,16 @@
     
     
     
-  </head>
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -796,7 +805,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -1119,13 +1128,13 @@
 <h1 id="update-transmogrifier">Update Transmogrifier<a class="headerlink" href="#update-transmogrifier" title="Permanent link">#</a></h1>
 <h2 id="1-open-blender">1. Open Blender<a class="headerlink" href="#1-open-blender" title="Permanent link">#</a></h2>
 <p>Open Blender, then navigate to <code>Edit &gt; Preferences</code>.</p>
-<p><img alt="Getting_started_Install_3_1.png" src="../assets/images/Getting_started_Install_3_1.png" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Install_3_1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_3_1.png" src="../assets/images/Getting_started_Install_3_1.png" /></a></p>
 <h2 id="2-disable-transmogrifier">2. Disable Transmogrifier<a class="headerlink" href="#2-disable-transmogrifier" title="Permanent link">#</a></h2>
 <p>Select the <code>Add-ons</code> tab, and <code>search</code> for <code>"Transmogrifier"</code> on the top right.  Disable the add-on by unchecking the box of <code>Import-Export: Transmogrifier</code>.</p>
-<p><img alt="Uninstall_2.png" src="../assets/images/Uninstall_2.png" /></p>
+<p><a class="glightbox" href="../assets/images/Uninstall_2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Uninstall_2.png" src="../assets/images/Uninstall_2.png" /></a></p>
 <h2 id="3-remove-transmogrifier">3. Remove Transmogrifier<a class="headerlink" href="#3-remove-transmogrifier" title="Permanent link">#</a></h2>
 <p>Click <code>Remove</code> to fully uninstall Transmogrifier.  Then click <code>Save Preferences</code> if your preferences are not set to auto-save.</p>
-<p><img alt="Uninstall_3.png" src="../assets/images/Uninstall_3.png" /></p>
+<p><a class="glightbox" href="../assets/images/Uninstall_3.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Uninstall_3.png" src="../assets/images/Uninstall_3.png" /></a></p>
 <h2 id="4-close-blender">4. Close Blender<a class="headerlink" href="#4-close-blender" title="Permanent link">#</a></h2>
 <p>Close Blender.</p>
 <h2 id="5-re-open-blender">5. Re-open Blender<a class="headerlink" href="#5-re-open-blender" title="Permanent link">#</a></h2>
@@ -1269,5 +1278,5 @@
       <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>

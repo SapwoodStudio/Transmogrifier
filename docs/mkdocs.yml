@@ -86,6 +86,7 @@ theme:
 
 plugins:
   - search
+  - glightbox
 
 markdown_extensions:
   - toc:

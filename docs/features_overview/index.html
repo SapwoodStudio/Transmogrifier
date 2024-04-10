@@ -98,7 +98,16 @@
     
     
     
-  </head>
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -724,7 +733,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -1001,26 +1010,26 @@
 <div class="tabbed-block">
 <details class="abstract" open="open">
 <summary>Transmogrifier begins with a small portion of its settings visible.</summary>
-<p><img alt="Features_Overview_Fresh_Start.png" src="../assets/images/Features_Overview_Fresh_Start.png" /></p>
+<p><a class="glightbox" href="../assets/images/Features_Overview_Fresh_Start.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Features_Overview_Fresh_Start.png" src="../assets/images/Features_Overview_Fresh_Start.png" /></a></p>
 </details>
 </div>
 <div class="tabbed-block">
 <details class="abstract" open="open">
 <summary>More features become apparent when adjusting some basic settings.</summary>
-<p><img alt="Features_Overview_Simple.png" src="../assets/images/Features_Overview_Simple.png" /></p>
+<p><a class="glightbox" href="../assets/images/Features_Overview_Simple.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Features_Overview_Simple.png" src="../assets/images/Features_Overview_Simple.png" /></a></p>
 </details>
 </div>
 <div class="tabbed-block">
 <details class="abstract" open="open">
 <summary>Many more features are available for advanced batch conversions!</summary>
-<p><img alt="Features_Overview_Advanced.jpg" src="../assets/images/Features_Overview_Advanced.jpg" /></p>
+<p><a class="glightbox" href="../assets/images/Features_Overview_Advanced.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Features_Overview_Advanced.jpg" src="../assets/images/Features_Overview_Advanced.jpg" /></a></p>
 </details>
 </div>
 </div>
 </div>
 <div class="admonition question">
 <p class="admonition-title">Missing Something?</p>
-<p>Do you think we're missing a feature?  Submit a feature request on our Github!</p>
+<p>Do you think we're missing a feature?  Submit a request on Github!</p>
 <p><a class="md-button md-button--primary" href="https://github.com/SapwoodStudio/Transmogrifier/issues">Request Feature</a></p>
 </div>
 
@@ -1157,5 +1166,5 @@
       <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>

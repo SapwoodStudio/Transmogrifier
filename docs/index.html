@@ -96,7 +96,16 @@
     
     
     
-  </head>
+   <link href="assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -773,7 +782,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -1073,7 +1082,7 @@
 
 
 <h1 id="transmogrifier">Transmogrifier<a class="headerlink" href="#transmogrifier" title="Permanent link">#</a></h1>
-<p><img alt="Transmogrifier_Logo_Banner_1000.jpg" src="assets/images/Transmogrifier_Logo_Banner_1000.jpg" /></p>
+<p><a class="glightbox" href="assets/images/Transmogrifier_Logo_Banner_1000.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Transmogrifier_Logo_Banner_1000.jpg" src="assets/images/Transmogrifier_Logo_Banner_1000.jpg" /></a></p>
 <h3 id="finally-a-robust-artist-friendly-open-source-3d-batch-converter">Finally - a robust, artist-friendly, open-source 3D batch converter.<a class="headerlink" href="#finally-a-robust-artist-friendly-open-source-3d-batch-converter" title="Permanent link">#</a></h3>
 <p class="annotate"><strong>Transmogrifier</strong> is a Blender addon for batch converting 3D files and associated textures into other formats (1)</p>
 <ol>
@@ -1123,7 +1132,7 @@
 <p>Many additional conversion utilities are also available within this general workflow.  Check out all the <a href="https://sapwoodstudio.github.io/Transmogrifier/features/">Features</a>!</p>
 </div>
 <p>The diagram below demonstrates the variety of ways in which Transmogrifier can convert models with respect to available textures and the chosen import and export formats. </p>
-<p><img alt="Transmogrifier_Logo_Banner_1000.jpg" src="assets/images/Transmogrifier_How_it_Works_Diagram.jpg" />
+<p><a class="glightbox" href="assets/images/Transmogrifier_How_it_Works_Diagram.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Transmogrifier_Logo_Banner_1000.jpg" src="assets/images/Transmogrifier_How_it_Works_Diagram.jpg" /></a>
 <em>Models from <a href="https://polyhaven.com/models">Polyhaven</a> (<a href="https://creativecommons.org/share-your-work/public-domain/cc0/">CC0</a>).</em></p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
@@ -1255,5 +1264,5 @@
       <script src="assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>

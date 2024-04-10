@@ -98,7 +98,16 @@
     
     
     
-  </head>
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -789,7 +798,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -1126,11 +1135,11 @@
 <ol>
 <li>
 <p>Open Blender, then navigate to <code>Edit &gt; Preferences</code>.</p>
-<p><img alt="Getting_started_Install_3_1.png" src="../assets/images/Getting_started_Install_3_1.png" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Install_3_1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_3_1.png" src="../assets/images/Getting_started_Install_3_1.png" /></a></p>
 </li>
 <li>
 <p>Select the <code>Add-ons</code> tab, and press <code>Install…</code> on the top right. Navigate to the .zip you downloaded in Step 2, and press <code>Install Add-on</code>.</p>
-<p><img alt="Getting_started_Install_3_2.png" src="../assets/images/Getting_started_Install_3_2.png" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Install_3_2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_3_2.png" src="../assets/images/Getting_started_Install_3_2.png" /></a></p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>You do not need to unzip the add-on file. You should install it as a zipped file.</p>
@@ -1138,12 +1147,12 @@
 </li>
 <li>
 <p>You should now see <code>Import-Export: Transmogrifier</code> available in your add-ons list. Enable the add-on by clicking the checkbox.</p>
-<p><img alt="Getting_started_Install_3_2.png" src="../assets/images/Getting_started_Install_3_3.png" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Install_3_3.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_3_2.png" src="../assets/images/Getting_started_Install_3_3.png" /></a></p>
 </li>
 </ol>
 <h2 id="4-choose-add-on-location">4. Choose Add-on Location<a class="headerlink" href="#4-choose-add-on-location" title="Permanent link">#</a></h2>
 <p>Transmogrifier can be conveniently displayed in different places within Blender's user interface.</p>
-<p><img alt="Getting_started_Install_4.png" src="../assets/images/Getting_started_Install_4.png" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Install_4.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_4.png" src="../assets/images/Getting_started_Install_4.png" /></a></p>
 <div class="admonition note">
 <p class="admonition-title"><code>Addon Location</code> Screenshots</p>
 <table>
@@ -1156,9 +1165,9 @@
 </thead>
 <tbody>
 <tr>
-<td><img alt="Getting_started_Install_4_Top.png" src="../assets/images/Getting_started_Install_4_Top.png" /></td>
-<td><img alt="Getting_started_Install_4_Header.png" src="../assets/images/Getting_started_Install_4_Header.png" /></td>
-<td><img alt="Getting_started_Install_4_Side.png" src="../assets/images/Getting_started_Install_4_Side.png" /></td>
+<td><a class="glightbox" href="../assets/images/Getting_started_Install_4_Top.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_4_Top.png" src="../assets/images/Getting_started_Install_4_Top.png" /></a></td>
+<td><a class="glightbox" href="../assets/images/Getting_started_Install_4_Header.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_4_Header.png" src="../assets/images/Getting_started_Install_4_Header.png" /></a></td>
+<td><a class="glightbox" href="../assets/images/Getting_started_Install_4_Side.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_4_Side.png" src="../assets/images/Getting_started_Install_4_Side.png" /></a></td>
 </tr>
 <tr>
 <td>Good location for Basic usage</td>
@@ -1174,7 +1183,7 @@
 <p class="admonition-title">Tip</p>
 <p>This is highly recommended for beginners to Transmogrifier or for those who rely on these presets and desire to keep them updated with each new Transmogrifier version.</p>
 </div>
-<p><img alt="Getting_started_Install_5.png" src="../assets/images/Getting_started_Install_5.png" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Install_5.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_5.png" src="../assets/images/Getting_started_Install_5.png" /></a></p>
 <div class="admonition success">
 <p class="admonition-title">Success!  Transmogrifier is now installed.</p>
 </div>
@@ -1312,5 +1321,5 @@
       <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>

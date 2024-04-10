@@ -98,7 +98,16 @@
     
     
     
-  </head>
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -724,7 +733,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -1011,15 +1020,15 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Click <code>+ Add Import</code> to add an import file format for Transmogrifier to search for.  Select your desired file format and associated user preset.  Click on the folder icon and choose a <code>Directory</code> hierarchy containing your 3D models in the pop-up file dialog.</p>
-<p><img alt="Getting_started_Quickstart_Demo_2.gif" src="../assets/images/Getting_started_Quickstart_Demo_2.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Quickstart_Demo_2.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Quickstart_Demo_2.gif" src="../assets/images/Getting_started_Quickstart_Demo_2.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>Click <code>+ Add Export</code> to add an export file format for Transmogrifier to output for each import file it finds.  Select your desired file format and associated user preset. </p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>If you want to export models to a specific output folder instead of adjacent to each respective import file, toggle of the <code>Export Adjacent</code> button <img alt="Getting_started_General_Usage_1_2_Export_Adjacent_Icon.png" src="../assets/images/Getting_started_General_Usage_1_2_Export_Adjacent_Icon.png" />. This will cause a new <code>Directory</code> input to appear.  Click on the folder icon and choose a <code>Directory</code> into which your converted models will be placed.</p>
+<p>If you want to export models to a specific output folder instead of adjacent to each respective import file, toggle of the <code>Export Adjacent</code> button <a class="glightbox" href="../assets/images/Getting_started_General_Usage_1_2_Export_Adjacent_Icon.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_General_Usage_1_2_Export_Adjacent_Icon.png" src="../assets/images/Getting_started_General_Usage_1_2_Export_Adjacent_Icon.png" /></a>. This will cause a new <code>Directory</code> input to appear.  Click on the folder icon and choose a <code>Directory</code> into which your converted models will be placed.</p>
 </div>
-<p><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_4.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Quickstart_Demo_4.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_4.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>There are many other <a href="https://sapwoodstudio.github.io/Transmogrifier/features/">features</a> available in Transmogrifier.  You can modify textures on-the-fly, auto-optimize exports' file sizes, add models to an asset library, and more!</p>
@@ -1027,14 +1036,14 @@
 <p class="admonition-title">Tip</p>
 <p>Check out the <a href="https://sapwoodstudio.github.io/Transmogrifier/features/">Features</a> page for an in-depth exploration of each setting.</p>
 </div>
-<p><img alt="Getting_started_General_Usage_1_3.gif" src="../assets/images/Getting_started_General_Usage_1_3.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_General_Usage_1_3.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_General_Usage_1_3.gif" src="../assets/images/Getting_started_General_Usage_1_3.gif" /></a></p>
 </div>
 </div>
 </div>
 </div>
 <div class="tabbed-block">
 <p>Click the <code>Forecast</code> button to predict the batch conversion.</p>
-<p><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_5.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Quickstart_Demo_5.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_5.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>Finally, click <code>Batch Convert</code> and let the process run.</p>
@@ -1042,11 +1051,11 @@
 <p class="admonition-title">Info</p>
 <p>After this button is clicked, a second Blender window will pop-up.  This window will be greyed-out, and both this and the original Blender window will remain unresponsive until the batch conversion is over.  This is normal operation.  After the conversion finishes, the greyed-out Blender window will disappear and the original Blender instance will report how many files were converted. If you wish to see the conversion process get logged in real-time, you must start Blender from your terminal/Command Line first before Transmogrifying.</p>
 </div>
-<p><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_6.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Quickstart_Demo_6.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_6.gif" /></a></p>
 </div>
 <div class="tabbed-block">
-<p>When the batch conversion finishes, you should now be able to find the same number of export files as Transmogrifier predicted in the <code>Forecast</code>.  You can verify the conversion manually or by reviewing the <code>Conversion Summary</code> CSV file <img alt="Getting_started_General_Usage_4_Conversion_Summary.png" src="../assets/images/Getting_started_General_Usage_4_Conversion_Summary.png" />.</p>
-<p><img alt="Getting_started_General_Usage_7.gif" src="../assets/images/Getting_started_General_Usage_7.gif" /></p>
+<p>When the batch conversion finishes, you should now be able to find the same number of export files as Transmogrifier predicted in the <code>Forecast</code>.  You can verify the conversion manually or by reviewing the <code>Conversion Summary</code> CSV file <a class="glightbox" href="../assets/images/Getting_started_General_Usage_4_Conversion_Summary.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_General_Usage_4_Conversion_Summary.png" src="../assets/images/Getting_started_General_Usage_4_Conversion_Summary.png" /></a>.</p>
+<p><a class="glightbox" href="../assets/images/Getting_started_General_Usage_7.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_General_Usage_7.gif" src="../assets/images/Getting_started_General_Usage_7.gif" /></a></p>
 <div class="admonition success">
 <p class="admonition-title">That's the jist of how Transmogrifier works.</p>
 </div>
@@ -1187,5 +1196,5 @@
       <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>

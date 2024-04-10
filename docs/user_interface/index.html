@@ -98,7 +98,16 @@
     
     
     
-  </head>
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -724,7 +733,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -999,33 +1008,33 @@
 <div class="tabbed-set tabbed-alternate" data-tabs="1:5"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Simple/Advanced UI</label><label for="__tabbed_1_2">Tooltips</label><label for="__tabbed_1_3">Layout</label><label for="__tabbed_1_4">Linked Settings</label><label for="__tabbed_1_5">Undo/Redo</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>Transmogrifier has an <code>Advanced UI</code> toggle  <img alt="Getting_started_User_Interface_UI_Toggle.png" src="../assets/images/Getting_started_User_Interface_UI_Toggle.png" />  that provides many additional features for advanced users.</p>
-<p><img alt="Getting_started_User_Interface_UI_Toggle.gif" src="../assets/images/Getting_started_User_Interface_UI_Toggle.gif" /></p>
+<p>Transmogrifier has an <code>Advanced UI</code> toggle  <a class="glightbox" href="../assets/images/Getting_started_User_Interface_UI_Toggle.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_UI_Toggle.png" src="../assets/images/Getting_started_User_Interface_UI_Toggle.png" /></a>  that provides many additional features for advanced users.</p>
+<p><a class="glightbox" href="../assets/images/Getting_started_User_Interface_UI_Toggle.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_UI_Toggle.gif" src="../assets/images/Getting_started_User_Interface_UI_Toggle.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>Every button and menu comes with its own tooltip - quick descriptions about what they do.  Hover over a button for a couple of seconds and its tooltip will pop up.</p>
-<p><img alt="Getting_started_User_Interface_Tooltips.gif" src="../assets/images/Getting_started_User_Interface_Tooltips.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_User_Interface_Tooltips.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_Tooltips.gif" src="../assets/images/Getting_started_User_Interface_Tooltips.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>Transmogrifier's UI was designed with the following principles:</p>
 <details class="note" open="open">
 <summary>Boxes and Buttons</summary>
 <p>Related settings are grouped into "boxes".  Sometimes there are boxes within boxes.  The icon buttons at the top right of each box affect settings relevant to each box.  Some of them toggle the visibility of menus inside.  </p>
-<p><img alt="Getting_started_User_Interface_Boxes_and_Buttons.jpg" src="../assets/images/Getting_started_User_Interface_Boxes_and_Buttons.jpg" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_User_Interface_Boxes_and_Buttons.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_Boxes_and_Buttons.jpg" src="../assets/images/Getting_started_User_Interface_Boxes_and_Buttons.jpg" /></a></p>
 </details>
 <details class="note" open="open">
 <summary>Need-to-Knows</summary>
 <p>Menu visibility is on a "need-to-know" basis, meaning that you will see certain settings only when they are relevant given the context.</p>
-<p><img alt="Getting_started_User_Interface_Design_Need_to_Know.gif" src="../assets/images/Getting_started_User_Interface_Design_Need_to_Know.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_User_Interface_Design_Need_to_Know.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_Design_Need_to_Know.gif" src="../assets/images/Getting_started_User_Interface_Design_Need_to_Know.gif" /></a></p>
 </details>
 </div>
 <div class="tabbed-block">
-<p>A chain link icon <img alt="Getting_started_User_Interface_Design_Linked_Settings_Link.png" src="../assets/images/Getting_started_User_Interface_Design_Linked_Settings_Link.png" /> indicates there are settings in the box that are synchronized.  Breaking the link will enable more granular control per instance.</p>
-<p><img alt="Getting_started_User_Interface_Design_Linked_Settings.gif" src="../assets/images/Getting_started_User_Interface_Design_Linked_Settings.gif" /></p>
+<p>A chain link icon <a class="glightbox" href="../assets/images/Getting_started_User_Interface_Design_Linked_Settings_Link.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_Design_Linked_Settings_Link.png" src="../assets/images/Getting_started_User_Interface_Design_Linked_Settings_Link.png" /></a> indicates there are settings in the box that are synchronized.  Breaking the link will enable more granular control per instance.</p>
+<p><a class="glightbox" href="../assets/images/Getting_started_User_Interface_Design_Linked_Settings.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_Design_Linked_Settings.gif" src="../assets/images/Getting_started_User_Interface_Design_Linked_Settings.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>You can undo and redo actions within Transmogrifier.</p>
-<p><img alt="Getting_started_User_Interface_Design_Undo.gif" src="../assets/images/Getting_started_User_Interface_Design_Undo.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_User_Interface_Design_Undo.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_User_Interface_Design_Undo.gif" src="../assets/images/Getting_started_User_Interface_Design_Undo.gif" /></a></p>
 </div>
 </div>
 </div>
@@ -1163,5 +1172,5 @@
       <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>

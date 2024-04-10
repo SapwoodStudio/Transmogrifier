@@ -98,7 +98,16 @@
     
     
     
-  </head>
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -714,7 +723,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -1338,7 +1347,7 @@
 <p class="admonition-title">Success! You have now created your own export preset.</p>
 <p>Import presets work the same way.</p>
 </div>
-<p><img alt="FAQ_How_to_Create_Import_Export_Presets.gif" src="../assets/images/FAQ_How_to_Create_Import_Export_Presets.gif" />            </p>
+<p><a class="glightbox" href="../assets/images/FAQ_How_to_Create_Import_Export_Presets.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Create_Import_Export_Presets.gif" src="../assets/images/FAQ_How_to_Create_Import_Export_Presets.gif" /></a>            </p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1359,13 +1368,13 @@
 <summary>How do I create an Asset Library?</summary>
 <h4 id="how-do-i-create-an-asset-library">"How do I create an Asset Library?"<a class="headerlink" href="#how-do-i-create-an-asset-library" title="Permanent link">#</a></h4>
 <p>Open Blender, then navigate to <code>Edit &gt; Preferences</code>.</p>
-<p><img alt="Getting_started_Install_3_1.png" src="../assets/images/Getting_started_Install_3_1.png" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Install_3_1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Install_3_1.png" src="../assets/images/Getting_started_Install_3_1.png" /></a></p>
 <p>Then click <code>File Paths</code> and scroll down to the <code>Asset Libraries</code> section.
-<img alt="FAQ_How_to_Add_Asset_Library_2.gif" src="../assets/images/FAQ_How_to_Add_Asset_Library_2.gif" /></p>
+<a class="glightbox" href="../assets/images/FAQ_How_to_Add_Asset_Library_2.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Add_Asset_Library_2.gif" src="../assets/images/FAQ_How_to_Add_Asset_Library_2.gif" /></a></p>
 <div class="admonition success">
 <p class="admonition-title">Success</p>
 <p>Now you should see your new library availabe in your <code>Assets &gt; Storage &gt; Library</code> menu.</p>
-<p><img alt="FAQ_How_to_Add_Asset_Library_3.gif" src="../assets/images/FAQ_How_to_Add_Asset_Library_3.gif" /></p>
+<p><a class="glightbox" href="../assets/images/FAQ_How_to_Add_Asset_Library_3.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Add_Asset_Library_3.gif" src="../assets/images/FAQ_How_to_Add_Asset_Library_3.gif" /></a></p>
 </div>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
@@ -1405,11 +1414,11 @@
 <li>Now, whenever you want to add/edit/remove new catalogs, open <code>blender_assets.cats.blend</code>, make your changes, and save the file again.</li>
 </ol>
 <p>Here's a GIF that sums it all up.</p>
-<p><img alt="FAQ_How_to_Create_Asset_Catalogs.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs.gif" /></p>
+<p><a class="glightbox" href="../assets/images/FAQ_How_to_Create_Asset_Catalogs.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Create_Asset_Catalogs.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs.gif" /></a></p>
 <div class="admonition success">
 <p class="admonition-title">You have now created Asset Catalogs.</p>
 <p>They should now be visible in Transmogrifier's <code>Assets &gt; Storage &gt; Library</code> menu.</p>
-<p><img alt="FAQ_How_to_Create_Asset_Catalogs_Success.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif" /></p>
+<p><a class="glightbox" href="../assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Create_Asset_Catalogs_Success.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif" /></a></p>
 </div>
 </details>
 <details class="question">
@@ -1460,7 +1469,7 @@
 <p class="admonition-title">Tip</p>
 <p>If you're new to Python programming, you can copy many commands directly from the Blender's user interface.  </p>
 <p>For example, if you wanted to find the command for adding a Monkey to your scene, simply add the monkey graphically, open the <code>Info</code> panel, copy the monkay's Python command, and paste it into your script.</p>
-<p><img alt="FAQ_How_to_Make_a_Custom_Script_Tip.gif" src="../assets/images/FAQ_How_to_Make_a_Custom_Script_Tip.gif" /></p>
+<p><a class="glightbox" href="../assets/images/FAQ_How_to_Make_a_Custom_Script_Tip.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Make_a_Custom_Script_Tip.gif" src="../assets/images/FAQ_How_to_Make_a_Custom_Script_Tip.gif" /></a></p>
 </div>
 </li>
 <li>
@@ -1485,8 +1494,8 @@
 </thead>
 <tbody>
 <tr>
-<td><img alt="FAQ_Where_are_Log_Files_Output_Linked.png" src="../assets/images/FAQ_Where_are_Log_Files_Output_Linked.png" /></td>
-<td><img alt="FAQ_Where_are_Log_Files_Output_Unlinked.png" src="../assets/images/FAQ_Where_are_Log_Files_Output_Unlinked.png" /></td>
+<td><a class="glightbox" href="../assets/images/FAQ_Where_are_Log_Files_Output_Linked.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_Where_are_Log_Files_Output_Linked.png" src="../assets/images/FAQ_Where_are_Log_Files_Output_Linked.png" /></a></td>
+<td><a class="glightbox" href="../assets/images/FAQ_Where_are_Log_Files_Output_Unlinked.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_Where_are_Log_Files_Output_Unlinked.png" src="../assets/images/FAQ_Where_are_Log_Files_Output_Unlinked.png" /></a></td>
 </tr>
 </tbody>
 </table>
@@ -1630,5 +1639,5 @@
       <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>

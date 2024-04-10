@@ -98,7 +98,16 @@
     
     
     
-  </head>
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
   
   
     
@@ -750,13 +759,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#supported-3d-formats" class="md-nav__link">
-    Supported 3D Formats
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#imports" class="md-nav__link">
     Imports
   </a>
@@ -789,7 +791,7 @@
         
   
   <span class="md-ellipsis">
-    Apply textures
+    Apply Textures
   </span>
   
 
@@ -1064,13 +1066,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#supported-3d-formats" class="md-nav__link">
-    Supported 3D Formats
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#imports" class="md-nav__link">
     Imports
   </a>
@@ -1109,22 +1104,22 @@
 <p class="admonition-title">Tip</p>
 <p>The Forecast helps ensure you selected the proper directory when you are expecting a specific number of models to be converted.</p>
 </div>
-<p><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_5.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Quickstart_Demo_5.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_5.gif" /></a></p>
 <h2 id="workflow-presets">Workflow Presets<a class="headerlink" href="#workflow-presets" title="Permanent link">#</a></h2>
 <p>Create custom Transmogrifier presets (aka "Workflows) for quickly switching between different conversion scenarios.  Workflows are stored as <code>JSON</code> files in your <a href="https://sapwoodstudio.github.io/Transmogrifier/faq/#where-is-transmogrifier-installed-on-my-computer">Blender preferences directory</a>. </p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><code>+</code> Add Preset</label><label for="__tabbed_1_2"><code>v</code> Select Preset</label><label for="__tabbed_1_3"><code>-</code> Remove Preset</label><label for="__tabbed_1_4"><code>-</code> <code>+</code> Edit Preset</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Click the plus button <code>+</code> to create a Workflow from <strong>all</strong> of the current Transmogrifier settings, giving it a custom name.  Click <code>OK</code> to save it.</p>
-<p><img alt="Worfklow_Presets_Add.gif" src="../assets/images/Worfklow_Presets_Add.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Worfklow_Presets_Add.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Worfklow_Presets_Add.gif" src="../assets/images/Worfklow_Presets_Add.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>Select and existing preset from the menu.</p>
-<p><img alt="Workflow_Presets_Select.gif" src="../assets/images/Workflow_Presets_Select.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Workflow_Presets_Select.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Workflow_Presets_Select.gif" src="../assets/images/Workflow_Presets_Select.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>Remove a workflow by selecting it from the menu, then clicking the minus button <code>-</code>.</p>
-<p><img alt="Workflow_Presets_Remove.gif" src="../assets/images/Workflow_Presets_Remove.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Workflow_Presets_Remove.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Workflow_Presets_Remove.gif" src="../assets/images/Workflow_Presets_Remove.gif" /></a></p>
 </div>
 <div class="tabbed-block">
 <p>Edit a Workflow Preset by </p>
@@ -1134,11 +1129,14 @@
 <li>Click the minus button <code>-</code> to remove the preset</li>
 <li>Click the plus button <code>+</code> and give the new preset the same name.  Click <code>OK</code>.</li>
 </ol>
-<p><img alt="Workflow_Presets_Edit.gif" src="../assets/images/Workflow_Presets_Edit.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Workflow_Presets_Edit.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Workflow_Presets_Edit.gif" src="../assets/images/Workflow_Presets_Edit.gif" /></a></p>
 </div>
 </div>
 </div>
-<h2 id="supported-3d-formats">Supported 3D Formats<a class="headerlink" href="#supported-3d-formats" title="Permanent link">#</a></h2>
+<h2 id="imports">Imports<a class="headerlink" href="#imports" title="Permanent link">#</a></h2>
+<p>Click <code>+ Add Import</code> to add an import file format for Transmogrifier to search for.  Select your desired file format and associated user preset.  Click on the folder icon and choose a <code>Directory</code> hierarchy containing your 3D models in the pop-up file dialog.</p>
+<details class="abstract">
+<summary>Supported 3D Formats</summary>
 <p>Transmogrifier supports importing and exporting the following 3D formats.</p>
 <ul>
 <li><code>FBX</code></li>
@@ -1152,11 +1150,7 @@
 <li><code>USD</code>/<code>USDA</code>/<code>USDC</code>/<code>USDZ</code></li>
 <li><code>BLEND</code></li>
 </ul>
-<h2 id="imports">Imports<a class="headerlink" href="#imports" title="Permanent link">#</a></h2>
-<p>Click <code>+ Add Import</code> to add an import file format for Transmogrifier to search for.  Select your desired file format and associated user preset.  Click on the folder icon and choose a <code>Directory</code> hierarchy containing your 3D models in the pop-up file dialog.</p>
-<p><img alt="Features_Imports.gif" src="../assets/images/Features_Imports.gif" /></p>
-<h2 id="exports">Exports<a class="headerlink" href="#exports" title="Permanent link">#</a></h2>
-<p>Click <code>+ Add Export</code> to add an export file format for Transmogrifier to output for each import file it finds.  Select your desired file format and associated user preset.</p>
+</details>
 <details class="info">
 <summary>Icons Explained</summary>
 <table>
@@ -1169,42 +1163,90 @@
 </thead>
 <tbody>
 <tr>
-<td><img alt="Data_Names_from_Objects.png" src="../assets/images/Data_Names_from_Objects.png" /></td>
+<td><a class="glightbox" href="../assets/images/Remove_Instance.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Remove_Instance.png" src="../assets/images/Remove_Instance.png" /></a></td>
+<td>Remove Import</td>
+<td>Remove the import instance and related settings from the UI.</td>
+</tr>
+<tr>
+<td><a class="glightbox" href="../assets/images/Link_Settings.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Link_Settings.png" src="../assets/images/Link_Settings.png" /></a></td>
+<td>Link Import Settings</td>
+<td>Synchronize import directories between all import file formats</td>
+</tr>
+<tr>
+<td><a class="glightbox" href="../assets/images/Directory.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Directory.png" src="../assets/images/Directory.png" /></a></td>
+<td>Import Directory</td>
+<td>Parent directory to search through and import files.  Default of <code>//</code> will import from the same directory as the blend file (only works if the blend file is saved)</td>
+</tr>
+</tbody>
+</table>
+</details>
+<p><a class="glightbox" href="../assets/images/Features_Imports.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Features_Imports.gif" src="../assets/images/Features_Imports.gif" /></a></p>
+<h2 id="exports">Exports<a class="headerlink" href="#exports" title="Permanent link">#</a></h2>
+<p>Click <code>+ Add Export</code> to add an export file format for Transmogrifier to output for each import file it finds.  Select your desired file format and associated user preset.</p>
+<details class="abstract">
+<summary>Supported 3D Formats</summary>
+<p>Transmogrifier supports importing and exporting the following 3D formats.</p>
+<ul>
+<li><code>FBX</code></li>
+<li><code>OBJ</code></li>
+<li><code>glTF</code>/<code>GLB</code></li>
+<li><code>STL</code></li>
+<li><code>PLY</code></li>
+<li><code>X3D</code></li>
+<li><code>DAE</code></li>
+<li><code>ABC</code></li>
+<li><code>USD</code>/<code>USDA</code>/<code>USDC</code>/<code>USDZ</code></li>
+<li><code>BLEND</code></li>
+</ul>
+</details>
+<details class="info">
+<summary>Icons Explained</summary>
+<table>
+<thead>
+<tr>
+<th>Icon</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="glightbox" href="../assets/images/Data_Names_from_Objects.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data_Names_from_Objects.png" src="../assets/images/Data_Names_from_Objects.png" /></a></td>
 <td>Data Names from Objects</td>
 <td>Rename object data names according to their corresponding object names</td>
 </tr>
 <tr>
-<td><img alt="Export_Adjacent.png" src="../assets/images/Export_Adjacent.png" /></td>
+<td><a class="glightbox" href="../assets/images/Export_Adjacent.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Export_Adjacent.png" src="../assets/images/Export_Adjacent.png" /></a></td>
 <td>Export Adjacent</td>
 <td>Export models adjacent to their respective imports</td>
 </tr>
 <tr>
-<td><img alt="Overwrite_Files.png" src="../assets/images/Overwrite_Files.png" /></td>
+<td><a class="glightbox" href="../assets/images/Overwrite_Files.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Overwrite_Files.png" src="../assets/images/Overwrite_Files.png" /></a></td>
 <td>Overwrite Files</td>
 <td>Overwrite files of the given export format(s) that may already exist</td>
 </tr>
 <tr>
-<td><img alt="Use_Subdirectories.png" src="../assets/images/Use_Subdirectories.png" /></td>
+<td><a class="glightbox" href="../assets/images/Use_Subdirectories.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Use_Subdirectories.png" src="../assets/images/Use_Subdirectories.png" /></a></td>
 <td>Use Subdirectories</td>
 <td>Export models to their own subdirectories within the given export directory</td>
 </tr>
 <tr>
-<td><img alt="Copy_Original_Contents.png" src="../assets/images/Copy_Original_Contents.png" /></td>
+<td><a class="glightbox" href="../assets/images/Copy_Original_Contents.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Copy_Original_Contents.png" src="../assets/images/Copy_Original_Contents.png" /></a></td>
 <td>Copy Original Contents</td>
 <td>Copy original contents of each import item's directory to each export item's subdirectory</td>
 </tr>
 <tr>
-<td><img alt="Export_Directory.png" src="../assets/images/Export_Directory.png" /></td>
+<td><a class="glightbox" href="../assets/images/Export_Directory.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Export_Directory.png" src="../assets/images/Export_Directory.png" /></a></td>
 <td>Export Directory</td>
 <td>Directory to export files. Default of <code>//</code> will export to the same directory as the blend file (only works if the blend file is saved)</td>
 </tr>
 </tbody>
 </table>
 </details>
-<p><img alt="Features_Exports.gif" src="../assets/images/Features_Exports.gif" /></p>
+<p><a class="glightbox" href="../assets/images/Features_Exports.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Features_Exports.gif" src="../assets/images/Features_Exports.gif" /></a></p>
 <div class="admonition question">
 <p class="admonition-title">Missing Something?</p>
-<p>Do you think we're missing a feature?  Submit a feature request on our Github!</p>
+<p>Do you think we're missing a feature?  Submit a request on Github!</p>
 <p><a class="md-button md-button--primary" href="https://github.com/SapwoodStudio/Transmogrifier/issues">Request Feature</a></p>
 </div>
 
@@ -1253,13 +1295,13 @@
         
         
           
-          <a href="../apply_textures/" class="md-footer__link md-footer__link--next" aria-label="Next: Apply textures" rel="next">
+          <a href="../apply_textures/" class="md-footer__link md-footer__link--next" aria-label="Next: Apply Textures" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Apply textures
+                Apply Textures
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1341,5 +1383,5 @@
       <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
-  </body>
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
 </html>
