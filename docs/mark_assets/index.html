@@ -22,7 +22,7 @@
     
     
       
-        <title>Mark assets - Transmogrifier</title>
+        <title>Mark Assets - Transmogrifier</title>
       
     
     
@@ -128,6 +128,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#mark-assets" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -157,7 +162,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Mark assets
+              Mark Assets
             
           </span>
         </div>
@@ -760,16 +765,103 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Mark Assets
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Mark assets
+    Mark Assets
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#asset-quality" class="md-nav__link">
+    Asset Quality
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mark-assets_1" class="md-nav__link">
+    Mark Assets
+  </a>
+  
+    <nav class="md-nav" aria-label="Mark Assets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#object-types" class="md-nav__link">
+    Object Types
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    Metadata
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allow-duplicates" class="md-nav__link">
+    Allow Duplicates
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    Storage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#save-previews" class="md-nav__link">
+    Save Previews
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -977,6 +1069,71 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#asset-quality" class="md-nav__link">
+    Asset Quality
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mark-assets_1" class="md-nav__link">
+    Mark Assets
+  </a>
+  
+    <nav class="md-nav" aria-label="Mark Assets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#object-types" class="md-nav__link">
+    Object Types
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    Metadata
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allow-duplicates" class="md-nav__link">
+    Allow Duplicates
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    Storage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#save-previews" class="md-nav__link">
+    Save Previews
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -994,9 +1151,71 @@
   
 
 
-  <h1>Mark assets</h1>
-
-
+<h1 id="mark-assets">Mark Assets<a class="headerlink" href="#mark-assets" title="Permanent link">#</a></h1>
+<div class="admonition question">
+<p class="admonition-title">Have you ever wanted to build out your own 3D asset library?</p>
+<p>Whether it's for your personal projects or production pipeline, Transmogrifier can populate a library with dozens of your 3D assets in mere minutes!</p>
+</div>
+<p>Blender has a powerful Asset Library system built into the core of its codebase.  Transmogrifier leverages its capabilities while batch converting to mark assets, add metadata, and more.</p>
+<p><a class="glightbox" href="../assets/images/Mark_Assets.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets.gif" src="../assets/images/Mark_Assets.gif" /></a></p>
+<h2 id="asset-quality">Asset Quality<a class="headerlink" href="#asset-quality" title="Permanent link">#</a></h2>
+<p>Select the quality of the Blend files containing assets. Quality is based on when asset Blend files are saved during each item's conversion (i.e. before/after textures are resized/reformatted and meshes are decimated). If Edit Textures is toggled off and Auto-Optimize Files is toggled off, asset Blend files will always save at the highest regardless of this menu's selection. If it is desired to run a script before an asset Blend is saved, select <code>Most Optimized</code>.</p>
+<table>
+<thead>
+<tr>
+<th><code>Highest Fidelity</code></th>
+<th><code>Balanced</code></th>
+<th><code>Most Optimized</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mark assets before textures are edited according the 'Edit Textures' menu</td>
+<td>Mark assets after textures are edited according the 'Edit Textures' menu but before meshes and/or textures are automatically optimized according to the 'Auto-Optimize Files' menu</td>
+<td>Mark assets after meshes and/or textures are automatically optimized according to the 'Auto-Optimize Files' menu.</td>
+</tr>
+<tr>
+<td><em>Select this option for the highest quality asset Blend files.</em></td>
+<td><em>Select this option for medium-quality asset Blend files.</em></td>
+<td><em>Select this option for lower-quality asset Blend files.</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="mark-assets_1">Mark Assets<a class="headerlink" href="#mark-assets_1" title="Permanent link">#</a></h2>
+<p>Select asset types to mark.</p>
+<p><a class="glightbox" href="../assets/images/Mark_Assets_Mark_Assets.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Mark_Assets.gif" src="../assets/images/Mark_Assets_Mark_Assets.gif" /></a></p>
+<p>| <code>Actions</code> | <code>Collections</code> | <code>Materials</code> | <code>Node Trees</code> | <code>Objects</code> | <code>Worlds</code> |</p>
+<h3 id="object-types">Object Types<a class="headerlink" href="#object-types" title="Permanent link">#</a></h3>
+<p>Filter which object types to mark as assets. Not all will be able to have preview images generated</p>
+<h2 id="metadata">Metadata<a class="headerlink" href="#metadata" title="Permanent link">#</a></h2>
+<p>Add metadata that will be applied to all items converted.</p>
+<p><a class="glightbox" href="../assets/images/Mark_Assets_Metadata.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Metadata.gif" src="../assets/images/Mark_Assets_Metadata.gif" /></a></p>
+<h2 id="allow-duplicates">Allow Duplicates<a class="headerlink" href="#allow-duplicates" title="Permanent link">#</a></h2>
+<p>Filter which asset types can have duplicates be marked when assets of those types already exists in the selected asset library.</p>
+<p><a class="glightbox" href="../assets/images/Mark_Assets_Allow_Duplicates.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Allow_Duplicates.gif" src="../assets/images/Mark_Assets_Allow_Duplicates.gif" /></a></p>
+<h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">#</a></h2>
+<p>Select where asset Blend files should be stored and into what catalog they should be organized.  </p>
+<div class="admonition info">
+<p class="admonition-title">Blend textures</p>
+<p>You have the option of how asset textures are stored with respect to the Blend file.</p>
+<ul>
+<li>Pack </li>
+<li>Unpacked<ul>
+<li>Relative paths</li>
+<li>Absolute paths</li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a class="glightbox" href="../assets/images/Mark_Assets_Storage.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Storage.gif" src="../assets/images/Mark_Assets_Storage.gif" /></a></p>
+<h2 id="save-previews">Save Previews<a class="headerlink" href="#save-previews" title="Permanent link">#</a></h2>
+<p>Extract asset previews as image thumbnails, saved adjacent to each respective import file.</p>
+<p><a class="glightbox" href="../assets/images/Mark_Assets_Save_Previews.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Save_Previews.gif" src="../assets/images/Mark_Assets_Save_Previews.gif" /></a></p>
+<div class="admonition question">
+<p class="admonition-title">Missing Something?</p>
+<p>Do you think we're missing a feature?  Submit a request on Github!</p>
+<p><a class="md-button md-button--primary" href="https://github.com/SapwoodStudio/Transmogrifier/issues">Request Feature</a></p>
+</div>
 
 
 
