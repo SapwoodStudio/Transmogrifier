@@ -6,11 +6,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://sapwoodstudio.github.io/transmogrifier/adjust_scene/</loc>
-         <lastmod>2024-04-10</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/apply_textures/</loc>
          <lastmod>2024-04-10</lastmod>
          <changefreq>daily</changefreq>
@@ -82,6 +77,11 @@
     </url>
     <url>
          <loc>https://sapwoodstudio.github.io/transmogrifier/run_custom_scripts/</loc>
+         <lastmod>2024-04-10</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://sapwoodstudio.github.io/transmogrifier/set_scene_properties/</loc>
          <lastmod>2024-04-10</lastmod>
          <changefreq>daily</changefreq>
     </url>

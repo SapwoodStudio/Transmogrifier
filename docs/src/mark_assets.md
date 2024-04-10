@@ -27,7 +27,10 @@ Select asset types to mark.
 
 
 ### Object Types
-Filter which object types to mark as assets. Not all will be able to have preview images generated
+Filter which object types to mark as assets. (1)
+{ .annotate }
+
+1. Some object types will not be able to have preview images generated for them.
 
 
 ## Metadata
@@ -62,6 +65,7 @@ Extract asset previews as image thumbnails, saved adjacent to each respective im
 ![Mark_Assets_Save_Previews.gif](assets/images/Mark_Assets_Save_Previews.gif)
 
 
+***
 !!! question "Missing Something?"
     Do you think we're missing a feature?  Submit a request on Github!
 

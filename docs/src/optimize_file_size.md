@@ -74,6 +74,7 @@ If you elected to `Overwrite Exports` above in the `Exports` box, then you have 
     If all methods are exhausted and the file size is still above the target maximum, Transmogrifier will report this in the log and move on to converting the next file.
 
 
+***
 !!! question "Missing Something?"
     Do you think we're missing a feature?  Submit a request on Github!
 

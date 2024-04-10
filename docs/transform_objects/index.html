@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://sapwoodstudio.github.io/transmogrifier/transform_objects/">
       
       
-        <link rel="prev" href="../adjust_scene/">
+        <link rel="prev" href="../set_scene_properties/">
       
       
         <link rel="next" href="../run_custom_scripts/">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Transform objects - Transmogrifier</title>
+        <title>Transform Objects - Transmogrifier</title>
       
     
     
@@ -128,6 +128,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#transform-objects" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -157,7 +162,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Transform objects
+              Transform Objects
             
           </span>
         </div>
@@ -618,8 +623,6 @@
       
         
       
-        
-      
     
     
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
@@ -778,7 +781,7 @@
         
   
   <span class="md-ellipsis">
-    Export uv maps
+    Export UV Maps
   </span>
   
 
@@ -794,11 +797,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../adjust_scene/" class="md-nav__link">
+      <a href="../set_scene_properties/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Adjust scene
+    Set Scene Properties
   </span>
   
 
@@ -820,16 +823,62 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Transform Objects
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Transform objects
+    Transform Objects
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#apply-transformations" class="md-nav__link">
+    Apply Transformations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-transformations" class="md-nav__link">
+    Set Transformations
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -846,7 +895,7 @@
         
   
   <span class="md-ellipsis">
-    Run custom scripts
+    Run Custom Scripts
   </span>
   
 
@@ -867,26 +916,6 @@
   
   <span class="md-ellipsis">
     Log conversions
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../convert_via_terminal/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Convert via terminal
   </span>
   
 
@@ -977,6 +1006,30 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#apply-transformations" class="md-nav__link">
+    Apply Transformations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-transformations" class="md-nav__link">
+    Set Transformations
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -994,9 +1047,34 @@
   
 
 
-  <h1>Transform objects</h1>
-
-
+<h1 id="transform-objects">Transform Objects<a class="headerlink" href="#transform-objects" title="Permanent link">#</a></h1>
+<div class="admonition question">
+<p class="admonition-title">Have you ever opened a model that's turned on its side?</p>
+<p>You now have complete control over your models' positions, orientations, and sizes. Perform custom transformations and apply transformations to every model before export. Filter what transformations to set/apply.</p>
+</div>
+<p><a class="glightbox" href="../assets/images/Transform_Objects.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Transform_Objects.gif" src="../assets/images/Transform_Objects.gif" /></a></p>
+<h2 id="apply-transformations">Apply Transformations<a class="headerlink" href="#apply-transformations" title="Permanent link">#</a></h2>
+<p>Apply transformations to all objects.  </p>
+<div class="admonition note">
+<p class="admonition-title">Instanced Objects</p>
+<p>Instanced objects cannot have their transforms applied due to their very nature.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This is also known as <code>Freeze Transformations</code> in other DCC apps.</p>
+</div>
+<h2 id="set-transformations">Set Transformations<a class="headerlink" href="#set-transformations" title="Permanent link">#</a></h2>
+<p>Move, rotate, and scale objects before applying transformations (if toggled on) and before exporting each file.  </p>
+<div class="admonition tip">
+<p class="admonition-title">Y-up vs. Z-up</p>
+<p>The rotation transform gives you manual control over which is axis is considered "up", which varies across softwares.</p>
+</div>
+<hr />
+<div class="admonition question">
+<p class="admonition-title">Missing Something?</p>
+<p>Do you think we're missing a feature?  Submit a request on Github!</p>
+<p><a class="md-button md-button--primary" href="https://github.com/SapwoodStudio/Transmogrifier/issues">Request Feature</a></p>
+</div>
 
 
 
@@ -1026,7 +1104,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../adjust_scene/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Adjust scene" rel="prev">
+          <a href="../set_scene_properties/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Set Scene Properties" rel="prev">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -1036,20 +1114,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Adjust scene
+                Set Scene Properties
               </div>
             </div>
           </a>
         
         
           
-          <a href="../run_custom_scripts/" class="md-footer__link md-footer__link--next" aria-label="Next: Run custom scripts" rel="next">
+          <a href="../run_custom_scripts/" class="md-footer__link md-footer__link--next" aria-label="Next: Run Custom Scripts" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Run custom scripts
+                Run Custom Scripts
               </div>
             </div>
             <div class="md-footer__button md-icon">

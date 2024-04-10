@@ -140,7 +140,7 @@ Reformat textures non-destructively & on-the-fly. For every item converted, Tran
 ![Edit_Textures_Format.gif](assets/images/Edit_Textures_Format.gif)
 
 
-
+***
 !!! question "Missing Something?"
     Do you think we're missing a feature?  Submit a request on Github!
 

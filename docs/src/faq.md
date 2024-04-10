@@ -202,7 +202,7 @@
         ![FAQ_How_to_Create_Asset_Catalogs_Success.gif](assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif)
         
 
-??? question "How do I make a `Custom Script` for Transmogrifier?"
+???+ question "How do I make a `Custom Script` for Transmogrifier?"
     #### "How do I make a `Custom Script` for Transmogrifier?"
 
     Creating custom scripts is easy for developers and non-developer alike.  
@@ -242,19 +242,19 @@
             shade_flat()
 
             ```
-        
-        !!! tip
-            If you're new to Python programming, you can copy many commands directly from the Blender's user interface.  
-
-            For example, if you wanted to find the command for adding a Monkey to your scene, simply add the monkey graphically, open the `Info` panel, copy the monkay's Python command, and paste it into your script.
-
-            ![FAQ_How_to_Make_a_Custom_Script_Tip.gif](assets/images/FAQ_How_to_Make_a_Custom_Script_Tip.gif)
-
+    
 
     4. Save your code as a Python (`.py`) file.
 
     !!! success "Success!"
         Now you can add your Python recipe as a custom script for Transmogrifier to execute during conversion.
+
+    !!! tip "New to Python?"
+        If you're new to Python programming, don't worry!  You can discover and copy many commands directly from the Blender's user interface.  
+
+        For example, if you wanted to find the command for adding a Monkey to your scene, simply add the monkey graphically, open the `Info` panel, copy the monkey's Python command, and paste it into your script.
+
+        ![FAQ_How_to_Make_a_Custom_Script_Tip.gif](assets/images/FAQ_How_to_Make_a_Custom_Script_Tip.gif)
 
 
 ??? question "Where are log files output?"
