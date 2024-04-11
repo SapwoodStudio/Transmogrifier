@@ -2,7 +2,7 @@
 Learn Transmogrifier with a demo and quickstart your first steps using the addon.
 
 !!! quote ""
-    *"The best way to teach kayaking is not by lecturing on the sand.  Instead, toss a bucket of tennis balls onto the lake and say, 'Go get 'em!'"*
+    *"The best way to teach kayaking is not by lecturing on the beach.  Instead, toss a bucket of tennis balls onto the lake and say, 'Go get 'em!'"*
 
 ## 1. Download the Demo Files
 Download the demo files, then unzip the folder.  Inside you will find 3D models as FBX files along with their associated textures.

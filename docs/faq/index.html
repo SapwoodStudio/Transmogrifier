@@ -1205,12 +1205,12 @@
 <details class="question">
 <summary>Do I have to import my first model into my Blender scene before Batch Converting?</summary>
 <h4 id="do-i-have-to-import-my-first-model-into-my-blender-scene-before-batch-converting">"Do I have to import my first model into my Blender scene before Batch Converting?"<a class="headerlink" href="#do-i-have-to-import-my-first-model-into-my-blender-scene-before-batch-converting" title="Permanent link">#</a></h4>
-<p>No.  Transmogrifier imports and exports files via a new Blender session/window every time you batch convert, so your current scene doesn't need any preparation nor is it affected by the conversion.</p>
+<p>No.  Transmogrifier imports and exports files via a new Blender session/window every time you batch convert, so your current scene isn't affect nor does it need any preparation.</p>
 </details>
 <details class="question">
 <summary>What is Transmogrifier's license?</summary>
 <h4 id="what-is-transmogrifiers-license">"What is Transmogrifier's license?"<a class="headerlink" href="#what-is-transmogrifiers-license" title="Permanent link">#</a></h4>
-<p>Transmogrifier is open-source/licensed-free software under the <a href="https://github.com/SapwoodStudio/Transmogrifier/blob/main/LICENSE">GNU GPL</a>.</p>
+<p>Transmogrifier is open-source/licensed-free software under the <a href="https://github.com/SapwoodStudio/Transmogrifier/blob/main/LICENSE">GNU GPL v3.0</a>.</p>
 <details class="question">
 <summary>What is Free Software?</summary>
 <div class="admonition quote">
@@ -1258,7 +1258,7 @@
 </div>
 </div>
 <div class="admonition info">
-<p class="admonition-title">Transmogrifier <a href="https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets"><code>Workflow Presets</code></a> Location</p>
+<p class="admonition-title">Transmogrifier <a href="https://sapwoodstudio.github.io/Transmogrifier/batch_convert/#workflow-presets"><code>Workflow Presets</code></a> Location</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">GNU/Linux</label><label for="__tabbed_2_2">Mac</label><label for="__tabbed_2_3">Windows</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -1283,6 +1283,37 @@
 <div class="tabbed-block">
 <p>On Windows:</p>
 <div class="highlight"><pre><span></span><code>C:\Users\{YOUR_USER}\AppData\Roaming\Blender Foundation\X.XX\scripts\presets\operator\transmogrifier
+</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Transmogrifier <a href="https://sapwoodstudio.github.io/Transmogrifier/apply_textures/#edit-textures-presets"><code>Edit Textures Presets</code></a> Location</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">GNU/Linux</label><label for="__tabbed_3_2">Mac</label><label for="__tabbed_3_3">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>If you installed the add-on as a user:</p>
+<div class="highlight"><pre><span></span><code>~/.config/blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+</code></pre></div>
+<p class="annotate">If you installed the add-on system-wide: (1)</p>
+<ol>
+<li>This may also depend on your Linux distribution</li>
+</ol>
+<div class="highlight"><pre><span></span><code>/usr/share/blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>If you installed the add-on as a user:</p>
+<div class="highlight"><pre><span></span><code>/Users/{YOUR_USER}/Library/Application Support/Blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+</code></pre></div>
+<p>If you installed the add-on system-wide:</p>
+<div class="highlight"><pre><span></span><code>/Library/Application Support/Blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>On Windows:</p>
+<div class="highlight"><pre><span></span><code>C:\Users\{YOUR_USER}\AppData\Roaming\Blender Foundation\X.XX\scripts\presets\operator\transmogrifier\edit_textures
 </code></pre></div>
 </div>
 </div>
@@ -1362,7 +1393,7 @@
 <details class="question">
 <summary>How do I create Asset Catalogs?</summary>
 <h4 id="how-do-i-create-asset-catalogs">"How do I create Asset Catalogs?"<a class="headerlink" href="#how-do-i-create-asset-catalogs" title="Permanent link">#</a></h4>
-<p>This is less intuitive than creating an Asset Library.  </p>
+<p>This is a bit less intuitive than creating an Asset Library.  </p>
 <ol>
 <li>
 <p>Open a new Blender session.</p>
@@ -1391,7 +1422,6 @@
 <ol start="6">
 <li>Now, whenever you want to add/edit/remove new catalogs, open <code>blender_assets.cats.blend</code>, make your changes, and save the file again.</li>
 </ol>
-<p>Here's a GIF that sums it all up.</p>
 <p><a class="glightbox" href="../assets/images/FAQ_How_to_Create_Asset_Catalogs.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Create_Asset_Catalogs.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs.gif" /></a></p>
 <div class="admonition success">
 <p class="admonition-title">You have now created Asset Catalogs.</p>
@@ -1399,10 +1429,10 @@
 <p><a class="glightbox" href="../assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="FAQ_How_to_Create_Asset_Catalogs_Success.gif" src="../assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif" /></a></p>
 </div>
 </details>
-<details class="question" open="open">
+<details class="question">
 <summary>How do I make a <code>Custom Script</code> for Transmogrifier?</summary>
 <h4 id="how-do-i-make-a-custom-script-for-transmogrifier">"How do I make a <code>Custom Script</code> for Transmogrifier?"<a class="headerlink" href="#how-do-i-make-a-custom-script-for-transmogrifier" title="Permanent link">#</a></h4>
-<p>Creating custom scripts is easy for developers and non-developer alike.  </p>
+<p>Creating custom scripts is easy for developers and non-developers alike.  </p>
 <ol>
 <li>
 <p>Open Blender and navigate to the <code>Scripting</code> tab.</p>
@@ -1412,7 +1442,7 @@
 </li>
 <li>
 <p>If you know Python for Blender, you can write your script.  It doesn't have to be anything fancy.  Pythonic conventions, such as adding functions and commenting your code, are recommended but not required.  </p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Basic</label><label for="__tabbed_3_2">Better</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Basic</label><label for="__tabbed_4_2">Better</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="c1"># Add_Monkey_and_Shade_Flat.py</span>
@@ -1481,7 +1511,7 @@
 <details class="question">
 <summary>Why are there so many icon buttons without descriptions?</summary>
 <h4 id="why-are-there-so-many-icon-buttons-without-descriptions">"Why are there so many icon buttons without descriptions?"<a class="headerlink" href="#why-are-there-so-many-icon-buttons-without-descriptions" title="Permanent link">#</a></h4>
-<p>Transmogrifier is a robust suite of tools for batch converting 3D files.  As we added more and more features, its user interface grew longer and longer.  So, we overhauled the UI in version 2.0.0 to make it more compact.  We replaced a lot of the prior checkboxes that had names with icon-only buttons and shoved them in the top-right of each relevant box, which made a lot of room for everything else.    </p>
+<p>Transmogrifier is a robust suite of tools for batch converting 3D files.  As we added more and more features, its user interface grew longer and longer.  Thus, we overhauled the UI in version 2.0.0 to make it more compact.  We replaced a lot of the prior checkboxes that had names with icon-only buttons and shoved them in the top-right of each relevant box, which made a lot of room for everything else.    </p>
 </details>
 
 

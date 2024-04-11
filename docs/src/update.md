@@ -6,7 +6,7 @@ Open Blender, then navigate to `Edit > Preferences`.
 ![Getting_started_Install_3_1.png](assets/images/Getting_started_Install_3_1.png)
 
 ## 2. Disable Transmogrifier
-Select the `Add-ons` tab, and `search` for `"Transmogrifier"` on the top right.  Disable the add-on by unchecking the box of `Import-Export: Transmogrifier`.
+Select the `Add-ons` tab, and `search` for `"Transmogrifier"` in the top right.  Disable the add-on by toggling off the `Import-Export: Transmogrifier` checkbox.
 
 ![Uninstall_2.png](assets/images/Uninstall_2.png)
 

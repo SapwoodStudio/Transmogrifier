@@ -903,11 +903,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#log-summary" class="md-nav__link">
-    Log Summary
+  <a href="#conversion-summary" class="md-nav__link">
+    Conversion Summary
   </a>
   
-    <nav class="md-nav" aria-label="Log Summary">
+    <nav class="md-nav" aria-label="Conversion Summary">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1049,11 +1049,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#log-summary" class="md-nav__link">
-    Log Summary
+  <a href="#conversion-summary" class="md-nav__link">
+    Conversion Summary
   </a>
   
-    <nav class="md-nav" aria-label="Log Summary">
+    <nav class="md-nav" aria-label="Conversion Summary">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1114,13 +1114,13 @@
 
 
 <h1 id="log-conversions">Log Conversions<a class="headerlink" href="#log-conversions" title="Permanent link">#</a></h1>
-<p>It can be difficult to verify the success of a batch conversion apart from individually combing through your converted files.  Logging your batch conversions allows you to review them with a batch approach as well.  The <code>Log Summary</code> and <code>Conversion Log</code> solve this tedious task.</p>
+<p>It can be difficult to verify the success of a batch conversion apart from individually combing through your converted files.  Logging your batch conversions allows you to review them with a batch approach as well.  The <code>Conversion Summary</code> and <code>Conversion Log</code> solve this tedious task.</p>
 <p><a class="glightbox" href="../assets/images/Log_Conversions.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Log_Conversions.gif" src="../assets/images/Log_Conversions.gif" /></a></p>
-<h2 id="log-summary">Log Summary<a class="headerlink" href="#log-summary" title="Permanent link">#</a></h2>
-<p>Save a <a class="glightbox" href="../assets/images/Save_Conversion_Summary.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Save_Conversion_Summary.png" src="../assets/images/Save_Conversion_Summary.png" /></a> <code>Log Summary</code> as a <code>CSV</code> file of the batch conversion in the given import directories. The summary records statistics about each model converted.</p>
+<h2 id="conversion-summary">Conversion Summary<a class="headerlink" href="#conversion-summary" title="Permanent link">#</a></h2>
+<p>Save a <a class="glightbox" href="../assets/images/Save_Conversion_Summary.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Save_Conversion_Summary.png" src="../assets/images/Save_Conversion_Summary.png" /></a> <code>Conversion Summary</code> as a <code>CSV</code> file of the batch conversion in the given import directories. The summary records statistics about each model converted.</p>
 <p><a class="glightbox" href="../assets/images/Getting_started_General_Usage_7.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_General_Usage_7.gif" src="../assets/images/Getting_started_General_Usage_7.gif" /></a></p>
 <h3 id="statistics">Statistics<a class="headerlink" href="#statistics" title="Permanent link">#</a></h3>
-<p class="annotate">The <code>Log Summary</code> allows you filter which statistics to document in the CSV output. (1) </p>
+<p class="annotate">The <code>Conversion Summary</code> allows you filter which statistics to document in the CSV output. (1) </p>
 <ol>
 <li><code>Import File</code>, <code>Import Format</code>, <code>Export File</code>, and <code>Export Format</code> are always logged.</li>
 </ol>
@@ -1134,7 +1134,7 @@
 <tbody>
 <tr>
 <td><code>Date</code></td>
-<td>The date and time at which each model is converted.</td>
+<td>The date and time at which each model is converted</td>
 </tr>
 <tr>
 <td><code>Import File</code></td>
@@ -1154,36 +1154,39 @@
 </tr>
 <tr>
 <td><code>File Size</code></td>
-<td>Exports' file sizes and comparison to the target threshold.</td>
+<td>Exports' file sizes and comparison to the target threshold</td>
 </tr>
 <tr>
 <td><code>Dimensions</code></td>
-<td>Exports' dimensions and comparison with the target dimensions.</td>
+<td>Exports' dimensions and comparison with the target dimensions</td>
 </tr>
 <tr>
 <td><code>Objects</code></td>
-<td>Object count and names in each exported model.</td>
+<td>Object count and names in each exported model</td>
 </tr>
 <tr>
 <td><code>Polycount</code></td>
-<td>Number of vertices, edges, faces, and triangles in each exported model.</td>
+<td>Number of vertices, edges, faces, and triangles in each exported model</td>
 </tr>
 <tr>
 <td><code>Materials</code></td>
-<td>Number and names of materials applied to each exported model.</td>
+<td>Number and names of materials applied to each exported model</td>
 </tr>
 <tr>
 <td><code>Textures</code></td>
-<td>Number and names of the textures applied to each exported model.</td>
+<td>Number and names of the textures applied to each exported model</td>
 </tr>
 <tr>
 <td><code>File Path</code></td>
-<td>File path of each exported model.</td>
+<td>File path of each exported model</td>
 </tr>
 </tbody>
 </table>
 <h4 id="compare-file-size">Compare File Size<a class="headerlink" href="#compare-file-size" title="Permanent link">#</a></h4>
-<p>Compare each export file's size against the <code>Target</code> threshold. </p>
+<p class="annotate">Compare each export file's filesize against the <code>Target</code> threshold. (1)</p>
+<ol>
+<li>This setting is synchronized between the <code>Auto-Optimize Files</code> box and the <code>Logging</code> box.</li>
+</ol>
 <ul>
 <li>If <code>export file size</code> &gt; <code>target file size</code>, then a <code>🔺</code> will be recorded.</li>
 <li>If <code>export file size</code> &lt; <code>target file size</code>, then a <code>✅</code> will be recorded.</li>
@@ -1195,7 +1198,7 @@
 <li>If <code>export file dimensions</code> &lt; <code>bounding box dimensions</code>, then a <code>✅</code> will be recorded.</li>
 </ul>
 <h2 id="conversion-log">Conversion Log<a class="headerlink" href="#conversion-log" title="Permanent link">#</a></h2>
-<p>Save a <a class="glightbox" href="../assets/images/Conversion_Log.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Conversion_Log.png" src="../assets/images/Conversion_Log.png" /></a> <code>Conversion Log</code> of the batch conversion as a <code>TXT</code> file in the given import directories. The log records each step of the conversion process, which is invaluable for troubleshooting conversion errors or bugs</p>
+<p>Save a <a class="glightbox" href="../assets/images/Conversion_Log.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Conversion_Log.png" src="../assets/images/Conversion_Log.png" /></a> <code>Conversion Log</code> of the batch conversion as a <code>TXT</code> file in the given import directories. The log records each step of the conversion process, which is invaluable for troubleshooting conversion errors and bugs.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>To quickly verify that no errors occured during the batch conversion, open the log file, <code>Ctrl + F</code> to search for a string of text, and type "<code>error</code>".  If no results are found, then Transmogrifier encountered no errors during the conversion process.</p>

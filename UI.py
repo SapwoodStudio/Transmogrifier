@@ -732,7 +732,7 @@ def draw_settings_logging(self, context):
         box_summary = box_logging.box()
         col = box_summary.column(align=True)
         col.use_property_split = True
-        col.label(text='Log Summary', icon='SPREADSHEET')
+        col.label(text='Conversion Summary', icon='SPREADSHEET')
         grid = box_summary.grid_flow(columns=2, align=True)
         grid.prop(settings, 'logging_summary_filter')
 

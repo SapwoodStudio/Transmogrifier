@@ -801,7 +801,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     logging_length_unit_abbr: StringProperty(
         name="Length Unit Abbreviation",
         description="The length unit to use for logging model dimensions",
-        default="cm"
+        default="m"
     )
     logging_bounds_x: FloatProperty(
         name="X", 

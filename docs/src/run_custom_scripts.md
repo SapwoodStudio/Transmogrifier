@@ -24,7 +24,7 @@ Define at which point your custom script's execution should be triggered.  Synch
 ???+ question "How do I make a `Custom Script` for Transmogrifier?"
     ## "How do I make a `Custom Script` for Transmogrifier?"
 
-    Creating custom scripts is easy for developers and non-developer alike.  
+    Creating custom scripts is easy for developers and non-developers alike.  
     
     1. Open Blender and navigate to the `Scripting` tab.
 

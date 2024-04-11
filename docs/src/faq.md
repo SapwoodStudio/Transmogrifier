@@ -3,13 +3,13 @@
 ??? question "Do I have to import my first model into my Blender scene before Batch Converting?"
     #### "Do I have to import my first model into my Blender scene before Batch Converting?"
 
-    No.  Transmogrifier imports and exports files via a new Blender session/window every time you batch convert, so your current scene doesn't need any preparation nor is it affected by the conversion.
+    No.  Transmogrifier imports and exports files via a new Blender session/window every time you batch convert, so your current scene isn't affect nor does it need any preparation.
 
 
 ??? question "What is Transmogrifier's license?"
     #### "What is Transmogrifier's license?"
 
-    Transmogrifier is open-source/licensed-free software under the [GNU GPL](https://github.com/SapwoodStudio/Transmogrifier/blob/main/LICENSE).
+    Transmogrifier is open-source/licensed-free software under the [GNU GPL v3.0](https://github.com/SapwoodStudio/Transmogrifier/blob/main/LICENSE).
 
     ??? Question "What is Free Software?"
         !!! quote ""
@@ -61,7 +61,7 @@
             C:\Users\{YOUR_USER}\AppData\Roaming\Blender Foundation\X.XX\scripts\addons\Transmogrifier\
             ```
 
-    !!! info "Transmogrifier [`Workflow Presets`](https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets) Location"
+    !!! info "Transmogrifier [`Workflow Presets`](https://sapwoodstudio.github.io/Transmogrifier/batch_convert/#workflow-presets) Location"
         === "GNU/Linux" 
             If you installed the add-on as a user:
 
@@ -98,6 +98,42 @@
             C:\Users\{YOUR_USER}\AppData\Roaming\Blender Foundation\X.XX\scripts\presets\operator\transmogrifier
             ```
 
+    !!! info "Transmogrifier [`Edit Textures Presets`](https://sapwoodstudio.github.io/Transmogrifier/apply_textures/#edit-textures-presets) Location"
+        === "GNU/Linux" 
+            If you installed the add-on as a user:
+
+            ```
+            ~/.config/blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+            ```
+
+            If you installed the add-on system-wide: (1)
+            {.annotate}
+            
+            1. This may also depend on your Linux distribution
+
+            ```
+            /usr/share/blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+            ```
+
+        === "Mac"
+            If you installed the add-on as a user:
+
+            ```
+            /Users/{YOUR_USER}/Library/Application Support/Blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+            ```
+
+            If you installed the add-on system-wide:
+
+            ```
+            /Library/Application Support/Blender/X.XX/scripts/presets/operator/transmogrifier/edit_textures
+            ```
+
+        === "Windows"
+            On Windows:
+
+            ```
+            C:\Users\{YOUR_USER}\AppData\Roaming\Blender Foundation\X.XX\scripts\presets\operator\transmogrifier\edit_textures
+            ```
 
 ??? question "My [`Workflow Presets`](https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets) don't work anymore."
     #### "My [`Workflow Presets`](https://sapwoodstudio.github.io/Transmogrifier/features/#user-presets) don't work anymore."
@@ -172,7 +208,7 @@
 ??? question "How do I create Asset Catalogs?"
     #### "How do I create Asset Catalogs?"
 
-    This is less intuitive than creating an Asset Library.  
+    This is a bit less intuitive than creating an Asset Library.  
 
     1. Open a new Blender session.
 
@@ -192,7 +228,6 @@
 
     6. Now, whenever you want to add/edit/remove new catalogs, open `blender_assets.cats.blend`, make your changes, and save the file again.
 
-    Here's a GIF that sums it all up.
 
     ![FAQ_How_to_Create_Asset_Catalogs.gif](assets/images/FAQ_How_to_Create_Asset_Catalogs.gif)
 
@@ -202,10 +237,10 @@
         ![FAQ_How_to_Create_Asset_Catalogs_Success.gif](assets/images/FAQ_How_to_Create_Asset_Catalogs_Success.gif)
         
 
-???+ question "How do I make a `Custom Script` for Transmogrifier?"
+??? question "How do I make a `Custom Script` for Transmogrifier?"
     #### "How do I make a `Custom Script` for Transmogrifier?"
 
-    Creating custom scripts is easy for developers and non-developer alike.  
+    Creating custom scripts is easy for developers and non-developers alike.  
     
     1. Open Blender and navigate to the `Scripting` tab.
 
@@ -270,4 +305,4 @@
 ??? question "Why are there so many icon buttons without descriptions?"
     #### "Why are there so many icon buttons without descriptions?"
 
-    Transmogrifier is a robust suite of tools for batch converting 3D files.  As we added more and more features, its user interface grew longer and longer.  So, we overhauled the UI in version 2.0.0 to make it more compact.  We replaced a lot of the prior checkboxes that had names with icon-only buttons and shoved them in the top-right of each relevant box, which made a lot of room for everything else.    
+    Transmogrifier is a robust suite of tools for batch converting 3D files.  As we added more and more features, its user interface grew longer and longer.  Thus, we overhauled the UI in version 2.0.0 to make it more compact.  We replaced a lot of the prior checkboxes that had names with icon-only buttons and shoved them in the top-right of each relevant box, which made a lot of room for everything else.    

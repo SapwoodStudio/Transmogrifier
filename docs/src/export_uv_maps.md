@@ -31,7 +31,12 @@ Adjust the image `Resolution`, `Format`, and `Fill Opacity`.
 
 
 ## Rename UVs
-Normalize UV map names.  Multiple UV maps within the same object will increment, for example, as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. 
+Synchronize UV map names among every mesh object with a custom name.
+
+Multiple UV maps within the same object will increment, for example, as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. 
+
+!!! example
+    Some model files contain mesh objects made in different DCC apps.  Maya, Max, Blender, Modo, etc. use different conventions for naming UV channels.  The difference in channel names can cause errors for certain export formats, which is the reason this feature exists.
 
 !!! bug "USD files and UV Maps"
     `Rename UVs` prevents a bug in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured.

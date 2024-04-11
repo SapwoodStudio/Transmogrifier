@@ -1131,13 +1131,19 @@
 
 <h1 id="mark-assets">Mark Assets<a class="headerlink" href="#mark-assets" title="Permanent link">#</a></h1>
 <div class="admonition question">
-<p class="admonition-title">Have you ever wanted to build out your own 3D asset library?</p>
+<p class="admonition-title">Have you ever tried to build your own 3D asset library?</p>
 <p>Whether it's for your personal projects or production pipeline, Transmogrifier can populate a library with dozens of your 3D assets in mere minutes!</p>
 </div>
-<p>Blender has a powerful Asset Library system built into the core of its codebase.  Transmogrifier leverages its capabilities while batch converting to mark assets, add metadata, and more.</p>
+<p>Blender has a powerful <a href="https://docs.blender.org/manual/en/latest/files/asset_libraries/index.html">Asset Library</a> system built into the core of its codebase.  Transmogrifier leverages its capabilities while batch converting to add your 3D models and textures to your own asset library and catalog of choice.</p>
 <p><a class="glightbox" href="../assets/images/Mark_Assets.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets.gif" src="../assets/images/Mark_Assets.gif" /></a></p>
 <h2 id="asset-quality">Asset Quality<a class="headerlink" href="#asset-quality" title="Permanent link">#</a></h2>
-<p>Select the quality of the Blend files containing assets. Quality is based on when asset Blend files are saved during each item's conversion (i.e. before/after textures are resized/reformatted and meshes are decimated). If Edit Textures is toggled off and Auto-Optimize Files is toggled off, asset Blend files will always save at the highest regardless of this menu's selection. If it is desired to run a script before an asset Blend is saved, select <code>Most Optimized</code>.</p>
+<p>Set the quality of the Blend files containing assets. </p>
+<p>Quality is based on the point when asset Blend files are saved during each item's conversion (i.e. before/after textures are resized/reformatted and meshes are decimated). </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code>Edit Textures</code> is toggled off and <code>Auto-Optimize Files</code> is toggled off, asset Blend files will always save at the highest regardless of this menu's selection. </p>
+<p>If you want to run a script before an asset Blend is saved, select <code>Most Optimized</code>.</p>
+</div>
 <table>
 <thead>
 <tr>
@@ -1160,27 +1166,35 @@
 </tbody>
 </table>
 <h2 id="mark-assets_1">Mark Assets<a class="headerlink" href="#mark-assets_1" title="Permanent link">#</a></h2>
-<p>Select asset types to mark.</p>
+<p>Select <a href="https://docs.blender.org/manual/en/latest/files/asset_libraries/introduction.html#asset-types">asset types</a> to mark.</p>
 <p><a class="glightbox" href="../assets/images/Mark_Assets_Mark_Assets.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Mark_Assets.gif" src="../assets/images/Mark_Assets_Mark_Assets.gif" /></a></p>
+<div class="admonition note">
+<p class="admonition-title">Asset Types</p>
 <p>| <code>Actions</code> | <code>Collections</code> | <code>Materials</code> | <code>Node Trees</code> | <code>Objects</code> | <code>Worlds</code> |</p>
+</div>
 <h3 id="object-types">Object Types<a class="headerlink" href="#object-types" title="Permanent link">#</a></h3>
 <p class="annotate">Filter which object types to mark as assets. (1)</p>
 <ol>
 <li>Some object types will not be able to have preview images generated for them.</li>
 </ol>
+<div class="admonition note">
+<p class="admonition-title">Object Types</p>
+<p>| <code>Mesh</code> | <code>Surface</code> | <code>Text</code> | <code>Armature</code> | <code>Light</code> | </p>
+<p>| <code>Curve</code> | <code>Metaball</code> | <code>Grease Pencil</code> | <code>Emtpy</code> | <code>Camera</code> |</p>
+</div>
 <h2 id="metadata">Metadata<a class="headerlink" href="#metadata" title="Permanent link">#</a></h2>
-<p>Add metadata that will be applied to all items converted.</p>
+<p>Add metadata that will be applied to all types of assets marked in every asset Blend file saved during the conversion.</p>
 <p><a class="glightbox" href="../assets/images/Mark_Assets_Metadata.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Metadata.gif" src="../assets/images/Mark_Assets_Metadata.gif" /></a></p>
 <h2 id="allow-duplicates">Allow Duplicates<a class="headerlink" href="#allow-duplicates" title="Permanent link">#</a></h2>
-<p>Filter which asset types can have duplicates be marked when assets of those types already exists in the selected asset library.</p>
+<p>Filter which asset types can have duplicates be marked when assets of those types already exist in the selected asset library.</p>
 <p><a class="glightbox" href="../assets/images/Mark_Assets_Allow_Duplicates.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mark_Assets_Allow_Duplicates.gif" src="../assets/images/Mark_Assets_Allow_Duplicates.gif" /></a></p>
 <h2 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">#</a></h2>
-<p>Select where asset Blend files should be stored and into what catalog they should be organized.  </p>
+<p>Select where to store asset Blend files and into what catalog to organize them.</p>
 <div class="admonition info">
 <p class="admonition-title">Blend textures</p>
 <p>You have the option of how asset textures are stored with respect to the Blend file.</p>
 <ul>
-<li>Pack </li>
+<li>Packed</li>
 <li>Unpacked<ul>
 <li>Relative paths</li>
 <li>Absolute paths</li>

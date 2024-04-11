@@ -1126,7 +1126,12 @@
 <h2 id="image-settings">Image Settings<a class="headerlink" href="#image-settings" title="Permanent link">#</a></h2>
 <p>Adjust the image <code>Resolution</code>, <code>Format</code>, and <code>Fill Opacity</code>.</p>
 <h2 id="rename-uvs">Rename UVs<a class="headerlink" href="#rename-uvs" title="Permanent link">#</a></h2>
-<p>Normalize UV map names.  Multiple UV maps within the same object will increment, for example, as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. </p>
+<p>Synchronize UV map names among every mesh object with a custom name.</p>
+<p>Multiple UV maps within the same object will increment, for example, as 'UVMap', 'UVMap_1', 'UVMap_2', and so on. </p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>Some model files contain mesh objects made in different DCC apps.  Maya, Max, Blender, Modo, etc. use different conventions for naming UV channels.  The difference in channel names can cause errors for certain export formats, which is the reason this feature exists.</p>
+</div>
 <div class="admonition bug">
 <p class="admonition-title">USD files and UV Maps</p>
 <p><code>Rename UVs</code> prevents a bug in USD formats when two or more objects share the same material but have different UV map names, which causes some objects to appear untextured.</p>

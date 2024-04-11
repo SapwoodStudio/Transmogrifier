@@ -1076,6 +1076,8 @@
 
 
 <h1 id="batch-convert">Batch Convert<a class="headerlink" href="#batch-convert" title="Permanent link">#</a></h1>
+<p>Transmogrifier is a Blender addon for batch converting 3D files and associated textures into other formats.  The <code>Batch Convert</code> button is where it all starts.  Transmogrifier can accomplish in minutes what used to take hours.  </p>
+<p><a class="glightbox" href="../assets/images/Getting_started_Quickstart_Demo_6.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Quickstart_Demo_6.gif" src="../assets/images/Getting_started_Quickstart_Demo_6.gif" /></a></p>
 <h2 id="forecast">Forecast<a class="headerlink" href="#forecast" title="Permanent link">#</a></h2>
 <p>Calculate the batch conversion and display an info message of the <code>Forecast</code>.</p>
 <div class="admonition tip">
@@ -1084,38 +1086,42 @@
 </div>
 <p><a class="glightbox" href="../assets/images/Getting_started_Quickstart_Demo_5.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Getting_started_Quickstart_Demo_3.gif" src="../assets/images/Getting_started_Quickstart_Demo_5.gif" /></a></p>
 <h2 id="workflow-presets">Workflow Presets<a class="headerlink" href="#workflow-presets" title="Permanent link">#</a></h2>
-<p class="annotate">Create custom Transmogrifier presets (aka "Workflows) for quickly switching between different conversion scenarios. (1)</p>
+<p class="annotate">Create custom Transmogrifier presets (aka <code>Workflows</code>) for quickly switching between different conversion scenarios. (1)</p>
 <ol>
 <li>Workflows are stored as <code>JSON</code> files in your <a href="https://sapwoodstudio.github.io/Transmogrifier/faq/#where-is-transmogrifier-installed-on-my-computer">Blender preferences directory</a>. </li>
 </ol>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><code>+</code> Add Preset</label><label for="__tabbed_1_2"><code>v</code> Select Preset</label><label for="__tabbed_1_3"><code>-</code> Remove Preset</label><label for="__tabbed_1_4"><code>-</code> <code>+</code> Edit Preset</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>Click the plus button <code>+</code> to create a Workflow from <strong>all</strong> of the current Transmogrifier settings, giving it a custom name.  Click <code>OK</code> to save it.</p>
+<p>Click the plus button <code>+</code> to create a <code>Workflow</code> from <strong>all</strong> of the current Transmogrifier settings, giving it a custom name.  Click <code>OK</code> to save it.</p>
 <p><a class="glightbox" href="../assets/images/Worfklow_Presets_Add.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Worfklow_Presets_Add.gif" src="../assets/images/Worfklow_Presets_Add.gif" /></a></p>
 </div>
 <div class="tabbed-block">
-<p>Select an existing preset from the menu.</p>
+<p>Select an existing <code>Workflow</code> preset from the menu.</p>
 <p><a class="glightbox" href="../assets/images/Workflow_Presets_Select.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Workflow_Presets_Select.gif" src="../assets/images/Workflow_Presets_Select.gif" /></a></p>
 </div>
 <div class="tabbed-block">
-<p>Remove a workflow by selecting it from the menu, then clicking the minus button <code>-</code>.</p>
+<p>Remove a <code>Workflow</code> by selecting it from the menu, then clicking the minus button <code>-</code>.</p>
 <p><a class="glightbox" href="../assets/images/Workflow_Presets_Remove.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Workflow_Presets_Remove.gif" src="../assets/images/Workflow_Presets_Remove.gif" /></a></p>
 </div>
 <div class="tabbed-block">
-<p>Edit a Workflow Preset by </p>
+<p>To edit a <code>Workflow</code> preset,</p>
 <ol>
 <li>Select your preset</li>
 <li>Make your adjustments to settings</li>
 <li>Click the minus button <code>-</code> to remove the preset</li>
 <li>Click the plus button <code>+</code> and give the new preset the same name.  Click <code>OK</code>.</li>
 </ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is more inconvenient than some kind of "save" button, but it keeps Transmogrifier's conventions more consistent with Blender because Blender approaches user presets in this manner.</p>
+</div>
 <p><a class="glightbox" href="../assets/images/Workflow_Presets_Edit.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Workflow_Presets_Edit.gif" src="../assets/images/Workflow_Presets_Edit.gif" /></a></p>
 </div>
 </div>
 </div>
 <h2 id="imports">Imports<a class="headerlink" href="#imports" title="Permanent link">#</a></h2>
-<p>Click <code>+ Add Import</code> to add an import file format for Transmogrifier to search for.  Select your desired file format and associated user preset.  Click on the folder icon and choose a <code>Directory</code> hierarchy containing your 3D models in the pop-up file dialog.</p>
+<p>Click <code>+ Add Import</code> to add an import file format for Transmogrifier to search for.  Select your desired file format and associated user import preset.  Click on the folder icon and choose a <code>Directory</code> hierarchy containing your 3D models in the pop-up file dialog.</p>
 <details class="abstract">
 <summary>Supported 3D Formats</summary>
 <p>Transmogrifier supports importing and exporting the following 3D formats.</p>
@@ -1151,19 +1157,19 @@
 <tr>
 <td><a class="glightbox" href="../assets/images/Link_Settings.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Link_Settings.png" src="../assets/images/Link_Settings.png" /></a></td>
 <td>Link Import Settings</td>
-<td>Synchronize import directories between all import file formats</td>
+<td>Synchronize import directories between all import file formats.</td>
 </tr>
 <tr>
 <td><a class="glightbox" href="../assets/images/Directory.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Directory.png" src="../assets/images/Directory.png" /></a></td>
 <td>Import Directory</td>
-<td>Parent directory to search through and import files.  Default of <code>//</code> will import from the same directory as the blend file (only works if the blend file is saved)</td>
+<td>Parent directory to search through and import files.  Default of <code>//</code> will import from the same directory as the Blend file (only works if the Blend file is saved).</td>
 </tr>
 </tbody>
 </table>
 </details>
 <p><a class="glightbox" href="../assets/images/Features_Imports.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Features_Imports.gif" src="../assets/images/Features_Imports.gif" /></a></p>
 <h2 id="exports">Exports<a class="headerlink" href="#exports" title="Permanent link">#</a></h2>
-<p>Click <code>+ Add Export</code> to add an export file format for Transmogrifier to output for each import file it finds.  Select your desired file format and associated user preset.</p>
+<p>Click <code>+ Add Export</code> to add an export file format for Transmogrifier to output for each import file it finds.  Select your desired file format and associated user export preset.</p>
 <details class="abstract">
 <summary>Supported 3D Formats</summary>
 <p>Transmogrifier supports importing and exporting the following 3D formats.</p>
@@ -1194,32 +1200,32 @@
 <tr>
 <td><a class="glightbox" href="../assets/images/Data_Names_from_Objects.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data_Names_from_Objects.png" src="../assets/images/Data_Names_from_Objects.png" /></a></td>
 <td>Data Names from Objects</td>
-<td>Rename object data names according to their corresponding object names</td>
+<td>Rename object data names according to their corresponding object names.</td>
 </tr>
 <tr>
 <td><a class="glightbox" href="../assets/images/Export_Adjacent.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Export_Adjacent.png" src="../assets/images/Export_Adjacent.png" /></a></td>
 <td>Export Adjacent</td>
-<td>Export models adjacent to their respective imports</td>
+<td>Export models adjacent to their respective imports.</td>
 </tr>
 <tr>
 <td><a class="glightbox" href="../assets/images/Overwrite_Files.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Overwrite_Files.png" src="../assets/images/Overwrite_Files.png" /></a></td>
 <td>Overwrite Files</td>
-<td>Overwrite files of the given export format(s) that may already exist</td>
+<td>Overwrite files of the given export format(s) that may already exist.</td>
 </tr>
 <tr>
 <td><a class="glightbox" href="../assets/images/Use_Subdirectories.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Use_Subdirectories.png" src="../assets/images/Use_Subdirectories.png" /></a></td>
 <td>Use Subdirectories</td>
-<td>Export models to their own subdirectories within the given export directory</td>
+<td>Export models to their own subdirectories within the given export directory.</td>
 </tr>
 <tr>
 <td><a class="glightbox" href="../assets/images/Copy_Original_Contents.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Copy_Original_Contents.png" src="../assets/images/Copy_Original_Contents.png" /></a></td>
 <td>Copy Original Contents</td>
-<td>Copy original contents of each import item's directory to each export item's subdirectory</td>
+<td>Copy original contents of each import item's directory to each export item's subdirectory.</td>
 </tr>
 <tr>
 <td><a class="glightbox" href="../assets/images/Export_Directory.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Export_Directory.png" src="../assets/images/Export_Directory.png" /></a></td>
 <td>Export Directory</td>
-<td>Directory to export files. Default of <code>//</code> will export to the same directory as the blend file (only works if the blend file is saved)</td>
+<td>Directory to export files. Default of <code>//</code> will export to the same directory as the blend file (only works if the blend file is saved).</td>
 </tr>
 </tbody>
 </table>

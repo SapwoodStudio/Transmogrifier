@@ -1,49 +1,55 @@
 # Apply Textures
 
-Transmogrifier can detect the presence of multiple image texture sets and non-destructively modify them during the conversion process. Select whether to use textures, regex the PBR tags in the textures' names, and keep the otherwise temporary textures folders with their modifiied images.
+!!! question "Tired of clicking `Ctrl + Shift + T`?"
+    Transmogrifier adds Principled shader setups for you!  
+    
+Transmogrifier can detect the presence of multiple image texture sets and non-destructively modify them during the conversion process. 
 
 ![Apply_Textures.gif](assets/images/Apply_Textures.gif)
 
 
 ## Source
+Transmogrifier can source textures in 3 different ways.
+
+![Textures_Sources.jpg](assets/images/Textures_Sources.jpg)
+*Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)). Each gray box with rounded corners indicates a directory/folder.  The scenarios shown in the diagram above depend on whether the selected import or export formats support textures.*
+
+
 === "![Textures_Source_External_Icon.jpg](assets/images/Textures_Source_External_Icon.jpg) **External**" 
+    ### External
     `External` tells Transmogrifier to look for image textures adjacent to the imported model.
-
-    Textures can exist adjacent to the imported model in the following ways.
-
-    - in a "textures" subfolder
-    - in "[texture set]" subfolders inside a "textures" subfolder
-    - in the same directory as the imported 3D file
 
     !!! example
         An example of this scenario would be converting `FBX` files with textures into `GLB` files.
 
-    <!-- ![Textures_Source_External.jpg](assets/images/Textures_Source_External.jpg) -->
+    Textures can exist adjacent to the imported model in the following ways.
+
+    | Texture Sets in `textures` Subdirectory | Texture Sets in `textures` Subdirectory > Subdirectories | Texture Sets Adjacent to Import File |
+    | ---- | ---- | ---- |
+    | `textures` | `textures > [Texture Set 1], [Texture Set 2], etc.` | Import File `Directory` | 
+    | in a "textures" subfolder relative to the import file | in "[texture set]" subfolders inside a "textures" subfolder relative to the import file | in the same directory as the import file |
+    | ![Apply_Textures_Source_External_Subdirectory.gif](assets/images/Apply_Textures_Source_External_Subdirectory.gif) | ![Apply_Textures_Source_External_Subdirectories.gif](assets/images/Apply_Textures_Source_External_Subdirectories.gif) | ![Apply_Textures_Source_External_Adjacent.gif](assets/images/Apply_Textures_Source_External_Adjacent.gif) | 
+    | ✅ Best Practice, follows modern conventions | 🟢 Good Practice, ultra-organized | 🟡 Questionable Practice, disorganized |
+
 
 
 === "![Textures_Source_Packed_Icon.jpg](assets/images/Textures_Source_Packed_Icon.jpg) **Packed**"
+    ### Packed
     `Packed` tells Transmogrifier to use any image textures packed into the imported file for conversion
 
     !!! example
         An example of this scenario would be converting `GLB` files to `USDZ` files.
 
-    <!-- ![Textures_Source_Packed.jpg](assets/images/Textures_Source_Packed.jpg) -->
-
 
 === "![Textures_Source_Custom_Icon.jpg](assets/images/Textures_Source_Custom_Icon.jpg) **Custom**"
+    ### Custom
     `Custom` tells Transmogrifier to use image textures from a single directory and apply them to all models converted.
 
     !!! example
         An example of this scenario would be converting many separate `OBJ` files that all use the same textures into `USDZ` files.
 
-    <!-- ![Textures_Source_Custom.jpg](assets/images/Textures_Source_Custom.jpg) -->
-
-
-![Textures_Sources.jpg](assets/images/Textures_Sources.jpg)
-*Models from [Polyhaven](https://polyhaven.com/models) ([CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)).*
-
-!!! info 
-    Each gray box with rounded corners indicates a directory/folder.  The scenarios shown in the diagram above depend on whether the selected import or export formats support textures.
+    !!! tip
+        Transmogrifier looks for textures inside a `Custom` directory in the same manner it does for `External` textures.
 
 
 ## 3 Texturing Rules
@@ -66,17 +72,21 @@ There are three naming conventions that must be followed in order for textures t
     !!! info
         This convention works for multiple texture sets as well.
 
-    ![Textures_Rule_No_1.png](assets/images/Textures_Rule_No_1.png)
+    !!! example "Example: Rule 1"
+        | | |
+        | ---- | ---- | 
+        | ![Textures_Rule_No_1.png](assets/images/Textures_Rule_No_1.png) | ![Textures_Rule_No_3_GLB.png](assets/images/Textures_Rule_No_3_GLB.png) |
 
 
 === "Rule 2: Single Texture Sets" 
     ### Rule 2: Single Texture Sets
     
-    !!! note "**2. Per import file, if only 1 texture set is present, object names don't matter except for `Rule 1`.**"
+    !!! note "**Per import file, if only 1 texture set is present, object names don't matter except for `Rule 1`.**"
 
-    For "External" and "Custom" texture sources and for models with only one texture set present, the first rule doesn't matter because it is assumed that that texture set should be applied to all the objects in the scene. 
+    For `External` and `Custom` texture sources and for models with only one texture set present, `Rule 1` doesn't matter because it is assumed  that single texture set should be applied to all the objects in the scene. 
 
-    ![Textures_Rule_No_2.png](assets/images/Textures_Rule_No_2.png)
+    !!! example "Example: Rule 2"
+        ![Textures_Rule_No_2.png](assets/images/Textures_Rule_No_2.png)
 
 
 === "Rule 3: Multiple Texture Sets"
@@ -100,13 +110,17 @@ There are three naming conventions that must be followed in order for textures t
             !!! warning 
                 As such, having multiple materials assigned as distinct slots to different meshes within one object is not possible. 
     
-    ![Textures_Rule_No_3.png](assets/images/Textures_Rule_No_3.png)
+    !!! example "Example: Rule 3"
+        ![Textures_Rule_No_3.png](assets/images/Textures_Rule_No_3.png)
 
 
 ## Edit Textures
-Edit textures by PBR map for every item converted.  Click `+ Add Texture Edit` to add a texture edit profile.  Click `✖` to remove a profile.
+Edit images textures non-destructively & on-the-fly. For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution.
+
+Click `+ Add Texture Edit` to add a texture edit profile.  Click `✖` to remove a profile.
 
 ![Apply_Textures_Add_Texture_Edit.gif](assets/images/Apply_Textures_Add_Texture_Edit.gif)
+
 
 ### Edit Textures Presets
 Create custom `Edit Textures` presets for quickly switching between different image editing scenarios. (1)
@@ -130,47 +144,51 @@ Create custom `Edit Textures` presets for quickly switching between different im
     ![Apply_Textures_Edit_Textures_Preset_Remove.gif](assets/images/Apply_Textures_Edit_Textures_Preset_Remove.gif)
 
 === "`-` `+` Edit Preset"
-    Edit an `Edit Textures` preset by 
+    To edit an `Edit Textures` preset,
 
-    1. Select your preset
-    2. Make your adjustments to settings
-    3. Click the minus button `-` to remove the preset
+    1. Select your preset.
+    2. Make your adjustments to settings.
+    3. Click the minus button `-` to remove the preset.
     4. Click the plus button `+` and give the new preset the same name.  Click `OK`.
 
+    !!! note
+        This is more inconvenient than some kind of "save" button, but it keeps Transmogrifier's conventions more consistent with Blender because Blender approaches user presets in this manner.
+
     ![Apply_Textures_Edit_Textures_Preset_Edit_Preset.gif](assets/images/Apply_Textures_Edit_Textures_Preset_Edit_Preset.gif)
+ 
         
 ### Resize Textures
-Resize textures images textures non-destructively & on-the-fly.  For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution. (1) 
+Resize images textures non-destructively & on-the-fly. 
 { .annotate }
 
 1. Images will not be upscaled.
 
 ??? abstract "Supported Resolutions"
     
-    - 8192
-    - 4096
-    - 2048
-    - 1024
-    - 512
-    - 256
-    - 128
+    - `8192`
+    - `4096`
+    - `2048`
+    - `1024`
+    - `512`
+    - `256`
+    - `128`
 
 
 ![Edit_Textures_Resolution.gif](assets/images/Edit_Textures_Resolution.gif)
 
 
 ### Reformat Textures
-Reformat textures non-destructively & on-the-fly. For every item converted, Transmogrifier copies textures to a temporary directory and performs modifications to the copies only. Original image textures are always preserved, unedited, at their full resolution.
+Reformat textures non-destructively & on-the-fly. 
 
 ??? abstract "Supported Image Formats"
     
-    - PNG
-    - JPEG (.jpg)
-    - TARGA
-    - TIFF
-    - WEBP
-    - BMP
-    - OPEN_EXR
+    - `PNG`
+    - `JPEG` (.jpg)
+    - `TARGA`
+    - `TIFF`
+    - `WEBP`
+    - `BMP`
+    - `OPEN_EXR`
 
 
 ![Edit_Textures_Format.gif](assets/images/Edit_Textures_Format.gif)
@@ -178,7 +196,7 @@ Reformat textures non-destructively & on-the-fly. For every item converted, Tran
 
 ### Regex Textures
 
-Use regular expressions (aka `regex`) to correct misspellings and inconsistencies in image texture PBR tags. This helps to guarantee their detection and import by Transmogrifier.  
+Use regular expressions (aka [`regex`](https://en.wikipedia.org/wiki/Regular_expression)) to correct misspellings and inconsistencies in image texture PBR tags. This helps to guarantee their detection and import by Transmogrifier.  
 
 
 !!! example 
@@ -198,7 +216,7 @@ Use regular expressions (aka `regex`) to correct misspellings and inconsistencie
     Transmogrifier relies on Node Wrangler's `Add Principled Setup` feature to detect image textures, import textures, and create a material shading network.
 
     #### Edit PBR Tags
-    You can modify the PBR tags that Node Wrangler looks for in image textures, which it uses to plug textures into the proper input of the Principled BSDF shader.  Simply mimic the recording below:
+    You can modify the PBR tags that Node Wrangler looks for in image textures, which it uses to plug textures into the proper input of the Principled BSDF shader.  Simply mimic the recording below to input your own custom PBR tag conventions:
     
     ![Apply_Textures_Regex_Textures_Node_Wrangler.gif](assets/images/Apply_Textures_Regex_Textures_Node_Wrangler.gif)
 

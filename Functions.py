@@ -563,8 +563,8 @@ length_unit_enum_items_refs = {
     "METRIC": [
         ("MICROMETERS", "Micrometers", "", 4),
         ("MILLIMETERS", "Millimeters", "", 3),
-        ("CENTIMETERS", "Centimeters", "", 0),
-        ("METERS", "Meters", "", 1),
+        ("CENTIMETERS", "Centimeters", "", 1),
+        ("METERS", "Meters", "", 0),
         ("KILOMETERS", "Kilometers", "", 2),
         ("ADAPTIVE", "Adaptive", "", 5),
     ],
