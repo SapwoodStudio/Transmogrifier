@@ -163,8 +163,8 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         description="Modify image textures with regular expressions, resizing, and/or reformatting.",
         default=True,
     )
-    keep_edited_textures: BoolProperty(
-        name="Keep Edited Textures", 
+    keep_temporary_textures: BoolProperty(
+        name="Keep Temporary Textures", 
         description="Don't delete the temporary textures directory used to modify image textures by regex, resolution, and/or format\nEspecially useful when troubleshooting errors",
         default=False,
     )

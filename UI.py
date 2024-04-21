@@ -287,6 +287,8 @@ def draw_settings_textures(self, context):
     row = box_textures.row(align=False)
     row.label(text="Textures", icon='TEXTURE')
     if settings.use_textures and settings.advanced_ui:
+        row.prop(settings, 'keep_temporary_textures', text='', icon="FAKE_USER_ON" if settings.keep_temporary_textures else "FAKE_USER_OFF")
+        row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
         row.prop(settings, 'edit_textures', text='', icon_value=custom_icons['Edit_Textures_Icon'].icon_id)
     row.prop(settings, 'use_textures', text='', icon="CHECKBOX_HLT" if settings.use_textures else "CHECKBOX_DEHLT")
 
@@ -324,8 +326,6 @@ def draw_settings_textures(self, context):
             if len(textures) > 0:
                 row = grid.row()
                 row.alignment = "RIGHT"
-                row.prop(settings, 'keep_edited_textures', text='', icon="FAKE_USER_ON" if settings.keep_edited_textures else "FAKE_USER_OFF")
-                row.prop(settings, 'regex_textures', text='', icon_value=custom_icons['Regex_Textures_Icon'].icon_id)
                 row.prop(settings, 'link_texture_settings', expand=False, text="", icon="LINKED" if settings.link_texture_settings else "UNLINKED")
 
             col = box_edit_textures.column(align=True)

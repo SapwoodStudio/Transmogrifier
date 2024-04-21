@@ -2801,10 +2801,10 @@ def determine_uv_directory(textures_dir):
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item_name.
-def determine_keep_edited_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend):
+def determine_keep_temporary_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend):
     try:        
         # Delete temporary textures directory (local copy for Custom textures scenario) if elected.
-        if not keep_edited_textures:
+        if not keep_temporary_textures:
             delete_textures_temp(textures_temp_dir)
         
         # Delete local copy of textures directory for Custom textures scenario if elected.
@@ -3757,10 +3757,10 @@ def batch_converter(log_file):
 
                 # Modified or copied textures can now be deleted after the conversion is over.
                 if use_textures:
-                    determine_keep_edited_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend)
+                    determine_keep_temporary_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend)
                 
                 # If using custom textures, delete temporary textures directory only after all items have been converted.
-                if use_textures and textures_source == "Custom" and not keep_edited_textures:
+                if use_textures and textures_source == "Custom" and not keep_temporary_textures:
                     textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
                     if Path(textures_temp_dir).exists():
                         delete_textures_temp(textures_temp_dir)
