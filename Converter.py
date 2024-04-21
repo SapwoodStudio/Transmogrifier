@@ -3177,7 +3177,7 @@ def archive_assets_to_library(item_name, blend, textures_temp_dir, quality):
 
         if mark_as_assets:
             mark_assets(item_name, blend)
-            pack_and_save_blend(item_name, blend, textures_temp_dir, asset_pack_resources, asset_use_absolute_paths)
+            pack_and_save_blend(blend.stem, blend, textures_temp_dir, asset_pack_resources, asset_use_absolute_paths)
             move_copy_blend_to_asset_library(item_name, blend)
 
         # Repath textures back to textures_temp_dir
