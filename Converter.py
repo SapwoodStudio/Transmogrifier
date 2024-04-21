@@ -542,10 +542,11 @@ def copy_textures_from_custom_source(textures_custom_dir, item_dir, textures_dir
 # If User elected not to copy the custom textures directory to each item_name folder, delete the temporary copy of it there.
 def remove_copy_textures_custom_dir(item_dir, textures_dir):
     try:
-        if Path(textures_dir).exists():
+        textures_dir_original_name = [d.name for d in Path.iterdir(item_dir) if "textures_original" in d.name.lower()]
+        
+        if Path(textures_dir).exists() and textures_dir_original_name:
             shutil.rmtree(textures_dir)
 
-        textures_dir_original_name = [d.name for d in Path.iterdir(item_dir) if "textures_original" in d.name.lower()]
         if textures_dir_original_name:  # If there was a textures_dir there before transmogrification, return its name to its original form.
             textures_dir_original_name = textures_dir_original_name[0]  # If the list is not empty, get the first item_name in the list.
             textures_dir_original = Path(item_dir, textures_dir_original_name)
@@ -1435,7 +1436,7 @@ def save_blend(blend):
 
 
 # Save a .blend file preserving all materials created even if some are not assigned to any objects.
-def pack_and_save_blend(blend, textures_temp_dir, pack_textures, absolute_paths):
+def pack_and_save_blend(item_name, blend, textures_temp_dir, pack_textures, absolute_paths):
     try:
         # Always pack textures and then determine whether to unpack and repath.
         bpy.ops.file.pack_all()
@@ -1443,7 +1444,7 @@ def pack_and_save_blend(blend, textures_temp_dir, pack_textures, absolute_paths)
         # Unpack, copy unpacked textures to directory matching Blend name, and then repath textures to new directory.
         if not pack_textures:
             unpack_textures(blend.parent, textures_temp_dir, blend)
-            blend_textures = blend.parent / (f"textures_{blend.stem}_blend")
+            blend_textures = blend.parent / (f"textures_{item_name}_blend")
             if blend_textures.exists():
                 shutil.rmtree(blend_textures)
             shutil.copytree(textures_temp_dir, blend_textures)
@@ -2157,7 +2158,7 @@ def export_a_model(item_name, item_dir, textures_temp_dir, export_settings_dict,
 
         # Use pack_and_save_blend function instead of generic "bpy.ops.wm.save_as_mainfile" that doesn't take into account some User options.
         if export_file.suffix == ".blend":
-            pack_and_save_blend(export_file, textures_temp_dir, export_settings_dict["pack_resources"], export_settings_dict["use_absolute_paths"])
+            pack_and_save_blend(item_name, export_file, textures_temp_dir, export_settings_dict["pack_resources"], export_settings_dict["use_absolute_paths"])
 
         # Run operator, which is stored as a string and won't run otherwise.
         else:
@@ -2497,7 +2498,7 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
 
             # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
             textures_temp_dir = item_dir / textures_temp_dir.name
-            textures_temp_dir_renamed = item_dir / (f"textures_{blend.stem}")
+            textures_temp_dir_renamed = item_dir / (f"textures_{item_name}")
             if Path(textures_temp_dir_renamed).exists():  # Remove the local copy of temporary textures directory if it already exists from a prior conversion.
                 shutil.rmtree(textures_temp_dir_renamed)
             Path(textures_temp_dir).rename(textures_temp_dir_renamed)
@@ -2530,7 +2531,7 @@ def apply_textures_custom(item_dir, item_name, import_file, textures_dir, textur
 
             # Rename and use the local copy of textures_temp_dir so it's possible to archive assets later.
             textures_temp_dir = item_dir / textures_temp_dir.name
-            textures_temp_dir_renamed = item_dir / (f"textures_{blend.stem}")
+            textures_temp_dir_renamed = item_dir / (f"textures_{item_name}")
             if Path(textures_temp_dir_renamed).exists():  # Remove the local copy of temporary textures directory if it already exists from a prior conversion.
                 shutil.rmtree(textures_temp_dir_renamed)
             Path(textures_temp_dir).rename(textures_temp_dir_renamed)
@@ -2801,10 +2802,11 @@ def determine_uv_directory(textures_dir):
 
 
 # Determine whether to keep modified or copied textures after the conversion is over for a given item_name.
-def determine_keep_temporary_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend):
+def determine_keep_temporary_textures(item_dir, item_name, import_file, export_file, textures_dir, textures_temp_dir, blend):
     try:        
         # Delete temporary textures directory (local copy for Custom textures scenario) if elected.
         if not keep_temporary_textures:
+            textures_temp_dir = item_dir / f"{textures_dir}_{item_name}"
             delete_textures_temp(textures_temp_dir)
         
         # Delete local copy of textures directory for Custom textures scenario if elected.
@@ -3175,7 +3177,7 @@ def archive_assets_to_library(item_name, blend, textures_temp_dir, quality):
 
         if mark_as_assets:
             mark_assets(item_name, blend)
-            pack_and_save_blend(blend, textures_temp_dir, asset_pack_resources, asset_use_absolute_paths)
+            pack_and_save_blend(item_name, blend, textures_temp_dir, asset_pack_resources, asset_use_absolute_paths)
             move_copy_blend_to_asset_library(item_name, blend)
 
         # Repath textures back to textures_temp_dir
@@ -3757,13 +3759,13 @@ def batch_converter(log_file):
 
                 # Modified or copied textures can now be deleted after the conversion is over.
                 if use_textures:
-                    determine_keep_temporary_textures(item_dir, import_file, export_file, textures_dir, textures_temp_dir, blend)
+                    determine_keep_temporary_textures(item_dir, item_name, import_file, export_file, textures_dir, textures_temp_dir, blend)
                 
-                # If using custom textures, delete temporary textures directory only after all items have been converted.
-                if use_textures and textures_source == "Custom" and not keep_temporary_textures:
-                    textures_temp_dir = Path(textures_custom_dir).parent / (Path(textures_custom_dir).name + "_temp")
-                    if Path(textures_temp_dir).exists():
-                        delete_textures_temp(textures_temp_dir)
+        # If using custom textures, delete temporary textures directory only after all items have been converted.
+        if use_textures and textures_source == "Custom" and not keep_temporary_textures:
+            textures_temp_dir = Path(textures_custom_dir).parent / (f"{Path(textures_custom_dir).name}_temp")
+            if Path(textures_temp_dir).exists():
+                delete_textures_temp(textures_temp_dir)
 
         # Run custom scripts with triggers "After Batch".
         run_custom_scripts("After_Batch")

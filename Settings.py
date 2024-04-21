@@ -213,7 +213,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
     overwrite_textures: BoolProperty(
         name="Overwrite Textures", 
         description="If toggled on, original textures (should they exist) will be replaced with textures from custom directory per model converted",
-        default=True,
+        default=False,
     )
     use_linked_blend_textures: BoolProperty(
         name="Linked to .blend", 
