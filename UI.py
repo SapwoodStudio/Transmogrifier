@@ -970,28 +970,35 @@ class TRANSMOGRIFIER_OT_advanced_ui(Operator):
     def execute(self, context):
         settings = bpy.context.scene.transmogrifier_settings
         prefs = bpy.context.preferences.addons[bl_info["name"]].preferences
+        panels = [
+            VIEW3D_PT_transmogrifier_textures, 
+            VIEW3D_PT_transmogrifier_optimize, 
+            VIEW3D_PT_transmogrifier_assets, 
+            VIEW3D_PT_transmogrifier_uvs, 
+            VIEW3D_PT_transmogrifier_scene, 
+            VIEW3D_PT_transmogrifier_transformations, 
+            VIEW3D_PT_transmogrifier_scripts, 
+            VIEW3D_PT_transmogrifier_logging, 
+        ]
+        
         if settings.advanced_ui:
             if prefs.addon_location == '3DSIDE':
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_textures)
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_optimize)
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_assets)
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_uvs)
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scene)
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_transformations)
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_scripts)
-                bpy.utils.unregister_class(VIEW3D_PT_transmogrifier_logging)
+                for panel in panels: 
+                    try: 
+                        bpy.utils.unregister_class(panel)
+                    except:
+                        bpy.utils.register_class(panel)
+                        bpy.utils.unregister_class(panel)
             settings.advanced_ui = False
 
         elif not settings.advanced_ui:
             if prefs.addon_location == '3DSIDE':
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_textures)
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_optimize)
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_assets)
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_uvs)
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_scene)
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_transformations)
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_scripts)
-                bpy.utils.register_class(VIEW3D_PT_transmogrifier_logging)
+                for panel in panels: 
+                    try: 
+                        bpy.utils.register_class(panel)
+                    except:
+                        bpy.utils.unregister_class(panel)
+                        bpy.utils.register_class(panel)
             settings.advanced_ui = True
             
         return {'FINISHED'}
