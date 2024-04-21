@@ -1,7 +1,7 @@
 import bpy
 op = bpy.context.active_operator
 
-op.filepath = ''
+op.filepath = '/home/YourPC/untitled.usdz'
 op.selected_objects_only = True
 op.visible_objects_only = False
 op.export_animation = False

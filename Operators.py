@@ -271,7 +271,7 @@ class TRANSMOGRIFIER_OT_install_presets(Operator):
     def execute(self, context):
         # Define paths.
         presets_dir_src = Path(__file__).parent / "presets" / "operator"
-        presets_dir_dest = bpy.utils.user_resource('SCRIPTS', path="presets/operator")
+        presets_dir_dest = Path(bpy.utils.user_resource('SCRIPTS', path="presets/operator"))
 
         # Make list of source paths and destination paths (parents).
         dir_src_list = [presets_dir_src]
