@@ -2,6 +2,7 @@
 ## 2.0.0
 ### New Features
 - New UI
+    - Thanks to [sniss3n](https://github.com/sniss3n) and [drkdragonlord](https://github.com/drkdragonlord) for feedback on new UI
 - Edit Textures Presets
 - Custom Scripts (inspired by [#7](https://github.com/SapwoodStudio/Transmogrifier/issues/7))
 - Conversion Summary CSV
