@@ -64,7 +64,7 @@ class TRANSMOGRIFIER_PG_TransmogrifierSettings(PropertyGroup):
         default=False,
     )
     # Transmogrifier Presets (aka Workflows)
-    transmogrifier_preset: StringProperty(default='FBX_to_GLB')
+    transmogrifier_preset: StringProperty(default='(no preset)')
     transmogrifier_preset_enum: EnumProperty(
         name="", options={'SKIP_SAVE'},
         description="Use batch conversion settings from a preset.\n(Create by clicking '+' after adjusting settings in the Transmogrifier menu)",
