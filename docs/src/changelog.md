@@ -1,4 +1,39 @@
 # Changelog
+## 2.0.0
+### New Features
+- New UI
+- Edit Textures Presets
+- Custom Scripts (inspired by [#7](https://github.com/SapwoodStudio/Transmogrifier/issues/7))
+- Conversion Summary CSV
+- Load preset from file
+    - Workflows
+    - Edit Textures
+- Asset Quality
+
+### Optimizations
+- Imports
+    - Multiple import formats are now possible
+    - Link settings
+- Exports
+    - Multiple export formats are now possible
+    - Link settings
+- Overhauled Batch Conversion Algorithm
+- Improved Auto-Optimize logic with respect to overwriting files
+- API/Add-on conventions better follow Blender's best practices
+- Improved string formatting
+
+### Bug Fixes
+- Fixed Blend files being overwritten when marking assets.  Asset Blend files now have an "_Assets" suffix
+- Auto-Optimize File Size now works for every export format/instance, not just the first one
+- Exports' presets and extensions are no longer linked
+- Fixed Workflow's `+` Add Preset, which would throw an error if a `transmogrifier` operator preset directory did not already exist. [#13](https://github.com/SapwoodStudio/Transmogrifier/issues/13)
+- Relative paths now work as expected when Blend file is saved
+- Fixed a number of bugs resulting from new features
+
+### Documentation
+- Overhauled README.md
+- Created new documentation website
+
 
 ## 1.5.0
 ### New Features
