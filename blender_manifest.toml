@@ -1,0 +1,20 @@
+schema_version = "1.0.0"
+
+id = "transmogrifier"
+version = "2.0.0"
+name = "Transmogrifier"
+tagline = "Batch converts 3D files and textures into other formats"
+maintainer = "Sapwood Studio <support@sapwood.studio>"
+type = "add-on"
+
+permissions = ["files"]
+
+website = "https://sapwoodstudio.github.io/Transmogrifier/"
+
+tags = ["Import-Export", "Pipeline"]
+
+blender_version_min = "3.6.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
